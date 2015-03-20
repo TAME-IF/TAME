@@ -1,0 +1,1209 @@
+===============================================================================
+================================ TAME COMMANDS ================================
+===============================================================================
+
+All Commands in this file are available for use when writing TAME modules.
+Every command's name is case-insensitive.
+
+TAME attempts to mitigate infinite loops: if 100000 commands are executed in 
+a single request, the request is terminated. The game state is NOT RESTORED 
+AFTERWARDS if this happens, so fix your code if this occurs!
+
+Argument Types
+--------------
+
+VALUE(1/2):	Literal or Variable or expression; can be Number or String unless 
+			specified.
+WORLD:		A valid world or "world" (current world). Actually, there is only 
+			one world.
+ROOM:		A valid room or "room" (current room).
+PLAYER:		A valid player or "player" (current player).
+OBJECT:		A valid object.
+
+...............................................................................
+................................   RESPONSE  ..................................
+...............................................................................
+
+ADDCUE(VALUE1, VALUE2)
+
+	VALUE1: The cue name, string value.
+	VALUE2: The cue value, any type.
+	
+	ADDCUE returns no values after execution.
+	
+	Adds a cue to the response to be read later by the client that sent the 
+	original request. Clients process cues in the order that they were added.
+
+	See CUES for a list of valid client cues (can differ by client type).
+	
+...............................................................................
+
+PRINT(VALUE)
+
+	VALUE: The message to print.
+	
+	Appends a "text" cue to the response. 
+
+	PRINT returns no values after execution, so it cannot be used in 
+	expressions.
+	
+	Equivalent to:
+	ADDCUE("text", VALUE);
+	
+...............................................................................
+
+PRINTLN(VALUE)
+
+	VALUE: The message to print.
+	
+	Appends a "text" cue to the response with a newline character appended to 
+	the end. 
+
+	PRINTLN returns no values after execution, so it cannot be used in 
+	expressions.
+	
+	Equivalent to:
+	ADDCUE("text", VALUE+"\n");
+	
+...............................................................................
+
+WAIT(VALUE)
+	
+	VALUE: The time in milliseconds to wait. If string, this is parsed as an 
+	integer.
+	
+	Appends a "wait" cue to the response, which tells the client to wait a 
+	given amount of milliseconds.
+	
+	WAIT returns no values after execution, so it cannot be used in 
+	expressions.
+
+	Equivalent to:
+	ADDCUE("wait", VALUE);
+	
+...............................................................................
+
+PAUSE()
+	
+	Appends a "pause" cue to the response, which tells the client to wait for 
+	user confirmation before continuing.
+	
+	PAUSE returns no values after execution, so it cannot be used in 
+	expressions.
+
+	Equivalent to:
+	ADDCUE("pause", "");
+	
+...............................................................................
+
+TIP(VALUE)
+	
+	VALUE: A literal or variable or expression, numeric or string.
+	
+	Appends a "tip" cue to the response.
+	
+	TIP returns no values after execution, so it cannot be used in 
+	expressions.
+
+	Equivalent to:
+	ADDCUE("tip", VALUE);
+	
+...............................................................................
+
+INFO(VALUE)
+	
+	VALUE: A literal or variable or expression, numeric or string.
+	
+	Appends an "info" cue to the response.
+	
+	INFO returns no values after execution, so it cannot be used in 
+	expressions.
+
+	Equivalent to:
+	ADDCUE("info", VALUE);
+	
+...............................................................................
+
+SAVE(VALUE)
+	
+	VALUE: A literal or variable or expression, numeric or string.
+	
+	Appends a "save" cue to the response, which tells the client to save the 
+	state. A load call with the same value/name can loads this state.
+	
+	SAVE returns no values after execution, so it cannot be used in 
+	expressions.
+
+	Equivalent to:
+	ADDCUE("save", VALUE);
+	
+...............................................................................
+
+LOAD(VALUE)
+	
+	VALUE: A literal or variable or expression, numeric or string.
+	
+	Appends a "load" cue to the response, which tells the client to load the 
+	from the state saved with the same name/value.
+	
+	LOAD returns no values after execution, so it cannot be used in 
+	expressions.
+
+	Equivalent to:
+	ADDCUE("load", VALUE);
+	
+...............................................................................
+................................   CONTROL   ..................................
+...............................................................................
+
+IF(VALUE) { ... }
+
+	VALUE: A literal or variable or expression, numeric or string.
+	
+	IF is a code block, and cannot be used in expressions.
+	
+	Executes the encapsulated block of commands if VALUE evaluates to TRUE,
+	which is a non-string, non-zero number. This is usually an evaluative 
+	expression of some kind, like x == 10 or the like. If the expression is
+	FALSE (not TRUE), the block is not executed.
+
+	Can be accompanied with an ELSE command.
+
+...............................................................................
+
+ELSE { ... }
+
+	Takes no arguments. If used, it must follow an IF command and its 
+	accompanying code block.
+
+	ELSE is a code block, and cannot be used in expressions.
+
+	Executes the encapsulated block of commands if the previous IF statement
+	evaluates to FALSE, which is a string type, or a zero result. If the 
+	previous IF statement evaluates to TRUE, the block is not executed.
+
+...............................................................................
+
+WHILE(VALUE) { ... }
+
+	VALUE: A literal or variable or expression, numeric or string.
+	
+	WHILE is a code block, and cannot be used in expressions.
+
+	Executes the encapsulated block of commands if VALUE evaluates to TRUE,
+	which is a non-string, non-zero number. This is usually an evaluative 
+	expression of some kind, like x == 10 or the like. If the expression is
+	FALSE (not TRUE), the block is not executed.
+	
+	After the block is finished, the value/expression is evaluated again, and
+	Re-executes the block if it is still TRUE.
+	
+	A WHILE block can be escaped using a BREAK command.
+
+...............................................................................
+
+UNTIL(VALUE) { ... }
+
+	VALUE: A literal or variable or expression, numeric or string.
+	
+	UNTIL is a code block, and cannot be used in expressions.
+
+	Executes the encapsulated block of commands if VALUE evaluates to FALSE,
+	which is a non-string, non-zero number. This is usually an evaluative 
+	expression of some kind, like x == 10 or the like. If the expression is
+	TRUE, the block is not executed.
+	
+	After the block is finished, the value/expression is evaluated again, and
+	Re-executes the block if it is still FALSE. Logically, this command is
+	the opposite of WHILE.
+	
+	An UNTIL block can be escaped using a BREAK command.
+
+...............................................................................
+
+BREAK
+
+	If a BREAK command is executed, execution of the current loopable block of
+	code (inside WHILE or UNTIL) will cease. 
+
+	A BREAK command takes no arguments. 
+	
+	BREAK returns no values after execution, so it cannot be used in 
+	expressions.
+	
+...............................................................................
+
+CANCEL
+
+	Similar to BREAK, except it can break out of whole requests. Be careful
+	when using this command, as it may leave a request in an incomplete state
+	and does not reverse requests.
+
+	A CANCEL command takes no arguments. 
+	
+	CANCEL returns no values after execution, so it cannot be used in 
+	expressions.
+
+...............................................................................
+
+CONTINUE
+
+	When CONTINUE is used inside a loopable block of code (inside WHILE or 
+	UNTIL), it will immediately jump to the beginning of the loop, as though
+	the current iteration had finished.
+
+	A CONTINUE command takes no arguments. 
+	
+	CONTINUE returns no values after execution, so it cannot be used in 
+	expressions.
+
+...............................................................................
+
+QUIT
+
+	Puts a QUIT cue into the response and aborts execution.
+
+	This is NOT THE SAME as calling:
+	ADDCUE("quit",0); 
+	
+	...as that command does not interrupt the current request.
+
+	A QUIT command takes no arguments. 
+
+	QUIT returns no values after execution, so it cannot be used in 
+	expressions.
+	
+...............................................................................
+
+ENQUEUEACTION(ACTION)
+
+	Enqueues an action to be processed later after an action completes.
+	
+	ENQUEUEACTION returns no values after execution, so it cannot be used in 
+	expressions.
+
+	ACTION can be any action, but problems may occur if it is not a GENERAL
+	action. ENQUEUEACTION does not interrupt the current flow of execution.
+
+...............................................................................
+
+ENQUEUEACTIONSTRING(ACTION, VALUE)
+
+	Enqueues an action to be processed later after an action completes.
+	
+	ENQUEUEACTIONSTRING returns no values after execution, so it cannot be used 
+	in expressions.
+
+	ACTION can be any action, but problems may occur if it is not a GENERAL,
+	OPEN, or MODAL action. ENQUEUEACTIONSTRING does not interrupt the current 
+	flow of execution.
+	
+	VALUE must be the target that normally accompanies an OPEN or MODAL action. 
+
+...............................................................................
+
+ENQUEUEACTIONOBJECT(ACTION, OBJECT)
+
+	Enqueues an action to be processed later after an action completes.
+	
+	ENQUEUEACTIONOBJECT returns no values after execution, so it cannot be used 
+	in expressions.
+
+	ACTION can be any action, but problems may occur if it is not a GENERAL,
+	TRANSITIVE, or DITRANSITIVE action. ENQUEUEACTIONOBJECT does not interrupt 
+	the current flow of execution.
+	
+	OBJECT must be the target object that would normally accompany a TRANSITIVE
+	or DITRANSITIVE action.
+
+...............................................................................
+
+ENQUEUEACTIONOBJECT2(ACTION, OBJECT1, OBJECT2)
+
+	Enqueues an action to be processed later after an action completes.
+	
+	ENQUEUEACTIONOBJECT2 returns no values after execution, so it cannot be 
+	used in expressions.
+
+	ACTION can be any action, but problems may occur if it is not a GENERAL,
+	TRANSITIVE, or DITRANSITIVE action. ENQUEUEACTIONOBJECT2 does not interrupt 
+	the current flow of execution.
+	
+	OBJECT(1/2) must be the target objects that normally accompany a 
+	TRANSITIVE or DITRANSITIVE action.
+
+...............................................................................
+................................   OBJECTS   ..................................
+...............................................................................
+
+OBJECTSINWORLDCOUNT()
+
+	Returns the amount of objects owned by the world as an integer value.
+	
+	NOTE: An object with no owner is NOT owned by the world!
+
+...............................................................................
+
+OBJECTSINPLAYERCOUNT(PLAYER)
+
+	Returns the amount of objects owned by a player as an integer value.
+	
+	PLAYER can be any Player object, including "player", which is the currently
+	focused player.
+
+...............................................................................
+
+OBJECTSINROOMCOUNT(ROOM)
+
+	Returns the amount of objects owned by a room as an integer value.
+
+	ROOM can be any Room object, including "room", which is the currently
+	focused room.
+
+...............................................................................
+
+ADDOBJECTNAME(OBJECT, VALUE)
+
+	Adds a name to an object. This name is for requests parsed by the 
+	interpreter, and has nothing to do with the name given to the object as it
+	is defined for the compiler.
+	
+	ADDOBJECTNAME is usually used when you are adding specifity to an ambiguous
+	object, for instance if the player finds a "small key," but once it is
+	used, it can be referred to now as the "front door key" or something.
+
+	ADDOBJECTNAME returns no values after execution, so it cannot be used in 
+	expressions.
+	
+...............................................................................
+
+ADDOBJECTTOPLAYER(OBJECT, PLAYER)
+
+	Sets the ownership of an OBJECT to a PLAYER.
+	
+	OBJECT is any Object.
+
+	PLAYER can be any Player object, including "player", which is the currently
+	focused player.
+	
+	Objects in a Player can be accessed if the current player contains the 
+	desired Object.
+	
+	If the OBJECT had a previous owner, it is removed from the previous owner.
+	
+	This command influences the return value of OBJECTSINPLAYERCOUNT(PLAYER) 
+	and PLAYERHASOBJECT(PLAYER, OBJECT). 
+
+	ADDOBJECTTOPLAYER returns no values after execution, so it cannot be used in 
+	expressions.
+	
+...............................................................................
+
+ADDOBJECTTOROOM(OBJECT, ROOM)
+
+	Sets the ownership of an OBJECT to a ROOM.
+	
+	OBJECT is any Object.
+
+	ROOM can be any Room object, including "room", which is the currently
+	focused room.
+	
+	Objects in a Room can be accessed if the current player is in the same
+	room containing the desired Object.
+	
+	If the OBJECT had a previous owner, it is removed from the previous owner.
+
+	This command influences the return value of OBJECTSINROOMCOUNT(ROOM) 
+	and ROOMHASOBJECT(ROOM, OBJECT).
+
+	ADDOBJECTTOROOM returns no values after execution, so it cannot be used in 
+	expressions.
+	
+...............................................................................
+
+ADDOBJECTTOWORLD(OBJECT)
+
+	Sets the ownership of an OBJECT to the world.
+	
+	OBJECT is any Object.
+
+	Objects belonging to the world can be accessed from anywhere.
+
+	If the OBJECT had a previous owner, it is removed from the previous owner.
+
+	This command influences the return value of OBJECTSINWORLDCOUNT() 
+	and WORLDHASOBJECT(OBJECT).
+
+	ADDOBJECTTOWORLD returns no values after execution, so it cannot be used in 
+	expressions.
+	
+...............................................................................
+
+REMOVEOBJECT(OBJECT)
+
+	Removes ownership of an OBJECT from its current owner.
+	
+	OBJECT is any Object.
+
+	If the OBJECT had no previous owner, this does nothing.
+
+	NOTE: An object with no owner is NOT owned by the world!
+
+	This command influences the return value of OBJECTSINWORLDCOUNT(), 
+	WORLDHASOBJECT(OBJECT), OBJECTSINROOMCOUNT(ROOM), 
+	ROOMHASOBJECT(ROOM, OBJECT), OBJECTSINPLAYERCOUNT(PLAYER), 
+	PLAYERHASOBJECT(PLAYER, OBJECT), and OBJECTHASNOOWNER(OBJECT).
+
+	REMOVEOBJECT returns no values after execution, so it cannot be used in 
+	expressions.
+	
+...............................................................................
+
+PLAYERHASOBJECT(PLAYER, OBJECT)
+
+	Checks if a PLAYER is the owner of an OBJECT. 
+	
+	Returns 1 if so, 0 if not.
+
+	PLAYER can be any Player object, including "player", which is the currently
+	focused player.
+	
+	OBJECT is any Object.
+
+...............................................................................
+
+ROOMHASOBJECT(ROOM, OBJECT)
+
+	Checks if a ROOM is the owner of an OBJECT. 
+	
+	Returns 1 if so, 0 if not.
+
+	ROOM can be any Room object, including "room", which is the currently
+	focused room.
+	
+	OBJECT is any Object.
+
+...............................................................................
+
+WORLDHASOBJECT(OBJECT)
+
+	Checks if the world is the owner of an OBJECT. 
+	
+	Returns 1 if so, 0 if not.
+
+	OBJECT is any Object.
+
+	NOTE: An object with no owner is NOT owned by the world!
+
+...............................................................................
+
+OBJECTHASNOOWNER(OBJECT)
+
+	Checks if an object has no owner. 
+	
+	Returns 1 if so, 0 if not.
+	
+	OBJECT is any Object.
+
+...............................................................................
+
+BROWSEPLAYER(PLAYER)
+
+	Executes the onPlayerBrowse() command blocks on all objects owned by a
+	particular Player. The order is not guaranteed.
+	
+	PLAYER can be any Player object, including "player", which is the currently
+	focused player.
+	
+	BROWSEPLAYER returns no values after execution, so it cannot be used in 
+	expressions.
+
+...............................................................................
+
+BROWSEROOM(ROOM)
+
+	Executes the onRoomBrowse() command blocks on all objects owned by a
+	particular Room. The order is not guaranteed.
+	
+	ROOM can be any Room object, including "room", which is the currently
+	focused room.
+	
+	BROWSEPLAYER returns no values after execution, so it cannot be used in 
+	expressions.
+
+...............................................................................
+.................................   STATE   ...................................
+...............................................................................
+
+CURRENTPLAYERIS(PLAYER)
+
+	Checks if the currently focused Player is PLAYER.
+	
+	Returns 1 if so, 0 if not.
+	
+	PLAYER can be any Player object, including "player", which is the currently
+	focused player.	
+
+...............................................................................
+
+CURRENTROOMIS(ROOM)
+
+	Checks if the currently focused Room is ROOM.
+	
+	Returns 1 if so, 0 if not.
+	
+	ROOM can be any Room object, including "room", which is the currently
+	focused room.
+
+...............................................................................
+
+FOCUSONPLAYER(PLAYER)
+
+	Switches focus from one Player to PLAYER. 
+	
+	The onUnfocus() command block is called on the previous Player if there was 
+	a previously focused Player, the current Player is switched to PLAYER, then 
+	the onFocus() block is called on the newly focused Player.
+	
+	If PLAYER is the current Player, this does nothing.
+
+	PLAYER can be any Player object, including "player", which is the currently
+	focused player.	
+	
+	Note: Since Players hold the current Room state, the current room may
+	change, but this does NOT mean the room loses focus!
+
+...............................................................................
+
+FOCUSONROOM(ROOM)
+
+	Switches focus from one Room to ROOM. 
+	
+	The onUnfocus() command block is called on the previous Room if there was 
+	a previously focused Room, the current Room is switched to ROOM, then 
+	the onFocus() block is called on the newly focused Room.
+
+	If ROOM is the current Room, this does nothing.
+
+	ROOM can be any Room object, including "room", which is the currently
+	focused room.
+	
+	This function will discard a Room stack being built/manipulated by 
+	PUSHROOM(ROOM) and POPROOM(). If there are rooms on the stack upon a call
+	to FOCUSONROOM(), the previous rooms before the current room will NOT
+	have onUnfocus() called on them.
+
+...............................................................................
+
+PUSHROOM(ROOM)
+
+	Switches focus from one Room to ROOM, keeping the previous room on the
+	room stack. Returning to the previous room requires the use of POPROOM().
+	
+	The current Room is switched to ROOM, then the onFocus() block is called on 
+	the newly focused Room. The onUnfocus() block is NOT called on the previous
+	room, the idea being that the player has not exactly left it.
+
+	If ROOM is the current Room, this does nothing.
+
+	ROOM can be any Room object, including "room", which is the currently
+	focused room.
+
+...............................................................................
+
+POPROOM()
+
+	Switches focus from the current room to the previous one on the room stack,
+	created	by PUSHROOM(ROOM).
+	
+	The onUnfocus() command block is called on the topmost room on the stack
+	(the current room), then the current Room is switched to the previous room on
+	the stack. The onFocus() block is NOT called on the now-current room, the 
+	idea being that the player has not exactly left it in the first place.
+
+	Calling this without any other rooms on the stack results in an ERROR.
+
+...............................................................................
+
+SWAPROOM()
+
+	Switches focus from the current room to ROOM, preserving the other rooms
+	on the stack created by PUSHROOM(ROOM).
+	
+	The onUnfocus() command block is called on the previous Room at the top of
+	the stack, the topmost Room is switched to ROOM, then the onFocus() block 
+	is called on the newly focused Room.
+
+	This is equivalent to calling:
+	POPROOM();
+	PUSHROOM(ROOM);
+	
+	Calling this without any other rooms on the stack results in an ERROR.
+
+...............................................................................
+................................   CASTING   ..................................
+...............................................................................
+
+TOINT(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns VALUE as an integer-typed value. If the value is a floating-point
+	value (or parses to a floating-point value), it will chop the mantissa.
+	If VALUE cannot be parsed as an integer (such as a string that contains 
+	special characters), this returns 0.
+	
+	Note that type promotion is automatic in expressions.
+	
+	Examples:
+	TOINT(5) returns 5
+	TOINT(5.2) returns 5
+	TOINT("5") returns 5
+	TOINT("-10") returns -10
+	TOINT("5.2") returns 5
+	TOINT("words") returns 0
+
+...............................................................................
+
+TOFLOAT(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns VALUE as an floating-point-typed value. If the value is an integer,
+	it is promoted to floating-point. If VALUE cannot be parsed as a 
+	floating-point number (such as a string that contains special characters), 
+	this returns 0.0.
+	
+	Note that type promotion is automatic in expressions.
+
+	Examples:
+	TOFLOAT(5) returns 5.0
+	TOFLOAT(5.2) returns 5.2
+	TOFLOAT("5") returns 5.0
+	TOFLOAT("-10") returns -10.0
+	TOFLOAT("5.2") returns 5.2
+	TOFLOAT("words") returns 0.0
+
+...............................................................................
+
+TOSTRING(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns VALUE as a string-typed value.
+	
+	Note that type promotion is automatic in expressions.
+
+	Examples:
+	TOSTRING(5) returns "5"
+	TOSTRING(5.2) returns "5.2"
+	TOSTRING("5") returns "5"
+	TOSTRING("-10") returns "-10"
+	TOSTRING("5.2") returns "5.2"
+	TOSTRING("words") returns "words"
+
+...............................................................................
+..................................   MATH   ...................................
+...............................................................................
+
+FLOOR(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns an integer-typed value that is the mathematical floor of VALUE.
+	
+	Examples:
+	FLOOR(5) returns 5
+	FLOOR(5.2) returns 5
+	FLOOR(-5.2) returns -6
+
+...............................................................................
+
+CEILING(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns an integer-typed value that is the mathematical ceiling of VALUE.
+	
+	Examples:
+	CEILING(5) returns 5
+	CEILING(5.2) returns 6
+	CEILING(-5.2) returns -5
+
+...............................................................................
+
+ROUND(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns an integer-typed value that is the result of rounding VALUE to the
+	nearest integer (banker's rounding).
+	
+	Examples:
+	ROUND(5) returns 5
+	ROUND(5.2) returns 5
+	ROUND(5.5) returns 6
+	ROUND(-5.2) returns -5
+
+...............................................................................
+
+FIX(VALUE1, VALUE2)
+
+	VALUE1 is any expression that results in a value being returned.
+	VALUE2 is any expression that results in a value being returned.
+	
+	Returns a floating-point-typed value that is the result of rounding VALUE 
+	to the nearest amount of decimal places specified by VALUE2.
+	
+	FIX(VALUE1, 0) is equivalent to TOFLOAT(ROUND(VALUE1)).
+	
+	Examples:
+	FIX(5.4, 0) returns 5.0
+	FIX(5.25, 1) returns 5.3
+	FIX(5.5, 3) returns 5.5
+	FIX(-5.2, 0) returns -5
+
+...............................................................................
+
+SIN(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns a floating-point-typed value that is equivalent to the SINE of
+	VALUE. Assumes VALUE is in radians.
+	
+...............................................................................
+
+COS(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns a floating-point-typed value that is equivalent to the COSINE of
+	VALUE. Assumes VALUE is in radians.
+	
+...............................................................................
+
+TIME()
+
+	Returns an integer-typed value that is equivalent to the current time in
+	milliseconds since the epoch, or the midnight of:
+	January 1, 1970, GMT +0000.
+
+...............................................................................
+
+RANDOM(VALUE)
+
+	Returns a random integer-typed value between 0 and the floor of VALUE,
+	but not the floor of VALUE.
+	
+	For example, RANDOM(10) returns a number between 0 and 9, inclusive.
+
+...............................................................................
+
+FRANDOM()
+
+	Returns a random floating-point-typed value between 0 and 1.
+
+...............................................................................
+
+GRANDOM()
+
+	Returns a random floating-point-typed value distributed inside a normal 
+	Gaussian bell curve.
+
+...............................................................................
+
+PI()
+
+	Returns 3.141592653589793, or whatever this implementation of TAME 
+	defines the mathematical constant PI as.
+
+...............................................................................
+................................   STRINGS   ..................................
+...............................................................................
+
+FORMATDATE(VALUE, VALUE2)
+
+	Returns a string-typed value that is a textual representation of a 
+	date/time.
+
+	VALUE is an integer value describing a time in milliseconds since the 
+	epoch.
+	VALUE2 is a pattern expression describing how to format the time.
+	
+	The formatting expression is the same as Java's SimpleDateFormat patterns.
+	(http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html)
+
+...............................................................................
+
+CONTAINSPATTERN(VALUE, VALUE2)
+
+	Checks for the existence of a regular-expression pattern in a string-typed
+	value.
+
+	Returns 1 if VALUE contains the pattern specified by VALUE2, 0 if not.
+	
+	VALUE is the string that will be checked.
+	VALUE2 is the expression.
+
+...............................................................................
+
+CONTAINSSTRING(VALUE, VALUE2)
+
+	Checks for the existence of a substring pattern in a string-typed value.
+
+	Returns 1 if VALUE contains the string specified by VALUE2, 0 if not.
+	
+	VALUE is the string that will be checked.
+	VALUE2 is the substring.
+
+...............................................................................
+
+CONTAINSTOKEN(VALUE, VALUE2)
+
+	Checks for the existence of a token pattern in a string-typed value.
+	A "token" is this case is a string that is a whole word or whitespace-
+	broken piece of text.
+
+	Returns 1 if VALUE contains the token specified by VALUE2, 0 if not.
+	
+	VALUE is the string that will be checked.
+	VALUE2 is the token.
+
+	For example:
+	CONTAINSTOKEN("I ate the apples", "apples") returns 1.
+	CONTAINSTOKEN("I ate the apples", "apple") returns 0.
+
+
+===============================================================================
+============================== TAME EXPRESSIONS ===============================
+===============================================================================
+
+TAME's mathematical expression syntax is "infix," which is just a fancy way to
+say, "how humans read it." An example expression looks like:
+
+z = x + y;
+
+Which assigns z the value of the variable x's value plus y's value. Variable
+value is assessed when the expression is executed or evaluated.
+
+Expressions can be inside function calls, and functions that return values can
+be INSIDE expressions:
+
+x = SIN( PI() / 2 );
+
+Type promotion is automatic in expressions, and is heavily influenced by
+order-of-operations and operator precedence. In the following:
+
+str = "The value of 1 plus 2 is " + (1+2);
+
+The variable "str" evaluates to a String-type with the value:
+
+The value of 1 plus 2 is 3
+
+Note the use of parenthesis. If they were not there, it would equal:
+
+The value of 1 plus 2 is 12
+
+Which was caused by how the operator "+" treats strings.
+
+...............................................................................
+
+Type promotion goes from Integer to Float to String. Unless noted otherwise,
+type combination occurs this way with binary operators:
+
+Integer AND Integer -> Integer
+Integer AND Float -> Float
+Integer AND String -> String
+Float AND Integer -> Float
+Float AND Float -> Float
+Float AND String -> String
+String AND Integer -> String
+String AND Float -> String
+String AND String -> String
+
+Standard sizes for Integers and Floats are 64-bit precision. Strings can be 
+any length up to 2^31 characters.
+
+Each operator has use cases with strings. Be mindful of them.
+
+...............................................................................
+............................... UNARY OPERATORS ...............................
+...............................................................................
+
+ABSOLUTE
+	+
+
+Coverts numerical values to their positive value.
+
+Examples:
+	+85 -> 85
+	+(-54) -> 54
+	+4.7 -> 4.7
+
+When used with a string, this converts it to uppercase.
+
+Examples:
+	+"books" -> "BOOKS"
+	+"Robert" -> "ROBERT"
+	+"CRAZY" -> "CRAZY"
+
+...............................................................................
+
+NEGATE
+	-
+
+Converts numerical values to their opposite sign.
+
+Examples:
+	-4 -> -4
+	-8.9 -> -8.9
+	-(-5) -> 5
+
+When used with a string, this converts it to lowercase.
+
+Examples:
+	-"books" -> "books"
+	-"Robert" -> "robert"
+	-"CRAZY" -> "crazy"
+
+...............................................................................
+
+LOGICAL NOT
+	!
+
+Performs a logical "not" operation on a value. Nonzero values and strings that
+are not empty are considered "true" and Zero values and empty strings are 
+"false," for the sake of boolean arithmetic. Always returns an Integer value.
+
+Examples:
+	!4 -> 0
+	!0 -> 1
+	!9.345 -> 0
+	!"stuff" -> 0
+	!"" -> 1
+
+...............................................................................
+
+NOT
+	~
+
+Performs a "bitwise" NOT operation on a numerical value. Normally, this returns
+the "two's complement" of the value. If a Float value, this uses its raw bits 
+for NOT-ing.
+
+Examples:
+	~4 -> -5
+	~-6 -> 5
+
+When used with a string, this returns the length of the string. Always returns 
+an Integer value.
+
+Examples:
+	~"books" -> 5
+	~"" -> 0
+	~"John Jacob Jingleheimer Schmidt" -> 31
+
+...............................................................................
+.............................. BINARY OPERATORS ...............................
+...............................................................................
+
+ADD
+	+
+
+Performs an addition of two operands. Numerical values are added together. If
+one of the operands is a string, the values are concatenated together as though
+they were both strings.
+
+Examples:
+	4 + 5 -> 9
+	3 + -2 -> 1
+	4.3 + 2.1 -> 6.4
+	5 + 4.2 -> 9.2
+	"to" + "gether" -> "together"
+	"Ice" + 9 -> "Ice9"
+	"TAME" + 1.0 -> "TAME1.0"
+
+...............................................................................
+
+SUBTRACT
+	-
+
+Performs a subtraction of the second operand from the first. If one of the
+operands is a string, both operands are treated as strings, and the first
+occurrance of the second operand is removed from the first operand.
+
+Examples:
+	3 - 2 -> 1
+	5 - 9 -> -4
+	4.5 - 2.6 -> 1.9
+	5 - 0.5 -> 4.5
+	"together" - "gether" -> "to"
+	"Ice9" - 9 -> "Ice"
+	4.07 - "4.0" -> "7"
+	"Togo" - "o" -> "Tgo"
+
+...............................................................................
+
+MULTIPLY
+	*
+
+Performs a multiplication of the first operand by the second operand. 
+
+Examples:
+	5 * 4 -> 20
+	4.2 * 3 -> 12.6
+	0.5 * 0.5 -> 0.25
+	-3 * 0.5 -> -1.5
+
+With strings, it is slightly different - if one of the operands is a string,
+the string is concatenated to itself for the amount of times that the numeric
+operand describes.
+
+Examples:
+	"apple" * 2 -> "appleapple"
+	"banana" * 2.5 -> "bananabananaban"
+	3 * "tomato" -> "tomatotomatotomato"
+
+If BOTH are strings, the strings are interwoven with each other.
+
+Examples:
+	"apple" * "banana" -> "abpapnlaena"
+
+...............................................................................
+
+DIVIDE
+	/
+
+Performs division using two operands. The first operand is divided by the 
+second. If two numbers, and the second operand is 0, this throws an error. If 
+either are strings, both operands are treated as strings, and this 
+returns an Integer value of how many times the second operand appears in the 
+first.
+
+Examples:
+	5 / 2 -> 2
+	5 / 2.0 -> 2.5
+	10.0 / 0.5 -> 20.0
+	"apple" / "p" -> 2
+	"banana" / "na" -> 2
+	"banana" / 5 -> 0
+	"49'er" / 4 -> 1
+	0 / 4 -> 0
+	4 / 0 -> ERROR
+
+...............................................................................
+
+MODULAR DIVIDE
+	%
+
+Performs modular division (modulo) using two operands. The first operand is
+divided by the second, and the remainder is returned. If either operand is
+a string, both operands are treated as strings, and this returns the leftover
+string from removing all instances of the second operand from the first. 
+If two numbers, and the second operand is 0, this throws an error.
+
+Examples:
+	5 % 2 -> 1
+	5 % 2.0 -> 1.0
+	10.0 % 3.5 -> 3.0
+	"apple" % "p" -> "ale"
+	"banana" % "na" -> "ba"
+	"banana" % 5 -> "banana"
+	"49'er" % 4 -> "9'er"
+	0 % 4 -> 0
+	4 % 0 -> ERROR
+
+...............................................................................
+
+AND
+	&
+
+	[FINISH]
+	
+===============================================================================
+==================================== CUES =====================================
+===============================================================================
+
+Cues are placed in the server response and are executed/processed in the 
+order that they were added to the response (the order that the client 
+receives).
+
+Clients that do not understand a cue name should ignore it. Cues must
+be understood regardless of letter case.
+
+[ALL VERSIONS]
+
+text - 		CONTENT is output at the client. Used for narration and 
+			messages.
+pause -		CONTENT is ignored. Client will wait for a response from the 
+			user before proceeding to the next cue to process.
+wait - 		CONTENT is an integer value. Client should pause for CONTENT 
+			milliseconds before proceeding to the next cue to process.
+			If CONTENT is a string, a base-10 integer value should be 
+			parsed from it. if it is a double, it should be cast to an
+			integer.
+save -		CONTENT is name of a save game state. The client must save the
+			current game state so that it may restore it later, should it
+			receive a "load" cue for the same CONTENT. There is no 
+			mandatorily-defined medium saving the state, be it database, 
+			file, or whatever, so long as it can be restored later with 
+			"load". The client must report an error if this is not 
+			possible. 
+load -		CONTENT is name of a saved game state. The client must restore
+			the state of the game once saved using CONTENT. The client must
+			report an error if this is not possible. 
+trace -		CONTENT is the TRACE message. If the server is executing in a 
+			debugging mode, TRACE cues may be output. The client should
+			report these somehow, for debugging purposes.
+tip -		CONTENT is the TIP message. These can be sent by the client in 
+			order to inform the player of certain things. They are meant to
+			be asides, intended to either be dismissed or ignored entirely 
+			by the player.
+info -		CONTENT is the INFO message. These can be sent by the client in 
+			order to inform the player of certain things. They are meant to
+			be asides, intended to be dismissible by the player.
+error -		CONTENT is the ERROR message. The server will send these cues
+			in a response if an error occurs during module execution.
+			Clients MUST report this to the user in some way. Errors
+			are not fatal, and the client does not need to terminate should
+			it receive one.
+fatal -		CONTENT contains a FATAL error message. The server will send 
+			these cues in a response if a fatal error occurs during module 
+			execution. Not only must clients report these errors to the 
+			client, but they must also declare the session invalid. It
+			is safe to assume that the server context of the module is 
+			considered void. 
+quit -		Tells the client to cease sending requests and enter the QUIT
+			state. The server context of the module is considered void. 
+
+[IMAGE CLIENT] (contains [ALL VERSIONS] plus the following)
+
+image - 	CONTENT contains an abstract path into the "assets" portion of the
+			Module for displaying of an image. The data found at that entry is
+			to be interpreted as an image type. Client must accept PNG, JPEG, 
+			BMP, or GIF (both animated and non-animated) file types. SVG and 
+			other formats are considered non-standard to the spec.
+			
+			Under the web client, this can be any image-like object or one that
+			can be embedded into the page.
+
+[MULTIMEDIA CLIENT] (contains [IMAGE CLIENT] plus the following)
+
+sound - 	CONTENT contains an abstract path into the "assets" portion of the
+			Module for playing of a sound clip. The data found at that entry 
+			is to be interpreted as a audio container type. Client must accept 
+			WAV, MP3, or OGG (all Xiph codecs) file types. Other formats are 
+			considered non-standard to the spec.
+			
+			The path may have additional parameters like coordinates separated
+			by a semicolon. These coordinates describe panning and fade for the
+			clip.
+			
+			sounds/laugh.wav;0,0
+
+music -		CONTENT contains an abstract path into the "assets" portion of the
+			Module for playing of a music stream. The data found at that entry 
+			is to be interpreted as a audio container type. Client must accept 
+			WAV, MP3, or OGG (all Xiph codecs) file types. Other formats are 
+			considered non-standard to the spec.

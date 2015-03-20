@@ -1,0 +1,36 @@
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>console</headerType>
+  <jar>./build/jar/blackrook-tame-client-standalone.jar</jar>
+  <outfile>./build/exe/tame.exe</outfile>
+  <errTitle>TAME</errTitle>
+  <cmdLine></cmdLine>
+  <chdir></chdir>
+  <priority>normal</priority>
+  <downloadUrl>http://java.com/download</downloadUrl>
+  <supportUrl>https://github.com/MTrop/TAME</supportUrl>
+  <customProcName>false</customProcName>
+  <stayAlive>false</stayAlive>
+  <manifest></manifest>
+  <icon></icon>
+  <jre>
+    <path></path>
+    <minVersion>1.7.0</minVersion>
+    <maxVersion></maxVersion>
+    <jdkPreference>preferJre</jdkPreference>
+    <initialHeapSize>16</initialHeapSize>
+    <maxHeapSize>96</maxHeapSize>
+  </jre>
+  <versionInfo>
+    <fileVersion>0.0.0.0</fileVersion>
+    <txtFileVersion>0.0.0.0</txtFileVersion>
+    <fileDescription>TAME Console Client</fileDescription>
+    <copyright>Matt Tropiano 2015</copyright>
+    <productVersion>0.0.0.0</productVersion>
+    <txtProductVersion>0.0.0.0</txtProductVersion>
+    <productName>TAME</productName>
+    <companyName>MTrop.Net</companyName>
+    <internalName>TAME.EXE</internalName>
+    <originalFilename>TAME.exe</originalFilename>
+  </versionInfo>
+</launch4jConfig>

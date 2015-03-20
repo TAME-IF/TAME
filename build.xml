@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+<!-- ====================================================================== 
+     Text Adventure Module Engine   
+     Matt Tropiano                                                                
+     ====================================================================== -->
+<project name="build" default="compile">
+
+	<description>TAME</description>
+
+	<property file="build.properties" />
+	<property file="versions.properties" />
+
+	<!-- Versions -->
+	<property name="exe.compiler.version" value="9.9.9.9" />
+	<property name="exe.console.client.version" value="9.9.9.9" />
+	
+	<!-- Dependencies -->
+	<property name="dev.base" value=".." />
+	<property name="S" value="${path.separator}" />
+
+	<!-- Project Libs -->
+	<property name="common.lib" value="${dev.base}/Common/bin" />
+	<property name="common.io.lib" value="${dev.base}/CommonIO/bin" />
+	<property name="common.lang.lib" value="${dev.base}/CommonLang/bin" />
+	<property name="launch4j.dir" value="${lib.base}/launch4j" />
+	<property name="launch4j.lib.jar" value="launch4j.jar" />
+	<property name="launch4j.xstream.lib.jar" value="lib/xstream.jar" />
+
+	<!-- Project Info -->
+	<property name="project.archive" value="tame" />
+	<property name="project.javadoc.title" value="TAME" />
+	<property name="project.classpath" value="${common.lib}${S}${common.io.lib}${S}${common.lang.lib}" />
+	<property name="project.javadoc.packages" value="
+	"
+	/>
+	
+	<import file="build-import.xml" />
+
+	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
+        <javadoc access="protected" 
+        	additionalparam="-J-Xmx512m  " author="true" 
+        	classpath="${project.classpath}${path.separator}${bin.dir}" 
+        	doctitle="${project.javadoc.title}" 
+        	sourcepath="${src.dir}" 
+        	packagenames="${project.javadoc.packages}"
+        	destdir="${docs.dir}" 
+    		source="1.7" 
+        	splitindex="true" 
+        	use="true" 
+        	version="true" 
+        	nodeprecated="false" 
+        	nodeprecatedlist="false" 
+        	noindex="false" 
+        	nonavbar="false" 
+        	notree="false"
+    		>
+            <link href="http://blackrooksoftware.com/docs/common/"/>
+            <link href="http://blackrooksoftware.com/docs/commonio/"/>
+            <link href="http://blackrooksoftware.com/docs/commonlang/"/>
+            <link href="http://download.oracle.com/javase/7/docs/api/"/>
+        </javadoc>
+    </target>	
+
+		<target name="jar.tame.console.client" description="Jars up the compiler classes only.">
+		<delete file="${jar.dir}/${jar.console.client.filename}" casesensitive="false" />
+		<jar destfile="${jar.dir}/${jar.console.client.filename}">
+			<fileset dir="${bin.dir}">
+			    <include name="**/client/console/" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="jar.tame.compiler" description="Jars up the proprietary clients only.">
+		<delete file="${jar.dir}/${jar.compiler.filename}" casesensitive="false" /> 
+		<jar destfile="${jar.dir}/${jar.compiler.filename}">
+			<fileset dir="${bin.dir}">
+			    <include name="**/compiler/" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="jar.tame.shared" description="Jars up the minimum TAME classes. Nothing executable.">
+		<delete file="${jar.dir}/${jar.shared.filename}" casesensitive="false" /> 
+		<jar destfile="${jar.dir}/${jar.shared.filename}">
+			<fileset dir="${bin.dir}" >
+			    <exclude name="**/client/" />
+			    <exclude name="**/compiler/" />
+			    <exclude name="**/test/" />
+			</fileset>
+		</jar>
+	</target>
+	
+	<target name="jar.tame.compiler.one" description="Jars up all classes needed to run the compiler in one standalone JAR.">
+		<delete file="${jar.dir}/${jar.compiler.one.filename}" casesensitive="false" />
+		<jar destfile="${jar.dir}/${jar.compiler.one.filename}">
+			<manifest>
+		    	<attribute name="Main-Class" value="com.blackrook.tame.compiler.TAMECompilerMain"/>
+            </manifest>
+			<fileset dir="${bin.dir}" >
+			    <exclude name="**/client/" />
+			    <exclude name="**/test/" />
+			</fileset>
+		</jar>
+		<jar destfile="${jar.dir}/${jar.compiler.one.filename}" update="true">
+			<fileset dir="${common.lib}" >
+			</fileset>
+		</jar>
+		<jar destfile="${jar.dir}/${jar.compiler.one.filename}" update="true">
+			<fileset dir="${common.io.lib}" >
+			</fileset>
+		</jar>
+		<jar destfile="${jar.dir}/${jar.compiler.one.filename}" update="true">
+			<fileset dir="${common.lang.lib}" >
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="jar.tame.console.client.one" description="Jars up all classes needed to run the console client in one standalone JAR.">
+		<delete file="${jar.dir}/${jar.console.client.one.filename}" casesensitive="false" />
+		<jar destfile="${jar.dir}/${jar.console.client.one.filename}">
+			<manifest>
+		    	<attribute name="Main-Class" value="com.blackrook.tame.client.console.TAMEConsoleMain"/>
+            </manifest>
+			<fileset dir="${bin.dir}" >
+			    <exclude name="**/compiler/" />
+			    <exclude name="**/test/" />
+			</fileset>
+		</jar>
+		<jar destfile="${jar.dir}/${jar.console.client.one.filename}" update="true">
+			<fileset dir="${common.lib}" >
+			</fileset>
+		</jar>
+		<jar destfile="${jar.dir}/${jar.console.client.one.filename}" update="true">
+			<fileset dir="${common.io.lib}" >
+			</fileset>
+		</jar>
+		<jar destfile="${jar.dir}/${jar.console.client.one.filename}" update="true">
+			<fileset dir="${common.lang.lib}" >
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="jar.all" depends="jar.tame.shared, jar.tame.console.client, jar.tame.compiler, jar.tame.compiler.one, jar.tame.console.client.one" description="Make all JARs.">
+	</target>
+	
+	<target name="exe.compiler" depends="jar.tame.compiler.one">
+		<delete file="${exe.dir}/${exe.compiler.filename}" />
+		<launch4j 
+			configFile="./launch4j/TAMECompiler.xml" 
+			jar="${jar.dir}/${jar.compiler.one.filename}"
+			outfile="${exe.dir}/${exe.compiler.filename}"
+			fileVersion="${exe.compiler.version}" 
+			txtFileVersion="${exe.compiler.version}" 
+			productVersion="${exe.compiler.version}" 
+			txtProductVersion="${exe.compiler.version}"
+		/>
+	</target>
+	
+	<target name="exe.console.client" depends="jar.tame.console.client.one">
+		<delete file="${exe.dir}/${exe.console.client.filename}" />
+		<launch4j 
+			configFile="./launch4j/TAMEConsoleClient.xml" 
+			jar="${jar.dir}/${jar.console.client.one.filename}"
+			outfile="${exe.dir}/${exe.console.client.filename}"
+			fileVersion="${exe.console.client.version}" 
+			txtFileVersion="${exe.console.client.version}" 
+			productVersion="${exe.console.client.version}" 
+			txtProductVersion="${exe.console.client.version}"
+		/>
+	</target>
+	
+	<target name="exe.all" depends="exe.compiler, exe.console.client" description="Make all EXEs.">
+	</target>
+
+</project>
