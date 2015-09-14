@@ -1,0 +1,64 @@
+package net.mtrop.tame.struct;
+
+
+/**
+ * A cue is a piece of significant response sent back to the player on
+ * a single request-response loop. Many cues can be sent back at once, and it
+ * is up to the client how to process them.
+ * @author Matthew Tropiano
+ */
+public class Cue
+{	
+	/** Type of cue. */
+	protected String type;
+	/** The content. */
+	protected String content;
+	
+	/** 
+	 * Creates a new message cue. 
+	 */
+	private Cue(String type, String content)
+	{
+		this.type = type;
+		this.content = content;
+	}
+	
+	/**
+	 * Creates a new cue.
+	 * @param type the cue type.
+	 * @param content the content.
+	 */
+	public static Cue create(String type, String content)
+	{
+		return new Cue(type, content);
+	}
+	
+	/** Returns this message cue's type. */
+	public String getType()
+	{
+		return type;
+	}
+	
+	/**
+	 * Checks if a cue is a specific type.
+	 * @return true if match, false otherwise.
+	 */
+	public boolean isType(String type)
+	{
+		return getType().equals(type);
+	}
+	
+	/** Returns this message cue's content. */
+	public String getContent()
+	{
+		return content;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "["+type+": "+content+"]";
+	}
+	
+}
+
