@@ -12,6 +12,7 @@ package net.mtrop.tame.lang;
 
 import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
+import net.mtrop.tame.interrupt.TAMEInterrupt;
 
 /**
  * An executable object called by the TAME virtual machine.
@@ -24,6 +25,6 @@ public interface ExecutableType
 	 * @param request the request object.
 	 * @param response the response object.
 	 */
-	public void execute(TAMERequest request, TAMEResponse response);
+	public void execute(TAMERequest request, TAMEResponse response) throws TAMEInterrupt;
 	
 }

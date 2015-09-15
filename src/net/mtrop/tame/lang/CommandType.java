@@ -10,7 +10,10 @@
  ******************************************************************************/
 package net.mtrop.tame.lang;
 
-import net.mtrop.tame.TAMEModuleCommand;
+import net.mtrop.tame.TAMERequest;
+import net.mtrop.tame.TAMEResponse;
+import net.mtrop.tame.interrupt.TAMEInterrupt;
+import net.mtrop.tame.lang.command.Statement;
 
 /**
  * An executable command run by the TAME virtual machine.
@@ -20,10 +23,13 @@ import net.mtrop.tame.TAMEModuleCommand;
 public interface CommandType
 {
 	/**
-	 * Returns the command to call for evaluating.
-	 * CANNOT RETURN NULL. 
+	 * Executes the command.
+	 * @param request the TAME request.
+	 * @param response the TAME response.
+	 * @param statement the calling statement (get blocks from this).
+	 * @throws TAMEInterrupt if a TAMEInterrupt occurs.
 	 */
-	public TAMEModuleCommand getCommand();
+	public void execute(TAMERequest request, TAMEResponse response, Statement statement) throws TAMEInterrupt;
 	
 	/**
 	 * Is this an internal command type?
@@ -51,39 +57,33 @@ public interface CommandType
 	public ArgumentType getReturnType();
 	
 	/**
-	 * Returns if this command has an evaluation block set.
-	 * @return true if so, false if not.
-	 */
-	public boolean isEvaluating();
-
-	/**
 	 * Returns if this command has an evaluation initialization block.
 	 * @return true if so, false if not.
 	 */
-	public boolean hasEvaluatingInitializer();
+	public boolean isInitializationBlockRequired();
 
 	/**
 	 * Returns if this command has an evaluation conditional block.
 	 * @return true if so, false if not.
 	 */
-	public boolean hasEvaluatingConditional();
+	public boolean isConditionalBlockRequired();
 
 	/**
 	 * Returns if this command has an evaluation step block, called after the body.
 	 * @return true if so, false if not.
 	 */
-	public boolean hasEvaluatingStep();
+	public boolean isStepBlockRequired();
 
 	/**
 	 * Returns if this command has a body block to call if the evaluation conditional succeeds.
 	 * @return true if so, false if not.
 	 */
-	public boolean hasSuccessBody();
+	public boolean isSuccessBlockRequired();
 
 	/**
 	 * Returns if this command has a branch block to call if the evaluation conditional fails.
 	 * @return true if so, false if not.
 	 */
-	public boolean hasFailingBody();
+	public boolean isFailureBlockRequired();
 	
 }

@@ -11,19 +11,19 @@
 package net.mtrop.tame.interrupt;
 
 /**
- * Throwable that is thrown if an error occurs.
+ * Throwable that is thrown by a user (script writer) error, probably.
  * @author Matthew Tropiano
  */
-public class RuntimeErrorInterrupt extends TAMEInterrupt
+public class ErrorInterrupt extends TAMEInterrupt
 {
 	private static final long serialVersionUID = -8027918516813618299L;
 
-	public RuntimeErrorInterrupt()
+	public ErrorInterrupt()
 	{
-		super("An error interrupt was thrown.");
+		super("A quit interrupt was thrown.");
 	}
 	
-	public RuntimeErrorInterrupt(String message)
+	public ErrorInterrupt(String message)
 	{
 		super(message);
 	}

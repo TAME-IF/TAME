@@ -10,7 +10,7 @@
  ******************************************************************************/
 package net.mtrop.tame.world;
 
-import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.command.Block;
 import net.mtrop.tame.struct.ActionWithTable;
 
 import com.blackrook.commons.hash.CaseInsensitiveHash;

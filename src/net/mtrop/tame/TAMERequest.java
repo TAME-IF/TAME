@@ -12,9 +12,7 @@ package net.mtrop.tame;
 
 import net.mtrop.tame.context.TAMEModuleContext;
 import net.mtrop.tame.context.TElementContext;
-import net.mtrop.tame.context.TObjectContext;
-import net.mtrop.tame.context.TPlayerContext;
-import net.mtrop.tame.context.TRoomContext;
+import net.mtrop.tame.exception.ArithmeticStackStateException;
 import net.mtrop.tame.struct.Value;
 
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
@@ -145,7 +143,7 @@ public class TAMERequest
 	/**
 	 * Gets the module context that this affects. 
 	 */
-	public TAMEModuleContext getModule()
+	public TAMEModuleContext getModuleContext()
 	{
 		return moduleContext;
 	}
@@ -194,66 +192,24 @@ public class TAMERequest
 	
 	/**
 	 * Pops a value off the arithmetic stack.
+	 * @throws ArithmeticStackStateException if the stack is empty.
 	 */
 	public Value popValue()
 	{
+		if (valueStack.isEmpty())
+			throw new ArithmeticStackStateException("Attempt to pop an empty arithmetic stack.");
 		return valueStack.pop();
 	}
 	
 	/**
-	 * Resolves a variable from the topmost element.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
+	 * Checks if the arithmetic stack is empty.
+	 * Should be called after a full request is made.
+	 * @throws ArithmeticStackStateException if the stack is NOT empty.
 	 */
-	public Value resolveVariable(String variableName)
+	public void checkStackClear()
 	{
-		return peekContext().getValue(variableName);
-	}
-	
-	/**
-	 * Resolves a variable from the world context element.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	public Value resolveWorldVariable(String variableName)
-	{
-		return moduleContext.getWorldContext().getValue(variableName);
-	}
-	
-	/**
-	 * Resolves a variable from a player context element.
-	 * @param playerIdentity a player identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	public Value resolvePlayerVariable(String playerIdentity, String variableName)
-	{
-		TPlayerContext context = moduleContext.getPlayerContextByIdentity(playerIdentity);
-		return context.getValue(variableName);
-	}
-	
-	/**
-	 * Resolves a variable from a room context element.
-	 * @param playerIdentity a room identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	public Value resolveRoomVariable(String roomIdentity, String variableName)
-	{
-		TRoomContext context = moduleContext.getRoomContextByIdentity(roomIdentity);
-		return context.getValue(variableName);
-	}
-	
-	/**
-	 * Resolves a variable from an object context element.
-	 * @param objectIdentity an object identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	public Value resolveObjectVariable(String objectIdentity, String variableName)
-	{
-		TObjectContext context = moduleContext.getObjectContextByIdentity(objectIdentity);
-		return context.getValue(variableName);
+		if (!valueStack.isEmpty())
+			throw new ArithmeticStackStateException("Arithmetic stack is not empty.");
 	}
 	
 }

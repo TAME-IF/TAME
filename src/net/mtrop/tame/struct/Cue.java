@@ -24,6 +24,35 @@ public class Cue
 	}
 	
 	/**
+	 * Creates a new cue with no content.
+	 * @param type the cue type.
+	 */
+	public static Cue create(String type)
+	{
+		return create(type, 0);
+	}
+	
+	/**
+	 * Creates a new cue.
+	 * @param type the cue type.
+	 * @param content the content.
+	 */
+	public static Cue create(String type, long content)
+	{
+		return new Cue(type, String.valueOf(content));
+	}
+	
+	/**
+	 * Creates a new cue.
+	 * @param type the cue type.
+	 * @param content the content.
+	 */
+	public static Cue create(String type, double content)
+	{
+		return new Cue(type, String.valueOf(content));
+	}
+	
+	/**
 	 * Creates a new cue.
 	 * @param type the cue type.
 	 * @param content the content.
@@ -57,7 +86,7 @@ public class Cue
 	@Override
 	public String toString()
 	{
-		return "["+type+": "+content+"]";
+		return "["+type+": \""+content+"\"]";
 	}
 	
 }

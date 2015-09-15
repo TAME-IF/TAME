@@ -20,7 +20,7 @@ import com.blackrook.commons.linkedlist.Queue;
  * or other objects to facilitate user feedback).
  * @author Matthew Tropiano
  */
-public class TAMEResponse
+public class TAMEResponse implements TAMEConstants
 {
 	/** The output message. */
 	private Queue<Cue> responseCues;
@@ -56,6 +56,17 @@ public class TAMEResponse
 	}
 
 	/**
+	 * Adds a response cue to this response object. It can range from
+	 * sound cues to changes in scenery, or additional instructions from
+	 * the virtual machine to a client. The client is required to obey certain
+	 * cues, and can safely ignore the rest.
+	 */
+	public void addCue(String type)
+	{
+		responseCues.enqueue(Cue.create(type));
+	}
+
+	/**
 	 * Increments the commands executed counter by 1.
 	 * After this object is received by the client, this means nothing.
 	 */
@@ -70,6 +81,15 @@ public class TAMEResponse
 	public int getCommandsExecuted()
 	{
 		return commandsExecuted;
+	}
+	
+	/**
+	 * Adds a trace cue, but only if trace is set.
+	 */
+	public void trace(TAMERequest request, String content)
+	{
+		if (request.isTrace()) 
+			addCue(CUE_TRACE, content);
 	}
 	
 }

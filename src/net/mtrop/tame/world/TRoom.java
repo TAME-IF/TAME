@@ -11,7 +11,7 @@
 package net.mtrop.tame.world;
 
 import net.mtrop.tame.lang.ActionSet;
-import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.command.Block;
 import net.mtrop.tame.struct.ActionModeTable;
 import net.mtrop.tame.struct.ActionTable;
 

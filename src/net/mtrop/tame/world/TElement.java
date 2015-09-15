@@ -12,7 +12,7 @@ package net.mtrop.tame.world;
 
 import com.blackrook.commons.Common;
 
-import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.command.Block;
 import net.mtrop.tame.struct.ActionTable;
 
 /**

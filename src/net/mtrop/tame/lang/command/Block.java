@@ -1,9 +1,11 @@
-package net.mtrop.tame.lang;
+package net.mtrop.tame.lang.command;
 
 import java.util.Iterator;
 
 import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
+import net.mtrop.tame.interrupt.TAMEInterrupt;
+import net.mtrop.tame.lang.ExecutableType;
 
 import com.blackrook.commons.linkedlist.Queue;
 
@@ -11,7 +13,7 @@ import com.blackrook.commons.linkedlist.Queue;
  * A set of commands in one block.
  * @author Matthew Tropiano
  */
-public class Block implements Statement, Iterable<Statement>
+public class Block implements ExecutableType, Iterable<Statement>
 {
 	/** List of statements. */
 	private Queue<Statement> statementQueue; 
@@ -48,7 +50,7 @@ public class Block implements Statement, Iterable<Statement>
 	}
 
 	@Override
-	public void execute(TAMERequest request, TAMEResponse response)
+	public void execute(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
 		for (Statement statement : this)
 			statement.execute(request, response);
