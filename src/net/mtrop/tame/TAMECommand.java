@@ -1,17 +1,14 @@
 package net.mtrop.tame;
 
-import net.mtrop.tame.context.TObjectContext;
-import net.mtrop.tame.context.TPlayerContext;
-import net.mtrop.tame.context.TRoomContext;
-import net.mtrop.tame.context.TWorldContext;
-import net.mtrop.tame.exception.ModuleStateException;
+import net.mtrop.tame.exception.TAMEFatalException;
+import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.exception.UnexpectedValueTypeException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.CommandType;
-import net.mtrop.tame.lang.command.Statement;
+import net.mtrop.tame.lang.command.Command;
 import net.mtrop.tame.struct.Value;
 import net.mtrop.tame.struct.ValueType;
 
@@ -24,74 +21,369 @@ public enum TAMECommand implements CommandType, TAMEConstants
 {
 	
 	/**
-	 * [INTERNAL] Sets a variable.
-	 * Assigns a value to a variable in the topmost context in the execution.
-	 * Returns the assigned value.
+	 * Does nothing.
+	 * Returns nothing.
 	 */
-	SETVARIABLE (true, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VARIABLE, ArgumentType.VALUE)
+	NOOP (/*Return: */ null)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Statement statement) 
+		public void execute(TAMERequest request, TAMEResponse response, Command command) 
 		{
-			Value value = request.popValue();
-			Value varvalue = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in SETVARIABLE call.");
-			if (!varvalue.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in SETVARIABLE call.");
-			
-			String variableName = varvalue.asString();
-			request.peekContext().setValue(variableName, value);
-			
-			// return
-			request.pushValue(value);
+			// Do nothing.
 		}
 		
 	},
 	
 	/**
-	 * [INTERNAL] Sets a variable.
-	 * Assigns a value to a variable in an object.
-	 * Returns the assigned value.
+	 * [INTERNAL] Pops a value off the stack.
+	 * Returns nothing.
 	 */
-	SETOBJECTVARIABLE (true, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT, ArgumentType.VARIABLE, ArgumentType.VALUE)
+	POP (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Statement statement) throws ErrorInterrupt
+		public void execute(TAMERequest request, TAMEResponse response, Command command)
 		{
-			Value value = request.popValue();
-			Value varvalue = request.popValue();
-			Value varobject = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in SETOBJECTVARIABLE call.");
-			if (!varvalue.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in SETOBJECTVARIABLE call.");
-			if (varobject.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in SETOBJECTVARIABLE call.");
-			
-			String variableName = varvalue.asString();
-			String objectName = varobject.asString();
-
-			resolveObject(request, objectName).setValue(variableName, value);
-			
-			// return
-			request.pushValue(value);
+			request.popValue();
 		}
 		
 	},
 
-	// TODO: Finish SET commands, ARITHPUSH/POP/FUNC.
+	/**
+	 * [INTERNAL] Pops a value into a variable in the topmost context in the execution.
+	 * Operand0 is the variable. 
+	 * POP is the value.
+	 */
+	POPVALUE (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) 
+		{
+			Value varvalue = command.getOperand0();
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPVALUE call.");
+			if (!varvalue.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPVALUE call.");
+			
+			String variableName = varvalue.asString();
+			request.peekContext().setValue(variableName, value);
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Sets a variable on a object.
+	 * Operand0 is the object. 
+	 * Operand1 is the variable. 
+	 * POP is the value.
+	 */
+	POPOBJECTVALUE (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varObject = command.getOperand0();
+			Value variable = command.getOperand1();
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPOBJECTVALUE call.");
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPOBJECTVALUE call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in POPOBJECTVALUE call.");
+			
+			String variableName = variable.asString();
+			String objectName = varObject.asString();
 
+			request.resolveObject(objectName).setValue(variableName, value);
+		}
+		
+	},
+
+	/**
+	 * [INTERNAL] Sets a variable on a room.
+	 * Operand0 is the room. 
+	 * Operand1 is the variable. 
+	 * POP is the value.
+	 */
+	POPROOMVALUE (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varRoom = command.getOperand0();
+			Value varValue = command.getOperand1();
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPROOMVALUE call.");
+			if (!varValue.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPROOMVALUE call.");
+			if (varRoom.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in POPROOMVALUE call.");
+			
+			String variableName = varValue.asString();
+			String roomName = varRoom.asString();
+
+			request.resolveRoom(roomName).setValue(variableName, value);
+		}
+		
+	},
+
+	/**
+	 * [INTERNAL] Sets a variable on a player.
+	 * Operand0 is the player. 
+	 * Operand1 is the variable. 
+	 * POP is the value.
+	 */
+	POPPLAYERVALUE (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varPlayer = command.getOperand0();
+			Value varValue = command.getOperand1();
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPPLAYERVALUE call.");
+			if (!varValue.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPPLAYERVALUE call.");
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in POPPLAYERVALUE call.");
+			
+			String variableName = varValue.asString();
+			String playerName = varPlayer.asString();
+
+			request.resolveRoom(playerName).setValue(variableName, value);
+		}
+		
+	},
+
+	/**
+	 * [INTERNAL] Pushes a value or variable from the topmost context.
+	 * Operand0 is the variable or value. 
+	 * Pushes the value. If variable, it is resolved before the push.
+	 */
+	PUSHVALUE (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) 
+		{
+			Value value = command.getOperand0();
+			
+			if (value.isVariable())
+			{
+				String variableName = value.asString();
+				request.pushValue(request.resolveVariableValue(variableName));
+			}
+			else
+			{
+				request.pushValue(value);
+			}
+			
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Resolves value of a variable on an object and pushes the value.
+	 * Operand0 is the object. 
+	 * Operand1 is the variable. 
+	 * Pushes the resolved value. 
+	 */
+	PUSHOBJECTVALUE (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varObject = command.getOperand0();
+			Value variable = command.getOperand1();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in PUSHOBJECTVALUE call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in PUSHOBJECTVALUE call.");
+
+			String variableName = variable.asString();
+			String objectName = varObject.asString();
+
+			// return
+			request.pushValue(request.resolveObjectVariableValue(objectName, variableName));
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Resolves value of a variable on a room and pushes the value.
+	 * Operand0 is the room. 
+	 * Operand1 is the variable. 
+	 * Pushes the resolved value. 
+	 */
+	PUSHROOMVARIABLE (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varRoom = command.getOperand0();
+			Value variable = command.getOperand1();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in PUSHROOMVARIABLE call.");
+			if (varRoom.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in PUSHROOMVARIABLE call.");
+
+			String variableName = variable.asString();
+			String roomName = varRoom.asString();
+
+			// return
+			request.pushValue(request.resolveRoomVariableValue(roomName, variableName));
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Resolves value of a variable on a player and pushes the value.
+	 * Operand0 is the player. 
+	 * Operand1 is the variable. 
+	 * Pushes the resolved value. 
+	 */
+	PUSHPLAYERVARIABLE (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varPlayer = command.getOperand0();
+			Value variable = command.getOperand1();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in PUSHPLAYERVARIABLE call.");
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in PUSHPLAYERVARIABLE call.");
+
+			String variableName = variable.asString();
+			String playerName = varPlayer.asString();
+
+			// return
+			request.pushValue(request.resolvePlayerVariableValue(playerName, variableName));
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Arithmetic function.
+	 * Operand0 is an integer that describes the operation. 
+	 * Pops a varying amount of values off the stack depending on the function.
+	 * Pushes result.
+	 */
+	ARITHMETICFUNC (true)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command)
+		{
+			Value functionValue = command.getOperand0();
+			
+			if (!functionValue.isInteger())
+				throw new UnexpectedValueTypeException("Expected integer type in ARITHMETICFUNC call.");
+
+			int functionType = (int)functionValue.asLong();
+			
+			switch (functionType)
+			{
+				default:
+					throw new UnexpectedValueException("Expected arithmetic function type, got illegal value %d.", functionType);
+					
+				case ARITHMETIC_FUNCTION_ABSOLUTE:
+				case ARITHMETIC_FUNCTION_NEGATE:
+				case ARITHMETIC_FUNCTION_LOGICAL_NOT:
+				case ARITHMETIC_FUNCTION_NOT:
+				{
+					Value value = request.popValue();
+
+					if (!value.isLiteral())
+						throw new UnexpectedValueTypeException("Expected literal type in ARITHMETICFUNC call.");
+
+					request.pushValue(unaryFunction(functionType, value));
+				}
+				break;
+				
+				case ARITHMETIC_FUNCTION_ADD:
+				case ARITHMETIC_FUNCTION_SUBTRACT:
+				case ARITHMETIC_FUNCTION_MULTIPLY:
+				case ARITHMETIC_FUNCTION_DIVIDE:
+				case ARITHMETIC_FUNCTION_MODULO:
+				case ARITHMETIC_FUNCTION_AND:
+				case ARITHMETIC_FUNCTION_OR:
+				case ARITHMETIC_FUNCTION_XOR:
+				case ARITHMETIC_FUNCTION_LSHIFT:
+				case ARITHMETIC_FUNCTION_RSHIFT:
+				case ARITHMETIC_FUNCTION_RSHIFTPAD:
+				case ARITHMETIC_FUNCTION_LOGICAL_AND:
+				case ARITHMETIC_FUNCTION_LOGICAL_OR:
+				case ARITHMETIC_FUNCTION_LOGICAL_XOR:
+				case ARITHMETIC_FUNCTION_EQUALS:
+				case ARITHMETIC_FUNCTION_NOT_EQUALS:
+				case ARITHMETIC_FUNCTION_STRICT_EQUALS:
+				case ARITHMETIC_FUNCTION_STRICT_NOT_EQUALS:
+				case ARITHMETIC_FUNCTION_LESS:
+				case ARITHMETIC_FUNCTION_LESS_OR_EQUAL:
+				case ARITHMETIC_FUNCTION_GREATER:
+				case ARITHMETIC_FUNCTION_GREATER_OR_EQUAL:
+				{
+					Value value2 = request.popValue();
+					Value value1 = request.popValue();
+
+					if (!value1.isLiteral())
+						throw new UnexpectedValueTypeException("Expected literal type in ARITHMETICFUNC call.");
+					if (!value2.isLiteral())
+						throw new UnexpectedValueTypeException("Expected literal type in ARITHMETICFUNC call.");
+
+					request.pushValue(binaryFunction(functionType, value1, value2));
+				}
+				break;
+				
+			}
+			
+		}
+		
+		// Unary function.
+		private Value unaryFunction(int functionType, Value value1)
+		{
+			switch (functionType)
+			{
+				default:
+					throw new UnexpectedValueException("INTERNAL ERROR: EXPECTED UNARY OP. GOT %d.", functionType);
+					
+				case ARITHMETIC_FUNCTION_ABSOLUTE:
+					return Value.absolute(value1);
+				case ARITHMETIC_FUNCTION_NEGATE:
+					return Value.negate(value1);
+				case ARITHMETIC_FUNCTION_LOGICAL_NOT:
+					return Value.logicalNot(value1);
+				case ARITHMETIC_FUNCTION_NOT:
+					return Value.not(value1);
+			}
+		}
+		
+		// Binary function.
+		private Value binaryFunction(int functionType, Value value1, Value value2)
+		{
+			// TODO: Finish this.
+			return null;
+		}
+		
+	},
+	
 	/**
 	 * Adds a QUIT cue to the response and throws a quit interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
-	QUIT (/*Return: */ null)
+	QUIT ()
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Statement statement) throws TAMEInterrupt
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing quit...");
 			response.addCue(CUE_QUIT);
@@ -105,7 +397,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	;
 	
 	private boolean internal;
-	private boolean keyword;
 	private ArgumentType returnType;
 	private ArgumentType[] argumentTypes;
 	private boolean initializationBlockRequired;
@@ -119,11 +410,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		this(false, false, false, false, false, false, null, null);
 	}
 
-	private TAMECommand(ArgumentType returnType)
+	private TAMECommand(boolean internal)
 	{
-		this(false, false, false, false, false, false, returnType, null);
+		this(internal, false, false, false, false, false, null, null);
 	}
-
+	
 	private TAMECommand(ArgumentType returnType, ArgumentType ... argumentTypes)
 	{
 		this(false, false, false, false, false, false, returnType, argumentTypes);
@@ -145,7 +436,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	private TAMECommand
 	(
-		boolean internal, 
+		boolean internal,
 		boolean initializationBlockRequired, boolean conditionalBlockRequired, boolean stepBlockRequired, boolean successBlockRequired, boolean failureBlockRequired,
 		ArgumentType returnType, ArgumentType[] argumentTypes
 	)
@@ -178,12 +469,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		return argumentTypes;
 	}
 	
-	@Override
-	public boolean isKeyword()
-	{
-		return keyword;
-	}
-
 	/**
 	 * Returns if this requires more than one block with the statement.
 	 * @return true if so, false if not.
@@ -229,146 +514,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}
 
 	@Override
-	public void execute(TAMERequest request, TAMEResponse response, Statement statement) throws TAMEInterrupt
+	public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 	{
 		throw new RuntimeException("UNIMPLEMENTED COMMAND");
-	}
-	
-	/**
-	 * Resolves a world.
-	 * @param request the request object.
-	 * @return the context resolved.
-	 */
-	protected TWorldContext resolveWorld(TAMERequest request)
-	{
-		return request.getModuleContext().getWorldContext();
-	}
-
-	/**
-	 * Resolves a player.
-	 * @param request the request object.
-	 * @param playerIdentity the player identity.
-	 * @return the context resolved.
-	 * @throws ErrorInterrupt if no current player when requested.
-	 * @throws ModuleStateException if the non-current player identity cannot be found.
-	 */
-	protected TPlayerContext resolvePlayer(TAMERequest request, String playerIdentity) throws ErrorInterrupt
-	{
-		TPlayerContext context = null;
-		if (playerIdentity.equals(IDENTITY_CURRENT_PLAYER))
-		{
-			context = request.getModuleContext().getCurrentPlayerContext();
-			if (context == null)
-				throw new ErrorInterrupt("Current player context called with no current player!");
-		}
-		else
-		{
-			context = request.getModuleContext().getPlayerContextByIdentity(playerIdentity);
-			if (context == null)
-				throw new ModuleStateException("Expected player '%s' in module context!", playerIdentity);
-		}
-		
-		return context;
-	}
-
-	/**
-	 * Resolves a room.
-	 * @param request the request object.
-	 * @param roomIdentity the roomIdentity.
-	 * @return the context resolved.
-	 * @throws ErrorInterrupt if no current room when requested.
-	 * @throws ModuleStateException if the non-current room identity cannot be found.
-	 */
-	protected TRoomContext resolveRoom(TAMERequest request, String roomIdentity) throws ErrorInterrupt
-	{
-		TRoomContext context = null;
-		if (roomIdentity.equals(IDENTITY_CURRENT_ROOM))
-		{
-			context = request.getModuleContext().getCurrentRoomContext();
-			if (context == null)
-				throw new ErrorInterrupt("Current room context called with no current room!");
-		}
-		else
-		{
-			context = request.getModuleContext().getRoomContextByIdentity(roomIdentity);
-			if (context == null)
-				throw new ModuleStateException("Expected room '%s' in module context!", roomIdentity);
-		}
-		
-		return context;
-	}
-
-	/**
-	 * Resolves a object.
-	 * @param request the request object.
-	 * @param objectIdentity the object identity.
-	 * @return the context resolved.
-	 * @throws ModuleStateException if object not found.
-	 */
-	protected TObjectContext resolveObject(TAMERequest request, String objectIdentity) throws ErrorInterrupt
-	{
-		TObjectContext context = request.getModuleContext().getObjectContextByIdentity(objectIdentity);
-		if (context == null)
-			throw new ModuleStateException("Expected object '%s' in module context!", objectIdentity);
-		return context;
-	}
-
-	/**
-	 * Resolves a variable from the topmost element context.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	protected Value resolveVariableValue(TAMERequest request, String variableName)
-	{
-		return request.peekContext().getValue(variableName);
-	}
-
-	/**
-	 * Resolves a variable from the world context element.
-	 * @param request the request object.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	protected Value resolveWorldVariableValue(TAMERequest request, String variableName)
-	{
-		return resolveWorld(request).getValue(variableName);
-	}
-
-	/**
-	 * Resolves a variable from a player context element.
-	 * @param request the request object.
-	 * @param playerIdentity a player identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 * @throws ErrorInterrupt 
-	 */
-	protected Value resolvePlayerVariableValue(TAMERequest request, String playerIdentity, String variableName) throws ErrorInterrupt
-	{
-		return resolvePlayer(request, playerIdentity).getValue(variableName);
-	}
-
-	/**
-	 * Resolves a variable from a room context element.
-	 * @param request the request object.
-	 * @param roomIdentity a room identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	protected Value resolveRoomVariableValue(TAMERequest request, String roomIdentity, String variableName) throws ErrorInterrupt
-	{
-		return resolveRoom(request, roomIdentity).getValue(variableName);
-	}
-
-	/**
-	 * Resolves a variable from an object context element.
-	 * @param request the request object.
-	 * @param objectIdentity an object identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	protected Value resolveObjectVariableValue(TAMERequest request, String objectIdentity, String variableName) throws ErrorInterrupt
-	{
-		return resolveObject(request, objectIdentity).getValue(variableName);
 	}
 
 }

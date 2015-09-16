@@ -123,6 +123,17 @@ public class Value
 	}
 
 	/**
+	 * Sets the value type and value.
+	 * @param type
+	 * @param value
+	 */
+	private void set(ValueType type, String value)
+	{
+		this.type = type;
+		this.value = value;
+	}
+
+	/**
 	 * Copies this value.
 	 */
 	public Value copy()
@@ -201,17 +212,6 @@ public class Value
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		writeBytes(bos);
 		return bos.toByteArray();
-	}
-
-	/**
-	 * Sets the value type and value.
-	 * @param type
-	 * @param value
-	 */
-	public void set(ValueType type, String value)
-	{
-		this.type = type;
-		this.value = value;
 	}
 
 	/**
@@ -414,9 +414,7 @@ public class Value
 	 */
 	public static Value negate(Value value1)
 	{
-		if (value1.isBoolean())
-			return create(!value1.asBoolean());
-		else if (value1.isInteger())
+		if (value1.isInteger())
 			return create(-value1.asLong());
 		else if (value1.isNumeric())
 			return create(-value1.asDouble());
@@ -661,193 +659,6 @@ public class Value
 	}
 	
 	/**
-	 * Returns the "logical and" of two literal values.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalAnd(Value value1, Value value2)
-	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
-		
-		boolean v1 = value1.asBoolean();
-		boolean v2 = value2.asBoolean();
-		return create(v1 && v2);
-	}
-
-	/**
-	 * Returns the "logical or" of two literal values.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalOr(Value value1, Value value2)
-	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
-		
-		boolean v1 = value1.asBoolean();
-		boolean v2 = value2.asBoolean();
-		return create(v1 || v2);
-	}
-
-	/**
-	 * Returns the "logical xor" of two literal values.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalXOr(Value value1, Value value2)
-	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
-		
-		boolean v1 = value1.asBoolean();
-		boolean v2 = value2.asBoolean();
-		return create(v1 ^ v2);
-	}
-
-	/**
-	 * Returns if two values are equal, no type safety if they are literals.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalEquals(Value value1, Value value2)
-	{
-		return create(value1.equalsIgnoreType(value2));
-	}
-
-	/**
-	 * Returns if two values are not equal, no type safety if they are literals.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalNotEquals(Value value1, Value value2)
-	{
-		return create(!value1.equalsIgnoreType(value2));
-	}
-
-	/**
-	 * Returns if two values are equal, with type strictness.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalStrictEquals(Value value1, Value value2)
-	{
-		return create(value1.equals(value2));
-	}
-
-	/**
-	 * Returns if two values are not equal, with type strictness.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalStrictNotEquals(Value value1, Value value2)
-	{
-		return create(!value1.equals(value2));
-	}
-
-	/**
-	 * Returns if the first literal value is less than the second.
-	 * If either are strings, they are compared lexicographically.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalLess(Value value1, Value value2)
-	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-		{
-			String v1 = value1.asString();
-			String v2 = value1.asString();
-			return create(v1.compareTo(v2) < 0);
-		}
-		else
-			return create(value1.asDouble() < value2.asDouble());
-	}
-
-	/**
-	 * Returns if the first literal value is less than or equal to the second.
-	 * If either are strings, they are compared lexicographically.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalLessOrEqual(Value value1, Value value2)
-	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-		{
-			String v1 = value1.asString();
-			String v2 = value1.asString();
-			return create(v1.compareTo(v2) <= 0);
-		}
-		else
-			return create(value1.asDouble() <= value2.asDouble());
-	}
-
-	/**
-	 * Returns if the first literal value is greater than the second.
-	 * If either are strings, they are compared lexicographically.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalGreater(Value value1, Value value2)
-	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-		{
-			String v1 = value1.asString();
-			String v2 = value1.asString();
-			return create(v1.compareTo(v2) > 0);
-		}
-		else
-			return create(value1.asDouble() > value2.asDouble());
-	}
-
-	/**
-	 * Returns if the first literal value is greater than or equal to the second.
-	 * If either are strings, they are compared lexicographically.
-	 * @param value1 the first operand.
-	 * @param value2 the second operand.
-	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
-	 */
-	public static Value logicalGreaterOrEqual(Value value1, Value value2)
-	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-		{
-			String v1 = value1.asString();
-			String v2 = value1.asString();
-			return create(v1.compareTo(v2) >= 0);
-		}
-		else
-			return create(value1.asDouble() >= value2.asDouble());
-	}
-
-	/**
 	 * Returns the "bitwise and" of two non-string literals.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
@@ -1016,6 +827,193 @@ public class Value
 			return create(Double.longBitsToDouble(v1 >>> v2));
 		else
 			return create(v1 >>> v2);	
+	}
+
+	/**
+	 * Returns the "logical and" of two literal values.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value logicalAnd(Value value1, Value value2)
+	{
+		if (!(value1.isLiteral() || value2.isLiteral()))
+			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
+		
+		boolean v1 = value1.asBoolean();
+		boolean v2 = value2.asBoolean();
+		return create(v1 && v2);
+	}
+
+	/**
+	 * Returns the "logical or" of two literal values.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value logicalOr(Value value1, Value value2)
+	{
+		if (!(value1.isLiteral() || value2.isLiteral()))
+			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
+		
+		boolean v1 = value1.asBoolean();
+		boolean v2 = value2.asBoolean();
+		return create(v1 || v2);
+	}
+
+	/**
+	 * Returns the "logical xor" of two literal values.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value logicalXOr(Value value1, Value value2)
+	{
+		if (!(value1.isLiteral() || value2.isLiteral()))
+			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
+		
+		boolean v1 = value1.asBoolean();
+		boolean v2 = value2.asBoolean();
+		return create(v1 ^ v2);
+	}
+
+	/**
+	 * Returns if two values are equal, no type safety if they are literals.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value equals(Value value1, Value value2)
+	{
+		return create(value1.equalsIgnoreType(value2));
+	}
+
+	/**
+	 * Returns if two values are not equal, no type safety if they are literals.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value notEquals(Value value1, Value value2)
+	{
+		return create(!value1.equalsIgnoreType(value2));
+	}
+
+	/**
+	 * Returns if two values are equal, with type strictness.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value strictEquals(Value value1, Value value2)
+	{
+		return create(value1.equals(value2));
+	}
+
+	/**
+	 * Returns if two values are not equal, with type strictness.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value strictNotEquals(Value value1, Value value2)
+	{
+		return create(!value1.equals(value2));
+	}
+
+	/**
+	 * Returns if the first literal value is less than the second.
+	 * If either are strings, they are compared lexicographically.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value less(Value value1, Value value2)
+	{
+		if (!(value1.isLiteral() || value2.isLiteral()))
+			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+		else if (value1.isString() || value2.isString())
+		{
+			String v1 = value1.asString();
+			String v2 = value1.asString();
+			return create(v1.compareTo(v2) < 0);
+		}
+		else
+			return create(value1.asDouble() < value2.asDouble());
+	}
+
+	/**
+	 * Returns if the first literal value is less than or equal to the second.
+	 * If either are strings, they are compared lexicographically.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value lessOrEqual(Value value1, Value value2)
+	{
+		if (!(value1.isLiteral() || value2.isLiteral()))
+			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+		else if (value1.isString() || value2.isString())
+		{
+			String v1 = value1.asString();
+			String v2 = value1.asString();
+			return create(v1.compareTo(v2) <= 0);
+		}
+		else
+			return create(value1.asDouble() <= value2.asDouble());
+	}
+
+	/**
+	 * Returns if the first literal value is greater than the second.
+	 * If either are strings, they are compared lexicographically.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value greater(Value value1, Value value2)
+	{
+		if (!(value1.isLiteral() || value2.isLiteral()))
+			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+		else if (value1.isString() || value2.isString())
+		{
+			String v1 = value1.asString();
+			String v2 = value1.asString();
+			return create(v1.compareTo(v2) > 0);
+		}
+		else
+			return create(value1.asDouble() > value2.asDouble());
+	}
+
+	/**
+	 * Returns if the first literal value is greater than or equal to the second.
+	 * If either are strings, they are compared lexicographically.
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value, as a boolean.
+	 * @throws ArithmeticException an arithmetic exception, if any.
+	 */
+	public static Value greaterOrEqual(Value value1, Value value2)
+	{
+		if (!(value1.isLiteral() || value2.isLiteral()))
+			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+		else if (value1.isString() || value2.isString())
+		{
+			String v1 = value1.asString();
+			String v2 = value1.asString();
+			return create(v1.compareTo(v2) >= 0);
+		}
+		else
+			return create(value1.asDouble() >= value2.asDouble());
 	}
 	
 }

@@ -19,7 +19,7 @@ import com.blackrook.commons.hash.CaseInsensitiveHash;
  */
 public class TAction implements Comparable<TAction>
 {
-	public static enum ActionType
+	public static enum Type
 	{
 		/** Has no targets. */
 		GENERAL,
@@ -39,7 +39,7 @@ public class TAction implements Comparable<TAction>
 	/** 
 	 * Action type. GENERAL, TRANSITIVE, DITRANSITIVE, MODAL, OPEN.
 	 */
-	private ActionType actionType;
+	private Type actionType;
 	
 	/** What is the group of names of this action? */
 	private CaseInsensitiveHash names;
@@ -60,7 +60,7 @@ public class TAction implements Comparable<TAction>
 			throw new IllegalArgumentException("Identity cannot be blank.");
 		
 		this.identity = identity;
-		this.actionType = ActionType.GENERAL;
+		this.actionType = Type.GENERAL;
 		this.names = new CaseInsensitiveHash();
 		this.extraStrings = new CaseInsensitiveHash();
 	}
@@ -84,7 +84,7 @@ public class TAction implements Comparable<TAction>
 	/**
 	 * Gets the action type.
 	 */
-	public ActionType getActionType()
+	public Type getActionType()
 	{
 		return actionType;
 	}
@@ -92,7 +92,7 @@ public class TAction implements Comparable<TAction>
 	/**
 	 * Sets the action type.
 	 */
-	public void setActionType(ActionType value)
+	public void setActionType(Type value)
 	{
 		actionType = value;
 	}

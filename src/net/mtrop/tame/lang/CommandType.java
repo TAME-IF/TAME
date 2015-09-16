@@ -13,7 +13,7 @@ package net.mtrop.tame.lang;
 import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
-import net.mtrop.tame.lang.command.Statement;
+import net.mtrop.tame.lang.command.Command;
 
 /**
  * An executable command run by the TAME virtual machine.
@@ -29,7 +29,7 @@ public interface CommandType
 	 * @param statement the calling statement (get blocks from this).
 	 * @throws TAMEInterrupt if a TAMEInterrupt occurs.
 	 */
-	public void execute(TAMERequest request, TAMEResponse response, Statement statement) throws TAMEInterrupt;
+	public void execute(TAMERequest request, TAMEResponse response, Command statement) throws TAMEInterrupt;
 	
 	/**
 	 * Is this an internal command type?
@@ -37,12 +37,6 @@ public interface CommandType
 	 * @return true if so, false if not.
 	 */
 	public boolean isInternal();
-	
-	/**
-	 * Is this command a single-keyword command (no parenthesis or arguments).
-	 * @return true if so, false if not.
-	 */
-	public boolean isKeyword();
 	
 	/**
 	 * Returns the argument types that this command expects.

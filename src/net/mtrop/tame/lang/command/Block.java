@@ -13,30 +13,30 @@ import com.blackrook.commons.linkedlist.Queue;
  * A set of commands in one block.
  * @author Matthew Tropiano
  */
-public class Block implements ExecutableType, Iterable<Statement>
+public class Block implements ExecutableType, Iterable<Command>
 {
 	/** List of statements. */
-	private Queue<Statement> statementQueue; 
+	private Queue<Command> statementQueue; 
 
 	/**
 	 * Creates a new empty block.
 	 */
 	public Block()
 	{
-		this.statementQueue = new Queue<Statement>();
+		this.statementQueue = new Queue<Command>();
 	}
 
 	/**
 	 * Adds a statement to the block.
 	 * @param statement the statement to add.
 	 */
-	public void add(Statement statement)
+	public void add(Command statement)
 	{
 		statementQueue.add(statement);
 	}
 	
 	@Override
-	public Iterator<Statement> iterator()
+	public Iterator<Command> iterator()
 	{
 		return statementQueue.iterator();
 	}
@@ -52,8 +52,14 @@ public class Block implements ExecutableType, Iterable<Statement>
 	@Override
 	public void execute(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		for (Statement statement : this)
-			statement.execute(request, response);
+		for (Command command : this)
+			command.execute(request, response);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return statementQueue.toString();
 	}
 	
 }

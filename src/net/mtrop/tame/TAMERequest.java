@@ -12,7 +12,13 @@ package net.mtrop.tame;
 
 import net.mtrop.tame.context.TAMEModuleContext;
 import net.mtrop.tame.context.TElementContext;
+import net.mtrop.tame.context.TObjectContext;
+import net.mtrop.tame.context.TPlayerContext;
+import net.mtrop.tame.context.TRoomContext;
+import net.mtrop.tame.context.TWorldContext;
 import net.mtrop.tame.exception.ArithmeticStackStateException;
+import net.mtrop.tame.exception.ModuleStateException;
+import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.struct.Value;
 
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
@@ -24,7 +30,7 @@ import com.blackrook.commons.linkedlist.Stack;
  * have a response returned back. 
  * @author Matthew Tropiano
  */
-public class TAMERequest
+public class TAMERequest implements TAMEConstants
 {
 	/** Hashtable of header info. */
 	private CaseInsensitiveHashMap<String> header;
@@ -212,4 +218,133 @@ public class TAMERequest
 			throw new ArithmeticStackStateException("Arithmetic stack is not empty.");
 	}
 	
+	/**
+	 * Resolves a world context.
+	 * @return the context resolved.
+	 */
+	public TWorldContext resolveWorld()
+	{
+		return getModuleContext().getWorldContext();
+	}
+
+	/**
+	 * Resolves a player context.
+	 * @param playerIdentity the player identity.
+	 * @return the context resolved.
+	 * @throws ErrorInterrupt if no current player when requested.
+	 * @throws ModuleStateException if the non-current player identity cannot be found.
+	 */
+	public TPlayerContext resolvePlayer(String playerIdentity) throws ErrorInterrupt
+	{
+		TPlayerContext context = null;
+		if (playerIdentity.equals(IDENTITY_CURRENT_PLAYER))
+		{
+			context = getModuleContext().getCurrentPlayerContext();
+			if (context == null)
+				throw new ErrorInterrupt("Current player context called with no current player!");
+		}
+		else
+		{
+			context = getModuleContext().getPlayerContextByIdentity(playerIdentity);
+			if (context == null)
+				throw new ModuleStateException("Expected player '%s' in module context!", playerIdentity);
+		}
+		
+		return context;
+	}
+
+	/**
+	 * Resolves a room context.
+	 * @param roomIdentity the roomIdentity.
+	 * @return the context resolved.
+	 * @throws ErrorInterrupt if no current room when requested.
+	 * @throws ModuleStateException if the non-current room identity cannot be found.
+	 */
+	public TRoomContext resolveRoom(String roomIdentity) throws ErrorInterrupt
+	{
+		TRoomContext context = null;
+		if (roomIdentity.equals(IDENTITY_CURRENT_ROOM))
+		{
+			context = getModuleContext().getCurrentRoomContext();
+			if (context == null)
+				throw new ErrorInterrupt("Current room context called with no current room!");
+		}
+		else
+		{
+			context = getModuleContext().getRoomContextByIdentity(roomIdentity);
+			if (context == null)
+				throw new ModuleStateException("Expected room '%s' in module context!", roomIdentity);
+		}
+		
+		return context;
+	}
+
+	/**
+	 * Resolves a object context.
+	 * @param objectIdentity the object identity.
+	 * @return the context resolved.
+	 * @throws ModuleStateException if object not found.
+	 */
+	public TObjectContext resolveObject(String objectIdentity) throws ErrorInterrupt
+	{
+		TObjectContext context = getModuleContext().getObjectContextByIdentity(objectIdentity);
+		if (context == null)
+			throw new ModuleStateException("Expected object '%s' in module context!", objectIdentity);
+		return context;
+	}
+
+	/**
+	 * Resolves a variable from the topmost element context.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 */
+	public Value resolveVariableValue(String variableName)
+	{
+		return peekContext().getValue(variableName);
+	}
+
+	/**
+	 * Resolves a variable from the world context element.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 */
+	public Value resolveWorldVariableValue(String variableName)
+	{
+		return resolveWorld().getValue(variableName);
+	}
+
+	/**
+	 * Resolves a variable from a player context element.
+	 * @param playerIdentity a player identity.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 * @throws ErrorInterrupt 
+	 */
+	public Value resolvePlayerVariableValue(String playerIdentity, String variableName) throws ErrorInterrupt
+	{
+		return resolvePlayer(playerIdentity).getValue(variableName);
+	}
+
+	/**
+	 * Resolves a variable from a room context element.
+	 * @param roomIdentity a room identity.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 */
+	public Value resolveRoomVariableValue(String roomIdentity, String variableName) throws ErrorInterrupt
+	{
+		return resolveRoom(roomIdentity).getValue(variableName);
+	}
+
+	/**
+	 * Resolves a variable from an object context element.
+	 * @param objectIdentity an object identity.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 */
+	public Value resolveObjectVariableValue(String objectIdentity, String variableName) throws ErrorInterrupt
+	{
+		return resolveObject(objectIdentity).getValue(variableName);
+	}
+
 }
