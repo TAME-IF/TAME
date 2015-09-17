@@ -920,9 +920,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * First POP is the string to replace with. 
 	 * Second POP is the replacement string. 
 	 * Third POP is the string to do replacing in. 
-	 * Returns integer. 
+	 * Returns string. 
 	 */
-	STRINGREPLACE (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRINGREPLACE (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -943,6 +943,108 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String source = value1.asString();
 			
 			request.pushValue(Value.create(source.replace(pattern, replacement)));
+		}
+		
+	},
+	
+	/**
+	 * Gets a substring from a larger one.
+	 * First POP is the ending index, exclusive. 
+	 * Second POP is the starting index, inclusive. 
+	 * Third POP is the string to divide. 
+	 * Returns string. 
+	 */
+	SUBSTRING (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value value3 = request.popValue();
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value3.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in SUBSTRING call.");
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in SUBSTRING call.");
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in SUBSTRING call.");
+
+			int endIndex = (int)value3.asLong();
+			int startIndex = (int)value2.asLong();
+			String source = value1.asString();
+			
+			request.pushValue(Value.create(source.substring(startIndex, endIndex)));
+		}
+		
+	},
+	
+	/**
+	 * Gets a string converted to lowercase.
+	 * POP is the string. 
+	 * Returns string. 
+	 */
+	LOWERCASE (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LOWERCASE call.");
+
+			request.pushValue(Value.create(value.asString().toLowerCase()));
+		}
+		
+	},
+	
+	/**
+	 * Gets a string converted to uppercase.
+	 * POP is the string. 
+	 * Returns string. 
+	 */
+	UPPERCASE (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in UPPERCASE call.");
+
+			request.pushValue(Value.create(value.asString().toUpperCase()));
+		}
+		
+	},
+	
+	/**
+	 * Gets a single character from a string.
+	 * First POP is the index. 
+	 * Second POP is the string. 
+	 * Returns string or empty string if index is out of range.
+	 */
+	CHARACTER (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CHARACTER call.");
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CHARACTER call.");
+
+			int index = (int)value2.asLong();
+			String str = value1.asString();
+			
+			if (index >= str.length() || index < 0)
+				request.pushValue(Value.create(""));
+			else
+				request.pushValue(Value.create(String.valueOf(str.charAt(index))));
 		}
 		
 	},
