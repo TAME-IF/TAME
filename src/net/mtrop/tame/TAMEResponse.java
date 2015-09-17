@@ -50,6 +50,39 @@ public class TAMEResponse implements TAMEConstants
 	 * the virtual machine to a client. The client is required to obey certain
 	 * cues, and can safely ignore the rest.
 	 */
+	public void addCue(String type, long content)
+	{
+		responseCues.enqueue(Cue.create(type, content));
+	}
+
+	/**
+	 * Adds a response cue to this response object. It can range from
+	 * sound cues to changes in scenery, or additional instructions from
+	 * the virtual machine to a client. The client is required to obey certain
+	 * cues, and can safely ignore the rest.
+	 */
+	public void addCue(String type, double content)
+	{
+		responseCues.enqueue(Cue.create(type, content));
+	}
+
+	/**
+	 * Adds a response cue to this response object. It can range from
+	 * sound cues to changes in scenery, or additional instructions from
+	 * the virtual machine to a client. The client is required to obey certain
+	 * cues, and can safely ignore the rest.
+	 */
+	public void addCue(String type, boolean content)
+	{
+		responseCues.enqueue(Cue.create(type, content));
+	}
+
+	/**
+	 * Adds a response cue to this response object. It can range from
+	 * sound cues to changes in scenery, or additional instructions from
+	 * the virtual machine to a client. The client is required to obey certain
+	 * cues, and can safely ignore the rest.
+	 */
 	public void addCue(String type, String content)
 	{
 		responseCues.enqueue(Cue.create(type, content));

@@ -17,7 +17,7 @@ import net.mtrop.tame.context.TPlayerContext;
 import net.mtrop.tame.context.TRoomContext;
 import net.mtrop.tame.context.TWorldContext;
 import net.mtrop.tame.exception.ArithmeticStackStateException;
-import net.mtrop.tame.exception.ModuleStateException;
+import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.struct.Value;
 
@@ -232,7 +232,7 @@ public class TAMERequest implements TAMEConstants
 	 * @param playerIdentity the player identity.
 	 * @return the context resolved.
 	 * @throws ErrorInterrupt if no current player when requested.
-	 * @throws ModuleStateException if the non-current player identity cannot be found.
+	 * @throws ModuleExecutionException if the non-current player identity cannot be found.
 	 */
 	public TPlayerContext resolvePlayer(String playerIdentity) throws ErrorInterrupt
 	{
@@ -247,7 +247,7 @@ public class TAMERequest implements TAMEConstants
 		{
 			context = getModuleContext().getPlayerContextByIdentity(playerIdentity);
 			if (context == null)
-				throw new ModuleStateException("Expected player '%s' in module context!", playerIdentity);
+				throw new ModuleExecutionException("Expected player '%s' in module context!", playerIdentity);
 		}
 		
 		return context;
@@ -258,7 +258,7 @@ public class TAMERequest implements TAMEConstants
 	 * @param roomIdentity the roomIdentity.
 	 * @return the context resolved.
 	 * @throws ErrorInterrupt if no current room when requested.
-	 * @throws ModuleStateException if the non-current room identity cannot be found.
+	 * @throws ModuleExecutionException if the non-current room identity cannot be found.
 	 */
 	public TRoomContext resolveRoom(String roomIdentity) throws ErrorInterrupt
 	{
@@ -273,7 +273,7 @@ public class TAMERequest implements TAMEConstants
 		{
 			context = getModuleContext().getRoomContextByIdentity(roomIdentity);
 			if (context == null)
-				throw new ModuleStateException("Expected room '%s' in module context!", roomIdentity);
+				throw new ModuleExecutionException("Expected room '%s' in module context!", roomIdentity);
 		}
 		
 		return context;
@@ -283,13 +283,13 @@ public class TAMERequest implements TAMEConstants
 	 * Resolves a object context.
 	 * @param objectIdentity the object identity.
 	 * @return the context resolved.
-	 * @throws ModuleStateException if object not found.
+	 * @throws ModuleExecutionException if object not found.
 	 */
 	public TObjectContext resolveObject(String objectIdentity) throws ErrorInterrupt
 	{
 		TObjectContext context = getModuleContext().getObjectContextByIdentity(objectIdentity);
 		if (context == null)
-			throw new ModuleStateException("Expected object '%s' in module context!", objectIdentity);
+			throw new ModuleExecutionException("Expected object '%s' in module context!", objectIdentity);
 		return context;
 	}
 

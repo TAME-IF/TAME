@@ -37,6 +37,16 @@ public class Cue
 	 * @param type the cue type.
 	 * @param content the content.
 	 */
+	public static Cue create(String type, boolean content)
+	{
+		return new Cue(type, String.valueOf(content));
+	}
+	
+	/**
+	 * Creates a new cue.
+	 * @param type the cue type.
+	 * @param content the content.
+	 */
 	public static Cue create(String type, long content)
 	{
 		return new Cue(type, String.valueOf(content));
