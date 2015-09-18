@@ -42,8 +42,6 @@ public final class ValueTest {
 		out.println(v2 + " " + Value.absolute(v2));
 		out.println(vn2 + " " + Value.absolute(vn2));
 		out.println("NEG-------------------");
-		out.println(vfalse + " " + Value.negate(vfalse));
-		out.println(vtrue + " " + Value.negate(vtrue));
 		out.println(v2 + " " + Value.negate(v2));
 		out.println(vn2 + " " + Value.negate(vn2));
 		out.println(vf2 + " " + Value.negate(vf2));

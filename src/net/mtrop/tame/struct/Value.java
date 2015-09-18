@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import net.mtrop.tame.TAMEConstants;
+import net.mtrop.tame.exception.ModuleExecutionException;
+
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -22,12 +25,12 @@ import com.blackrook.io.SuperWriter;
  * All values in the interpreter are of this type, which stores a type.
  * @author Matthew Tropiano
  */
-public class Value
+public class Value implements Comparable<Value>
 {
 	/** Value type. */
 	protected ValueType type;
 	/** Value itself. */
-	protected String value;
+	protected Object value;
 	
 	/**
 	 * Creates a blank value.
@@ -44,7 +47,7 @@ public class Value
 	public static Value create(boolean value)
 	{
 		Value out = new Value();
-		out.set(ValueType.BOOLEAN, String.valueOf(value));
+		out.set(ValueType.BOOLEAN, value);
 		return out;
 	}
 
@@ -54,7 +57,7 @@ public class Value
 	public static Value create(int value)
 	{
 		Value out = new Value();
-		out.set(ValueType.INTEGER, String.valueOf(value));
+		out.set(ValueType.INTEGER, new Long(value));
 		return out;
 	}
 
@@ -64,7 +67,7 @@ public class Value
 	public static Value create(long value)
 	{
 		Value out = new Value();
-		out.set(ValueType.INTEGER, String.valueOf(value));
+		out.set(ValueType.INTEGER, value);
 		return out;
 	}
 
@@ -74,7 +77,7 @@ public class Value
 	public static Value create(float value)
 	{
 		Value out = new Value();
-		out.set(ValueType.FLOAT, String.valueOf(value));
+		out.set(ValueType.FLOAT, new Double(value));
 		return out;
 	}
 
@@ -84,7 +87,7 @@ public class Value
 	public static Value create(double value)
 	{
 		Value out = new Value();
-		out.set(ValueType.FLOAT, String.valueOf(value));
+		out.set(ValueType.FLOAT, value);
 		return out;
 	}
 
@@ -99,13 +102,95 @@ public class Value
 	}
 
 	/**
-	 * Creates a value with a type and string representation of the value.
+	 * Creates an object value.
 	 */
-	public static Value create(ValueType type, String value)
+	public static Value createObject(String value)
 	{
 		Value out = new Value();
-		out.set(type, value);
+		out.set(ValueType.OBJECT, value);
 		return out;
+	}
+
+	/**
+	 * Creates a room value.
+	 */
+	public static Value createRoom(String value)
+	{
+		Value out = new Value();
+		out.set(ValueType.ROOM, value);
+		return out;
+	}
+
+	/**
+	 * Creates a player value.
+	 */
+	public static Value createPlayer(String value)
+	{
+		Value out = new Value();
+		out.set(ValueType.PLAYER, value);
+		return out;
+	}
+
+	/**
+	 * Creates a action value.
+	 */
+	public static Value createAction(String value)
+	{
+		Value out = new Value();
+		out.set(ValueType.ACTION, value);
+		return out;
+	}
+
+	/**
+	 * Creates world.
+	 */
+	public static Value createWorld()
+	{
+		Value out = new Value();
+		out.set(ValueType.WORLD, TAMEConstants.IDENTITY_CURRENT_WORLD);
+		return out;
+	}
+
+	/**
+	 * Creates variable value.
+	 */
+	public static Value createVariable(String name)
+	{
+		Value out = new Value();
+		out.set(ValueType.VARIABLE, name);
+		return out;
+	}
+
+	/**
+	 * Creates a copy of a value.
+	 */
+	public static Value create(Value v)
+	{
+		switch (v.type)
+		{
+			case BOOLEAN:
+				return create((Boolean)v.value);
+			case INTEGER:
+				return create((Long)v.value);
+			case FLOAT:
+				return create((Double)v.value);
+			case STRING:
+				return create((String)v.value);
+			case OBJECT:
+				return createObject((String)v.value);
+			case PLAYER:
+				return createPlayer((String)v.value);
+			case ROOM:
+				return createRoom((String)v.value);
+			case WORLD:
+				return createWorld();
+			case ACTION:
+				return createAction((String)v.value);
+			case VARIABLE:
+				return createVariable((String)v.value);
+			default:
+				throw new ModuleExecutionException("Unknown variable type.");
+		}
 	}
 
 	/**
@@ -127,18 +212,10 @@ public class Value
 	 * @param type
 	 * @param value
 	 */
-	private void set(ValueType type, String value)
+	private void set(ValueType type, Object value)
 	{
 		this.type = type;
 		this.value = value;
-	}
-
-	/**
-	 * Copies this value.
-	 */
-	public Value copy()
-	{
-		return create(type, new String(value));
 	}
 
 	@Override
@@ -176,6 +253,39 @@ public class Value
 			return equals(((Value)obj));
 		else
 			return super.equals(obj);
+	}
+
+	@Override
+	public int compareTo(Value v)
+	{
+		if (equals(v))
+			return 0;
+		
+		if (!isLiteral() || !v.isLiteral())
+			return asString().compareTo(v.asString());
+		
+		if (isString() || v.isString())
+			return asString().compareTo(v.asString());
+		if (isFloatingPoint() || v.isFloatingPoint())
+		{
+			double d1 = asDouble();
+			double d2 = v.asDouble();
+			return d1 == d2 ? 0 : (d1 < d2 ? -1 : 1);
+		}
+		if (isInteger() || v.isInteger())
+		{
+			long d1 = asLong();
+			long d2 = v.asLong();
+			return d1 == d2 ? 0 : (d1 < d2 ? -1 : 1);
+		}
+		if (isBoolean() || v.isBoolean())
+		{
+			boolean d1 = asBoolean();
+			boolean d2 = v.asBoolean();
+			return d1 == d2 ? 0 : (!d1 ? -1 : 1);
+		}
+		
+		return 0;
 	}
 
 	/**
@@ -230,14 +340,14 @@ public class Value
 	public boolean asBoolean()
 	{
 		if (isBoolean())
-			return "true".equals(value);
+			return (Boolean)value;
 		else if (isNumeric())
 		{
 			double d = asDouble();
 			return !Double.isNaN(d) && d != 0.0;
 		}
-		else if (isLiteral())
-			return asString().length() != 0;
+		else if (isString())
+			return ((String)value).length() != 0;
 		else
 			return true;
 	}
@@ -250,8 +360,12 @@ public class Value
 	{
 		if (isBoolean())
 			return asBoolean() ? 1L : 0L;
+		if (isInteger())
+			return (Long)value;
+		if (isFloatingPoint())
+			return (long)(double)(Double)value;
 		try {
-			return Long.parseLong(value);
+			return Long.parseLong(asString());
 		} catch (NumberFormatException e) {
 			return (long)asDouble();
 		}
@@ -277,11 +391,20 @@ public class Value
 	{
 		if (isBoolean())
 			return asBoolean() ? 1.0 : 0.0;
-		try {
-			return Double.parseDouble(value);
-		} catch (NumberFormatException e) {
-			return 0.0;
+		if (isInteger())
+			return (double)(Long)value;
+		if (isFloatingPoint())
+			return (Double)value;
+		if (isString())
+		{
+			try {
+				return Double.parseDouble(asString());
+			} catch (NumberFormatException e) {
+				return 0.0;
+			}
 		}
+		
+		return 0.0;
 	}
 
 	/**
@@ -290,7 +413,7 @@ public class Value
 	 */
 	public String asString()
 	{
-		return value;
+		return String.valueOf(value);
 	}
 
 	/**
@@ -312,6 +435,15 @@ public class Value
 	}
 	
 	/**
+	 * Returns if this value is a floating-point number.
+	 * @return true if so, false if not.
+	 */
+	public boolean isFloatingPoint()
+	{
+		return type == ValueType.FLOAT;
+	}
+	
+	/**
 	 * Returns if this value is a number.
 	 * @return true if so, false if not.
 	 */
@@ -323,12 +455,12 @@ public class Value
 	}
 	
 	/**
-	 * Returns if this value is a floating-point number.
+	 * Returns if this value is a string value.
 	 * @return true if so, false if not.
 	 */
-	public boolean isFloatingPoint()
+	public boolean isString()
 	{
-		return type == ValueType.FLOAT;
+		return type == ValueType.STRING;
 	}
 	
 	/**
@@ -342,15 +474,6 @@ public class Value
 			|| type == ValueType.INTEGER
 			|| type == ValueType.FLOAT
 			|| type == ValueType.STRING;
-	}
-	
-	/**
-	 * Returns if this value is a string value.
-	 * @return true if so, false if not.
-	 */
-	public boolean isString()
-	{
-		return type == ValueType.STRING;
 	}
 	
 	/**

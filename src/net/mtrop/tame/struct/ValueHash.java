@@ -67,7 +67,7 @@ public class ValueHash extends CaseInsensitiveHashMap<Value>
 	public void copyFrom(ValueHash hash)
 	{
 		for (ObjectPair<String, Value> pair : hash)
-			put(pair.getKey(), pair.getValue().copy());
+			put(pair.getKey(), Value.create(pair.getValue()));
 	}
 	
 }

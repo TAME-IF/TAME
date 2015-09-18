@@ -119,10 +119,10 @@ public class TAMEResponse implements TAMEConstants
 	/**
 	 * Adds a trace cue, but only if trace is set.
 	 */
-	public void trace(TAMERequest request, String content)
+	public void trace(TAMERequest request, String format, Object ... args)
 	{
 		if (request.isTrace()) 
-			addCue(CUE_TRACE, content);
+			addCue(CUE_TRACE, String.format(format, args));
 	}
 	
 }
