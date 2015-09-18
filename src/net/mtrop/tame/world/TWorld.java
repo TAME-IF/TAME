@@ -10,8 +10,8 @@
  ******************************************************************************/
 package net.mtrop.tame.world;
 
+import net.mtrop.tame.lang.command.Block;
 import net.mtrop.tame.struct.ActionTable;
-import jdk.nashorn.internal.ir.Block;
 
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 
