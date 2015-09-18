@@ -31,6 +31,7 @@ import net.mtrop.tame.struct.ValueType;
 import net.mtrop.tame.world.TObject;
 import net.mtrop.tame.world.TPlayer;
 import net.mtrop.tame.world.TRoom;
+import net.mtrop.tame.world.TWorld;
 
 /**
  * The set of commands.
@@ -117,7 +118,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String variableName = variable.asString();
 			String objectName = varObject.asString();
 
-			request.resolveObject(objectName).setValue(variableName, value);
+			request.getModuleContext().resolveObjectContext(objectName).setValue(variableName, value);
 		}
 		
 	},
@@ -147,7 +148,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String variableName = varValue.asString();
 			String roomName = varRoom.asString();
 
-			request.resolveRoom(roomName).setValue(variableName, value);
+			request.getModuleContext().resolveRoomContext(roomName).setValue(variableName, value);
 		}
 		
 	},
@@ -177,7 +178,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String variableName = varValue.asString();
 			String playerName = varPlayer.asString();
 
-			request.resolveRoom(playerName).setValue(variableName, value);
+			request.getModuleContext().resolveRoomContext(playerName).setValue(variableName, value);
 		}
 		
 	},
@@ -231,7 +232,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String objectName = varObject.asString();
 
 			// return
-			request.pushValue(request.resolveObjectVariableValue(objectName, variableName));
+			request.pushValue(request.getModuleContext().resolveObjectVariableValue(objectName, variableName));
 		}
 		
 	},
@@ -259,7 +260,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String roomName = varRoom.asString();
 
 			// return
-			request.pushValue(request.resolveRoomVariableValue(roomName, variableName));
+			request.pushValue(request.getModuleContext().resolveRoomVariableValue(roomName, variableName));
 		}
 		
 	},
@@ -287,7 +288,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String playerName = varPlayer.asString();
 
 			// return
-			request.pushValue(request.resolvePlayerVariableValue(playerName, variableName));
+			request.pushValue(request.getModuleContext().resolvePlayerVariableValue(playerName, variableName));
 		}
 		
 	},
@@ -1741,7 +1742,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected player type in BROWSEPLAYER call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TPlayerContext playerContext = request.resolvePlayer(playerValue.asString());
+			TPlayerContext playerContext = moduleContext.resolvePlayerContext(playerValue.asString());
 			TPlayer player = playerContext.getElement();
 			TOwnershipMap ownership = request.getModuleContext().getOwnershipMap();
 			
@@ -1782,7 +1783,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected room type in BROWSEROOM call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TRoomContext roomContext = request.resolveRoom(roomValue.asString());
+			TRoomContext roomContext = moduleContext.resolveRoomContext(roomValue.asString());
 			TRoom room = roomContext.getElement();
 			TOwnershipMap ownership = request.getModuleContext().getOwnershipMap();
 			
@@ -1826,8 +1827,339 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (varObject.getType() != ValueType.OBJECT)
 				throw new UnexpectedValueTypeException("Expected object type in ADDOBJECTNAME call.");
 
-			TObjectContext objectContext = request.resolveObject(varObject.asString());
+			TObjectContext objectContext = request.getModuleContext().resolveObjectContext(varObject.asString());
 			objectContext.addName(varName.asString());
+		}
+		
+	},
+	
+	/**
+	 * Adds an object to the world.
+	 * POP is object.
+	 * Returns nothing.
+	 */
+	GIVEWORLDOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in GIVEWORLDOBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TWorld world = moduleContext.resolveWorld();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.getModuleContext().getOwnershipMap().addObjectToWorld(object, world);
+		}
+		
+	},
+	
+	/**
+	 * Adds an object to a player.
+	 * First POP is object.
+	 * Second POP is player. 
+	 * Returns nothing.
+	 */
+	GIVEPLAYEROBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			Value varPlayer = request.popValue();
+			
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in GIVEPLAYEROBJECT call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in GIVEPLAYEROBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.getModuleContext().getOwnershipMap().addObjectToPlayer(object, player);
+		}
+		
+	},
+	
+	/**
+	 * Adds a room to a player.
+	 * First POP is object.
+	 * Second POP is room. 
+	 * Returns nothing.
+	 */
+	GIVEROOMOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM, ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			Value varRoom = request.popValue();
+			
+			if (varRoom.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in GIVEROOMOBJECT call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in GIVEROOMOBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TRoom room = moduleContext.resolveRoom(varRoom.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.getModuleContext().getOwnershipMap().addObjectToRoom(object, room);
+		}
+		
+	},
+	
+	/**
+	 * Removes an object from its owner, whatever it is.
+	 * POP is object.
+	 * Returns nothing.
+	 */
+	REMOVEOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in REMOVEOBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.getModuleContext().getOwnershipMap().removeObject(object);
+		}
+		
+	},
+	
+	/**
+	 * Checks if an object has no owner. True if so.
+	 * POP is object.
+	 * Returns boolean.
+	 */
+	OBJECTHASNOOWNER (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in OBJECTHASNOOWNER call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkObjectHasNoOwner(object)));
+		}
+		
+	},
+	
+	/**
+	 * Counts the objects in the world.
+	 * POPs nothing.
+	 * Returns integer.
+	 */
+	OBJECTSINWORLDCOUNT (false, /*Return: */ ArgumentType.VALUE)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().getObjectSOwnedByWorldCount(request.getModuleContext().resolveWorld())));
+		}
+		
+	},
+	
+	/**
+	 * Counts the objects in a player.
+	 * POP is the player.
+	 * Returns integer.
+	 */
+	OBJECTSINPLAYERCOUNT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varPlayer = request.popValue();
+			
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in OBJECTSINPLAYERCOUNT call.");
+			
+			TPlayer player = request.getModuleContext().resolvePlayer(varPlayer.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().getObjectsOwnedByPlayerCount(player)));
+		}
+		
+	},
+	
+	/**
+	 * Counts the objects in a room.
+	 * POP is the player.
+	 * Returns integer.
+	 */
+	OBJECTSINROOMCOUNT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varRoom = request.popValue();
+			
+			if (varRoom.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in OBJECTSINROOMCOUNT call.");
+			
+			TRoom room = request.getModuleContext().resolveRoom(varRoom.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().getObjectsOwnedByRoomCount(room)));
+		}
+		
+	},
+	
+	/**
+	 * Checks if an object is owned by the world.
+	 * POP is the object.
+	 * Returns boolean.
+	 */
+	WORLDHASOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in WORLDHASOBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkWorldHasObject(moduleContext.resolveWorld(), object)));
+		}
+		
+	},
+	
+	/**
+	 * Checks if an object is owned by the player.
+	 * First POP is the object.
+	 * Second POP is the player.
+	 * Returns boolean.
+	 */
+	PLAYERHASOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			Value varPlayer = request.popValue();
+			
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in PLAYERHASOBJECT call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in PLAYERHASOBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkPlayerHasObject(player, object)));
+		}
+		
+	},
+	
+	/**
+	 * Checks if an object is owned by the room.
+	 * POP is the player.
+	 * Returns boolean.
+	 */
+	ROOMHASOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM, ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			Value varRoom = request.popValue();
+			
+			if (varRoom.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in ROOMHASOBJECT call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in ROOMHASOBJECT call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TRoom room = moduleContext.resolveRoom(varRoom.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkRoomHasObject(room, object)));
+		}
+		
+	},
+	
+	/**
+	 * Removes a player from the world. Discards room stack as well.
+	 * POP is the player.
+	 * Returns nothing.
+	 */
+	REMOVEPLAYER (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varPlayer = request.popValue();
+			
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in REMOVEPLAYER call.");
+			
+			TPlayer player = request.getModuleContext().resolvePlayer(varPlayer.asString());
+			request.getModuleContext().getOwnershipMap().removePlayer(player);
+		}
+		
+	},
+	
+	/**
+	 * Checks if a player in in a room. Returns true if current room or in the room stack.
+	 * First POP is the room.
+	 * Second POP is the player.
+	 * Returns boolean.
+	 */
+	PLAYERISINROOM (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varRoom = request.popValue();
+			Value varPlayer = request.popValue();
+			
+			if (varRoom.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in PLAYERISINROOM call.");
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in PLAYERISINROOM call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
+			TRoom room = moduleContext.resolveRoom(varRoom.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkPlayerIsInRoom(player, room)));
+		}
+		
+	},
+	
+	/**
+	 * Checks if a player in in a room. Returns true if current room or in the room stack.
+	 * First POP is the object.
+	 * Second POP is the player.
+	 * Returns nothing.
+	 */
+	PLAYERCANACCESSOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			Value varPlayer = request.popValue();
+			
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in PLAYERCANACCESSOBJECT call.");
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in PLAYERCANACCESSOBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TPlayerContext player = moduleContext.resolvePlayerContext(varPlayer.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			TWorld world = moduleContext.resolveWorld();
+			TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
+			
+			// TODO: Finish!
 		}
 		
 	},

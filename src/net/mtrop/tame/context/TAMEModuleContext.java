@@ -8,7 +8,11 @@ import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 
+import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.exception.ModuleExecutionException;
+import net.mtrop.tame.interrupt.ErrorInterrupt;
+import net.mtrop.tame.struct.Value;
 import net.mtrop.tame.world.TAction;
 import net.mtrop.tame.world.TObject;
 import net.mtrop.tame.world.TPlayer;
@@ -19,7 +23,7 @@ import net.mtrop.tame.world.TWorld;
  * A mutable context for a module.
  * @author Matthew Tropiano
  */
-public class TAMEModuleContext
+public class TAMEModuleContext implements TAMEConstants
 {
 	/** A random number generator. */
 	private TAMEModule module;
@@ -247,6 +251,169 @@ public class TAMEModuleContext
 	{
 		TRoom room = getCurrentRoom();
 		return room != null ? getRoomContext(room) : null;
+	}
+
+	/**
+	 * Resolves a world context.
+	 * @return the context resolved.
+	 */
+	public TWorldContext resolveWorldContext()
+	{
+		return getWorldContext();
+	}
+
+	/**
+	 * Resolves a world (or THE world).
+	 * @return the element resolved.
+	 */
+	public TWorld resolveWorld()
+	{
+		return resolveWorldContext().getElement();
+	}
+
+	/**
+	 * Resolves a player context.
+	 * @param playerIdentity the player identity.
+	 * @return the context resolved.
+	 * @throws ErrorInterrupt if no current player when requested.
+	 * @throws ModuleExecutionException if the non-current player identity cannot be found.
+	 */
+	public TPlayerContext resolvePlayerContext(String playerIdentity) throws ErrorInterrupt
+	{
+		TPlayerContext context = null;
+		if (playerIdentity.equals(IDENTITY_CURRENT_PLAYER))
+		{
+			context = getCurrentPlayerContext();
+			if (context == null)
+				throw new ErrorInterrupt("Current player context called with no current player!");
+		}
+		else
+		{
+			context = getPlayerContextByIdentity(playerIdentity);
+			if (context == null)
+				throw new ModuleExecutionException("Expected player '%s' in module context!", playerIdentity);
+		}
+		
+		return context;
+	}
+
+	/**
+	 * Resolves a player.
+	 * @param playerIdentity the player identity.
+	 * @return the context resolved.
+	 * @throws ErrorInterrupt if no current player when requested.
+	 * @throws ModuleExecutionException if the non-current player identity cannot be found.
+	 */
+	public TPlayer resolvePlayer(String playerIdentity) throws ErrorInterrupt
+	{
+		return resolvePlayerContext(playerIdentity).getElement();
+	}
+
+	/**
+	 * Resolves a room context.
+	 * @param roomIdentity the roomIdentity.
+	 * @return the context resolved.
+	 * @throws ErrorInterrupt if no current room when requested.
+	 * @throws ModuleExecutionException if the non-current room identity cannot be found.
+	 */
+	public TRoomContext resolveRoomContext(String roomIdentity) throws ErrorInterrupt
+	{
+		TRoomContext context = null;
+		if (roomIdentity.equals(IDENTITY_CURRENT_ROOM))
+		{
+			context = getCurrentRoomContext();
+			if (context == null)
+				throw new ErrorInterrupt("Current room context called with no current room!");
+		}
+		else
+		{
+			context = getRoomContextByIdentity(roomIdentity);
+			if (context == null)
+				throw new ModuleExecutionException("Expected room '%s' in module context!", roomIdentity);
+		}
+		
+		return context;
+	}
+
+	/**
+	 * Resolves a room.
+	 * @param roomIdentity the roomIdentity.
+	 * @return the context resolved.
+	 * @throws ErrorInterrupt if no current room when requested.
+	 * @throws ModuleExecutionException if the non-current room identity cannot be found.
+	 */
+	public TRoom resolveRoom(String roomIdentity) throws ErrorInterrupt
+	{
+		return resolveRoomContext(roomIdentity).getElement();
+	}
+
+	/**
+	 * Resolves a object context.
+	 * @param objectIdentity the object identity.
+	 * @return the context resolved.
+	 * @throws ModuleExecutionException if object not found.
+	 */
+	public TObjectContext resolveObjectContext(String objectIdentity) throws ErrorInterrupt
+	{
+		TObjectContext context = getObjectContextByIdentity(objectIdentity);
+		if (context == null)
+			throw new ModuleExecutionException("Expected object '%s' in module context!", objectIdentity);
+		return context;
+	}
+
+	/**
+	 * Resolves a object.
+	 * @param objectIdentity the object identity.
+	 * @return the context resolved.
+	 * @throws ModuleExecutionException if object not found.
+	 */
+	public TObject resolveObject(String objectIdentity) throws ErrorInterrupt
+	{
+		return resolveObjectContext(objectIdentity).getElement();
+	}
+
+	/**
+	 * Resolves a variable from the world context element.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 */
+	public Value resolveWorldVariableValue(String variableName)
+	{
+		return resolveWorldContext().getValue(variableName);
+	}
+
+	/**
+	 * Resolves a variable from a player context element.
+	 * @param playerIdentity a player identity.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 * @throws ErrorInterrupt 
+	 */
+	public Value resolvePlayerVariableValue(String playerIdentity, String variableName) throws ErrorInterrupt
+	{
+		return resolvePlayerContext(playerIdentity).getValue(variableName);
+	}
+
+	/**
+	 * Resolves a variable from a room context element.
+	 * @param roomIdentity a room identity.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 */
+	public Value resolveRoomVariableValue(String roomIdentity, String variableName) throws ErrorInterrupt
+	{
+		return resolveRoomContext(roomIdentity).getValue(variableName);
+	}
+
+	/**
+	 * Resolves a variable from an object context element.
+	 * @param objectIdentity an object identity.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 */
+	public Value resolveObjectVariableValue(String objectIdentity, String variableName) throws ErrorInterrupt
+	{
+		return resolveObjectContext(objectIdentity).getValue(variableName);
 	}
 	
 }

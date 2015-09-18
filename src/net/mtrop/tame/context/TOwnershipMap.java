@@ -196,7 +196,7 @@ public class TOwnershipMap
 	 * @param world the world to use.
 	 * @return true if so, false if not.
 	 */
-	public boolean getWorldHasObject(TWorld world, TObject object)
+	public boolean checkWorldHasObject(TWorld world, TObject object)
 	{
 		if (objectsOwnedByWorld.containsKey(world))
 			return objectsOwnedByWorld.get(world).contains(object);
@@ -208,7 +208,7 @@ public class TOwnershipMap
 	 * @param room the room to use.
 	 * @return true if so, false if not.
 	 */
-	public boolean getRoomHasObject(TRoom room, TObject object)
+	public boolean checkRoomHasObject(TRoom room, TObject object)
 	{
 		if (objectsOwnedByRoom.containsKey(room))
 			return objectsOwnedByRoom.get(room).contains(object);
@@ -220,7 +220,7 @@ public class TOwnershipMap
 	 * @param player the player to use.
 	 * @return true if so, false if not.
 	 */
-	public boolean getPlayerHasObject(TPlayer player, TObject object)
+	public boolean checkPlayerHasObject(TPlayer player, TObject object)
 	{
 		if (objectsOwnedByPlayer.containsKey(player))
 			return objectsOwnedByPlayer.get(player).contains(object);
@@ -232,11 +232,24 @@ public class TOwnershipMap
 	 * @param object the object to use.
 	 * @return true if so, false if not.
 	 */
-	public boolean getObjectHasNoOwner(TObject object)
+	public boolean checkObjectHasNoOwner(TObject object)
 	{
 		return !objectToElement.containsKey(object);
 	}
 	
+	/**
+	 * Returns if a player is in a room (or room is in stack).
+	 * @param player the player to use.
+	 * @param room the room to use.
+	 * @return true if so, false if not.
+	 */
+	public boolean checkPlayerIsInRoom(TPlayer player, TRoom room)
+	{
+		if (playerToRoomStack.containsKey(player))
+			return playerToRoomStack.get(player).contains(room);
+		return false;
+	}
+
 	/**
 	 * Gets the list of objects owned by a world.
 	 */
