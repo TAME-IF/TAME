@@ -277,7 +277,7 @@ public class TOwnershipMap
 	/**
 	 * Gets the count of objects owned by a world.
 	 */
-	public int getObjectSOwnedByWorldCount(TWorld world)
+	public int getObjectsOwnedByWorldCount(TWorld world)
 	{
 		return getObjectsInQueueCount(objectsOwnedByWorld.get(world));
 	}

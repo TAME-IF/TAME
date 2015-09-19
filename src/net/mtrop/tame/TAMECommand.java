@@ -1964,7 +1964,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
-			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().getObjectSOwnedByWorldCount(request.getModuleContext().resolveWorld())));
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().getObjectsOwnedByWorldCount(request.getModuleContext().resolveWorld())));
 		}
 		
 	},
@@ -2191,6 +2191,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			TPlayerContext currentPlayerContext; 
 			
+			// unfocus.
 			currentPlayerContext = moduleContext.getCurrentPlayerContext();
 			if (currentPlayerContext != null)
 			{
@@ -2211,6 +2212,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			// set next player.
 			moduleContext.setCurrentPlayer(nextPlayer);
 			
+			// focus.
 			currentPlayerContext = moduleContext.getCurrentPlayerContext();
 			TPlayer currentPlayer = currentPlayerContext.getElement();
 			response.trace(request, "Check %s for focus block.", currentPlayer);
@@ -2227,11 +2229,47 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	/**
 	 * Sets the current room (for the current player).
-	 * POP is the room.
+	 * POP is the new room.
 	 * Returns nothing.
 	 */
 	FOCUSONROOM (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM)
 	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varRoom = request.popValue();
+			
+			if (varRoom.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in FOCUSONROOM call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TRoom nextRoom = moduleContext.resolveRoom(varRoom.asString());
+			
+			TOwnershipMap ownership = moduleContext.getOwnershipMap();
+			TPlayer player = moduleContext.getCurrentPlayer();
+			TRoom currentRoom = null;
+			
+			response.trace(request, "Leave rooms for %s.", player);
+
+			// remove all rooms on the stack.
+			while ((currentRoom = ownership.getCurrentRoom(player)) != null)
+			{
+				response.trace(request, "Check %s for unfocus block.", currentRoom);
+				Block block = currentRoom.getUnfocusBlock();
+				if (block != null)
+				{
+					TRoomContext roomContext = moduleContext.getRoomContext(currentRoom);
+					response.trace(request, "Calling unfocus block on %s.", currentRoom);
+					TAMELogic.callBlock(request, response, roomContext, block);
+				}
+				ownership.popRoomFromPlayer(player);
+			}
+
+			// push new room on the stack.
+			response.trace(request, "Check %s for focus block.", nextRoom);
+			
+			// TODO: Finish.
+		}
 		
 	},
 

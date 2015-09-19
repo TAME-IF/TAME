@@ -10,6 +10,7 @@ import net.mtrop.tame.lang.command.Block;
  */
 public final class TAMELogic
 {
+	
 	/**
 	 * Performs the necessary tasks for calling an object block.
 	 * Ensures that the block is called cleanly.
