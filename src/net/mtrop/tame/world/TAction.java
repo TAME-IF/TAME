@@ -39,7 +39,7 @@ public class TAction implements Comparable<TAction>
 	/** 
 	 * Action type. GENERAL, TRANSITIVE, DITRANSITIVE, MODAL, OPEN.
 	 */
-	private Type actionType;
+	private Type type;
 	
 	/** What is the group of names of this action? */
 	private CaseInsensitiveHash names;
@@ -60,7 +60,7 @@ public class TAction implements Comparable<TAction>
 			throw new IllegalArgumentException("Identity cannot be blank.");
 		
 		this.identity = identity;
-		this.actionType = Type.GENERAL;
+		this.type = Type.GENERAL;
 		this.names = new CaseInsensitiveHash();
 		this.extraStrings = new CaseInsensitiveHash();
 	}
@@ -84,17 +84,17 @@ public class TAction implements Comparable<TAction>
 	/**
 	 * Gets the action type.
 	 */
-	public Type getActionType()
+	public Type getType()
 	{
-		return actionType;
+		return type;
 	}
 
 	/**
 	 * Sets the action type.
 	 */
-	public void setActionType(Type value)
+	public void setType(Type value)
 	{
-		actionType = value;
+		type = value;
 	}
 
 	/**

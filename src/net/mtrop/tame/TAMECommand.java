@@ -1731,7 +1731,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is player. 
 	 * Returns nothing.
 	 */
-	BROWSEPLAYER (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
+	BROWSEPLAYER (false, /*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
 		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1753,14 +1753,14 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				response.trace(request, "Check %s for browse block.", object);
 
 				TObjectContext objectContext = moduleContext.getObjectContext(object);
-				request.pushContext(objectContext);
+
 				Block block = object.getPlayerBrowseBlock();
 				if (block != null)
 				{
 					response.trace(request, "Calling player browse block on %s.", object);
-					block.execute(request, response);
+					TAMELogic.callBlock(request, response, objectContext, block);
 				}
-				request.popContext();
+				
 			}
 			
 		}
@@ -1772,7 +1772,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is room. 
 	 * Returns nothing.
 	 */
-	BROWSEROOM (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM)
+	BROWSEROOM (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM)
 	{
 		@Override
 		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1794,14 +1794,14 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				response.trace(request, "Check %s for browse block.", object);
 
 				TObjectContext objectContext = moduleContext.getObjectContext(object);
-				request.pushContext(objectContext);
+
 				Block block = object.getPlayerBrowseBlock();
 				if (block != null)
 				{
 					response.trace(request, "Calling room browse block on %s.", object);
-					block.execute(request, response);
+					TAMELogic.callBlock(request, response, objectContext, block);
 				}
-				request.popContext();
+				
 			}
 			
 		}
@@ -1814,7 +1814,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is object. 
 	 * Returns nothing.
 	 */
-	ADDOBJECTNAME (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
+	ADDOBJECTNAME (false, /*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
 		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1838,7 +1838,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is object.
 	 * Returns nothing.
 	 */
-	GIVEWORLDOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
+	GIVEWORLDOBJECT (false, /*Return: */ null, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
 		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1862,7 +1862,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is player. 
 	 * Returns nothing.
 	 */
-	GIVEPLAYEROBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
+	GIVEPLAYEROBJECT (false, /*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
 	{
 		@Override
 		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1889,7 +1889,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is room. 
 	 * Returns nothing.
 	 */
-	GIVEROOMOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM, ArgumentType.OBJECT)
+	GIVEROOMOBJECT (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM, ArgumentType.OBJECT)
 	{
 		@Override
 		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -2087,27 +2087,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Removes a player from the world. Discards room stack as well.
-	 * POP is the player.
-	 * Returns nothing.
-	 */
-	REMOVEPLAYER (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
-	{
-		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value varPlayer = request.popValue();
-			
-			if (varPlayer.getType() != ValueType.PLAYER)
-				throw new UnexpectedValueTypeException("Expected player type in REMOVEPLAYER call.");
-			
-			TPlayer player = request.getModuleContext().resolvePlayer(varPlayer.asString());
-			request.getModuleContext().getOwnershipMap().removePlayer(player);
-		}
-		
-	},
-	
-	/**
 	 * Checks if a player in in a room. Returns true if current room or in the room stack.
 	 * First POP is the room.
 	 * Second POP is the player.
@@ -2138,7 +2117,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Checks if a player in in a room. Returns true if current room or in the room stack.
 	 * First POP is the object.
 	 * Second POP is the player.
-	 * Returns nothing.
+	 * Returns boolean.
 	 */
 	PLAYERCANACCESSOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
 	{
@@ -2154,16 +2133,108 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected player type in PLAYERCANACCESSOBJECT call.");
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TPlayerContext player = moduleContext.resolvePlayerContext(varPlayer.asString());
-			TObject object = moduleContext.resolveObject(varObject.asString());
 			TWorld world = moduleContext.resolveWorld();
+			TObject object = moduleContext.resolveObject(varObject.asString());
 			TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
 			
-			// TODO: Finish!
+			response.trace(request, "Check world for %s...", object);
+			if (ownershipMap.checkWorldHasObject(world, object))
+			{
+				response.trace(request, "Found.");
+				request.pushValue(Value.create(true));
+				return;
+			}
+			
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
+
+			response.trace(request, "Check %s for %s...", player, object);
+			if (ownershipMap.checkPlayerHasObject(player, object))
+			{
+				response.trace(request, "Found.");
+				request.pushValue(Value.create(true));
+				return;
+			}
+			
+			TRoom currentRoom = ownershipMap.getCurrentRoom(player);
+			
+			response.trace(request, "Check %s for %s...", currentRoom, object);
+			if (currentRoom != null && ownershipMap.checkRoomHasObject(currentRoom, object))
+			{
+				response.trace(request, "Found.");
+				request.pushValue(Value.create(true));
+				return;
+			}
+			
+			response.trace(request, "Not found.");
+			request.pushValue(Value.create(false));
 		}
 		
 	},
 	
+	/**
+	 * Sets the current player. Calls unfocus on previous player, then focus on next player.
+	 * POP is the player.
+	 * Returns nothing.
+	 */
+	FOCUSONPLAYER (false, /*Return: */ null, /*Args: */ ArgumentType.PLAYER)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varPlayer = request.popValue();
+			
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in FOCUSONPLAYER call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TPlayer nextPlayer = moduleContext.resolvePlayer(varPlayer.asString());
+			
+			TPlayerContext currentPlayerContext; 
+			
+			currentPlayerContext = moduleContext.getCurrentPlayerContext();
+			if (currentPlayerContext != null)
+			{
+				TPlayer currentPlayer = currentPlayerContext.getElement();
+				response.trace(request, "Check %s for unfocus block.", currentPlayer);
+				Block block = currentPlayer.getUnfocusBlock();
+				if (block != null)
+				{
+					response.trace(request, "Calling unfocus block on %s.", currentPlayer);
+					TAMELogic.callBlock(request, response, currentPlayerContext, block);
+				}
+			}
+			else
+			{
+				response.trace(request, "No current player. Skipping unfocus.");
+			}
+			
+			// set next player.
+			moduleContext.setCurrentPlayer(nextPlayer);
+			
+			currentPlayerContext = moduleContext.getCurrentPlayerContext();
+			TPlayer currentPlayer = currentPlayerContext.getElement();
+			response.trace(request, "Check %s for focus block.", currentPlayer);
+			Block block = currentPlayer.getFocusBlock();
+			if (block != null)
+			{
+				response.trace(request, "Calling focus block on %s.", currentPlayer);
+				TAMELogic.callBlock(request, response, currentPlayerContext, block);
+			}
+			
+		}
+		
+	},
+
+	/**
+	 * Sets the current room (for the current player).
+	 * POP is the room.
+	 * Returns nothing.
+	 */
+	FOCUSONROOM (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM)
+	{
+		
+	},
+
 	// TODO: Finish this.
 	
 	;

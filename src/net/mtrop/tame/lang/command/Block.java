@@ -53,7 +53,10 @@ public class Block implements ExecutableType, Iterable<Command>
 	public void execute(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
 		for (Command command : this)
+		{
+			response.trace(request, "CALL %s", command);
 			command.execute(request, response);
+		}
 	}
 	
 	@Override

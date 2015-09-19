@@ -89,7 +89,7 @@ public abstract class TElementContext<T extends TElement>
 	@Override
 	public String toString()
 	{
-		return "Context " + elementRef;
+		return "Context:" + elementRef;
 	}
 	
 }
