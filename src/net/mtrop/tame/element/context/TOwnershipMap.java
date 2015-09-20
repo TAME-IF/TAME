@@ -8,13 +8,13 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.context;
+package net.mtrop.tame.element.context;
 
-import net.mtrop.tame.world.TElement;
-import net.mtrop.tame.world.TObject;
-import net.mtrop.tame.world.TPlayer;
-import net.mtrop.tame.world.TRoom;
-import net.mtrop.tame.world.TWorld;
+import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
 
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.hash.HashedQueueMap;

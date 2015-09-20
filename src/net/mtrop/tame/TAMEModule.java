@@ -1,9 +1,10 @@
 package net.mtrop.tame;
 
-import net.mtrop.tame.world.TObject;
-import net.mtrop.tame.world.TPlayer;
-import net.mtrop.tame.world.TRoom;
-import net.mtrop.tame.world.TWorld;
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
 
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 
@@ -22,6 +23,10 @@ public class TAMEModule
 
 	/** The world. */
 	protected TWorld world;
+	/** List of actions. */
+	private CaseInsensitiveHashMap<TAction> actionList;
+	/** Maps action common names to action objects. */
+	private CaseInsensitiveHashMap<TAction> actionNameTable;
 	/** List of players. */
 	protected CaseInsensitiveHashMap<TPlayer> playerList;
 	/** List of rooms. */
@@ -36,6 +41,8 @@ public class TAMEModule
 	{
 		this.moduleId = -1L;
 		this.world = null;
+		this.actionList = new CaseInsensitiveHashMap<TAction>(20);
+		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
 		this.playerList = new CaseInsensitiveHashMap<TPlayer>(2);
 		this.roomList = new CaseInsensitiveHashMap<TRoom>(10);
 		this.objectList = new CaseInsensitiveHashMap<TObject>(20);
@@ -62,6 +69,35 @@ public class TAMEModule
 	public void setModuleId(long moduleId)
 	{
 		this.moduleId = moduleId;
+	}
+
+	/**
+	 * Add an action to this world. World loaders will use this.
+	 * @param a	the Action to add.
+	 */
+	public void addAction(TAction a)
+	{
+		actionList.put(a.getIdentity(), a);
+		for (String s : a.getNames())
+			actionNameTable.put(s, a);
+	}
+
+	/**
+	 * Retrieves an Action's id by name, case-insensitively.
+	 * @param name the Action's name.
+	 * @return the corresponding Action, or null if not found.
+	 */
+	public TAction getActionByName(String name)
+	{
+		return actionNameTable.get(name);
+	}
+
+	/**
+	 * Gets the reference to the list of actions.
+	 */
+	public CaseInsensitiveHashMap<TAction> getActionList()
+	{
+		return actionList;
 	}
 
 	/**

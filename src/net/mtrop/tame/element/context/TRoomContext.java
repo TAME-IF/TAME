@@ -8,22 +8,22 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.context;
+package net.mtrop.tame.element.context;
 
-import net.mtrop.tame.world.TWorld;
+import net.mtrop.tame.element.TRoom;
 
 /**
- * Holds contextual information for a TElement.
+ * Room context.
  * @author Matthew Tropiano
  */
-public class TWorldContext extends TElementContext<TWorld>
+public class TRoomContext extends TElementContext<TRoom>
 {
 	/**
-	 * Creates a blank WorldContext.
+	 * Creates a player context. 
 	 */
-	public TWorldContext(TWorld world)
+	public TRoomContext(TRoom ref)
 	{
-		super(world);
+		super(ref);
 	}
-	
+
 }

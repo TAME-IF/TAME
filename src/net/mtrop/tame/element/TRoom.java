@@ -8,7 +8,7 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.world;
+package net.mtrop.tame.element;
 
 import net.mtrop.tame.lang.ActionSet;
 import net.mtrop.tame.lang.command.Block;

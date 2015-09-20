@@ -8,9 +8,9 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.context;
+package net.mtrop.tame.element.context;
 
-import net.mtrop.tame.world.TPlayer;
+import net.mtrop.tame.element.TPlayer;
 
 /**
  * Player context.

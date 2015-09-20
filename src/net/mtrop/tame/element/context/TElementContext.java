@@ -8,15 +8,15 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.context;
+package net.mtrop.tame.element.context;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.struct.Value;
 import net.mtrop.tame.struct.ValueHash;
-import net.mtrop.tame.world.TElement;
 
 /**
  * Holds contextual information for a TAMEElement

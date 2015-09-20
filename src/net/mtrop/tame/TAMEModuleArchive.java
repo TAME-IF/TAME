@@ -8,7 +8,7 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.archive;
+package net.mtrop.tame;
 
 import java.io.BufferedInputStream;
 import java.io.File;

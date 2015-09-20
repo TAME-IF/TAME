@@ -10,14 +10,15 @@
  ******************************************************************************/
 package net.mtrop.tame;
 
-import net.mtrop.tame.world.TAction;
-import net.mtrop.tame.world.TObject;
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TObject;
 
 /**
  * TAME action item.
+ * Not to be confused with {@link TAction}.
  * @author Matthew Tropiano
  */
-public class TAMEActionItem
+public class TAMEAction
 {
 	/** Is this from the initial request? */
 	private boolean initial;
@@ -30,7 +31,7 @@ public class TAMEActionItem
 	/** The action second object to use. */
 	private TObject object2;
 	
-	private TAMEActionItem(boolean initial, TAction action, String target, TObject object1, TObject object2)
+	private TAMEAction(boolean initial, TAction action, String target, TObject object1, TObject object2)
 	{
 		this.initial = initial;
 		this.action = action;
@@ -44,9 +45,9 @@ public class TAMEActionItem
 	 * @param action the action to call.
 	 * @return a new TAME action item.
 	 */
-	public static TAMEActionItem create(TAction action)
+	public static TAMEAction create(TAction action)
 	{
-		return new TAMEActionItem(false, action, null, null, null);
+		return new TAMEAction(false, action, null, null, null);
 	}
 	
 	/**
@@ -55,9 +56,9 @@ public class TAMEActionItem
 	 * @param target the open target.
 	 * @return a new TAME action item.
 	 */
-	public static TAMEActionItem create(TAction action, String target)
+	public static TAMEAction create(TAction action, String target)
 	{
-		return new TAMEActionItem(false, action, target, null, null);
+		return new TAMEAction(false, action, target, null, null);
 	}
 	
 	/**
@@ -66,9 +67,9 @@ public class TAMEActionItem
 	 * @param object the first object.
 	 * @return a new TAME action item.
 	 */
-	public static TAMEActionItem create(TAction action, TObject object)
+	public static TAMEAction create(TAction action, TObject object)
 	{
-		return new TAMEActionItem(false, action, null, object, null);
+		return new TAMEAction(false, action, null, object, null);
 	}
 	
 	/**
@@ -78,9 +79,9 @@ public class TAMEActionItem
 	 * @param object2 the second object.
 	 * @return a new TAME action item.
 	 */
-	public static TAMEActionItem create(TAction action, TObject object1, TObject object2)
+	public static TAMEAction create(TAction action, TObject object1, TObject object2)
 	{
-		return new TAMEActionItem(false, action, null, object1, object2);
+		return new TAMEAction(false, action, null, object1, object2);
 	}
 
 	/**
@@ -88,9 +89,9 @@ public class TAMEActionItem
 	 * @param action the action to call.
 	 * @return a new TAME action item.
 	 */
-	public static TAMEActionItem createInitial(TAction action)
+	public static TAMEAction createInitial(TAction action)
 	{
-		return new TAMEActionItem(true, action, null, null, null);
+		return new TAMEAction(true, action, null, null, null);
 	}
 	
 	/**
@@ -99,9 +100,9 @@ public class TAMEActionItem
 	 * @param target the open target.
 	 * @return a new TAME action item.
 	 */
-	public static TAMEActionItem createInitial(TAction action, String target)
+	public static TAMEAction createInitial(TAction action, String target)
 	{
-		return new TAMEActionItem(true, action, target, null, null);
+		return new TAMEAction(true, action, target, null, null);
 	}
 	
 	/**
@@ -110,9 +111,9 @@ public class TAMEActionItem
 	 * @param object the first object.
 	 * @return a new TAME action item.
 	 */
-	public static TAMEActionItem createInitial(TAction action, TObject object)
+	public static TAMEAction createInitial(TAction action, TObject object)
 	{
-		return new TAMEActionItem(true, action, null, object, null);
+		return new TAMEAction(true, action, null, object, null);
 	}
 	
 	/**
@@ -122,9 +123,9 @@ public class TAMEActionItem
 	 * @param object2 the second object.
 	 * @return a new TAME action item.
 	 */
-	public static TAMEActionItem createInitial(TAction action, TObject object1, TObject object2)
+	public static TAMEAction createInitial(TAction action, TObject object1, TObject object2)
 	{
-		return new TAMEActionItem(true, action, null, object1, object2);
+		return new TAMEAction(true, action, null, object1, object2);
 	}
 
 	/**

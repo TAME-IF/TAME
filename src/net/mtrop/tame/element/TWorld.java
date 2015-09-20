@@ -8,12 +8,10 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.world;
+package net.mtrop.tame.element;
 
 import net.mtrop.tame.lang.command.Block;
 import net.mtrop.tame.struct.ActionTable;
-
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 
 /**
  * Contains immutable World data. 
@@ -21,10 +19,6 @@ import com.blackrook.commons.hash.CaseInsensitiveHashMap;
  */
 public class TWorld extends TElement
 {
-	/** List of actions. */
-	private CaseInsensitiveHashMap<TAction> actionList;
-	/** Maps action common names to action objects. */
-	private CaseInsensitiveHashMap<TAction> actionNameTable;
 	/** Blocks executed on action failure. */
 	private ActionTable actionFailTable;
 
@@ -42,52 +36,11 @@ public class TWorld extends TElement
 	{
 		super("world");
 
-		this.actionList = new CaseInsensitiveHashMap<TAction>(20);
-		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
 		this.actionFailTable = new ActionTable();
 
 		this.badActionBlock = null;
 		this.actionFailBlock = null;
 		this.actionAmbiguityBlock = null;
-	}
-
-	/**
-	 * Add an action to this world. World loaders will use this.
-	 * @param a	the Action to add.
-	 */
-	public void addAction(TAction a)
-	{
-		actionList.put(a.getIdentity(), a);
-		for (String s : a.getNames())
-			actionNameTable.put(s, a);
-	}
-
-	/**
-	 * Retrieves an Action's id by name, case-insensitively.
-	 * @param name the Action's name.
-	 * @return the corresponding Action, or null if not found.
-	 */
-	public TAction getActionByName(String name)
-	{
-		return actionNameTable.get(name);
-	}
-
-	/**
-	 * Retrieves an Action by identity, case-insensitively.
-	 * @param identity the Action's identity.
-	 * @return the corresponding Action, or null if not found.
-	 */
-	public TAction getActionByIdentity(String identity)
-	{
-		return actionList.get(identity);
-	}
-
-	/**
-	 * Gets the reference to the list of actions.
-	 */
-	public CaseInsensitiveHashMap<TAction> getActionList()
-	{
-		return actionList;
 	}
 
 	/** 

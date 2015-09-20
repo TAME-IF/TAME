@@ -14,7 +14,7 @@ import net.mtrop.tame.struct.Value;
 public class Command implements ExecutableType
 {
 	/** Command opcode. */
-	private int opcode;
+	private TAMECommand operation;
 	/** Command operand 0. */
 	private Value operand0;
 	/** Command operand 1. */
@@ -31,10 +31,10 @@ public class Command implements ExecutableType
 	private Block failureBlock;
 
 	// Hidden constructor.
-	private Command(int opcode, Value operand0, Value operand1, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock, Block failureBlock) 
+	private Command(TAMECommand opcode, Value operand0, Value operand1, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock, Block failureBlock) 
 	{
 		super();
-		this.opcode = opcode;
+		this.operation = opcode;
 		this.operand0 = operand0;
 		this.operand1 = operand1;
 		this.initializationBlock = initializationBlock;
@@ -50,7 +50,7 @@ public class Command implements ExecutableType
 	 */
 	public static Command create(TAMECommand command)
 	{
-		return new Command(command.ordinal(), null, null, null, null, null, null, null);
+		return new Command(command, null, null, null, null, null, null, null);
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class Command implements ExecutableType
 	 */
 	public static Command create(TAMECommand command, Value operand0)
 	{
-		return new Command(command.ordinal(), operand0, null, null, null, null, null, null);
+		return new Command(command, operand0, null, null, null, null, null, null);
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class Command implements ExecutableType
 	 */
 	public static Command create(TAMECommand command, Value operand0, Value operand1)
 	{
-		return new Command(command.ordinal(), operand0, operand1, null, null, null, null, null);
+		return new Command(command, operand0, operand1, null, null, null, null, null);
 	}
 
 	/**
@@ -82,7 +82,7 @@ public class Command implements ExecutableType
 	 */
 	public static Command create(TAMECommand command, Block conditionalBlock, Block successBlock)
 	{
-		return new Command(command.ordinal(), null, null, null, conditionalBlock, null, successBlock, null);
+		return new Command(command, null, null, null, conditionalBlock, null, successBlock, null);
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class Command implements ExecutableType
 	 */
 	public static Command create(TAMECommand command, Block conditionalBlock, Block successBlock, Block failureBlock)
 	{
-		return new Command(command.ordinal(), null, null, null, conditionalBlock, null, successBlock, failureBlock);
+		return new Command(command, null, null, null, conditionalBlock, null, successBlock, failureBlock);
 	}
 
 	/**
@@ -108,15 +108,13 @@ public class Command implements ExecutableType
 	 */
 	public static Command create(TAMECommand command, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock, Block failureBlock)
 	{
-		return new Command(command.ordinal(), null, null, initializationBlock, conditionalBlock, stepBlock, successBlock, failureBlock);
+		return new Command(command, null, null, initializationBlock, conditionalBlock, stepBlock, successBlock, failureBlock);
 	}
 
 	@Override
 	public void execute(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		if (opcode < 0 || opcode >= TAMECommand.values().length)
-			throw new RuntimeException("Bad opcode for command.");
-		TAMECommand.values()[opcode].execute(request, response, this);
+		operation.execute(request, response, this);
 	}
 
 	public Value getOperand0()
@@ -158,7 +156,7 @@ public class Command implements ExecutableType
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append(TAMECommand.values()[opcode].name());
+		sb.append(operation.name());
 		if (operand0 != null)
 			sb.append(' ').append(operand0);
 		if (operand1 != null)

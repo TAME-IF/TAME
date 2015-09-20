@@ -1,4 +1,4 @@
-package net.mtrop.tame.context;
+package net.mtrop.tame;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -8,16 +8,19 @@ import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 
-import net.mtrop.tame.TAMEConstants;
-import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
+import net.mtrop.tame.element.context.TObjectContext;
+import net.mtrop.tame.element.context.TOwnershipMap;
+import net.mtrop.tame.element.context.TPlayerContext;
+import net.mtrop.tame.element.context.TRoomContext;
+import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.struct.Value;
-import net.mtrop.tame.world.TAction;
-import net.mtrop.tame.world.TObject;
-import net.mtrop.tame.world.TPlayer;
-import net.mtrop.tame.world.TRoom;
-import net.mtrop.tame.world.TWorld;
 
 /**
  * A mutable context for a module.
@@ -93,12 +96,11 @@ public class TAMEModuleContext implements TAMEConstants
 	public String[] getAvailableActionNames()
 	{
 		CaseInsensitiveHash hash = new CaseInsensitiveHash();
-		TWorld world = worldContext.getElement();
-		Iterator<String> it = world.getActionList().keyIterator();
+		Iterator<String> it = module.getActionList().keyIterator();
 		while (it.hasNext())
 		{
 			String actionId = it.next();
-			TAction action = world.getActionByIdentity(actionId);
+			TAction action = module.getActionList().get(actionId);
 			TPlayer player = getCurrentPlayerContext() != null ? getCurrentPlayerContext().getElement() : null;
 			TRoom room = getCurrentRoomContext() != null ? getCurrentRoomContext().getElement() : null;
 			
@@ -260,6 +262,21 @@ public class TAMEModuleContext implements TAMEConstants
 	public TWorldContext resolveWorldContext()
 	{
 		return getWorldContext();
+	}
+
+	/**
+	 * Resolves an action by its identity.
+	 * @param actionIdentity the action identity.
+	 * @return the element resolved.
+	 */
+	public TAction resolveAction(String actionIdentity)
+	{
+		TAction action = module.getActionList().get(actionIdentity);
+
+		if (action == null)
+			throw new ModuleExecutionException("Expected action '%s' in module context!", actionIdentity);
+
+		return action;
 	}
 
 	/**

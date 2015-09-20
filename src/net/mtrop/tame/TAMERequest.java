@@ -10,8 +10,7 @@
  ******************************************************************************/
 package net.mtrop.tame;
 
-import net.mtrop.tame.context.TAMEModuleContext;
-import net.mtrop.tame.context.TElementContext;
+import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.exception.ArithmeticStackStateException;
 import net.mtrop.tame.struct.Value;
 
@@ -34,7 +33,7 @@ public class TAMERequest
 	private boolean trace;
 
 	/** Belayed action queue. */
-	private Queue<TAMEActionItem> actionQueue;
+	private Queue<TAMEAction> actionQueue;
 
 	/** Module. */
 	private TAMEModuleContext moduleContext;
@@ -52,7 +51,7 @@ public class TAMERequest
 		trace = false;
 		header = new CaseInsensitiveHashMap<String>(3);
 		
-		actionQueue = new Queue<TAMEActionItem>();
+		actionQueue = new Queue<TAMEAction>();
 		
 		moduleContext = null;
 		valueStack = new Stack<Value>();
@@ -119,7 +118,7 @@ public class TAMERequest
 	/**
 	 * Adds an action item to the queue to be processed later.
 	 */
-	public void addActionItem(TAMEActionItem item)
+	public void addActionItem(TAMEAction item)
 	{
 		actionQueue.enqueue(item);
 	}
@@ -127,7 +126,7 @@ public class TAMERequest
 	/**
 	 * Dequeues an action item from the queue to be processed later.
 	 */
-	public TAMEActionItem getActionItem()
+	public TAMEAction getActionItem()
 	{
 		return actionQueue.dequeue();
 	}

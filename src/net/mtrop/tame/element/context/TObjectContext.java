@@ -8,9 +8,9 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.context;
+package net.mtrop.tame.element.context;
 
-import net.mtrop.tame.world.TObject;
+import net.mtrop.tame.element.TObject;
 
 import com.blackrook.commons.hash.Hash;
 

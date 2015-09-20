@@ -10,9 +10,9 @@
  ******************************************************************************/
 package net.mtrop.tame.struct;
 
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.lang.command.Block;
-import net.mtrop.tame.world.TAction;
-import net.mtrop.tame.world.TObject;
 
 import com.blackrook.commons.hash.HashMap;
 
