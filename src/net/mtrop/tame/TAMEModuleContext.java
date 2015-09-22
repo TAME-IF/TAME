@@ -20,7 +20,7 @@ import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
-import net.mtrop.tame.struct.Value;
+import net.mtrop.tame.lang.Value;
 
 /**
  * A mutable context for a module.

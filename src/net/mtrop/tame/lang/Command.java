@@ -1,17 +1,24 @@
-package net.mtrop.tame.lang.command;
+package net.mtrop.tame.lang;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import com.blackrook.io.SuperReader;
+import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
-import net.mtrop.tame.lang.ExecutableType;
-import net.mtrop.tame.struct.Value;
 
 /**
  * A single low-level machine operation.
  * @author Matthew Tropiano
  */
-public class Command implements ExecutableType
+public class Command implements ExecutableType, Saveable
 {
 	/** Command opcode. */
 	private TAMECommand operation;
@@ -30,10 +37,15 @@ public class Command implements ExecutableType
 	/** Failure block for conditionals. */
 	private Block failureBlock;
 
+	// Private blank constructor for state reader.
+	private Command()
+	{
+		// Nothing.
+	}
+	
 	// Hidden constructor.
 	private Command(TAMECommand opcode, Value operand0, Value operand1, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock, Block failureBlock) 
 	{
-		super();
 		this.operation = opcode;
 		this.operand0 = operand0;
 		this.operand1 = operand1;
@@ -173,5 +185,92 @@ public class Command implements ExecutableType
 			sb.append(" FAILURE{").append(failureBlock).append('}');
 		return sb.toString();
 	}
+
+	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static Command create(InputStream in) throws IOException
+	{
+		Command out = new Command();
+		out.readBytes(in);
+		return out;
+	}
+
+	@Override
+	public void writeBytes(OutputStream out) throws IOException
+	{
+		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		sw.writeByte((byte)operation.ordinal());
+		
+		sw.writeBit(operand0 != null);
+		sw.writeBit(operand1 != null);
+		sw.writeBit(initializationBlock != null);
+		sw.writeBit(conditionalBlock != null);
+		sw.writeBit(stepBlock != null);
+		sw.writeBit(successBlock != null);
+		sw.writeBit(failureBlock != null);
+		sw.flushBits();
+		
+		if (operand0 != null)
+			operand0.writeBytes(out);
+		if (operand1 != null)
+			operand1.writeBytes(out);
+		if (initializationBlock != null)
+			initializationBlock.writeBytes(out);
+		if (conditionalBlock != null)
+			conditionalBlock.writeBytes(out);
+		if (stepBlock != null)
+			stepBlock.writeBytes(out);
+		if (successBlock != null)
+			successBlock.writeBytes(out);
+		if (failureBlock != null)
+			failureBlock.writeBytes(out);
+		
+	}
 	
+	@Override
+	public void readBytes(InputStream in) throws IOException
+	{
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		this.operation = TAMECommand.values()[(int)sr.readByte()];
+		
+		byte objectbits = sr.readByte();
+		
+		if ((objectbits & 0x01) != 0)
+			this.operand0 = Value.create(in);
+		if ((objectbits & 0x02) != 0)
+			this.operand1 = Value.create(in);
+	
+		if ((objectbits & 0x04) != 0)
+			this.initializationBlock = Block.create(in);
+		if ((objectbits & 0x08) != 0)
+			this.conditionalBlock = Block.create(in);
+		if ((objectbits & 0x10) != 0)
+			this.stepBlock = Block.create(in);
+		if ((objectbits & 0x20) != 0)
+			this.successBlock = Block.create(in);
+		if ((objectbits & 0x40) != 0)
+			this.failureBlock = Block.create(in);
+		
+	}
+
+	@Override
+	public byte[] toBytes() throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeBytes(bos);
+		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromBytes(byte[] data) throws IOException 
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readBytes(bis);
+		bis.close();
+	}
+
 }

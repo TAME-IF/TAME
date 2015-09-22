@@ -8,7 +8,7 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.struct;
+package net.mtrop.tame.lang;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,68 +16,69 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import net.mtrop.tame.lang.Block;
-import net.mtrop.tame.lang.Saveable;
-
-import com.blackrook.commons.list.SortedMap;
+import com.blackrook.commons.ObjectPair;
+import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
+
 /**
- * Holds actionIdentity -> Block mappings for general action calls.
+ * Convenience class for Value lookup tables.
  * @author Matthew Tropiano
  */
-public class ActionTable implements Saveable
+public class ValueHash extends CaseInsensitiveHashMap<Value> implements Saveable
 {
-	/** Action map. */
-	private SortedMap<String, Block> actionMap;
 	
-	public ActionTable()
+	/**
+	 * Creates a new ValueHash.
+	 */
+	public ValueHash()
 	{
-		actionMap = null;
+		super(4);
 	}
 	
 	/**
-	 * Checks if a command block by action exists.
+	 * Copies values from one value hash to this one.
 	 */
-	public boolean contains(String actionIdentity)
+	public void copyFrom(ValueHash hash)
 	{
-		return get(actionIdentity) != null;
+		for (ObjectPair<String, Value> pair : hash)
+			put(pair.getKey(), Value.create(pair.getValue()));
 	}
 
 	/**
-	 * Gets command block by action.
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
 	 */
-	public Block get(String actionIdentity)
+	public static ValueHash create(InputStream in) throws IOException
 	{
-		if (actionMap == null) 
-			return null;
-		else
-			return actionMap.get(actionIdentity);
-	}
-
-	/**
-	 * Sets/replaces command block by action.
-	 */
-	public void add(String actionIdentity, Block commandBlock)
-	{
-		if (actionMap == null)
-			actionMap = new SortedMap<String, Block>(3, 3);
-		actionMap.add(actionIdentity, commandBlock);
+		ValueHash out = new ValueHash();
+		out.readBytes(in);
+		return out;
 	}
 
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		sw.writeInt(size());
+		for (ObjectPair<String, Value> hp : this)
+		{
+			sw.writeString(hp.getKey());
+			hp.getValue().writeBytes(out);
+		}
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
+		clear();
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		int x = sr.readInt();
+		for (int i = 0; i < x; i++)
+			put(sr.readString(), Value.create(in));
 	}
 
 	@Override
@@ -95,5 +96,5 @@ public class ActionTable implements Saveable
 		readBytes(bis);
 		bis.close();
 	}
-	
+
 }

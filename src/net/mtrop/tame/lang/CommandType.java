@@ -13,7 +13,6 @@ package net.mtrop.tame.lang;
 import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
-import net.mtrop.tame.lang.command.Command;
 
 /**
  * An executable command run by the TAME virtual machine.

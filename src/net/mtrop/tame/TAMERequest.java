@@ -12,7 +12,7 @@ package net.mtrop.tame;
 
 import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.exception.ArithmeticStackStateException;
-import net.mtrop.tame.struct.Value;
+import net.mtrop.tame.lang.Value;
 
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.linkedlist.Queue;

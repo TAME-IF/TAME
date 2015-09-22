@@ -9,7 +9,7 @@ import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
-import net.mtrop.tame.lang.command.Block;
+import net.mtrop.tame.lang.Block;
 
 /**
  * Utility and rules class. 

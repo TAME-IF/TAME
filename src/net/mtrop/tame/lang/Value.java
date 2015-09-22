@@ -8,8 +8,9 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.struct;
+package net.mtrop.tame.lang;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +26,7 @@ import com.blackrook.io.SuperWriter;
  * All values in the interpreter are of this type, which stores a type.
  * @author Matthew Tropiano
  */
-public class Value implements Comparable<Value>
+public class Value implements Comparable<Value>, Saveable
 {
 	/** Value type. */
 	protected ValueType type;
@@ -202,8 +203,7 @@ public class Value implements Comparable<Value>
 	public static Value create(InputStream in) throws IOException
 	{
 		Value out = new Value();
-		SuperReader sr = new SuperReader(in,SuperReader.LITTLE_ENDIAN);
-		out.set(ValueType.values()[sr.readByte()], sr.readString());
+		out.readBytes(in);
 		return out;
 	}
 
@@ -288,23 +288,7 @@ public class Value implements Comparable<Value>
 		return 0;
 	}
 
-	/**
-	 * Reads a value from an input stream.
-	 * @param in the stream to read from.
-	 * @return a new value.
-	 * @throws IOException if a value could not be read.
-	 */
-	public void readBytes(InputStream in) throws IOException
-	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		set(ValueType.values()[sr.readByte()], sr.readString());
-	}
-	
-	/**
-	 * Writes a value to an output stream.
-	 * @param out the stream to write to.
-	 * @throws IOException if a value could not be written.
-	 */
+	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
@@ -312,16 +296,27 @@ public class Value implements Comparable<Value>
 		sw.writeString(value.toString());
 	}
 	
-	/**
-	 * Gets this value as a byte string.
-	 * @return the byte representation of this
-	 * @throws IOException
-	 */
-	public byte[] getBytes() throws IOException
+	@Override
+	public void readBytes(InputStream in) throws IOException
+	{
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		set(ValueType.values()[sr.readByte()], sr.readString());
+	}
+
+	@Override
+	public byte[] toBytes() throws IOException
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		writeBytes(bos);
 		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromBytes(byte[] data) throws IOException 
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readBytes(bis);
+		bis.close();
 	}
 
 	/**

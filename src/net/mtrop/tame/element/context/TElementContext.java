@@ -15,8 +15,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import net.mtrop.tame.element.TElement;
-import net.mtrop.tame.struct.Value;
-import net.mtrop.tame.struct.ValueHash;
+import net.mtrop.tame.lang.Value;
+import net.mtrop.tame.lang.ValueHash;
 
 /**
  * Holds contextual information for a TAMEElement

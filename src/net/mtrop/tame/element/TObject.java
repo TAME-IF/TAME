@@ -10,10 +10,18 @@
  ******************************************************************************/
 package net.mtrop.tame.element;
 
-import net.mtrop.tame.lang.command.Block;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionWithTable;
 
 import com.blackrook.commons.hash.CaseInsensitiveHash;
+import com.blackrook.io.SuperReader;
+import com.blackrook.io.SuperWriter;
 
 /**
  * Objects are common elements that players interact with, examine, talk to, eat, take - 
@@ -87,6 +95,38 @@ public class TObject extends TElement
 	public void setPlayerBrowseBlock(Block eab)
 	{
 		playerBrowseBlock = eab;
+	}
+	
+	@Override
+	public void writeBytes(OutputStream out) throws IOException
+	{
+		super.writeBytes(out);
+		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		// TODO: Finish this.
+	}
+	
+	@Override
+	public void readBytes(InputStream in) throws IOException
+	{
+		super.readBytes(in);
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		// TODO: Finish this.
+	}
+
+	@Override
+	public byte[] toBytes() throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeBytes(bos);
+		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromBytes(byte[] data) throws IOException 
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readBytes(bis);
+		bis.close();
 	}
 	
 }

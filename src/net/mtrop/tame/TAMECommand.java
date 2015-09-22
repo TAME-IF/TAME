@@ -27,11 +27,11 @@ import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.ArgumentType;
+import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.Command;
 import net.mtrop.tame.lang.CommandType;
-import net.mtrop.tame.lang.command.Block;
-import net.mtrop.tame.lang.command.Command;
-import net.mtrop.tame.struct.Value;
-import net.mtrop.tame.struct.ValueType;
+import net.mtrop.tame.lang.Value;
+import net.mtrop.tame.lang.ValueType;
 
 /**
  * The set of commands.

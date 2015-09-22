@@ -10,14 +10,24 @@
  ******************************************************************************/
 package net.mtrop.tame.element;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import net.mtrop.tame.lang.Saveable;
+
 import com.blackrook.commons.Common;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
+import com.blackrook.io.SuperReader;
+import com.blackrook.io.SuperWriter;
 
 /**
  * This is a player-activated action.
  * @author Matthew Tropiano
  */
-public class TAction implements Comparable<TAction>
+public class TAction implements Comparable<TAction>, Saveable
 {
 	public static enum Type
 	{
@@ -51,18 +61,24 @@ public class TAction implements Comparable<TAction>
 	 */
 	private CaseInsensitiveHash extraStrings;
 	
+	// Empty constructor.
+	private TAction()
+	{
+		this.names = new CaseInsensitiveHash();
+		this.extraStrings = new CaseInsensitiveHash();
+	}
+	
 	/**
 	 * Makes a blank action.
 	 */
 	public TAction(String identity)
 	{
+		this();
 		if (Common.isEmpty(identity))
 			throw new IllegalArgumentException("Identity cannot be blank.");
 		
 		this.identity = identity;
 		this.type = Type.GENERAL;
-		this.names = new CaseInsensitiveHash();
-		this.extraStrings = new CaseInsensitiveHash();
 	}
 	
 	/** 
@@ -149,4 +165,69 @@ public class TAction implements Comparable<TAction>
 		return "TAction ["+identity+"]";
 	}
 	
+	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static TAction create(InputStream in) throws IOException
+	{
+		TAction out = new TAction();
+		out.readBytes(in);
+		return out;
+	}
+
+	@Override
+	public void writeBytes(OutputStream out) throws IOException
+	{
+		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		sw.writeString(identity, "UTF-8");
+		sw.writeByte((byte)type.ordinal());
+		
+		sw.writeInt(names.size());
+		for (String s : names)
+			sw.writeString(s.toLowerCase(), "UTF-8");
+			
+		sw.writeInt(extraStrings.size());
+		for (String s : extraStrings)
+			sw.writeString(s.toLowerCase(), "UTF-8");
+	}
+	
+	@Override
+	public void readBytes(InputStream in) throws IOException
+	{
+		names.clear();
+		extraStrings.clear();
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		this.identity = sr.readString("UTF-8");
+		this.type = Type.values()[(int)sr.readByte()];
+		
+		int size;
+		
+		size = sr.readInt();
+		while (size-- > 0)
+			names.put(sr.readString("UTF-8"));
+		
+		size = sr.readInt();
+		while (size-- > 0)
+			extraStrings.put(sr.readString("UTF-8"));
+	}
+
+	@Override
+	public byte[] toBytes() throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeBytes(bos);
+		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromBytes(byte[] data) throws IOException 
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readBytes(bis);
+		bis.close();
+	}
+
 }

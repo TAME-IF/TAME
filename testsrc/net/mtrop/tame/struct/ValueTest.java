@@ -2,6 +2,8 @@ package net.mtrop.tame.struct;
 
 import java.io.PrintStream;
 
+import net.mtrop.tame.lang.Value;
+
 public final class ValueTest {
 
 	public static void main(String[] args) 

@@ -1,4 +1,4 @@
-package net.mtrop.tame.struct;
+package net.mtrop.tame.lang;
 
 /**
  * Value type enumeration.
