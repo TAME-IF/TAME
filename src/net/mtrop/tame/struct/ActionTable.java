@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Saveable;
 
+import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.list.SortedMap;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
@@ -35,6 +36,19 @@ public class ActionTable implements Saveable
 	public ActionTable()
 	{
 		actionMap = null;
+	}
+	
+	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static ActionTable create(InputStream in) throws IOException
+	{
+		ActionTable out = new ActionTable();
+		out.readBytes(in);
+		return out;
 	}
 	
 	/**
@@ -70,14 +84,24 @@ public class ActionTable implements Saveable
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		sw.writeInt(actionMap.size());
+		for (ObjectPair<String, Block> entry : actionMap)
+		{
+			sw.writeString(entry.getKey(), "UTF-8");
+			entry.getValue().writeBytes(out);
+		}
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		actionMap.clear();
+		int size = sr.readInt();
+		while (size-- > 0)
+		{
+			add(sr.readString("UTF-8"), Block.create(in));
+		}
 	}
 
 	@Override

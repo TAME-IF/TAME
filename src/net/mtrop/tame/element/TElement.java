@@ -45,18 +45,15 @@ public abstract class TElement implements Saveable
 	 * prototyped, but not completely defined. It is set by default and must be cleared.
 	 */
 	private boolean prototyped;
-	
-	protected TElement(String identity)
+
+	protected TElement()
 	{
-		if (Common.isEmpty(identity))
-			throw new IllegalArgumentException("Identity cannot be blank.");
-		
-		this.identity = identity;
+		this.identity = null;
 		this.actionTable = new ActionTable();
-		this.initBlock = new Block();
+		this.initBlock = null;
 		this.prototyped = true;
 	}
-
+	
 	/**
 	 * Sets if this is prototyped.
 	 * This is set on initial creation. This flag is checked to ensure all objects were defined.
@@ -89,6 +86,8 @@ public abstract class TElement implements Saveable
 	 */
 	public void setIdentity(String identity)
 	{
+		if (Common.isEmpty(identity))
+			throw new IllegalArgumentException("Identity cannot be blank.");
 		this.identity = identity;
 	}
 	
@@ -149,14 +148,23 @@ public abstract class TElement implements Saveable
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		sw.writeString(identity, "UTF-8");
+		sw.writeBit(initBlock != null);
+		sw.flushBits();
+		if (initBlock != null)
+			initBlock.writeBytes(out);
+		actionTable.writeBytes(out);
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		identity = sr.readString("UTF-8");
+		byte blockbits = sr.readByte();
+		if ((blockbits & 0x01) != 0)
+			initBlock = Block.create(in);
+		actionTable = ActionTable.create(in);
 	}
 
 	@Override

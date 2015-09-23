@@ -10,8 +10,6 @@
  ******************************************************************************/
 package net.mtrop.tame.element;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,7 +38,7 @@ public class TRoom extends TElement
 	/** Set function for action list. */
 	protected ActionSet actionListFunction;
 	/** List of actions that are either restricted or excluded. */
-	protected Hash<TAction> actionList;
+	protected Hash<String> actionList;
 
 	/** Table used for modal actions. (actionName, mode) -> block. */
 	protected ActionModeTable modalActionTable;
@@ -55,17 +53,22 @@ public class TRoom extends TElement
 	/** Code block ran upon focusing away from this. */
 	protected Block unfocusBlock;
 	
-	/** Creates a new Room instance. */
-	public TRoom(String id)
+	/**
+	 * Constructs an instance of a game world.
+	 */
+	public TRoom()
 	{
-		super(id);
+		super();
+		
 		actionListFunction = ActionSet.EXCLUDE;
-		actionList = new Hash<TAction>(2);
+		actionList = new Hash<String>(2);
+		
 		modalActionTable = new ActionModeTable();
 		actionForbidTable = new ActionTable();
-		actionForbidBlock = new Block();
-		focusBlock = new Block();
-		unfocusBlock = new Block();
+		
+		actionForbidBlock = null;
+		focusBlock = null;
+		unfocusBlock = null;
 	}
 
 	/**
@@ -87,9 +90,9 @@ public class TRoom extends TElement
 	/**
 	 * Adds an action to the action list to be excluded/restricted.
 	 */
-	public void addActionToList(TAction action)
+	public void addAction(TAction action)
 	{
-		actionList.put(action);
+		actionList.put(action.getIdentity());
 	}
 	
 	/**
@@ -98,9 +101,9 @@ public class TRoom extends TElement
 	public boolean allowsAction(TAction action)
 	{
 		if (actionListFunction == ActionSet.EXCLUDE)
-			return !actionList.contains(action);
+			return !actionList.contains(action.getIdentity());
 		else
-			return actionList.contains(action);
+			return actionList.contains(action.getIdentity());
 	}
 	
 	/** 
@@ -167,36 +170,69 @@ public class TRoom extends TElement
 		unfocusBlock = block;
 	}
 
+	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static TRoom create(InputStream in) throws IOException
+	{
+		TRoom out = new TRoom();
+		out.readBytes(in);
+		return out;
+	}
+
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		super.writeBytes(out);
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		super.writeBytes(out);
+		sw.writeByte((byte)actionListFunction.ordinal());
+
+		sw.writeInt(actionList.size());
+		for (String actionIdentity : actionList)
+			sw.writeString(actionIdentity, "UTF-8");
+		
+		modalActionTable.writeBytes(out);
+		actionForbidTable.writeBytes(out);
+		
+		sw.writeBit(actionForbidBlock != null);
+		sw.writeBit(focusBlock != null);
+		sw.writeBit(unfocusBlock != null);
+		sw.flushBits();
+
+		if (actionForbidBlock != null)
+			actionForbidBlock.writeBytes(out);
+		if (focusBlock != null)
+			focusBlock.writeBytes(out);
+		if (unfocusBlock != null)
+			unfocusBlock.writeBytes(out);
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		super.readBytes(in);
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
-	}
-
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
-	}
+		super.readBytes(in);
+		actionListFunction = ActionSet.values()[sr.readByte()];
+		
+		actionList.clear();
+		int size = sr.readInt();
+		while (size-- > 0)
+			actionList.put(sr.readString("UTF-8"));
 	
+		modalActionTable = ActionModeTable.create(in);
+		actionForbidTable = ActionTable.create(in);
+		
+		byte blockbits = sr.readByte();
+		
+		if ((blockbits & 0x01) != 0)
+			actionForbidBlock = Block.create(in);
+		if ((blockbits & 0x02) != 0)
+			focusBlock = Block.create(in);
+		if ((blockbits & 0x04) != 0)
+			unfocusBlock = Block.create(in);
+	}
+
 }

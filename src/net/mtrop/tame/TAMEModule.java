@@ -6,7 +6,8 @@ import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
 
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
+import com.blackrook.commons.Common;
+import com.blackrook.commons.hash.HashMap;
 
 /**
  * An instantiated module.
@@ -18,34 +19,34 @@ public class TAMEModule
 	
 	/** Module name. */
 	protected String moduleName;
-	/** Module magic number. */
-	protected long moduleId;
+	/** Module hash. */
+	protected byte[] moduleHash;
 
 	/** The world. */
 	protected TWorld world;
 	/** List of actions. */
-	private CaseInsensitiveHashMap<TAction> actionList;
+	private HashMap<String, TAction> actionList;
 	/** Maps action common names to action objects. */
-	private CaseInsensitiveHashMap<TAction> actionNameTable;
+	private HashMap<String, TAction> actionNameTable;
 	/** List of players. */
-	protected CaseInsensitiveHashMap<TPlayer> playerList;
+	protected HashMap<String, TPlayer> playerList;
 	/** List of rooms. */
-	protected CaseInsensitiveHashMap<TRoom> roomList;
+	protected HashMap<String, TRoom> roomList;
 	/** List of objects. */
-	protected CaseInsensitiveHashMap<TObject> objectList;
+	protected HashMap<String, TObject> objectList;
 	
 	/**
 	 * Creates a new module.
 	 */
 	public TAMEModule()
 	{
-		this.moduleId = -1L;
+		this.moduleHash = new byte[20];
+		this.actionList = new HashMap<String, TAction>(20);
+		this.actionNameTable = new HashMap<String, TAction>(15);
 		this.world = null;
-		this.actionList = new CaseInsensitiveHashMap<TAction>(20);
-		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
-		this.playerList = new CaseInsensitiveHashMap<TPlayer>(2);
-		this.roomList = new CaseInsensitiveHashMap<TRoom>(10);
-		this.objectList = new CaseInsensitiveHashMap<TObject>(20);
+		this.playerList = new HashMap<String, TPlayer>(2);
+		this.roomList = new HashMap<String, TRoom>(10);
+		this.objectList = new HashMap<String, TObject>(20);
 	}
 
 	public String getModuleName() 
@@ -55,20 +56,24 @@ public class TAMEModule
 	
 	public void setModuleName(String moduleName) 
 	{
+		if (Common.isEmpty(moduleName))
+			throw new IllegalArgumentException("Identity cannot be blank.");
 		this.moduleName = moduleName;
 	}
 	
 	/**
-	 * Gets this module's "magic" id.
+	 * Gets this module's hash id.
 	 */
-	public long getModuleId()
+	public byte[] getModuleHash()
 	{
-		return moduleId;
+		return moduleHash;
 	}
 	
-	public void setModuleId(long moduleId)
+	public void setModuleHash(byte[] moduleHash)
 	{
-		this.moduleId = moduleId;
+		if (moduleHash == null || moduleHash.length != 20)
+			throw new IllegalArgumentException("hash must be 20 bytes long");
+		this.moduleHash = moduleHash;
 	}
 
 	/**
@@ -95,7 +100,7 @@ public class TAMEModule
 	/**
 	 * Gets the reference to the list of actions.
 	 */
-	public CaseInsensitiveHashMap<TAction> getActionList()
+	public HashMap<String, TAction> getActionList()
 	{
 		return actionList;
 	}
@@ -129,7 +134,7 @@ public class TAMEModule
 	/**
 	 * Gets the reference to the list of rooms.
 	 */
-	public CaseInsensitiveHashMap<TRoom> getRoomList()
+	public HashMap<String, TRoom> getRoomList()
 	{
 		return roomList;
 	}
@@ -147,7 +152,7 @@ public class TAMEModule
 	/**
 	 * Gets the reference to the list of objects.
 	 */
-	public CaseInsensitiveHashMap<TObject> getObjectList()
+	public HashMap<String, TObject> getObjectList()
 	{
 		return objectList;
 	}
@@ -165,7 +170,7 @@ public class TAMEModule
 	/**
 	 * Gets the reference to the list of players.
 	 */
-	public CaseInsensitiveHashMap<TPlayer> getPlayerList()
+	public HashMap<String, TPlayer> getPlayerList()
 	{
 		return playerList;
 	}

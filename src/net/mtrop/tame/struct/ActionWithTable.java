@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Saveable;
 
+import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
@@ -38,6 +39,19 @@ public class ActionWithTable implements Saveable
 	public ActionWithTable()
 	{
 		actionMap = null;
+	}
+	
+	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static ActionWithTable create(InputStream in) throws IOException
+	{
+		ActionWithTable out = new ActionWithTable();
+		out.readBytes(in);
+		return out;
 	}
 	
 	/**
@@ -86,14 +100,35 @@ public class ActionWithTable implements Saveable
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		sw.writeInt(actionMap.size());
+		for (ObjectPair<String, HashMap<String, Block>> action : actionMap)
+		{
+			sw.writeString(action.getKey(), "UTF-8");
+			HashMap<String, Block> objectMap = action.getValue();
+			sw.writeInt(objectMap.size());
+			for (ObjectPair<String, Block> object : objectMap)
+			{
+				sw.writeString(object.getKey(), "UTF-8");
+				object.getValue().writeBytes(out);
+			}
+		}
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		actionMap.clear();
+		int actionsize = sr.readInt();
+		while (actionsize-- > 0)
+		{
+			String actionIdentity = sr.readString("UTF-8");
+			int objectsize = sr.readInt();
+			while (objectsize-- > 0)
+			{
+				add(actionIdentity, sr.readString("UTF-8"), Block.create(in));
+			}
+		}
 	}
 
 	@Override

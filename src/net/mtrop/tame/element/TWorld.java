@@ -10,8 +10,6 @@
  ******************************************************************************/
 package net.mtrop.tame.element;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,6 +17,7 @@ import java.io.OutputStream;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
+import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionTable;
 
@@ -31,25 +30,26 @@ public class TWorld extends TElement
 	/** Blocks executed on action failure. */
 	private ActionTable actionFailTable;
 
-	/** Code block ran upon bad action. */
-	private Block badActionBlock;
 	/** Code block ran upon default action fail. */
 	private Block actionFailBlock;
 	/** Code block ran when an action is ambiguous. */
 	private Block actionAmbiguityBlock;
-	
+	/** Code block ran upon bad action. */
+	private Block badActionBlock;
+
 	/**
 	 * Constructs an instance of a game world.
 	 */
 	public TWorld()
 	{
-		super("world");
-
+		super();
+		setIdentity(TAMEConstants.IDENTITY_CURRENT_WORLD);
+		
 		this.actionFailTable = new ActionTable();
 
-		this.badActionBlock = null;
 		this.actionFailBlock = null;
 		this.actionAmbiguityBlock = null;
+		this.badActionBlock = null;
 	}
 
 	/** 
@@ -108,36 +108,55 @@ public class TWorld extends TElement
 		actionFailBlock = eab;
 	}
 
+	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static TWorld create(InputStream in) throws IOException
+	{
+		TWorld out = new TWorld();
+		out.readBytes(in);
+		return out;
+	}
+
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		super.writeBytes(out);
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		super.writeBytes(out);
+		
+		actionFailTable.writeBytes(out);
+		
+		sw.writeBit(actionFailBlock != null);
+		sw.writeBit(actionAmbiguityBlock != null);
+		sw.writeBit(badActionBlock != null);
+		sw.flushBits();
+		
+		if (actionFailBlock != null)
+			actionFailBlock.writeBytes(out);
+		if (actionAmbiguityBlock != null)
+			actionAmbiguityBlock.writeBytes(out);
+		if (badActionBlock != null)
+			badActionBlock.writeBytes(out);
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		super.readBytes(in);
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		super.readBytes(in);
+		actionFailTable = ActionTable.create(in);
+		
+		byte blockbits = sr.readByte();
+		
+		if ((blockbits & 0x01) != 0)
+			actionFailBlock = Block.create(in);
+		if ((blockbits & 0x02) != 0)
+			actionAmbiguityBlock = Block.create(in);
+		if ((blockbits & 0x04) != 0)
+			badActionBlock = Block.create(in);
 	}
 
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
-	}
-	
 }

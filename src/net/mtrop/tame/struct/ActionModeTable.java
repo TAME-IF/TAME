@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Saveable;
 
+import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.io.SuperReader;
@@ -41,6 +42,19 @@ public class ActionModeTable implements Saveable
 		actionMap = null;
 	}
 
+	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static ActionModeTable create(InputStream in) throws IOException
+	{
+		ActionModeTable out = new ActionModeTable();
+		out.readBytes(in);
+		return out;
+	}
+	
 	/**
 	 * Checks if a command block by action exists.
 	 */
@@ -87,14 +101,35 @@ public class ActionModeTable implements Saveable
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		sw.writeInt(actionMap.size());
+		for (ObjectPair<String, CaseInsensitiveHashMap<Block>> action : actionMap)
+		{
+			sw.writeString(action.getKey(), "UTF-8");
+			CaseInsensitiveHashMap<Block> modeMap = action.getValue();
+			sw.writeInt(modeMap.size());
+			for (ObjectPair<String, Block> mode : modeMap)
+			{
+				sw.writeString(mode.getKey().toLowerCase(), "UTF-8");
+				mode.getValue().writeBytes(out);
+			}
+		}
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		actionMap.clear();
+		int actionsize = sr.readInt();
+		while (actionsize-- > 0)
+		{
+			String actionIdentity = sr.readString("UTF-8");
+			int modesize = sr.readInt();
+			while (modesize-- > 0)
+			{
+				add(actionIdentity, sr.readString("UTF-8"), Block.create(in));
+			}
+		}
 	}
 
 	@Override

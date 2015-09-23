@@ -10,11 +10,15 @@
  ******************************************************************************/
 package net.mtrop.tame.element.context;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.lang.StateSaveable;
 import net.mtrop.tame.lang.Value;
 import net.mtrop.tame.lang.ValueHash;
 
@@ -22,19 +26,23 @@ import net.mtrop.tame.lang.ValueHash;
  * Holds contextual information for a TAMEElement
  * @author Matthew Tropiano
  */
-public abstract class TElementContext<T extends TElement>
+public abstract class TElementContext<T extends TElement> implements StateSaveable
 {
 	/** Reference to source element. */
 	protected T elementRef;
 	/** Variable bank. */
 	protected ValueHash variables;
 
-	public TElementContext(T ref)
+	
+	protected TElementContext(T ref)
 	{
 		elementRef = ref;
 		variables = new ValueHash();
 	}
 
+	/**
+	 * Gets the element associated with this context.
+	 */
 	public T getElement()
 	{
 		return elementRef;
@@ -90,6 +98,34 @@ public abstract class TElementContext<T extends TElement>
 	public String toString()
 	{
 		return "Context:" + elementRef;
+	}
+	
+	@Override
+	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
+	{
+		variables.writeBytes(out);
+	}
+
+	@Override
+	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
+	{
+		variables.readBytes(in);
+	}
+
+	@Override
+	public byte[] toStateBytes(TAMEModule module) throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeStateBytes(module, bos);
+		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromStateBytes(TAMEModule module, byte[] data) throws IOException 
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readStateBytes(module, bis);
+		bis.close();
 	}
 	
 }

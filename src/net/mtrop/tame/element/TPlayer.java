@@ -10,12 +10,11 @@
  ******************************************************************************/
 package net.mtrop.tame.element;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.lang.ActionSet;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionModeTable;
@@ -35,46 +34,49 @@ public class TPlayer extends TElement
 	/** Set function for action list. */
 	protected ActionSet actionListFunction;
 	/** List of actions that are either restricted or excluded. */
-	protected Hash<TAction> actionList;
+	protected Hash<String> actionList;
 
 	/** Table used for modal actions. */
 	protected ActionModeTable modalActionTable;
-
 	/** Blocks executed on action disallow. */
 	protected ActionTable actionForbidTable;
-	/** Code block ran upon default action disallow. */
-	protected Block actionForbidBlock;
-
-	/** Code block ran upon bad action. */
-	protected Block badActionBlock;
-
 	/** Blocks executed on action failure. */
 	protected ActionTable actionFailTable;
+	
+	/** Code block ran upon default action disallow. */
+	protected Block actionForbidBlock;
 	/** Code block ran upon default action fail. */
 	protected Block actionFailBlock;
-
 	/** Code block ran when an action is ambiguous. */
 	protected Block actionAmbiguityBlock;
-
+	/** Code block ran upon bad action. */
+	protected Block badActionBlock;
 	/** Code block ran upon focusing on this. */
 	protected Block focusBlock;
 	/** Code block ran upon focusing away from this. */
 	protected Block unfocusBlock;
 
-	public TPlayer(String id)
+	/**
+	 * Constructs an instance of a game world.
+	 */
+	public TPlayer()
 	{
-		super(id);
+		super();
+		setIdentity(TAMEConstants.IDENTITY_CURRENT_WORLD);
+		
 		this.actionListFunction = ActionSet.EXCLUDE;
-		this.actionList = new Hash<TAction>(2);
+		this.actionList = new Hash<String>(2);
+		
 		this.modalActionTable = new ActionModeTable();
-		this.badActionBlock = new Block();
 		this.actionForbidTable = new ActionTable();
-		this.actionForbidBlock = new Block();
 		this.actionFailTable = new ActionTable();
-		this.actionFailBlock = new Block();
-		this.actionAmbiguityBlock = new Block();
-		this.focusBlock = new Block();
-		this.unfocusBlock = new Block();
+		
+		this.actionForbidBlock = null;
+		this.actionFailBlock = null;
+		this.actionAmbiguityBlock = null;
+		this.badActionBlock = null;
+		this.focusBlock = null;
+		this.unfocusBlock = null;
 	}
 	
 	/**
@@ -96,9 +98,17 @@ public class TPlayer extends TElement
 	/**
 	 * Gets a list of excluded/restricted actions, if any.
 	 */
-	public Hash<TAction> getActionList()
+	public Hash<String> getActionList()
 	{
 		return actionList;
+	}
+	
+	/**
+	 * Adds an action to the action list to be excluded/restricted.
+	 */
+	public void addAction(TAction action)
+	{
+		actionList.put(action.getIdentity());
 	}
 	
 	/**
@@ -107,9 +117,9 @@ public class TPlayer extends TElement
 	public boolean allowsAction(TAction action)
 	{
 		if (actionListFunction == ActionSet.EXCLUDE)
-			return !actionList.contains(action);
+			return !actionList.contains(action.getIdentity());
 		else
-			return actionList.contains(action);
+			return actionList.contains(action.getIdentity());
 	}
 
 	/** 
@@ -235,33 +245,70 @@ public class TPlayer extends TElement
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		super.writeBytes(out);
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		super.writeBytes(out);
+		sw.writeByte((byte)actionListFunction.ordinal());
+
+		sw.writeInt(actionList.size());
+		for (String actionIdentity : actionList)
+			sw.writeString(actionIdentity, "UTF-8");
+		
+		modalActionTable.writeBytes(out);
+		actionForbidTable.writeBytes(out);
+		actionFailTable.writeBytes(out);
+
+		sw.writeBit(actionForbidBlock != null);
+		sw.writeBit(actionFailBlock != null);
+		sw.writeBit(actionAmbiguityBlock != null);
+		sw.writeBit(badActionBlock != null);
+		sw.writeBit(focusBlock != null);
+		sw.writeBit(unfocusBlock != null);
+		sw.flushBits();
+		
+		if (actionForbidBlock != null)
+			actionForbidBlock.writeBytes(out);
+		if (actionFailBlock != null)
+			actionFailBlock.writeBytes(out);
+		if (actionAmbiguityBlock != null)
+			actionAmbiguityBlock.writeBytes(out);
+		if (badActionBlock != null)
+			badActionBlock.writeBytes(out);
+		if (focusBlock != null)
+			focusBlock.writeBytes(out);
+		if (unfocusBlock != null)
+			unfocusBlock.writeBytes(out);
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		super.readBytes(in);
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
-	}
-
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
-	}
+		super.readBytes(in);
+		actionListFunction = ActionSet.values()[sr.readByte()];
+		
+		actionList.clear();
+		int size = sr.readInt();
+		while (size-- > 0)
+			actionList.put(sr.readString("UTF-8"));
 	
+		modalActionTable = ActionModeTable.create(in);
+		actionForbidTable = ActionTable.create(in);
+		actionFailTable = ActionTable.create(in);
+		
+		byte blockbits = sr.readByte();
+		
+		if ((blockbits & 0x01) != 0)
+			actionForbidBlock = Block.create(in);
+		if ((blockbits & 0x02) != 0)
+			actionFailBlock = Block.create(in);
+		if ((blockbits & 0x04) != 0)
+			actionAmbiguityBlock = Block.create(in);
+		if ((blockbits & 0x08) != 0)
+			badActionBlock = Block.create(in);
+		if ((blockbits & 0x10) != 0)
+			focusBlock = Block.create(in);
+		if ((blockbits & 0x20) != 0)
+			unfocusBlock = Block.create(in);
+	}
+
 }

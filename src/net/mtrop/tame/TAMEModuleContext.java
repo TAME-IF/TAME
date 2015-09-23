@@ -1,12 +1,19 @@
 package net.mtrop.tame;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
 import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.hash.CaseInsensitiveHash;
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
+import com.blackrook.commons.hash.Hash;
+import com.blackrook.commons.hash.HashMap;
+import com.blackrook.io.SuperReader;
+import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TObject;
@@ -20,13 +27,14 @@ import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
+import net.mtrop.tame.lang.StateSaveable;
 import net.mtrop.tame.lang.Value;
 
 /**
  * A mutable context for a module.
  * @author Matthew Tropiano
  */
-public class TAMEModuleContext implements TAMEConstants
+public class TAMEModuleContext implements TAMEConstants, StateSaveable
 {
 	/** A random number generator. */
 	private TAMEModule module;
@@ -40,11 +48,11 @@ public class TAMEModuleContext implements TAMEConstants
 	/** World context. */
 	protected TWorldContext worldContext;
 	/** List of players. */
-	protected CaseInsensitiveHashMap<TPlayerContext> playerContextHash;
+	protected HashMap<String, TPlayerContext> playerContextHash;
 	/** List of rooms. */
-	protected CaseInsensitiveHashMap<TRoomContext> roomContextHash;
+	protected HashMap<String, TRoomContext> roomContextHash;
 	/** List of objects. */
-	protected CaseInsensitiveHashMap<TObjectContext> objectContextHash;
+	protected HashMap<String, TObjectContext> objectContextHash;
 	
 	/** Ownership map for players. */
 	protected TOwnershipMap ownershipMap;
@@ -55,9 +63,9 @@ public class TAMEModuleContext implements TAMEConstants
 		this.random = new Random();
 		
 		currentPlayer = null;
-		playerContextHash = new CaseInsensitiveHashMap<TPlayerContext>(3);
-		roomContextHash = new CaseInsensitiveHashMap<TRoomContext>(20);
-		objectContextHash = new CaseInsensitiveHashMap<TObjectContext>(40);
+		playerContextHash = new HashMap<String, TPlayerContext>(3);
+		roomContextHash = new HashMap<String, TRoomContext>(20);
+		objectContextHash = new HashMap<String, TObjectContext>(40);
 
 		// Build contexts.
 		
@@ -95,7 +103,7 @@ public class TAMEModuleContext implements TAMEConstants
 	 */
 	public String[] getAvailableActionNames()
 	{
-		CaseInsensitiveHash hash = new CaseInsensitiveHash();
+		Hash<String> hash = new Hash<String>();
 		Iterator<String> it = module.getActionList().keyIterator();
 		while (it.hasNext())
 		{
@@ -181,7 +189,7 @@ public class TAMEModuleContext implements TAMEConstants
 	/**
 	 * Get the player context list.
 	 */
-	public CaseInsensitiveHashMap<TPlayerContext> getPlayerContextList()
+	public HashMap<String, TPlayerContext> getPlayerContextList()
 	{
 		return playerContextHash;
 	}
@@ -189,7 +197,7 @@ public class TAMEModuleContext implements TAMEConstants
 	/**
 	 * Get the room context list.
 	 */
-	public CaseInsensitiveHashMap<TRoomContext> getRoomContextList()
+	public HashMap<String, TRoomContext> getRoomContextList()
 	{
 		return roomContextHash;
 	}
@@ -197,7 +205,7 @@ public class TAMEModuleContext implements TAMEConstants
 	/**
 	 * Get the object context list.
 	 */
-	public CaseInsensitiveHashMap<TObjectContext> getObjectContextList()
+	public HashMap<String, TObjectContext> getObjectContextList()
 	{
 		return objectContextHash;
 	}
@@ -431,6 +439,36 @@ public class TAMEModuleContext implements TAMEConstants
 	public Value resolveObjectVariableValue(String objectIdentity, String variableName) throws ErrorInterrupt
 	{
 		return resolveObjectContext(objectIdentity).getValue(variableName);
+	}
+
+	@Override
+	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
+	{
+		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		// TODO Finish this.
+	}
+
+	@Override
+	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
+	{
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		// TODO Finish this.
+	}
+
+	@Override
+	public byte[] toStateBytes(TAMEModule module) throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeStateBytes(module, bos);
+		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromStateBytes(TAMEModule module, byte[] data) throws IOException 
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readStateBytes(module, bis);
+		bis.close();
 	}
 	
 }

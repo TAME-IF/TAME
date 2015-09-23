@@ -10,9 +10,16 @@
  ******************************************************************************/
 package net.mtrop.tame.element.context;
 
-import net.mtrop.tame.element.TObject;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import com.blackrook.commons.hash.Hash;
+import com.blackrook.commons.hash.CaseInsensitiveHash;
+import com.blackrook.io.SuperReader;
+import com.blackrook.io.SuperWriter;
+
+import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.element.TObject;
 
 /**
  * Object context.
@@ -21,15 +28,15 @@ import com.blackrook.commons.hash.Hash;
 public class TObjectContext extends TElementContext<TObject>
 {
 	/** Element's names. */
-	protected Hash<String> currentObjectNames;
+	protected CaseInsensitiveHash currentObjectNames;
 	
 	/**
-	 * Creates a player context. 
+	 * Creates an object context. 
 	 */
 	public TObjectContext(TObject ref)
 	{
 		super(ref);
-		currentObjectNames = new Hash<String>(2);
+		currentObjectNames = new CaseInsensitiveHash(2);
 	}
 
 	/** 
@@ -54,6 +61,26 @@ public class TObjectContext extends TElementContext<TObject>
 	public boolean containsName(String name)
 	{
 		return currentObjectNames.contains(name);
+	}
+
+	@Override
+	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
+	{
+		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		super.writeStateBytes(module, out);
+		sw.writeInt(currentObjectNames.size());
+		for (String name : currentObjectNames)
+			sw.writeString(name.toLowerCase(), "UTF-8");
+	}
+
+	@Override
+	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
+	{
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		super.readStateBytes(module, in);
+		int size = sr.readInt();
+		while (size-- > 0)
+			addName(sr.readString("UTF-8"));
 	}
 
 }

@@ -10,23 +10,36 @@
  ******************************************************************************/
 package net.mtrop.tame.element.context;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import net.mtrop.tame.TAMEConstants;
+import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
+import net.mtrop.tame.exception.ModuleStateException;
+import net.mtrop.tame.lang.StateSaveable;
 
+import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.hash.HashedQueueMap;
 import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.commons.linkedlist.Stack;
 import com.blackrook.commons.list.List;
+import com.blackrook.io.SuperReader;
+import com.blackrook.io.SuperWriter;
 
 /**
  * An ownership map for all objects.
  * @author Matthew Tropiano
  */
-public class TOwnershipMap
+public class TOwnershipMap implements StateSaveable, TAMEConstants
 {
 	/** Ownership map - objects owned by world. */
 	protected HashedQueueMap<TWorld, TObject> objectsOwnedByWorld;
@@ -34,12 +47,12 @@ public class TOwnershipMap
 	protected HashedQueueMap<TRoom, TObject> objectsOwnedByRoom;
 	/** Ownership map - objects owned by player. */
 	protected HashedQueueMap<TPlayer, TObject> objectsOwnedByPlayer;
-	/** Reverse lookup object - not saved. */
-	protected HashMap<TObject, TElement> objectToElement;
-	
 	/** Room stack. */
 	protected HashMap<TPlayer, Stack<TRoom>> playerToRoomStack;
 	
+	/** Reverse lookup object - not saved. */
+	protected HashMap<TObject, TElement> objectToElement;
+
 	/**
 	 * Creates a new ownership.
 	 */
@@ -48,8 +61,9 @@ public class TOwnershipMap
 		objectsOwnedByWorld = new HashedQueueMap<TWorld, TObject>(1);
 		objectsOwnedByRoom = new HashedQueueMap<TRoom, TObject>(10);
 		objectsOwnedByPlayer = new HashedQueueMap<TPlayer, TObject>(4);
-		objectToElement = new HashMap<TObject, TElement>(20);
 		playerToRoomStack = new HashMap<TPlayer, Stack<TRoom>>(3);
+		
+		objectToElement = new HashMap<TObject, TElement>(20);
 	}
 	
 	/**
@@ -60,8 +74,9 @@ public class TOwnershipMap
 		objectsOwnedByWorld.clear();
 		objectsOwnedByRoom.clear();
 		objectsOwnedByPlayer.clear();
-		objectToElement.clear();
 		playerToRoomStack.clear();
+
+		objectToElement.clear();
 	}
 	
 	/**
@@ -311,5 +326,150 @@ public class TOwnershipMap
 		return hash != null ? hash.size() : 0; 
 	}
 	
+	@Override
+	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
+	{
+		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 
+		writeQueueMap(sw, objectsOwnedByWorld);
+		writeQueueMap(sw, objectsOwnedByRoom);
+		writeQueueMap(sw, objectsOwnedByPlayer);
+		
+		sw.writeInt(playerToRoomStack.size());
+		for (ObjectPair<TPlayer, Stack<TRoom>> playerPair : playerToRoomStack)
+		{
+			TPlayer player = playerPair.getKey();
+			Stack<TRoom> roomList = playerPair.getValue();
+			
+			sw.writeString(player.getIdentity(), "UTF-8");
+			sw.writeInt(roomList.size());
+			for (TRoom room : roomList)
+				sw.writeString(room.getIdentity(), "UTF-8");
+		}
+	}
+
+	// Writes a map.
+	private void writeQueueMap(SuperWriter sw, HashedQueueMap<? extends TElement, TObject> map) throws IOException 
+	{
+		sw.writeInt(map.size());
+		for (ObjectPair<? extends TElement, Queue<TObject>> elementPair : map)
+		{
+			TElement element = elementPair.getKey();
+			Queue<TObject> objectList = elementPair.getValue();
+			
+			sw.writeString(element.getIdentity(), "UTF-8");
+			sw.writeInt(objectList.size());
+			for (TObject object : objectList)
+				sw.writeString(object.getIdentity(), "UTF-8");
+		}
+	}
+	
+	@Override
+	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
+	{
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		reset();
+		
+		int oobwsize = sr.readInt();
+		while (oobwsize-- > 0)
+		{
+			String worldIdentity = sr.readString("UTF-8");
+			if (!worldIdentity.equals(IDENTITY_CURRENT_WORLD))
+				throw new ModuleStateException("World is not named 'world'.");
+			
+			TWorld world = module.getWorld();
+			
+			int size = sr.readInt();
+			while (size-- > 0)
+			{
+				String id = sr.readString("UTF-8");
+				TObject object = module.getObjectByIdentity(id);
+				if (object == null)
+					throw new ModuleStateException("Object %s cannot be found!", id);
+				addObjectToWorld(object, world);
+			}
+		}
+		
+		int oobrsize = sr.readInt();
+		while (oobrsize-- > 0)
+		{
+			String roomIdentity = sr.readString("UTF-8");
+			TRoom room = module.getRoomByIdentity(roomIdentity);
+			if (room == null)
+				throw new ModuleStateException("Room %s cannot be found!", roomIdentity);
+			
+			int size = sr.readInt();
+			while (size-- > 0)
+			{
+				String id = sr.readString("UTF-8");
+				TObject object = module.getObjectByIdentity(id);
+				if (object == null)
+					throw new ModuleStateException("Object %s cannot be found!", id);
+				addObjectToRoom(object, room);
+			}
+		}
+		
+		int oobpsize = sr.readInt();
+		while (oobpsize-- > 0)
+		{
+			String playerIdentity = sr.readString("UTF-8");
+			TPlayer player = module.getPlayerByIdentity(playerIdentity);
+			if (player == null)
+				throw new ModuleStateException("Player %s cannot be found!", playerIdentity);
+			
+			int size = sr.readInt();
+			while (size-- > 0)
+			{
+				String id = sr.readString("UTF-8");
+				TObject object = module.getObjectByIdentity(id);
+				if (object == null)
+					throw new ModuleStateException("Object %s cannot be found!", id);
+				addObjectToPlayer(object, player);
+			}
+		}
+
+		int ptrssize = sr.readInt();
+		while (ptrssize-- > 0)
+		{
+			String playerIdentity = sr.readString("UTF-8");
+			TPlayer player = module.getPlayerByIdentity(playerIdentity);
+			if (player == null)
+				throw new ModuleStateException("Player %s cannot be found!", playerIdentity);
+			
+			int size = sr.readInt();
+			Stack<String> stack = new Stack<String>();
+			while (size-- > 0)
+			{
+				stack.push(sr.readString("UTF-8"));
+			}
+			
+			while (!stack.isEmpty())
+			{
+				String id = stack.pop();
+				TRoom room = module.getRoomByIdentity(id);
+				if (room == null)
+					throw new ModuleStateException("Object %s cannot be found!", id);
+				pushRoomOntoPlayer(player, room);
+			}
+			
+		}
+
+	}
+
+	@Override
+	public byte[] toStateBytes(TAMEModule module) throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeStateBytes(module, bos);
+		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromStateBytes(TAMEModule module, byte[] data) throws IOException 
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readStateBytes(module, bis);
+		bis.close();
+	}
+	
 }

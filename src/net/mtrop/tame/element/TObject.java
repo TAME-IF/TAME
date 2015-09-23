@@ -10,8 +10,6 @@
  ******************************************************************************/
 package net.mtrop.tame.element;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,13 +38,16 @@ public class TObject extends TElement
 	/** Code block ran upon "seeing" the object in your inventory. */
 	protected Block playerBrowseBlock;
 
-	public TObject(String id)
+	/**
+	 * Constructs an instance of a game world.
+	 */
+	public TObject()
 	{
-		super(id);
+		super();
 		this.names = new CaseInsensitiveHash(3);
 		this.actionWithTable = new ActionWithTable();
-		this.roomBrowseBlock = new Block();
-		this.playerBrowseBlock = new Block();
+		this.roomBrowseBlock = null;
+		this.playerBrowseBlock = null;
 	}
 	
 	/**
@@ -100,33 +101,42 @@ public class TObject extends TElement
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		super.writeBytes(out);
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		super.writeBytes(out);
+		actionWithTable.writeBytes(out);
+		
+		sw.writeInt(names.size());
+		for (String name : names)
+			sw.writeString(name.toLowerCase(), "UTF-8");
+			
+		sw.writeBit(roomBrowseBlock != null);
+		sw.writeBit(playerBrowseBlock != null);
+		sw.flushBits();
+
+		if (roomBrowseBlock != null)
+			roomBrowseBlock.writeBytes(out);
+		if (playerBrowseBlock != null)
+			playerBrowseBlock.writeBytes(out);
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		super.readBytes(in);
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO: Finish this.
+		super.readBytes(in);
+		actionWithTable = ActionWithTable.create(in);
+		
+		names.clear();
+		int size = sr.readInt();
+		while (size-- > 0)
+			names.put(sr.readString("UTF-8"));
+
+		byte blockbits = sr.readByte();
+		
+		if ((blockbits & 0x01) != 0)
+			roomBrowseBlock = Block.create(in);
+		if ((blockbits & 0x02) != 0)
+			playerBrowseBlock = Block.create(in);
 	}
 
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
-	}
-	
 }
