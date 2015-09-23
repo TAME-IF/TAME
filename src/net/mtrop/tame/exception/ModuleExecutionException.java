@@ -4,9 +4,9 @@ package net.mtrop.tame.exception;
  * Thrown when a module has unexpected structures.
  * @author Matthew Tropiano
  */
-public class ModuleExecutionException extends TAMEFatalException
+public class ModuleExecutionException extends ModuleException
 {
-	private static final long serialVersionUID = 2838202334130697209L;
+	private static final long serialVersionUID = 8661622499394705573L;
 
 	public ModuleExecutionException()
 	{

@@ -1,5 +1,8 @@
 package net.mtrop.tame;
 
+import java.util.Iterator;
+
+import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
@@ -270,4 +273,48 @@ public final class TAMELogic
 		return arrayOffset - start;
 	}
 
+	/**
+	 * Initializes a newly-created context by executing each initialization block on each object.
+	 * @param request the request object containing the module context.
+	 * @param response the response object.
+	 */
+	public static void initializeContext(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		
+		response.trace(request, "Starting init...");
+		
+		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
+		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());
+		callInitOnContexts(request, response, moduleContext.getPlayerContextList().valueIterator());
+		callInitBlock(request, response, moduleContext.getWorldContext());
+		
+	}
+
+	private static void callInitOnContexts(TAMERequest request, TAMEResponse response, Iterator<? extends TElementContext<?>> contexts) throws TAMEInterrupt 
+	{
+		while (contexts.hasNext())
+		{
+			TElementContext<?> context = contexts.next();
+			callInitBlock(request, response, context);
+		}
+	}
+
+	private static void callInitBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context) throws TAMEInterrupt 
+	{
+		response.trace(request, "Attempt init on %s.", context);
+		TElement element = context.getElement();
+
+		Block initBlock = element.getInitBlock();
+		if (initBlock != null)
+		{
+			response.trace(request, "Calling onInit() on %s.", context);
+			callBlock(request, response, context, initBlock);
+		}
+		else
+		{
+			response.trace(request, "No init block.");
+		}
+	}
+	
 }

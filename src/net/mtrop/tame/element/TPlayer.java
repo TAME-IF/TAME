@@ -80,6 +80,19 @@ public class TPlayer extends TElement
 	}
 	
 	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static TPlayer create(InputStream in) throws IOException
+	{
+		TPlayer out = new TPlayer();
+		out.readBytes(in);
+		return out;
+	}
+
+	/**
 	 * Gets the action list function.
 	 */
 	public ActionSet getActionListFunction()

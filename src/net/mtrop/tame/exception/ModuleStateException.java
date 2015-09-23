@@ -4,7 +4,7 @@ package net.mtrop.tame.exception;
  * Thrown when a module state read/write exception occurs.
  * @author Matthew Tropiano
  */
-public class ModuleStateException extends TAMEFatalException
+public class ModuleStateException extends ModuleException
 {
 	private static final long serialVersionUID = 2838202334130697209L;
 

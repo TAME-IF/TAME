@@ -160,7 +160,7 @@ public abstract class TElement implements Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		identity = sr.readString("UTF-8");
+		setIdentity(sr.readString("UTF-8"));
 		byte blockbits = sr.readByte();
 		if ((blockbits & 0x01) != 0)
 			initBlock = Block.create(in);

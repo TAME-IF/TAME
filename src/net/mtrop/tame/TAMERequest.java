@@ -14,7 +14,6 @@ import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.exception.ArithmeticStackStateException;
 import net.mtrop.tame.lang.Value;
 
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.commons.linkedlist.Stack;
 
@@ -25,8 +24,6 @@ import com.blackrook.commons.linkedlist.Stack;
  */
 public class TAMERequest
 {
-	/** Hashtable of header info. */
-	private CaseInsensitiveHashMap<String> header;
 	/** The input message. */
 	private String inputMessage;
 	/** Is the trace enabled? */
@@ -49,36 +46,12 @@ public class TAMERequest
 	{
 		inputMessage = null;
 		trace = false;
-		header = new CaseInsensitiveHashMap<String>(3);
 		
 		actionQueue = new Queue<TAMEAction>();
 		
 		moduleContext = null;
 		valueStack = new Stack<Value>();
 		contextStack = new Stack<TElementContext<?>>();
-	}
-
-	/**
-	 * Sets a header value assigned to a key.
-	 * The key is case-insensitive, and setting a value with an existing key will
-	 * replace the existing key's value.
-	 * @param key a key.
-	 * @param value	the corresponding value.
-	 */
-	public void setHeader(String key, String value)
-	{
-		header.put(key, value);
-	}
-
-	/**
-	 * Gets the header value assigned to a key.
-	 * The key is case-insensitive.
-	 * @param key	a key.
-	 * @return the corresponding value, or null if the header value was not set.
-	 */
-	public String getHeader(String key)
-	{
-		return header.get(key);
 	}
 
 	/**

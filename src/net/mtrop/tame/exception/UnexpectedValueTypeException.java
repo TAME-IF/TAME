@@ -6,7 +6,7 @@ package net.mtrop.tame.exception;
  */
 public class UnexpectedValueTypeException extends TAMEFatalException
 {
-	private static final long serialVersionUID = 9084390457262102600L;
+	private static final long serialVersionUID = 3977795940884710775L;
 
 	public UnexpectedValueTypeException()
 	{

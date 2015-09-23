@@ -6,7 +6,7 @@ package net.mtrop.tame.exception;
  */
 public class ArithmeticStackStateException extends TAMEFatalException
 {
-	private static final long serialVersionUID = 2838202334130697209L;
+	private static final long serialVersionUID = -776603083012446190L;
 
 	public ArithmeticStackStateException()
 	{

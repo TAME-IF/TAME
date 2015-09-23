@@ -94,6 +94,8 @@ public class TAction implements Comparable<TAction>, Saveable
 	 */
 	public void setIdentity(String identity)
 	{
+		if (Common.isEmpty(identity))
+			throw new IllegalArgumentException("Identity cannot be blank.");
 		this.identity = identity;
 	}
 
@@ -200,7 +202,7 @@ public class TAction implements Comparable<TAction>, Saveable
 		names.clear();
 		extraStrings.clear();
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		this.identity = sr.readString("UTF-8");
+		setIdentity(sr.readString("UTF-8"));
 		this.type = Type.values()[(int)sr.readByte()];
 		
 		int size;

@@ -51,6 +51,19 @@ public class TObject extends TElement
 	}
 	
 	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static TObject create(InputStream in) throws IOException
+	{
+		TObject out = new TObject();
+		out.readBytes(in);
+		return out;
+	}
+
+	/**
 	 * Gets the initial names on this object.
 	 */
 	public CaseInsensitiveHash getNames()

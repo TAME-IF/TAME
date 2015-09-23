@@ -26,6 +26,7 @@ import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
+import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.lang.StateSaveable;
 import net.mtrop.tame.lang.Value;
@@ -445,14 +446,92 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		// TODO Finish this.
+
+		sw.writeBoolean(currentPlayer != null);
+		if (currentPlayer != null)
+			sw.writeString(currentPlayer.getIdentity(), "UTF-8");
+		
+		sw.writeString(worldContext.getElement().getIdentity(), "UTF-8");
+		worldContext.writeStateBytes(module, out);
+		
+		sw.writeInt(playerContextHash.size());
+		for (ObjectPair<String, TPlayerContext> entry : playerContextHash)
+		{
+			sw.writeString(entry.getKey(), "UTF-8");
+			entry.getValue().writeStateBytes(module, out);
+		}
+
+		sw.writeInt(roomContextHash.size());
+		for (ObjectPair<String, TRoomContext> entry : roomContextHash)
+		{
+			sw.writeString(entry.getKey(), "UTF-8");
+			entry.getValue().writeStateBytes(module, out);
+		}
+		
+		sw.writeInt(objectContextHash.size());
+		for (ObjectPair<String, TObjectContext> entry : objectContextHash)
+		{
+			sw.writeString(entry.getKey(), "UTF-8");
+			entry.getValue().writeStateBytes(module, out);
+		}
+
+		ownershipMap.writeStateBytes(module, out);
 	}
 
 	@Override
 	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		// TODO Finish this.
+		String identity;
+		int size;
+		
+		// has current player.
+		if (sr.readBoolean())
+		{
+			identity = sr.readString("UTF-8");
+			currentPlayer = module.getPlayerByIdentity(identity);
+			if (currentPlayer == null)
+				throw new ModuleStateException("Expected player '%s' in module context!", identity);
+		}
+		else
+			currentPlayer = null;
+
+		identity = sr.readString("UTF-8");
+		if (!identity.equals(IDENTITY_CURRENT_WORLD))
+			throw new ModuleStateException("Expected world '%s' in module context!", identity);
+		worldContext.readStateBytes(module, in);	
+		
+		size = sr.readInt();
+		while (size-- > 0)
+		{
+			identity = sr.readString("UTF-8");
+			if (!playerContextHash.containsKey(identity))
+				throw new ModuleStateException("Expected player '%s' in module context!", identity);
+			else
+				playerContextHash.get(identity).readStateBytes(module, in);
+		}
+		
+		size = sr.readInt();
+		while (size-- > 0)
+		{
+			identity = sr.readString("UTF-8");
+			if (!roomContextHash.containsKey(identity))
+				throw new ModuleStateException("Expected room '%s' in module context!", identity);
+			else
+				roomContextHash.get(identity).readStateBytes(module, in);
+		}
+
+		size = sr.readInt();
+		while (size-- > 0)
+		{
+			identity = sr.readString("UTF-8");
+			if (!objectContextHash.containsKey(identity))
+				throw new ModuleStateException("Expected object '%s' in module context!", identity);
+			else
+				objectContextHash.get(identity).readStateBytes(module, in);
+		}
+		
+		ownershipMap.readStateBytes(module, in);
 	}
 
 	@Override
