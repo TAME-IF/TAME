@@ -8,6 +8,7 @@ import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
+import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.Block;
 
@@ -217,6 +218,56 @@ public final class TAMELogic
 
 		// push new room on the stack and call focus.
 		TAMELogic.doRoomPush(request, response, player, nextRoom);
+	}
+
+	/**
+	 * Returns all objects in the accessible area by an object name read from the interpreter.
+	 * The output stops if the size of the output array is reached.
+	 * @param moduleContext the module context.
+	 * @param name the name from the interpreter.
+	 * @param outputArray the output vector of found objects.
+	 * @param arrayOffset the starting offset into the array to put them.
+	 * @return the amount of objects found.
+	 */
+	public static int findAccessibleObjectsByName(TAMEModuleContext moduleContext, String name, TObject[] outputArray, int arrayOffset)
+	{
+		TPlayerContext playerContext = moduleContext.getCurrentPlayerContext();
+		TRoomContext roomContext = moduleContext.getCurrentRoomContext();
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		TOwnershipMap ownerMap = moduleContext.getOwnershipMap();
+		int start = arrayOffset;
+		
+		if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
+		{
+			if (moduleContext.getObjectContext(obj).containsName(name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+		
+		if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
+		{
+			if (moduleContext.getObjectContext(obj).containsName(name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+	
+		for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
+		{
+			if (moduleContext.getObjectContext(obj).containsName(name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+	
+		return arrayOffset - start;
 	}
 
 }
