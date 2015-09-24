@@ -291,6 +291,7 @@ public final class TAMELogic
 		
 	}
 
+	// Call init on iterable contexts.
 	private static void callInitOnContexts(TAMERequest request, TAMEResponse response, Iterator<? extends TElementContext<?>> contexts) throws TAMEInterrupt 
 	{
 		while (contexts.hasNext())
@@ -300,6 +301,7 @@ public final class TAMELogic
 		}
 	}
 
+	// Call init on a single context.
 	private static void callInitBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context) throws TAMEInterrupt 
 	{
 		response.trace(request, "Attempt init on %s.", context);
