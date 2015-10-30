@@ -19,6 +19,7 @@ import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.struct.ActionModeTable;
 import net.mtrop.tame.struct.ActionTable;
 
 /**
@@ -29,6 +30,8 @@ public class TWorld extends TElement
 {
 	/** Blocks executed on action failure. */
 	private ActionTable actionFailTable;
+	/** Table used for modal actions. */
+	protected ActionModeTable modalActionTable;
 
 	/** Code block ran upon default action fail. */
 	private Block actionFailBlock;
@@ -46,6 +49,7 @@ public class TWorld extends TElement
 		setIdentity(TAMEConstants.IDENTITY_CURRENT_WORLD);
 		
 		this.actionFailTable = new ActionTable();
+		this.modalActionTable = new ActionModeTable();
 
 		this.actionFailBlock = null;
 		this.actionAmbiguityBlock = null;
@@ -58,6 +62,14 @@ public class TWorld extends TElement
 	public ActionTable getActionFailTable()
 	{
 		return actionFailTable;
+	}
+
+	/** 
+	 * Gets the modal action table. 
+	 */
+	public ActionModeTable getModalActionTable()
+	{
+		return modalActionTable;
 	}
 
 	/** 
@@ -128,6 +140,7 @@ public class TWorld extends TElement
 		super.writeBytes(out);
 		
 		actionFailTable.writeBytes(out);
+		modalActionTable.writeBytes(out);
 		
 		sw.writeBit(actionFailBlock != null);
 		sw.writeBit(actionAmbiguityBlock != null);
@@ -147,7 +160,9 @@ public class TWorld extends TElement
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readBytes(in);
+		
 		actionFailTable = ActionTable.create(in);
+		modalActionTable = ActionModeTable.create(in);
 		
 		byte blockbits = sr.readByte();
 		

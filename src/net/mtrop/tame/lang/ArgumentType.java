@@ -16,6 +16,8 @@ public enum ArgumentType
 	ROOM,
 	/** Argument must accept an object. */
 	OBJECT,
+	/** Argument must accept an element (player/room/object). */
+	ELEMENT,
 	/** Argument must accept a variable. */
 	VARIABLE;
 }

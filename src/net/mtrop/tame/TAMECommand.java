@@ -2471,6 +2471,34 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	},
 
+	/**
+	 * Pushes the identity of an element onto the stack.
+	 * POP is the element.
+	 * Returns string.
+	 */
+	IDENTITY (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT)
+	{
+		@Override
+		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value element = request.popValue();
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			
+			// must resolve: the passed-in value could be the "current" room/player.
+			
+			if (element.getType() == ValueType.ROOM)
+				request.pushValue(Value.create(moduleContext.resolveRoom(element.asString()).getIdentity()));
+			else if (element.getType() == ValueType.PLAYER)
+				request.pushValue(Value.create(moduleContext.resolvePlayer(element.asString()).getIdentity()));
+			else if (element.getType() == ValueType.OBJECT)
+				request.pushValue(Value.create(moduleContext.resolveObject(element.asString()).getIdentity()));
+			else
+				throw new UnexpectedValueTypeException("Expected element type in IDENTITY call.");
+		}
+		
+	}
+
 	;
 	
 	private boolean internal;
