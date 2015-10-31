@@ -933,6 +933,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		response.trace(request, "Starting init...");
 		
+		callInitOnContexts(request, response, moduleContext.getContainerContextList().valueIterator());
 		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
 		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());
 		callInitOnContexts(request, response, moduleContext.getPlayerContextList().valueIterator());
