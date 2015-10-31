@@ -18,6 +18,7 @@ import java.io.OutputStream;
 
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
@@ -47,6 +48,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	protected HashedQueueMap<TRoom, TObject> objectsOwnedByRoom;
 	/** Ownership map - objects owned by player. */
 	protected HashedQueueMap<TPlayer, TObject> objectsOwnedByPlayer;
+	/** Ownership map - objects owned by container. */
+	protected HashedQueueMap<TContainer, TObject> objectsOwnedByContainer;
 	/** Room stack. */
 	protected HashMap<TPlayer, Stack<TRoom>> playerToRoomStack;
 	
@@ -61,6 +64,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		objectsOwnedByWorld = new HashedQueueMap<TWorld, TObject>(1);
 		objectsOwnedByRoom = new HashedQueueMap<TRoom, TObject>(10);
 		objectsOwnedByPlayer = new HashedQueueMap<TPlayer, TObject>(4);
+		objectsOwnedByContainer = new HashedQueueMap<TContainer, TObject>(3);
 		playerToRoomStack = new HashMap<TPlayer, Stack<TRoom>>(3);
 		
 		objectToElement = new HashMap<TObject, TElement>(20);
@@ -95,6 +99,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 			objectsOwnedByPlayer.removeValue((TPlayer)element, object);
 		else if (element instanceof TRoom)
 			objectsOwnedByRoom.removeValue((TRoom)element, object);
+		else if (element instanceof TContainer)
+			objectsOwnedByContainer.removeValue((TContainer)element, object);
 	}
 	
 	/**
@@ -107,8 +113,21 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	/**
+	 * Adds an object to a container.
+	 * The object is first removed from its owners before it is bound to another. 
+	 * @param object the object to add.
+	 * @param container the target container.
+	 */
+	public void addObjectToContainer(TObject object, TContainer container)
+	{
+		removeObject(object);
+		objectToElement.put(object, container);
+		objectsOwnedByContainer.enqueue(container, object);
+	}
+	
+	/**
 	 * Adds an object to a room.
-	 * The object is first removed for its owners before it is bound to another. 
+	 * The object is first removed from its owners before it is bound to another. 
 	 * @param object the object to add.
 	 * @param room the target room.
 	 */
@@ -121,7 +140,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	
 	/**
 	 * Adds an object to a player.
-	 * The object is first removed for its owners before it is bound to another. 
+	 * The object is first removed from its owners before it is bound to another. 
 	 * @param object the object to add.
 	 * @param player the target player.
 	 */
@@ -134,7 +153,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	
 	/**
 	 * Adds an object to a world.
-	 * The object is first removed for its owners before it is bound to another. 
+	 * The object is first removed from its owners before it is bound to another. 
 	 * @param object the object to add.
 	 * @param world the target world.
 	 */
@@ -231,6 +250,18 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	/**
+	 * Returns if a container possesses an object.
+	 * @param container the container to use.
+	 * @return true if so, false if not.
+	 */
+	public boolean checkContainerHasObject(TContainer container, TObject object)
+	{
+		if (objectsOwnedByContainer.containsKey(container))
+			return objectsOwnedByContainer.get(container).contains(object);
+		return false;
+	}
+	
+	/**
 	 * Returns if a player possesses an object.
 	 * @param player the player to use.
 	 * @return true if so, false if not.
@@ -290,6 +321,14 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	/**
+	 * Gets the list of objects owned by a container.
+	 */
+	public List<TObject> getObjectsOwnedByContainer(TContainer container)
+	{
+		return getObjectsInQueue(objectsOwnedByContainer.get(container)); 
+	}
+
+	/**
 	 * Gets the count of objects owned by a world.
 	 */
 	public int getObjectsOwnedByWorldCount(TWorld world)
@@ -313,6 +352,14 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		return getObjectsInQueueCount(objectsOwnedByPlayer.get(player)); 
 	}
 
+	/**
+	 * Gets the count of objects owned by a container.
+	 */
+	public int getObjectsOwnedByContainerCount(TContainer container)
+	{
+		return getObjectsInQueueCount(objectsOwnedByContainer.get(container)); 
+	}
+
 	private List<TObject> getObjectsInQueue(Queue<TObject> hash)
 	{
 		List<TObject> out = new List<TObject>(hash != null ? hash.size() : 1);
@@ -334,6 +381,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		writeQueueMap(sw, objectsOwnedByWorld);
 		writeQueueMap(sw, objectsOwnedByRoom);
 		writeQueueMap(sw, objectsOwnedByPlayer);
+		writeQueueMap(sw, objectsOwnedByContainer);
 		
 		sw.writeInt(playerToRoomStack.size());
 		for (ObjectPair<TPlayer, Stack<TRoom>> playerPair : playerToRoomStack)
@@ -425,6 +473,25 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 				if (object == null)
 					throw new ModuleStateException("Object %s cannot be found!", id);
 				addObjectToPlayer(object, player);
+			}
+		}
+
+		int oobcsize = sr.readInt();
+		while (oobcsize-- > 0)
+		{
+			String containerIdentity = sr.readString("UTF-8");
+			TContainer container = module.getContainerByIdentity(containerIdentity);
+			if (container == null)
+				throw new ModuleStateException("Container %s cannot be found!", containerIdentity);
+			
+			int size = sr.readInt();
+			while (size-- > 0)
+			{
+				String id = sr.readString("UTF-8");
+				TObject object = module.getObjectByIdentity(id);
+				if (object == null)
+					throw new ModuleStateException("Object %s cannot be found!", id);
+				addObjectToContainer(object, container);
 			}
 		}
 

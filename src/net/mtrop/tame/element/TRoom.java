@@ -33,7 +33,7 @@ import com.blackrook.io.SuperWriter;
  * @author Matthew Tropiano
  *
  */
-public class TRoom extends TElement
+public class TRoom extends TActionableElement
 {
 	/** Set function for action list. */
 	protected ActionSet actionListFunction;

@@ -27,16 +27,18 @@ import com.blackrook.io.SuperWriter;
  * in the possession of players take precedence over objects in a room.
  * @author Matthew Tropiano
  */
-public class TObject extends TElement
+public class TObject extends TActionableElement
 {
 	/** Table used for ditransitive actions. */
 	protected ActionWithTable actionWithTable;
 	/** Element's names. */
 	protected CaseInsensitiveHash names;
-	/** Code block ran upon "seeing" the object. */
+	/** Code block ran upon browsing a room with this object in it. */
 	protected Block roomBrowseBlock;
-	/** Code block ran upon "seeing" the object in your inventory. */
+	/** Code block ran upon browsing a player with this object in it. */
 	protected Block playerBrowseBlock;
+	/** Code block ran upon browsing a container with this object in it. */
+	protected Block containerBrowseBlock;
 
 	/**
 	 * Constructs an instance of a game world.
@@ -48,6 +50,7 @@ public class TObject extends TElement
 		this.actionWithTable = new ActionWithTable();
 		this.roomBrowseBlock = null;
 		this.playerBrowseBlock = null;
+		this.containerBrowseBlock = null;
 	}
 	
 	/**
@@ -111,6 +114,22 @@ public class TObject extends TElement
 		playerBrowseBlock = eab;
 	}
 	
+	/** 
+	 * Get the "browsing in possession of a container" action block. 
+	 */
+	public Block getContainerBrowseBlock()
+	{
+		return containerBrowseBlock;
+	}
+	
+	/** 
+	 * Set the "browsing in possession of a container" action block. 
+	 */
+	public void setContainerBrowseBlock(Block eab)
+	{
+		containerBrowseBlock = eab;
+	}
+	
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
@@ -124,12 +143,15 @@ public class TObject extends TElement
 			
 		sw.writeBit(roomBrowseBlock != null);
 		sw.writeBit(playerBrowseBlock != null);
+		sw.writeBit(containerBrowseBlock != null);
 		sw.flushBits();
 
 		if (roomBrowseBlock != null)
 			roomBrowseBlock.writeBytes(out);
 		if (playerBrowseBlock != null)
 			playerBrowseBlock.writeBytes(out);
+		if (containerBrowseBlock != null)
+			containerBrowseBlock.writeBytes(out);
 	}
 	
 	@Override
@@ -150,6 +172,8 @@ public class TObject extends TElement
 			roomBrowseBlock = Block.create(in);
 		if ((blockbits & 0x02) != 0)
 			playerBrowseBlock = Block.create(in);
+		if ((blockbits & 0x04) != 0)
+			containerBrowseBlock = Block.create(in);
 	}
 
 }

@@ -10,6 +10,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
@@ -43,6 +44,8 @@ public class TAMEModule implements Saveable
 	private HashMap<String, TRoom> rooms;
 	/** List of objects. */
 	private HashMap<String, TObject> objects;
+	/** List of containers. */
+	private HashMap<String, TContainer> containers;
 
 	/** Maps action common names to action objects (not saved). */
 	private CaseInsensitiveHashMap<TAction> actionNameTable;
@@ -57,6 +60,7 @@ public class TAMEModule implements Saveable
 		this.players = new HashMap<String, TPlayer>(2);
 		this.rooms = new HashMap<String, TRoom>(10);
 		this.objects = new HashMap<String, TObject>(20);
+		this.containers = new HashMap<String, TContainer>(5);
 		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
 	}
 
@@ -121,7 +125,7 @@ public class TAMEModule implements Saveable
 
 	/**
 	 * Adds a room to the module.
-	 * @param identity the Room's identity.
+	 * @param room the Room.
 	 */
 	public void addRoom(TRoom room)
 	{
@@ -140,7 +144,7 @@ public class TAMEModule implements Saveable
 
 	/**
 	 * Adds an object to the module.
-	 * @param object the Object's identity.
+	 * @param object the Object.
 	 */
 	public void addObject(TObject object)
 	{
@@ -155,6 +159,25 @@ public class TAMEModule implements Saveable
 	public TObject getObjectByIdentity(String identity)
 	{
 		return objects.get(identity);
+	}
+
+	/**
+	 * Adds an container to the module.
+	 * @param container the container.
+	 */
+	public void addContainer(TContainer container)
+	{
+		containers.put(container.getIdentity(), container);
+	}
+
+	/**
+	 * Retrieves a container by identity.
+	 * @param identity the container's identity.
+	 * @return the corresponding container, or null if not found.
+	 */
+	public TContainer getContainerByIdentity(String identity)
+	{
+		return containers.get(identity);
 	}
 
 	/**
@@ -194,6 +217,11 @@ public class TAMEModule implements Saveable
 	HashMap<String, TObject> getObjectList()
 	{
 		return objects;
+	}
+
+	HashMap<String, TContainer> getContainerList()
+	{
+		return containers;
 	}
 
 	@Override
@@ -240,10 +268,10 @@ public class TAMEModule implements Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		if (sr.readString("ASCII").equals("TAME"))
+		if (!sr.readString("ASCII").equals("TAME"))
 			throw new ModuleException("Module is not a TAME module.");
 			
-		if (sr.readByte() == 0x01)
+		if (sr.readByte() != 0x01)
 			throw new ModuleException("Module does not have a recognized version.");
 
 		moduleName = sr.readString("UTF-8");

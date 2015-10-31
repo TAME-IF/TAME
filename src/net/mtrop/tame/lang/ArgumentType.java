@@ -10,6 +10,8 @@ public enum ArgumentType
 	ACTION,
 	/** Argument accepts a single value, can be anything. */
 	VALUE,
+	/** Argument must accept a container. */
+	CONTAINER,
 	/** Argument must accept a player. */
 	PLAYER,
 	/** Argument must accept a room. */

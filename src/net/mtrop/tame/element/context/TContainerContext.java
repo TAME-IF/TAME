@@ -8,23 +8,22 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  ******************************************************************************/
-package net.mtrop.tame.lang;
+package net.mtrop.tame.element.context;
 
-import net.mtrop.tame.TAMERequest;
-import net.mtrop.tame.TAMEResponse;
-import net.mtrop.tame.interrupt.TAMEInterrupt;
+import net.mtrop.tame.element.TContainer;
 
 /**
- * An executable object called by the TAME virtual machine.
+ * Player context.
  * @author Matthew Tropiano
  */
-public interface ExecutableType
+public class TContainerContext extends TElementContext<TContainer>
 {
 	/**
-	 * Executes something that can change the request and response.
-	 * @param request the request object.
-	 * @param response the response object.
+	 * Creates a container context. 
 	 */
-	public void execute(TAMERequest request, TAMEResponse response) throws TAMEInterrupt;
-	
+	public TContainerContext(TContainer ref)
+	{
+		super(ref);
+	}
+
 }

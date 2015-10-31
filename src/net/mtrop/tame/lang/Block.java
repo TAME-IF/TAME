@@ -19,7 +19,7 @@ import com.blackrook.io.SuperWriter;
  * A set of commands in one block.
  * @author Matthew Tropiano
  */
-public class Block implements ExecutableType, Iterable<Command>, Saveable
+public class Block implements CallableType, Iterable<Command>, Saveable
 {
 	/** List of statements. */
 	private Queue<Command> statementQueue; 
@@ -56,12 +56,12 @@ public class Block implements ExecutableType, Iterable<Command>, Saveable
 	}
 
 	@Override
-	public void execute(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	public void call(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
 		for (Command command : this)
 		{
 			response.trace(request, "CALL %s", command);
-			command.execute(request, response);
+			command.call(request, response);
 		}
 	}
 	

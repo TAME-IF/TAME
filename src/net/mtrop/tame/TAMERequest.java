@@ -27,7 +27,7 @@ public class TAMERequest
 	/** The input message. */
 	private String inputMessage;
 	/** Is the trace enabled? */
-	private boolean trace;
+	private boolean tracing;
 
 	/** Belayed action queue. */
 	private Queue<TAMEAction> actionQueue;
@@ -45,7 +45,7 @@ public class TAMERequest
 	TAMERequest()
 	{
 		inputMessage = null;
-		trace = false;
+		tracing = false;
 		
 		actionQueue = new Queue<TAMEAction>();
 		
@@ -73,19 +73,19 @@ public class TAMERequest
 	}
 
 	/**
-	 * Is this also a tracing request?
+	 * Is this a tracing request?
 	 */
-	public boolean isTrace()
+	public boolean isTracing()
 	{
-		return trace;
+		return tracing;
 	}
 
 	/**
 	 * Sets if trace is enabled.
 	 */
-	public void setTrace(boolean trace)
+	public void setTracing(boolean trace)
 	{
-		this.trace = trace;
+		this.tracing = trace;
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class TAMERequest
 	}
 
 	/**
-	 * Dequeues an action item from the queue to be processed later.
+	 * Checks if this still has action items to process.
 	 */
 	public boolean hasActionItems()
 	{
@@ -123,7 +123,7 @@ public class TAMERequest
 	/**
 	 * Sets the module to be affected. 
 	 */
-	public void setModule(TAMEModuleContext module)
+	public void setModuleContext(TAMEModuleContext module)
 	{
 		this.moduleContext = module;
 	}

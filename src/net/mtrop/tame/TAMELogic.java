@@ -2,7 +2,11 @@ package net.mtrop.tame;
 
 import java.util.Iterator;
 
+import com.blackrook.commons.CommonTokenizer;
+import com.blackrook.commons.linkedlist.Queue;
+
 import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
@@ -14,6 +18,9 @@ import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
+import net.mtrop.tame.exception.TAMEFatalException;
+import net.mtrop.tame.interrupt.ErrorInterrupt;
+import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Value;
@@ -22,9 +29,185 @@ import net.mtrop.tame.lang.Value;
  * Utility and rules class. 
  * @author Matthew Tropiano
  */
-public final class TAMELogic
+public final class TAMELogic implements TAMEConstants
 {
 	
+	/** Interpreter context object. Used for processing request input. */
+	private static class InterpreterContext
+	{
+		String[] tokens;
+		int tokenOffset;
+		TObject[] objects;
+		TAction action;
+		String mode;
+		String target;
+		TObject object1;
+		TObject object2;
+		boolean objectAmbiguous;
+		
+		InterpreterContext(String input)
+		{
+			input = input.replace("\n", " ").replace("\t", " ").replace("\r", " ").trim();
+			
+			Queue<String> tokenQueue = new Queue<>();
+			CommonTokenizer ct = new CommonTokenizer(input);
+			while (ct.hasMoreTokens())
+				tokenQueue.add(ct.nextToken());
+			this.tokens = new String[tokenQueue.size()];
+			tokenQueue.toArray(tokens);
+			
+			this.tokenOffset = 0;
+			this.objects = new TObject[2];
+			this.action = null;
+			this.mode = null;
+			this.target = null;
+			this.object1 = null;
+			this.object2 = null;
+			this.objectAmbiguous = false;
+		}
+	}
+
+	/**
+	 * Handles a full request.
+	 * @param moduleContext the module context.
+	 * @param input the client input query.
+	 * @param tracing if true, this does tracing.
+	 * @return a TAMERequest a new request.
+	 */
+	public static TAMEResponse handleRequest(TAMEModuleContext moduleContext, String input, boolean tracing)
+	{
+		TAMERequest request = createRequest(moduleContext, input, tracing);
+		TAMEResponse response = new TAMEResponse();
+		InterpreterContext interpreterContext = interpret(request);
+		
+		try {
+			if (interpreterContext.action == null)
+				doBadAction(request, response);
+			else
+			{
+				TAction action = interpreterContext.action;
+				switch (action.getType())
+				{
+					default:
+					case GENERAL:
+						request.addActionItem(TAMEAction.createInitial(action));
+						break;
+					case OPEN:
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.target));
+						break;
+					case MODAL:
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.mode));
+						break;
+					case TRANSITIVE:
+						if (interpreterContext.objectAmbiguous)
+							doAmbiguousAction(request, response);
+						else
+							request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1));
+						break;
+					case DITRANSITIVE:
+						if (interpreterContext.objectAmbiguous)
+							doAmbiguousAction(request, response);
+						else
+							request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1, interpreterContext.object2));
+						break;
+				}
+			}
+			
+			while (request.hasActionItems())
+			{
+				TAMEAction tameAction = request.getActionItem();
+				TAction action = tameAction.getAction();
+				switch (action.getType())
+				{
+					default:
+					case GENERAL:
+						doActionGeneral(request, response, action);
+						break;
+					case OPEN:
+						doActionOpen(request, response, action, tameAction.getTarget());
+						break;
+					case MODAL:
+						doActionModal(request, response, action, tameAction.getTarget());
+						break;
+					case TRANSITIVE:
+						doActionTransitive(request, response, action, tameAction.getObject1());
+						break;
+					case DITRANSITIVE:
+						if (tameAction.getObject2() == null)
+							doActionTransitive(request, response, action, tameAction.getObject1());
+						else
+							doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
+						break;
+				}
+				
+				request.checkStackClear();
+				
+			}
+			
+		} catch (TAMEFatalException exception) {
+			response.addCue(CUE_FATAL, exception.getMessage());
+		} catch (ErrorInterrupt interrupt) {
+			response.addCue(CUE_ERROR, interrupt.getMessage());
+		} catch (RunawayRequestInterrupt interrupt) {
+			response.addCue(CUE_ERROR, interrupt.getMessage());
+		} catch (TAMEInterrupt interrupt) {
+			response.addCue(CUE_ERROR, interrupt.getMessage());
+		}
+		
+		return response;
+	}
+	
+	/**
+	 * Creates the request object.
+	 * @param moduleContext the module context.
+	 * @param input the client input query.
+	 * @param tracing if true, this does tracing.
+	 * @return a TAMERequest a new request.
+	 */
+	public static TAMERequest createRequest(TAMEModuleContext moduleContext, String input, boolean tracing)
+	{
+		TAMERequest out = new TAMERequest();
+		out.setInputMessage(input);
+		out.setModuleContext(moduleContext);
+		out.setTracing(tracing);
+		return out;
+	}
+	
+	/**
+	 * Interprets the input on the request.
+	 * @param request the request.
+	 */
+	public static InterpreterContext interpret(TAMERequest request)
+	{
+		InterpreterContext context = new InterpreterContext(request.getInputMessage());
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		
+		interpretAction(moduleContext, context);
+		if (context.action == null)
+			return context;
+		
+		switch (context.action.getType())
+		{
+			default:
+			case GENERAL:
+				return context;
+			case OPEN:
+				interpretOpen(context);
+				return context;
+			case MODAL:
+				interpretMode(context.action, context);
+				return context;
+			case TRANSITIVE:
+				interpretObject1(moduleContext, context);
+				return context;
+			case DITRANSITIVE:
+				if (interpretObject1(moduleContext, context))
+					if (interpretConjugate(context.action, context))
+						interpretObject2(moduleContext, context);
+				return context;
+		}
+	}
+
 	/**
 	 * Performs the necessary tasks for calling an object block.
 	 * Ensures that the block is called cleanly.
@@ -39,7 +222,7 @@ public final class TAMELogic
 		response.trace(request, "Pushing %s...", context);
 		request.pushContext(context);
 		try {
-			block.execute(request, response);
+			block.call(request, response);
 		} finally {
 			response.trace(request, "Popping %s...", context);
 			request.checkStackClear();
@@ -131,6 +314,37 @@ public final class TAMELogic
 			response.trace(request, "Calling focus block on %s.", currentPlayer);
 			callBlock(request, response, currentPlayerContext, block);
 		}
+	}
+
+	/**
+	 * Attempts to perform a player browse.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param player the player to browse.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doPlayerBrowse(TAMERequest request, TAMEResponse response, TPlayer player) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		
+		response.trace(request, "Start browse %s.", player);
+		
+		for (TObject object : ownership.getObjectsOwnedByPlayer(player))
+		{
+			response.trace(request, "Check %s for browse block.", object);
+	
+			TObjectContext objectContext = moduleContext.getObjectContext(object);
+	
+			Block block = object.getPlayerBrowseBlock();
+			if (block != null)
+			{
+				response.trace(request, "Calling room browse block on %s.", object);
+				TAMELogic.callBlock(request, response, objectContext, block);
+			}
+			
+		}
+	
 	}
 
 	/**
@@ -227,14 +441,108 @@ public final class TAMELogic
 	}
 
 	/**
+	 * Attempts to perform a room browse.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param room the room to browse.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doRoomBrowse(TAMERequest request, TAMEResponse response, TRoom room) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		
+		response.trace(request, "Start browse %s.", room);
+		
+		for (TObject object : ownership.getObjectsOwnedByRoom(room))
+		{
+			response.trace(request, "Check %s for browse block.", object);
+	
+			TObjectContext objectContext = moduleContext.getObjectContext(object);
+	
+			Block block = object.getRoomBrowseBlock();
+			if (block != null)
+			{
+				response.trace(request, "Calling room browse block on %s.", object);
+				TAMELogic.callBlock(request, response, objectContext, block);
+			}
+			
+		}
+	
+	}
+
+	/**
+	 * Attempts to perform a container browse.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param object the object to browse.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doContainerBrowse(TAMERequest request, TAMEResponse response, TContainer container) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		
+		response.trace(request, "Start browse %s.", container);
+		
+		for (TObject object : ownership.getObjectsOwnedByContainer(container))
+		{
+			response.trace(request, "Check %s for browse block.", object);
+	
+			TObjectContext objectContext = moduleContext.getObjectContext(object);
+	
+			Block block = object.getContainerBrowseBlock();
+			if (block != null)
+			{
+				response.trace(request, "Calling container browse block on %s.", object);
+				TAMELogic.callBlock(request, response, objectContext, block);
+			}
+			
+		}
+	
+	}
+
+	/**
 	 * Attempts to call the ambiguous action blocks.
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public static void doActionAmbiguity(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	public static void doAmbiguousAction(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		// TODO: Finish this.
+		response.trace(request, "Finding ambiguous action blocks...");
+
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		Block blockToCall = null;
+		
+		if (currentPlayerContext != null)
+		{
+			TPlayer currentPlayer = currentPlayerContext.getElement();
+			response.trace(request, "For current player %s...", currentPlayer);
+			
+			// get block on player.
+			if ((blockToCall = currentPlayer.getAmbiguousActionBlock()) != null)
+			{
+				response.trace(request, "Found ambiguous action block on player.");
+				callBlock(request, response, currentPlayerContext, blockToCall);
+				return;
+			}
+
+		}
+
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		
+		// get block on world.
+		if ((blockToCall = worldContext.getElement().getAmbiguousActionBlock()) != null)
+		{
+			response.trace(request, "Found ambiguous action block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return;
+		}
+
+		response.trace(request, "No ambiguous action block to call. Sending error.");
+		response.addCue(CUE_ERROR, "ACTION IS AMBIGUOUS (make a better in-universe handler!).");
 	}
 
 	/**
@@ -245,7 +553,39 @@ public final class TAMELogic
 	 */
 	public static void doBadAction(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		// TODO: Finish this.
+		response.trace(request, "Finding bad action blocks...");
+
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		Block blockToCall = null;
+		
+		if (currentPlayerContext != null)
+		{
+			TPlayer currentPlayer = currentPlayerContext.getElement();
+			response.trace(request, "For current player %s...", currentPlayer);
+			
+			// get block on player.
+			if ((blockToCall = currentPlayer.getBadActionBlock()) != null)
+			{
+				response.trace(request, "Found bad action block on player.");
+				callBlock(request, response, currentPlayerContext, blockToCall);
+				return;
+			}
+
+		}
+
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		
+		// get block on world.
+		if ((blockToCall = worldContext.getElement().getBadActionBlock()) != null)
+		{
+			response.trace(request, "Found bad action block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return;
+		}
+
+		response.trace(request, "No bad action block to call. Sending error.");
+		response.addCue(CUE_ERROR, "ACTION IS BAD or NOT FOUND! (make a better in-universe handler!).");
 	}
 
 	/**
@@ -525,11 +865,81 @@ public final class TAMELogic
 				return;
 
 			// try fail on world.
-			callWorldActionFailBlock(request, response, action, worldContext);
+			if (!callWorldActionFailBlock(request, response, action, worldContext))
+				response.addCue(CUE_ERROR, "ACTION FAILED (make a better in-universe handler!).");
+
 		}
 		
 	}
 	
+	/**
+	 * Returns all objects in the accessible area by an object name read from the interpreter.
+	 * The output stops if the size of the output array is reached.
+	 * @param moduleContext the module context.
+	 * @param name the name from the interpreter.
+	 * @param outputArray the output vector of found objects.
+	 * @param arrayOffset the starting offset into the array to put them.
+	 * @return the amount of objects found.
+	 */
+	public static int findAccessibleObjectsByName(TAMEModuleContext moduleContext, String name, TObject[] outputArray, int arrayOffset)
+	{
+		TPlayerContext playerContext = moduleContext.getCurrentPlayerContext();
+		TRoomContext roomContext = moduleContext.getCurrentRoomContext();
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		TOwnershipMap ownerMap = moduleContext.getOwnershipMap();
+		int start = arrayOffset;
+		
+		if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
+		{
+			if (moduleContext.getObjectContext(obj).containsName(name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+		
+		if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
+		{
+			if (moduleContext.getObjectContext(obj).containsName(name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+	
+		for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
+		{
+			if (moduleContext.getObjectContext(obj).containsName(name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+	
+		return arrayOffset - start;
+	}
+
+	/**
+	 * Initializes a newly-created context by executing each initialization block on each object.
+	 * @param request the request object containing the module context.
+	 * @param response the response object.
+	 */
+	public static void initializeContext(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		
+		response.trace(request, "Starting init...");
+		
+		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
+		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());
+		callInitOnContexts(request, response, moduleContext.getPlayerContextList().valueIterator());
+		callInitBlock(request, response, moduleContext.getWorldContext());
+		
+	}
+
 	/**
 	 * Checks and calls the action forbidden blocks.
 	 * @param request the request object.
@@ -551,7 +961,7 @@ public final class TAMELogic
 			// check if the action is disallowed by the player.
 			if (!currentPlayer.allowsAction(action))
 			{
-				response.trace(request, "Action is not allowed.");
+				response.trace(request, "Action is forbidden.");
 				callPlayerActionForbiddenBlock(request, response, action, currentPlayerContext);
 				return true;
 			}
@@ -567,7 +977,7 @@ public final class TAMELogic
 				// check if the action is disallowed by the room.
 				if (!currentRoom.allowsAction(action))
 				{
-					response.trace(request, "Action is not allowed.");
+					response.trace(request, "Action is forbidden.");
 					callRoomActionForbiddenBlock(request, response, action, currentRoomContext);
 					return true;
 				}
@@ -701,76 +1111,9 @@ public final class TAMELogic
 		}
 		else
 		{
-			response.trace(request, "No forbid block on room to call. Cancelling.");
+			response.trace(request, "No forbid block on room to call. Sending error.");
+			response.addCue(CUE_ERROR, "ACTION IS FORBIDDEN (make a better in-universe handler!).");
 		}
-	}
-
-	/**
-	 * Returns all objects in the accessible area by an object name read from the interpreter.
-	 * The output stops if the size of the output array is reached.
-	 * @param moduleContext the module context.
-	 * @param name the name from the interpreter.
-	 * @param outputArray the output vector of found objects.
-	 * @param arrayOffset the starting offset into the array to put them.
-	 * @return the amount of objects found.
-	 */
-	public static int findAccessibleObjectsByName(TAMEModuleContext moduleContext, String name, TObject[] outputArray, int arrayOffset)
-	{
-		TPlayerContext playerContext = moduleContext.getCurrentPlayerContext();
-		TRoomContext roomContext = moduleContext.getCurrentRoomContext();
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		TOwnershipMap ownerMap = moduleContext.getOwnershipMap();
-		int start = arrayOffset;
-		
-		if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
-		{
-			if (moduleContext.getObjectContext(obj).containsName(name))
-			{
-				outputArray[arrayOffset++] = obj;
-				if (arrayOffset == outputArray.length)
-					return arrayOffset - start;
-			}
-		}
-		
-		if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
-		{
-			if (moduleContext.getObjectContext(obj).containsName(name))
-			{
-				outputArray[arrayOffset++] = obj;
-				if (arrayOffset == outputArray.length)
-					return arrayOffset - start;
-			}
-		}
-	
-		for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
-		{
-			if (moduleContext.getObjectContext(obj).containsName(name))
-			{
-				outputArray[arrayOffset++] = obj;
-				if (arrayOffset == outputArray.length)
-					return arrayOffset - start;
-			}
-		}
-	
-		return arrayOffset - start;
-	}
-
-	/**
-	 * Initializes a newly-created context by executing each initialization block on each object.
-	 * @param request the request object containing the module context.
-	 * @param response the response object.
-	 */
-	public static void initializeContext(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		
-		response.trace(request, "Starting init...");
-		
-		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
-		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());
-		callInitOnContexts(request, response, moduleContext.getPlayerContextList().valueIterator());
-		callInitBlock(request, response, moduleContext.getWorldContext());
-		
 	}
 
 	// Call init on iterable contexts.
@@ -799,6 +1142,185 @@ public final class TAMELogic
 		{
 			response.trace(request, "No init block.");
 		}
+	}
+
+	/**
+	 * Interprets an action from the input line.
+	 * @param moduleContext the module context.
+	 * @param context the InterpreterContext.
+	 */
+	private static void interpretAction(TAMEModuleContext moduleContext, InterpreterContext context)
+	{
+		TAMEModule module = moduleContext.getModule();
+		StringBuilder sb = new StringBuilder();
+		int index = context.tokenOffset;
+		
+		while (index < context.tokens.length)
+		{
+			if (sb.length() > 0)
+				sb.append(' ');
+			sb.append(context.tokens[index]);
+			index++;
+			TAction next = module.getActionByName(sb.toString());
+			if (next != null)
+			{
+				context.action = next;
+				context.tokenOffset = index;
+			}
+		}
+	}
+
+	/**
+	 * Interprets an action mode from the input line.
+	 * @param action the action to use.
+	 * @param context the InterpreterContext.
+	 */
+	private static void interpretMode(TAction action, InterpreterContext context)
+	{
+		StringBuilder sb = new StringBuilder();
+		int index = context.tokenOffset;
+		
+		while (index < context.tokens.length)
+		{
+			if (sb.length() > 0)
+				sb.append(' ');
+			sb.append(context.tokens[index]);
+			index++;
+			
+			String next = sb.toString();
+			if (action.getExtraStrings().contains(next))
+			{
+				context.mode = next;
+				context.tokenOffset = index;
+			}
+		}
+	}
+
+	/**
+	 * Interprets open target.
+	 * @param context the InterpreterContext.
+	 */
+	private static void interpretOpen(InterpreterContext context)
+	{
+		StringBuilder sb = new StringBuilder();
+		int index = context.tokenOffset;
+		
+		while (index < context.tokens.length)
+		{
+			if (sb.length() > 0)
+				sb.append(' ');
+			sb.append(context.tokens[index]);
+			index++;
+		}
+		
+		context.target = sb.toString();
+		context.tokenOffset = index;
+	}
+
+	/**
+	 * Interprets an action conjugate from the input line (like "with" or "on" or whatever).
+	 * @param action the action to use.
+	 * @param context the InterpreterContext.
+	 */
+	private static boolean interpretConjugate(TAction action, InterpreterContext context)
+	{
+		StringBuilder sb = new StringBuilder();
+		int index = context.tokenOffset;
+		boolean out = false;
+		
+		while (index < context.tokens.length)
+		{
+			if (sb.length() > 0)
+				sb.append(' ');
+			sb.append(context.tokens[index]);
+			index++;
+			
+			if (action.getExtraStrings().contains(sb.toString()))
+			{
+				context.tokenOffset = index;
+				out = true;
+			}
+		}
+	
+		return out;
+	}
+
+	/**
+	 * Interprets the first object from the input line.
+	 * This is context-sensitive, as its priority is to match objects on the current
+	 * player's person, as well as in the current room. These checks are skipped if
+	 * the player is null, or the current room is null.
+	 * <p>
+	 * The priority order is player inventory, then room contents.
+	 * @param moduleContext the module context.
+	 * @param context the InterpreterContext.
+	 */
+	private static boolean interpretObject1(TAMEModuleContext moduleContext, InterpreterContext context)
+	{
+		StringBuilder sb = new StringBuilder();
+		int index = context.tokenOffset;
+		
+		while (index < context.tokens.length)
+		{
+			if (sb.length() > 0)
+				sb.append(' ');
+			sb.append(context.tokens[index]);
+			index++;
+			int out = findAccessibleObjectsByName(moduleContext, sb.toString(), context.objects, 0);
+			if (out > 1)
+			{
+				context.objectAmbiguous = true;
+				context.object1 = null;
+				context.tokenOffset = index;
+			}
+			else if (out > 0)
+			{
+				context.objectAmbiguous = false;
+				context.object1 = context.objects[0];
+				context.tokenOffset = index;
+			}
+		}
+		
+		return context.object1 != null;
+	}
+
+	/**
+	 * Interprets the second object from the input line.
+	 * This is context-sensitive, as its priority is to match objects on the current
+	 * player's person, as well as in the current room. These checks are skipped if
+	 * the player is null, or the current room is null.
+	 * <p>
+	 * The priority order is player inventory, then room contents.
+	 * @param moduleContext the module context.
+	 * @param context the InterpreterContext.
+	 */
+	private static boolean interpretObject2(TAMEModuleContext moduleContext, InterpreterContext context)
+	{
+		StringBuilder sb = new StringBuilder();
+		int index = context.tokenOffset;
+		
+		while (index < context.tokens.length)
+		{
+			if (sb.length() > 0)
+				sb.append(' ');
+			sb.append(context.tokens[index]);
+			index++;
+			int out = findAccessibleObjectsByName(moduleContext, sb.toString(), context.objects, 0);
+			if (out > 1)
+			{
+				context.objectAmbiguous = true;
+				context.object2 = null;
+				context.tokenOffset = index;
+			}
+			else if (out > 0)
+			{
+				context.objectAmbiguous = false;
+				context.object2 = context.objects[0];
+				context.tokenOffset = index;
+			}
+		}
+		
+		return context.object2 != null;
 	}
 	
 }

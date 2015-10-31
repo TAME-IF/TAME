@@ -18,7 +18,7 @@ import net.mtrop.tame.interrupt.TAMEInterrupt;
  * A single low-level machine operation.
  * @author Matthew Tropiano
  */
-public class Command implements ExecutableType, Saveable
+public class Command implements CallableType, Saveable
 {
 	/** Command opcode. */
 	private TAMECommand operation;
@@ -124,9 +124,9 @@ public class Command implements ExecutableType, Saveable
 	}
 
 	@Override
-	public void execute(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	public void call(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		operation.execute(request, response, this);
+		operation.call(request, response, this);
 	}
 
 	public Value getOperand0()

@@ -9,14 +9,12 @@ import java.util.regex.PatternSyntaxException;
 import com.blackrook.commons.math.RMath;
 
 import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.element.context.TObjectContext;
-import net.mtrop.tame.element.context.TOwnershipMap;
-import net.mtrop.tame.element.context.TPlayerContext;
-import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.exception.UnexpectedValueTypeException;
@@ -48,7 +46,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	NOOP (/*Return: */ null)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) 
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) 
 		{
 			// Do nothing.
 		}
@@ -56,13 +54,27 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * [INTERNAL] Calls a procedure.
+	 * Returns nothing.
+	 */
+	CALLPROCEDURE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command)
+		{
+			// TODO: Finish this.
+		}
+		
+	},
+
+	/**
 	 * [INTERNAL] Pops a value off the stack.
 	 * Returns nothing.
 	 */
 	POP (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command)
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command)
 		{
 			request.popValue();
 		}
@@ -77,7 +89,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPVALUE (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) 
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) 
 		{
 			Value varvalue = command.getOperand0();
 			Value value = request.popValue();
@@ -102,7 +114,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPOBJECTVALUE (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
 		{
 			Value varObject = command.getOperand0();
 			Value variable = command.getOperand1();
@@ -132,7 +144,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPROOMVALUE (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
 		{
 			Value varRoom = command.getOperand0();
 			Value varValue = command.getOperand1();
@@ -162,7 +174,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPPLAYERVALUE (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
 		{
 			Value varPlayer = command.getOperand0();
 			Value varValue = command.getOperand1();
@@ -191,7 +203,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHVALUE (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) 
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) 
 		{
 			Value value = command.getOperand0();
 			
@@ -218,7 +230,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHOBJECTVALUE (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
 		{
 			Value varObject = command.getOperand0();
 			Value variable = command.getOperand1();
@@ -246,7 +258,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHROOMVARIABLE (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
 		{
 			Value varRoom = command.getOperand0();
 			Value variable = command.getOperand1();
@@ -274,7 +286,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHPLAYERVARIABLE (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
 		{
 			Value varPlayer = command.getOperand0();
 			Value variable = command.getOperand1();
@@ -294,6 +306,34 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * [INTERNAL] Resolves value of a variable on a container and pushes the value.
+	 * Operand0 is the object. 
+	 * Operand1 is the variable. 
+	 * Pushes the resolved value. 
+	 */
+	PUSHCONTAINERVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varObject = command.getOperand0();
+			Value variable = command.getOperand1();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in PUSHCONTAINERVALUE call.");
+			if (varObject.getType() != ValueType.CONTAINER)
+				throw new UnexpectedValueTypeException("Expected container type in PUSHCONTAINERVALUE call.");
+
+			String variableName = variable.asString();
+			String containerName = varObject.asString();
+
+			// return
+			request.pushValue(request.getModuleContext().resolveContainerVariableValue(containerName, variableName));
+		}
+		
+	},
+	
+	/**
 	 * [INTERNAL] Arithmetic function.
 	 * Operand0 is an integer that describes the operation. 
 	 * Pops a varying amount of values off the stack depending on the function.
@@ -302,7 +342,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ARITHMETICFUNC (true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command)
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command)
 		{
 			Value functionValue = command.getOperand0();
 			
@@ -452,7 +492,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	QUIT ()
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			response.addCue(CUE_QUIT);
 			response.trace(request, "Throwing quit...");
@@ -468,7 +508,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	BREAK ()
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing break...");
 			throw new BreakInterrupt();
@@ -483,7 +523,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CANCEL ()
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing cancel...");
 			throw new CancelInterrupt();
@@ -498,7 +538,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CONTINUE ()
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing continue...");
 			throw new ContinueInterrupt();
@@ -514,7 +554,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PRINT (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -534,7 +574,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PRINTLN (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -554,7 +594,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PAUSE (false, /*Return: */ null)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			response.addCue(CUE_PAUSE);
 		}
@@ -569,7 +609,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	WAIT (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -589,7 +629,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	TIP (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -609,7 +649,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	INFO (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -630,7 +670,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SAVE (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -651,7 +691,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LOAD (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -672,7 +712,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ADDCUE (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value cue = request.popValue();
@@ -696,13 +736,13 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	IF (false, true, false, true, true)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			// block should contain arithmetic commands and a last push.
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for IF does NOT EXIST!");
-			conditional.execute(request, response);
+			conditional.call(request, response);
 			
 			// get remaining expression value.
 			Value value = request.popValue();
@@ -715,13 +755,13 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				Block success = command.getSuccessBlock();
 				if (success == null)
 					throw new ModuleExecutionException("Success block for IF does NOT EXIST!");
-				success.execute(request, response);
+				success.call(request, response);
 			}
 			else
 			{
 				Block failure = command.getFailureBlock();
 				if (failure != null)
-					failure.execute(request, response);
+					failure.call(request, response);
 			}
 			
 		}
@@ -736,7 +776,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	WHILE (false, true, false, true, false)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			while (callConditional(request, response, command))
 			{
@@ -744,7 +784,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 					Block success = command.getSuccessBlock();
 					if (success == null)
 						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
-					success.execute(request, response);
+					success.call(request, response);
 				} catch (BreakInterrupt interrupt) {
 					break;
 				} catch (ContinueInterrupt interrupt) {
@@ -759,7 +799,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for WHILE does NOT EXIST!");
-			conditional.execute(request, response);
+			conditional.call(request, response);
 			
 			// get remaining expression value.
 			Value value = request.popValue();
@@ -780,7 +820,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FOR (true, true, true, true, false)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			for (callInit(request, response, command); callConditional(request, response, command); callStep(request, response, command))
 			{
@@ -788,7 +828,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 					Block success = command.getSuccessBlock();
 					if (success == null)
 						throw new ModuleExecutionException("Success block for FOR does NOT EXIST!");
-					success.execute(request, response);
+					success.call(request, response);
 				} catch (BreakInterrupt interrupt) {
 					break;
 				} catch (ContinueInterrupt interrupt) {
@@ -802,7 +842,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Block init = command.getInitializationBlock();
 			if (init == null)
 				throw new ModuleExecutionException("Init block for FOR does NOT EXIST!");
-			init.execute(request, response);
+			init.call(request, response);
 		}
 		
 		private void callStep(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -810,7 +850,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Block step = command.getStepBlock();
 			if (step == null)
 				throw new ModuleExecutionException("Step block for FOR does NOT EXIST!");
-			step.execute(request, response);
+			step.call(request, response);
 		}
 		
 		private boolean callConditional(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -819,7 +859,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for FOR does NOT EXIST!");
-			conditional.execute(request, response);
+			conditional.call(request, response);
 			
 			// get remaining expression value.
 			Value value = request.popValue();
@@ -840,7 +880,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASBOOLEAN (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -860,7 +900,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASINT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -880,7 +920,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASFLOAT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -900,7 +940,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASSTRING (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -920,7 +960,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRINGLENGTH (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -942,7 +982,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRINGREPLACE (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -973,7 +1013,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRINGINDEX (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1000,7 +1040,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRINGLASTINDEX (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1027,7 +1067,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRINGCONTAINS (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1054,7 +1094,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRINGCONTAINSPATTERN (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1089,7 +1129,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRINGCONTAINSTOKEN (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1124,7 +1164,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SUBSTRING (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1154,7 +1194,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LOWERCASE (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1174,7 +1214,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	UPPERCASE (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1195,7 +1235,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CHARACTER (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1224,7 +1264,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FLOOR (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1244,7 +1284,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CEILING (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1264,7 +1304,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ROUND (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1284,7 +1324,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FIX (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value place = request.popValue();
 			Value number = request.popValue();
@@ -1312,7 +1352,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POW (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value power = request.popValue();
 			Value number = request.popValue();
@@ -1338,7 +1378,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SQRT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -1358,7 +1398,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PI (false, /*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(Math.PI));
 		}
@@ -1373,7 +1413,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	E (false, /*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(Math.E));
 		}
@@ -1388,7 +1428,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SIN (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -1408,7 +1448,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	COS (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -1429,7 +1469,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	MIN (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value second = request.popValue();
 			Value first = request.popValue();
@@ -1453,7 +1493,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	MAX (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value second = request.popValue();
 			Value first = request.popValue();
@@ -1478,7 +1518,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CLAMP (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value valueEnd = request.popValue();
 			Value valueStart = request.popValue();
@@ -1508,7 +1548,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	RANDOM (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value valueInput = request.popValue();
 			
@@ -1547,7 +1587,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FRANDOM (false, /*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Random random = request.getModuleContext().getRandom();
 			request.pushValue(Value.create(random.nextDouble()));
@@ -1563,7 +1603,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	GRANDOM (false, /*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Random random = request.getModuleContext().getRandom();
 			request.pushValue(Value.create(random.nextGaussian()));
@@ -1579,7 +1619,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	TIME (false, /*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(System.currentTimeMillis()));
 		}
@@ -1596,7 +1636,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SECONDS (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -1624,7 +1664,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	MINUTES (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -1652,7 +1692,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	HOURS (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -1680,7 +1720,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	DAYS (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -1708,7 +1748,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FORMATDATE (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -1727,83 +1767,61 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Calls the onPlayerBrowse() blocks on objects on a player.
+	 * Calls the onPlayerBrowse() blocks on objects in a player.
 	 * POP is player. 
 	 * Returns nothing.
 	 */
 	BROWSEPLAYER (false, /*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value playerValue = request.popValue();
 			
 			if (playerValue.getType() != ValueType.PLAYER)
 				throw new UnexpectedValueTypeException("Expected player type in BROWSEPLAYER call.");
 
-			TAMEModuleContext moduleContext = request.getModuleContext();
-			TPlayerContext playerContext = moduleContext.resolvePlayerContext(playerValue.asString());
-			TPlayer player = playerContext.getElement();
-			TOwnershipMap ownership = request.getModuleContext().getOwnershipMap();
-			
-			response.trace(request, "Start browse %s.", player);
-			
-			for (TObject object : ownership.getObjectsOwnedByPlayer(player))
-			{
-				response.trace(request, "Check %s for browse block.", object);
-
-				TObjectContext objectContext = moduleContext.getObjectContext(object);
-
-				Block block = object.getPlayerBrowseBlock();
-				if (block != null)
-				{
-					response.trace(request, "Calling player browse block on %s.", object);
-					TAMELogic.callBlock(request, response, objectContext, block);
-				}
-				
-			}
-			
+			TAMELogic.doPlayerBrowse(request, response, request.getModuleContext().resolvePlayer(playerValue.asString()));
 		}
 		
 	},
 	
 	/**
-	 * Calls the onRoomBrowse() blocks on objects on a room.
+	 * Calls the onRoomBrowse() blocks on objects in a room.
 	 * POP is room. 
 	 * Returns nothing.
 	 */
 	BROWSEROOM (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value roomValue = request.popValue();
 			
 			if (roomValue.getType() != ValueType.ROOM)
 				throw new UnexpectedValueTypeException("Expected room type in BROWSEROOM call.");
 
-			TAMEModuleContext moduleContext = request.getModuleContext();
-			TRoomContext roomContext = moduleContext.resolveRoomContext(roomValue.asString());
-			TRoom room = roomContext.getElement();
-			TOwnershipMap ownership = request.getModuleContext().getOwnershipMap();
+			TAMELogic.doRoomBrowse(request, response, request.getModuleContext().resolveRoom(roomValue.asString()));
+		}
+		
+	},
+	
+	/**
+	 * Calls the onRoomBrowse() blocks on objects in a container.
+	 * POP is container. 
+	 * Returns nothing.
+	 */
+	BROWSECONTAINER (false, /*Return: */ null, /*Args: */ ArgumentType.CONTAINER)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value containerValue = request.popValue();
 			
-			response.trace(request, "Start browse %s.", room);
-			
-			for (TObject object : ownership.getObjectsOwnedByRoom(room))
-			{
-				response.trace(request, "Check %s for browse block.", object);
+			if (containerValue.getType() != ValueType.CONTAINER)
+				throw new UnexpectedValueTypeException("Expected container type in BROWSECONTAINER call.");
 
-				TObjectContext objectContext = moduleContext.getObjectContext(object);
-
-				Block block = object.getPlayerBrowseBlock();
-				if (block != null)
-				{
-					response.trace(request, "Calling room browse block on %s.", object);
-					TAMELogic.callBlock(request, response, objectContext, block);
-				}
-				
-			}
-			
+			TAMELogic.doContainerBrowse(request, response, request.getModuleContext().resolveContainer(containerValue.asString()));
 		}
 		
 	},
@@ -1817,7 +1835,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ADDOBJECTNAME (false, /*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varName = request.popValue();
 			Value varObject = request.popValue();
@@ -1841,7 +1859,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	GIVEWORLDOBJECT (false, /*Return: */ null, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			
@@ -1865,7 +1883,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	GIVEPLAYEROBJECT (false, /*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varPlayer = request.popValue();
@@ -1884,7 +1902,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a room to a player.
+	 * Adds an object to a player.
 	 * First POP is object.
 	 * Second POP is room. 
 	 * Returns nothing.
@@ -1892,7 +1910,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	GIVEROOMOBJECT (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM, ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varRoom = request.popValue();
@@ -1911,6 +1929,33 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * Adds an object to a container.
+	 * First POP is object.
+	 * Second POP is room. 
+	 * Returns nothing.
+	 */
+	GIVECONTAINEROBJECT (false, /*Return: */ null, /*Args: */ ArgumentType.CONTAINER, ArgumentType.OBJECT)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			Value varContainer = request.popValue();
+			
+			if (varContainer.getType() != ValueType.CONTAINER)
+				throw new UnexpectedValueTypeException("Expected container type in GIVECONTAINEROBJECT call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in GIVECONTAINEROBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TContainer container = moduleContext.resolveContainer(varContainer.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.getModuleContext().getOwnershipMap().addObjectToContainer(object, container);
+		}
+		
+	},
+	
+	/**
 	 * Removes an object from its owner, whatever it is.
 	 * POP is object.
 	 * Returns nothing.
@@ -1918,7 +1963,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	REMOVEOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			
@@ -1940,7 +1985,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	OBJECTHASNOOWNER (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			
@@ -1962,7 +2007,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	OBJECTSINWORLDCOUNT (false, /*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().getObjectsOwnedByWorldCount(request.getModuleContext().resolveWorld())));
 		}
@@ -1977,7 +2022,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	OBJECTSINPLAYERCOUNT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -1992,13 +2037,13 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	
 	/**
 	 * Counts the objects in a room.
-	 * POP is the player.
+	 * POP is the room.
 	 * Returns integer.
 	 */
 	OBJECTSINROOMCOUNT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			
@@ -2012,6 +2057,27 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * Counts the objects in a container.
+	 * POP is the container.
+	 * Returns integer.
+	 */
+	OBJECTSINCONTAINERCOUNT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.CONTAINER)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varRoom = request.popValue();
+			
+			if (varRoom.getType() != ValueType.CONTAINER)
+				throw new UnexpectedValueTypeException("Expected container type in OBJECTSINCONTAINERCOUNT call.");
+			
+			TContainer container = request.getModuleContext().resolveContainer(varRoom.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().getObjectsOwnedByContainerCount(container)));
+		}
+		
+	},
+	
+	/**
 	 * Checks if an object is owned by the world.
 	 * POP is the object.
 	 * Returns boolean.
@@ -2019,7 +2085,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	WORLDHASOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			
@@ -2034,7 +2100,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Checks if an object is owned by the player.
+	 * Checks if an object is owned by a player.
 	 * First POP is the object.
 	 * Second POP is the player.
 	 * Returns boolean.
@@ -2042,7 +2108,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PLAYERHASOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varPlayer = request.popValue();
@@ -2061,14 +2127,14 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Checks if an object is owned by the room.
+	 * Checks if an object is owned by a room.
 	 * POP is the player.
 	 * Returns boolean.
 	 */
 	ROOMHASOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM, ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varRoom = request.popValue();
@@ -2087,6 +2153,33 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * Checks if an object is owned by a container.
+	 * First POP is the object.
+	 * Second POP is the player.
+	 * Returns boolean.
+	 */
+	CONTAINERHASOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.CONTAINER, ArgumentType.OBJECT)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			Value varContainer = request.popValue();
+			
+			if (varContainer.getType() != ValueType.CONTAINER)
+				throw new UnexpectedValueTypeException("Expected container type in CONTAINERHASOBJECT call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in CONTAINERHASOBJECT call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TContainer container = moduleContext.resolveContainer(varContainer.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkContainerHasObject(container, object)));
+		}
+		
+	},
+	
+	/**
 	 * Checks if a player in in a room. Returns true if current room or in the room stack.
 	 * First POP is the room.
 	 * Second POP is the player.
@@ -2095,7 +2188,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PLAYERISINROOM (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -2122,7 +2215,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PLAYERCANACCESSOBJECT (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varPlayer = request.popValue();
@@ -2150,7 +2243,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FOCUSONPLAYER (false, /*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -2171,7 +2264,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FOCUSONROOM (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			
@@ -2199,7 +2292,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHROOM (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			
@@ -2228,7 +2321,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPROOM (false, /*Return: */ null)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TPlayer player = moduleContext.getCurrentPlayer();
@@ -2255,7 +2348,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SWAPROOM (false, /*Return: */ null, /*Args: */ ArgumentType.ROOM)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			
@@ -2288,7 +2381,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CURRENTPLAYERIS (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -2312,7 +2405,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	NOCURRENTPLAYER (false, /*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TPlayer player = moduleContext.getCurrentPlayer();
@@ -2329,7 +2422,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CURRENTROOMIS (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			
@@ -2353,7 +2446,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	NOCURRENTROOM (false, /*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TRoom room = moduleContext.getCurrentRoom();
@@ -2370,7 +2463,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ENQUEUEACTION (false, /*Return: */ null, /*Args: */ ArgumentType.ACTION)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varAction = request.popValue();
 			
@@ -2392,7 +2485,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ENQUEUEACTIONSTRING (false, /*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.VALUE)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varTarget = request.popValue();
 			Value varAction = request.popValue();
@@ -2419,7 +2512,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ENQUEUEACTIONOBJECT (false, /*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varAction = request.popValue();
@@ -2448,7 +2541,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ENQUEUEACTIONOBJECT2 (false, /*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value varObject2 = request.popValue();
 			Value varObject = request.popValue();
@@ -2479,7 +2572,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	IDENTITY (false, /*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT)
 	{
 		@Override
-		public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
 			Value element = request.popValue();
 
@@ -2617,10 +2710,22 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		return failureBlockRequired;
 	}
 
-	@Override
-	public void execute(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+	protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 	{
 		throw new RuntimeException("UNIMPLEMENTED COMMAND");
+	}
+	
+	/**
+	 * Increments the 
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param command the command object.
+	 * @throws TAMEInterrupt 
+	 */
+	public final void call(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+	{
+		doCommand(request, response, command);
+		response.incrementAndCheckCommandsExecuted();
 	}
 	
 }

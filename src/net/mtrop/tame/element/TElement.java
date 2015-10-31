@@ -22,7 +22,6 @@ import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Saveable;
-import net.mtrop.tame.struct.ActionTable;
 
 /**
  * Common engine element object.
@@ -36,9 +35,6 @@ public abstract class TElement implements Saveable
 	/** Code block ran upon world initialization. */
 	private Block initBlock;
 
-	/** Table of associated actions. */
-	private ActionTable actionTable;
-	
 	/**
 	 * Set on initial creation. This flag is checked to ensure all objects were defined.
 	 * If this is set on any object after the time of compile, then an object was only
@@ -49,7 +45,6 @@ public abstract class TElement implements Saveable
 	protected TElement()
 	{
 		this.identity = null;
-		this.actionTable = new ActionTable();
 		this.initBlock = null;
 		this.prototyped = true;
 	}
@@ -107,14 +102,6 @@ public abstract class TElement implements Saveable
 		initBlock = eab;
 	}
 
-	/**
-	 * Gets the action table for "onAction" calls (general).
-	 */
-	public ActionTable getActionTable()
-	{
-		return actionTable;
-	}
-	
 	@Override
 	public int hashCode()
 	{
@@ -153,7 +140,6 @@ public abstract class TElement implements Saveable
 		sw.flushBits();
 		if (initBlock != null)
 			initBlock.writeBytes(out);
-		actionTable.writeBytes(out);
 	}
 	
 	@Override
@@ -164,7 +150,6 @@ public abstract class TElement implements Saveable
 		byte blockbits = sr.readByte();
 		if ((blockbits & 0x01) != 0)
 			initBlock = Block.create(in);
-		actionTable = ActionTable.create(in);
 	}
 
 	@Override

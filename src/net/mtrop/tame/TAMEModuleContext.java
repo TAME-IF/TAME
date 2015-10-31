@@ -16,10 +16,12 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
+import net.mtrop.tame.element.context.TContainerContext;
 import net.mtrop.tame.element.context.TObjectContext;
 import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
@@ -54,6 +56,8 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	protected HashMap<String, TRoomContext> roomContextHash;
 	/** List of objects. */
 	protected HashMap<String, TObjectContext> objectContextHash;
+	/** List of containers. */
+	protected HashMap<String, TContainerContext> containerContextHash;
 	
 	/** Ownership map for players. */
 	protected TOwnershipMap ownershipMap;
@@ -67,6 +71,7 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 		playerContextHash = new HashMap<String, TPlayerContext>(3);
 		roomContextHash = new HashMap<String, TRoomContext>(20);
 		objectContextHash = new HashMap<String, TObjectContext>(40);
+		containerContextHash = new HashMap<String, TContainerContext>(10);
 
 		// Build contexts.
 		
@@ -77,6 +82,8 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 			roomContextHash.put(element.getKey(), new TRoomContext(element.getValue()));
 		for (ObjectPair<String, TObject> element : module.getObjectList())
 			objectContextHash.put(element.getKey(), new TObjectContext(element.getValue()));
+		for (ObjectPair<String, TContainer> element : module.getContainerList())
+			containerContextHash.put(element.getKey(), new TContainerContext(element.getValue()));
 		
 		ownershipMap = new TOwnershipMap();
 
@@ -140,7 +147,7 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 	
 	/**
-	 * Gets a player context by player identity.
+	 * Gets a player context by player.
 	 */
 	public TPlayerContext getPlayerContext(TPlayer player)
 	{
@@ -148,7 +155,7 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 
 	/**
-	 * Gets a room context by room identity.
+	 * Gets a room context by room.
 	 */
 	public TRoomContext getRoomContext(TRoom room)
 	{
@@ -156,11 +163,19 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 
 	/**
-	 * Gets a object context by object identity.
+	 * Gets an object context by object.
 	 */
 	public TObjectContext getObjectContext(TObject object)
 	{
 		return objectContextHash.get(object.getIdentity());
+	}
+
+	/**
+	 * Gets an container context by container.
+	 */
+	public TContainerContext getContainerContext(TContainer container)
+	{
+		return containerContextHash.get(container.getIdentity());
 	}
 
 	/**
@@ -180,11 +195,19 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 
 	/**
-	 * Gets a object context by object name.
+	 * Gets an object context by object name.
 	 */
 	public TObjectContext getObjectContextByIdentity(String name)
 	{
 		return objectContextHash.get(name);
+	}
+
+	/**
+	 * Gets a container context by object name.
+	 */
+	public TContainerContext getContainerContextByIdentity(String name)
+	{
+		return containerContextHash.get(name);
 	}
 
 	/**
@@ -209,6 +232,14 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	public HashMap<String, TObjectContext> getObjectContextList()
 	{
 		return objectContextHash;
+	}
+
+	/**
+	 * Get the container context list.
+	 */
+	public HashMap<String, TContainerContext> getContainerContextList()
+	{
+		return containerContextHash;
 	}
 
 	/**
@@ -374,7 +405,7 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 
 	/**
-	 * Resolves a object context.
+	 * Resolves an object context.
 	 * @param objectIdentity the object identity.
 	 * @return the context resolved.
 	 * @throws ModuleExecutionException if object not found.
@@ -388,7 +419,7 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 
 	/**
-	 * Resolves a object.
+	 * Resolves an object.
 	 * @param objectIdentity the object identity.
 	 * @return the context resolved.
 	 * @throws ModuleExecutionException if object not found.
@@ -396,6 +427,31 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	public TObject resolveObject(String objectIdentity) throws ErrorInterrupt
 	{
 		return resolveObjectContext(objectIdentity).getElement();
+	}
+
+	/**
+	 * Resolves a container context.
+	 * @param containerIdentity the container identity.
+	 * @return the context resolved.
+	 * @throws ModuleExecutionException if container not found.
+	 */
+	public TContainerContext resolveContainerContext(String containerIdentity) throws ErrorInterrupt
+	{
+		TContainerContext context = getContainerContextByIdentity(containerIdentity);
+		if (context == null)
+			throw new ModuleExecutionException("Expected container '%s' in module context!", containerIdentity);
+		return context;
+	}
+
+	/**
+	 * Resolves a container.
+	 * @param containerIdentity the object identity.
+	 * @return the context resolved.
+	 * @throws ModuleExecutionException if object not found.
+	 */
+	public TContainer resolveContainer(String containerIdentity) throws ErrorInterrupt
+	{
+		return resolveContainerContext(containerIdentity).getElement();
 	}
 
 	/**
@@ -442,6 +498,17 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 		return resolveObjectContext(objectIdentity).getValue(variableName);
 	}
 
+	/**
+	 * Resolves a variable from a container context element.
+	 * @param containerIdentity a container identity.
+	 * @param variableName the variable name.
+	 * @return the value resolved.
+	 */
+	public Value resolveContainerVariableValue(String containerIdentity, String variableName) throws ErrorInterrupt
+	{
+		return resolveContainerContext(containerIdentity).getValue(variableName);
+	}
+
 	@Override
 	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
 	{
@@ -470,6 +537,13 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 		
 		sw.writeInt(objectContextHash.size());
 		for (ObjectPair<String, TObjectContext> entry : objectContextHash)
+		{
+			sw.writeString(entry.getKey(), "UTF-8");
+			entry.getValue().writeStateBytes(module, out);
+		}
+
+		sw.writeInt(containerContextHash.size());
+		for (ObjectPair<String, TContainerContext> entry : containerContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
 			entry.getValue().writeStateBytes(module, out);

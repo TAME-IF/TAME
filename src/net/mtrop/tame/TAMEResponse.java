@@ -10,6 +10,7 @@
  ******************************************************************************/
 package net.mtrop.tame;
 
+import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
 import net.mtrop.tame.struct.Cue;
 
 import com.blackrook.commons.linkedlist.Queue;
@@ -101,11 +102,14 @@ public class TAMEResponse implements TAMEConstants
 
 	/**
 	 * Increments the commands executed counter by 1.
+	 * Also checks against the runaway threshold.
 	 * After this object is received by the client, this means nothing.
 	 */
-	public void incrementCommandsExecuted()
+	public void incrementAndCheckCommandsExecuted() throws RunawayRequestInterrupt
 	{
 		commandsExecuted++;
+		if (commandsExecuted >= RUNAWAY_THRESHOLD)
+			throw new RunawayRequestInterrupt("Runaway request detected! Breached threshold of "+RUNAWAY_THRESHOLD+" requests.");
 	}
 	
 	/**
@@ -121,7 +125,7 @@ public class TAMEResponse implements TAMEConstants
 	 */
 	public void trace(TAMERequest request, String format, Object ... args)
 	{
-		if (request.isTrace()) 
+		if (request.isTracing()) 
 			addCue(CUE_TRACE, String.format(format, args));
 	}
 	

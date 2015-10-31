@@ -22,13 +22,14 @@ import net.mtrop.tame.interrupt.TAMEInterrupt;
 public interface CommandType
 {
 	/**
-	 * Executes the command.
+	 * Calls the command and increments the command count.
+	 * Also performs a runaway check.
 	 * @param request the TAME request.
 	 * @param response the TAME response.
 	 * @param statement the calling statement (get blocks from this).
 	 * @throws TAMEInterrupt if a TAMEInterrupt occurs.
 	 */
-	public void execute(TAMERequest request, TAMEResponse response, Command statement) throws TAMEInterrupt;
+	public void call(TAMERequest request, TAMEResponse response, Command statement) throws TAMEInterrupt;
 	
 	/**
 	 * Is this an internal command type?

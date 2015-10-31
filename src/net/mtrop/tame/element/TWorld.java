@@ -26,7 +26,7 @@ import net.mtrop.tame.struct.ActionTable;
  * Contains immutable World data. 
  * @author Matthew Tropiano
  */
-public class TWorld extends TElement
+public class TWorld extends TActionableElement
 {
 	/** Blocks executed on action failure. */
 	private ActionTable actionFailTable;

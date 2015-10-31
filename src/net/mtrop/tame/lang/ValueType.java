@@ -11,6 +11,7 @@ public enum ValueType
 	FLOAT,
 	STRING,
 	OBJECT,
+	CONTAINER,
 	PLAYER,
 	ROOM,
 	WORLD,

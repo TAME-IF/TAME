@@ -29,7 +29,7 @@ import com.blackrook.io.SuperWriter;
  * The viewpoint can travel to different rooms, changing view aspects.
  * @author Matthew Tropiano
  */
-public class TPlayer extends TElement
+public class TPlayer extends TActionableElement
 {
 	/** Set function for action list. */
 	protected ActionSet actionListFunction;

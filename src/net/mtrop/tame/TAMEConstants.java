@@ -36,6 +36,9 @@ public interface TAMEConstants
 	/** Identity of current world. */
 	public static final String IDENTITY_CURRENT_WORLD = "world";
 
+	/** Hardcoded runaway max. */
+	public static final int RUNAWAY_THRESHOLD = 100000;
+
 	/** Arithmetic function - absolute value. */
 	public static final int ARITHMETIC_FUNCTION_ABSOLUTE = 0;
 	/** Arithmetic function - negate value. */
