@@ -26,7 +26,8 @@ import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Value;
 
 /**
- * Utility and rules class. 
+ * Rules class.
+ * Governs most if not all logic in TAME.
  * @author Matthew Tropiano
  */
 public final class TAMELogic implements TAMEConstants
@@ -225,6 +226,24 @@ public final class TAMELogic implements TAMEConstants
 			block.call(request, response);
 		} finally {
 			response.trace(request, "Popping %s...", context);
+			request.popContext();
+			request.checkStackClear();
+		}
+	}
+	
+	/**
+	 * Performs the necessary tasks for calling a procedure on the same current context.
+	 * Ensures that the block is called cleanly.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param block the block to execute.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void callProcedure(TAMERequest request, TAMEResponse response, Block block) throws TAMEInterrupt
+	{
+		try {
+			block.call(request, response);
+		} finally {
 			request.checkStackClear();
 		}
 	}

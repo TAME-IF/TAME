@@ -38,7 +38,7 @@ public class ActionWithTable implements Saveable
 	 */
 	public ActionWithTable()
 	{
-		actionMap = null;
+		actionMap = new HashMap<String, HashMap<String, Block>>(3,3);
 	}
 	
 	/**
@@ -67,9 +67,6 @@ public class ActionWithTable implements Saveable
 	 */
 	public Block get(String actionIdentity, String objectIdentity)
 	{
-		if (actionMap == null) 
-			return null;		
-		
 		HashMap<String, Block> objectHash = actionMap.get(actionIdentity);
 		
 		if (objectHash == null) 
@@ -83,9 +80,6 @@ public class ActionWithTable implements Saveable
 	 */
 	public void add(String actionIdentity, String objectIdentity, Block commandBlock)
 	{
-		if (actionMap == null)
-			actionMap = new HashMap<String, HashMap<String, Block>>(3,3);
-		
 		HashMap<String, Block> hash = null;
 		hash = actionMap.get(actionIdentity);
 		if (hash == null) 

@@ -14,7 +14,7 @@ package net.mtrop.tame.lang;
  * The type of set of actions attributed to action permissions on players or rooms.
  * @author Matthew Tropiano
  */
-public enum ActionSet
+public enum PermissionType
 {
 	EXCLUDE,
 	RESTRICT

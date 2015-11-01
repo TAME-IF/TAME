@@ -39,7 +39,7 @@ public class ActionModeTable implements Saveable
 	 */
 	public ActionModeTable()
 	{
-		actionMap = null;
+		actionMap = new HashMap<String, CaseInsensitiveHashMap<Block>>(3,3);
 	}
 
 	/**
@@ -68,9 +68,6 @@ public class ActionModeTable implements Saveable
 	 */
 	public Block get(String actionIdentity, String mode)
 	{
-		if (actionMap == null) 
-			return null;		
-		
 		CaseInsensitiveHashMap<Block> modeHash = actionMap.get(actionIdentity);
 		
 		if (modeHash == null) 
@@ -84,9 +81,6 @@ public class ActionModeTable implements Saveable
 	 */
 	public void add(String actionIdentity, String mode, Block commandBlock)
 	{
-		if (actionMap == null)
-			actionMap = new HashMap<String, CaseInsensitiveHashMap<Block>>(3,3);
-		
 		CaseInsensitiveHashMap<Block> hash = null;
 		hash = actionMap.get(actionIdentity);
 		if (hash == null) 

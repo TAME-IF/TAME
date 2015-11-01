@@ -22,6 +22,7 @@ import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Saveable;
+import net.mtrop.tame.struct.ActionTable;
 
 /**
  * Common engine element object.
@@ -35,6 +36,9 @@ public abstract class TElement implements Saveable
 	/** Code block ran upon world initialization. */
 	private Block initBlock;
 
+	/** Procedure block map. */
+	private ActionTable procedureBlock;
+
 	/**
 	 * Set on initial creation. This flag is checked to ensure all objects were defined.
 	 * If this is set on any object after the time of compile, then an object was only
@@ -46,6 +50,7 @@ public abstract class TElement implements Saveable
 	{
 		this.identity = null;
 		this.initBlock = null;
+		this.procedureBlock = new ActionTable();
 		this.prototyped = true;
 	}
 	
@@ -102,6 +107,26 @@ public abstract class TElement implements Saveable
 		initBlock = eab;
 	}
 
+	/**
+	 * Adds a procedure block to this element.
+	 * @param name the name of the procedure.
+	 * @param block the block to add.
+	 */
+	public void addProcedureBlock(String name, Block block)
+	{
+		procedureBlock.add(name, block);
+	}
+	
+	/**
+	 * Returns a procedure block by name.
+	 * @param name the name of the block.
+	 * @return the corresponding block or null if not found.
+	 */
+	public Block getProcedureBlock(String name)
+	{
+		return procedureBlock.get(name);
+	}
+	
 	@Override
 	public int hashCode()
 	{
@@ -136,6 +161,8 @@ public abstract class TElement implements Saveable
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeString(identity, "UTF-8");
+		procedureBlock.writeBytes(out);
+		
 		sw.writeBit(initBlock != null);
 		sw.flushBits();
 		if (initBlock != null)
@@ -147,6 +174,8 @@ public abstract class TElement implements Saveable
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		setIdentity(sr.readString("UTF-8"));
+		procedureBlock = ActionTable.create(in);
+		
 		byte blockbits = sr.readByte();
 		if ((blockbits & 0x01) != 0)
 			initBlock = Block.create(in);

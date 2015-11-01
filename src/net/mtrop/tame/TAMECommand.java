@@ -10,10 +10,12 @@ import com.blackrook.commons.math.RMath;
 
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TContainer;
+import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
+import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.element.context.TObjectContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.UnexpectedValueException;
@@ -54,15 +56,31 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * [INTERNAL] Calls a procedure.
+	 * [INTERNAL] Calls a procedure local to the current context.
 	 * Returns nothing.
 	 */
 	CALLPROCEDURE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command)
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
-			// TODO: Finish this.
+			Value procedureName = command.getOperand0();
+			if (!procedureName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CALLPROCEDURE call.");
+			
+			if (request.peekContext() == null)
+				throw new ModuleExecutionException("Attempted CALLPROCEDURE call without a context!");
+			
+			TElementContext<?> elementContext = request.peekContext();
+			TElement element = elementContext.getElement();
+			
+			String name = procedureName.asString();
+
+			Block block = element.getProcedureBlock(name);
+			if (block == null)
+				throw new ModuleExecutionException("Attempted CALLPROCEDURE call on a procedure that does not exist on %s: %s", element, name);
+			
+			TAMELogic.callProcedure(request, response, block);
 		}
 		
 	},

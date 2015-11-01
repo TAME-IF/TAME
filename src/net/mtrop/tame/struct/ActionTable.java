@@ -35,7 +35,7 @@ public class ActionTable implements Saveable
 	
 	public ActionTable()
 	{
-		actionMap = null;
+		actionMap = new SortedMap<String, Block>(3, 3);
 	}
 	
 	/**
@@ -64,10 +64,7 @@ public class ActionTable implements Saveable
 	 */
 	public Block get(String actionIdentity)
 	{
-		if (actionMap == null) 
-			return null;
-		else
-			return actionMap.get(actionIdentity);
+		return actionMap.get(actionIdentity);
 	}
 
 	/**
@@ -75,8 +72,6 @@ public class ActionTable implements Saveable
 	 */
 	public void add(String actionIdentity, Block commandBlock)
 	{
-		if (actionMap == null)
-			actionMap = new SortedMap<String, Block>(3, 3);
 		actionMap.add(actionIdentity, commandBlock);
 	}
 

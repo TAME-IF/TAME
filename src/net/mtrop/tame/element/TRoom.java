@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import net.mtrop.tame.lang.ActionSet;
+import net.mtrop.tame.lang.PermissionType;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionModeTable;
 import net.mtrop.tame.struct.ActionTable;
@@ -36,9 +36,9 @@ import com.blackrook.io.SuperWriter;
 public class TRoom extends TActionableElement
 {
 	/** Set function for action list. */
-	protected ActionSet actionListFunction;
+	protected PermissionType permissionType;
 	/** List of actions that are either restricted or excluded. */
-	protected Hash<String> actionList;
+	protected Hash<String> permittedActionList;
 
 	/** Table used for modal actions. (actionName, mode) -> block. */
 	protected ActionModeTable modalActionTable;
@@ -60,8 +60,8 @@ public class TRoom extends TActionableElement
 	{
 		super();
 		
-		actionListFunction = ActionSet.EXCLUDE;
-		actionList = new Hash<String>(2);
+		permissionType = PermissionType.EXCLUDE;
+		permittedActionList = new Hash<String>(2);
 		
 		modalActionTable = new ActionModeTable();
 		actionForbidTable = new ActionTable();
@@ -72,27 +72,27 @@ public class TRoom extends TActionableElement
 	}
 
 	/**
-	 * Gets the action list function.
+	 * Gets the action permission type.
 	 */
-	public ActionSet getActionListFunction()
+	public PermissionType getPermissionType()
 	{
-		return actionListFunction;
+		return permissionType;
 	}
 
 	/**
-	 * Sets the action list function.
+	 * Sets the action permission type.
 	 */
-	public void setActionListFunction(ActionSet actionListFunction)
+	public void setPermissionType(PermissionType permissionType)
 	{
-		this.actionListFunction = actionListFunction;
+		this.permissionType = permissionType;
 	}
 
 	/**
 	 * Adds an action to the action list to be excluded/restricted.
 	 */
-	public void addAction(TAction action)
+	public void addPermittedAction(TAction action)
 	{
-		actionList.put(action.getIdentity());
+		permittedActionList.put(action.getIdentity());
 	}
 	
 	/**
@@ -100,10 +100,10 @@ public class TRoom extends TActionableElement
 	 */
 	public boolean allowsAction(TAction action)
 	{
-		if (actionListFunction == ActionSet.EXCLUDE)
-			return !actionList.contains(action.getIdentity());
+		if (permissionType == PermissionType.EXCLUDE)
+			return !permittedActionList.contains(action.getIdentity());
 		else
-			return actionList.contains(action.getIdentity());
+			return permittedActionList.contains(action.getIdentity());
 	}
 	
 	/** 
@@ -188,10 +188,10 @@ public class TRoom extends TActionableElement
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		super.writeBytes(out);
-		sw.writeByte((byte)actionListFunction.ordinal());
+		sw.writeByte((byte)permissionType.ordinal());
 
-		sw.writeInt(actionList.size());
-		for (String actionIdentity : actionList)
+		sw.writeInt(permittedActionList.size());
+		for (String actionIdentity : permittedActionList)
 			sw.writeString(actionIdentity, "UTF-8");
 		
 		modalActionTable.writeBytes(out);
@@ -215,12 +215,12 @@ public class TRoom extends TActionableElement
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readBytes(in);
-		actionListFunction = ActionSet.values()[sr.readByte()];
+		permissionType = PermissionType.values()[sr.readByte()];
 		
-		actionList.clear();
+		permittedActionList.clear();
 		int size = sr.readInt();
 		while (size-- > 0)
-			actionList.put(sr.readString("UTF-8"));
+			permittedActionList.put(sr.readString("UTF-8"));
 	
 		modalActionTable = ActionModeTable.create(in);
 		actionForbidTable = ActionTable.create(in);

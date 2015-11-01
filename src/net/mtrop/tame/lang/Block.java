@@ -58,11 +58,13 @@ public class Block implements CallableType, Iterable<Command>, Saveable
 	@Override
 	public void call(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
+		response.trace(request, "Start block.");
 		for (Command command : this)
 		{
 			response.trace(request, "CALL %s", command);
 			command.call(request, response);
 		}
+		response.trace(request, "End block.");
 	}
 	
 	@Override
