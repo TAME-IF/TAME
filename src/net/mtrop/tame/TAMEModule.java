@@ -261,6 +261,9 @@ public class TAMEModule implements Saveable
 		sw.writeInt(objects.size());
 		for (ObjectPair<String, TObject> pair : objects)
 			pair.getValue().writeBytes(out);
+		sw.writeInt(containers.size());
+		for (ObjectPair<String, TContainer> pair : containers)
+			pair.getValue().writeBytes(out);
 		
 	}
 	
@@ -296,6 +299,7 @@ public class TAMEModule implements Saveable
 		players.clear();
 		rooms.clear();
 		objects.clear();
+		containers.clear();
 
 		int size;
 		
@@ -312,6 +316,9 @@ public class TAMEModule implements Saveable
 		size = sr.readInt();
 		while(size-- > 0)
 			addObject(TObject.create(in));
+		size = sr.readInt();
+		while(size-- > 0)
+			addContainer(TContainer.create(in));
 		
 	}
 	

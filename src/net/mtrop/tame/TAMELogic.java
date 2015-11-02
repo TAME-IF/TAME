@@ -19,6 +19,7 @@ import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.TAMEFatalException;
+import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
@@ -114,34 +115,50 @@ public final class TAMELogic implements TAMEConstants
 				}
 			}
 			
+			
+			boolean initial = true;
 			while (request.hasActionItems())
 			{
 				TAMEAction tameAction = request.getActionItem();
 				TAction action = tameAction.getAction();
-				switch (action.getType())
-				{
-					default:
-					case GENERAL:
-						doActionGeneral(request, response, action);
-						break;
-					case OPEN:
-						doActionOpen(request, response, action, tameAction.getTarget());
-						break;
-					case MODAL:
-						doActionModal(request, response, action, tameAction.getTarget());
-						break;
-					case TRANSITIVE:
-						doActionTransitive(request, response, action, tameAction.getObject1());
-						break;
-					case DITRANSITIVE:
-						if (tameAction.getObject2() == null)
+				
+				try {
+				
+					switch (action.getType())
+					{
+						default:
+						case GENERAL:
+							doActionGeneral(request, response, action);
+							break;
+						case OPEN:
+							doActionOpen(request, response, action, tameAction.getTarget());
+							break;
+						case MODAL:
+							doActionModal(request, response, action, tameAction.getTarget());
+							break;
+						case TRANSITIVE:
 							doActionTransitive(request, response, action, tameAction.getObject1());
-						else
-							doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
-						break;
+							break;
+						case DITRANSITIVE:
+							if (tameAction.getObject2() == null)
+								doActionTransitive(request, response, action, tameAction.getObject1());
+							else
+								doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
+							break;
+					}
+					
+					request.checkStackClear();
+					
+				} catch (EndInterrupt end) {
+					// Catches end.
 				}
 				
-				request.checkStackClear();
+				// do the "after" stuff.
+				if (!request.hasActionItems() && initial)
+				{
+					initial = false;
+					doAfterRequest(request, response);
+				}
 				
 			}
 			
@@ -521,6 +538,31 @@ public final class TAMELogic implements TAMEConstants
 	
 	}
 
+	/**
+	 * Attempts to call the after request block on the world.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doAfterRequest(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	{
+		response.trace(request, "Finding after request block...");
+
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		Block blockToCall = null;
+		
+		// get block on world.
+		if ((blockToCall = worldContext.getElement().getAfterRequestBlock()) != null)
+		{
+			response.trace(request, "Found after request block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return;
+		}
+		else
+			response.trace(request, "No after request block to call.");
+	}
+	
 	/**
 	 * Attempts to call the ambiguous action blocks.
 	 * @param request the request object.

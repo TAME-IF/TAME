@@ -81,7 +81,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	public Value getValue(String variableName)
 	{
 		if (!containsVariable(variableName))
-			setValue(variableName, Value.create(0));
+			return Value.create(false);
 		return variables.get(variableName);
 	}
 	

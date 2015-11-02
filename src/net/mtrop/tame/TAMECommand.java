@@ -21,7 +21,7 @@ import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.exception.UnexpectedValueTypeException;
 import net.mtrop.tame.interrupt.BreakInterrupt;
-import net.mtrop.tame.interrupt.CancelInterrupt;
+import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.ContinueInterrupt;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
@@ -208,7 +208,62 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String variableName = varValue.asString();
 			String playerName = varPlayer.asString();
 
-			request.getModuleContext().resolveRoomContext(playerName).setValue(variableName, value);
+			request.getModuleContext().resolvePlayerContext(playerName).setValue(variableName, value);
+		}
+		
+	},
+
+	/**
+	 * [INTERNAL] Sets a variable on a container.
+	 * Operand0 is the container. 
+	 * Operand1 is the variable. 
+	 * POP is the value.
+	 */
+	POPCONTAINERVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varContainer = command.getOperand0();
+			Value varValue = command.getOperand1();
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPCONTAINERVALUE call.");
+			if (!varValue.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPCONTAINERVALUE call.");
+			if (varContainer.getType() != ValueType.CONTAINER)
+				throw new UnexpectedValueTypeException("Expected container type in POPCONTAINERVALUE call.");
+			
+			String variableName = varValue.asString();
+			String containerName = varContainer.asString();
+
+			request.getModuleContext().resolveContainerContext(containerName).setValue(variableName, value);
+		}
+		
+	},
+
+	/**
+	 * [INTERNAL] Sets a variable on the world.
+	 * Operand1 is the variable. 
+	 * POP is the value.
+	 */
+	POPWORLDVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value varValue = command.getOperand0();
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPWORLDVALUE call.");
+			if (!varValue.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPWORLDVALUE call.");
+			
+			String variableName = varValue.asString();
+
+			request.getModuleContext().resolveWorldContext().setValue(variableName, value);
 		}
 		
 	},
@@ -347,6 +402,29 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			// return
 			request.pushValue(request.getModuleContext().resolveContainerVariableValue(containerName, variableName));
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Resolves value of a variable on a world and pushes the value.
+	 * Operand0 is the variable. 
+	 * Pushes the resolved value. 
+	 */
+	PUSHWORLDVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
+		{
+			Value variable = command.getOperand0();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in PUSHWORLDVALUE call.");
+
+			String variableName = variable.asString();
+
+			// return
+			request.pushValue(request.getModuleContext().resolveWorldVariableValue(variableName));
 		}
 		
 	},
@@ -535,16 +613,16 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a throws a cancel interrupt.
+	 * Adds a throws an end interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
-	CANCEL ()
+	END ()
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
-			response.trace(request, "Throwing cancel...");
-			throw new CancelInterrupt();
+			response.trace(request, "Throwing end...");
+			throw new EndInterrupt();
 		}
 		
 	},

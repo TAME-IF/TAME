@@ -46,21 +46,21 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	private Random random;
 
 	/** Current active player. */
-	protected TPlayer currentPlayer;
+	private TPlayer currentPlayer;
 
 	/** World context. */
-	protected TWorldContext worldContext;
+	private TWorldContext worldContext;
 	/** List of players. */
-	protected HashMap<String, TPlayerContext> playerContextHash;
+	private HashMap<String, TPlayerContext> playerContextHash;
 	/** List of rooms. */
-	protected HashMap<String, TRoomContext> roomContextHash;
+	private HashMap<String, TRoomContext> roomContextHash;
 	/** List of objects. */
-	protected HashMap<String, TObjectContext> objectContextHash;
+	private HashMap<String, TObjectContext> objectContextHash;
 	/** List of containers. */
-	protected HashMap<String, TContainerContext> containerContextHash;
+	private HashMap<String, TContainerContext> containerContextHash;
 	
 	/** Ownership map for players. */
-	protected TOwnershipMap ownershipMap;
+	private TOwnershipMap ownershipMap;
 
 	public TAMEModuleContext(TAMEModule module)
 	{
@@ -603,6 +603,16 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 				throw new ModuleStateException("Expected object '%s' in module context!", identity);
 			else
 				objectContextHash.get(identity).readStateBytes(module, in);
+		}
+		
+		size = sr.readInt();
+		while (size-- > 0)
+		{
+			identity = sr.readString("UTF-8");
+			if (!containerContextHash.containsKey(identity))
+				throw new ModuleStateException("Expected container '%s' in module context!", identity);
+			else
+				containerContextHash.get(identity).readStateBytes(module, in);
 		}
 		
 		ownershipMap.readStateBytes(module, in);

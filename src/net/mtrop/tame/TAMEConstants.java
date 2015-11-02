@@ -92,5 +92,7 @@ public interface TAMEConstants
 	public static final int ARITHMETIC_FUNCTION_GREATER = 24;
 	/** Arithmetic function - less or equal. */
 	public static final int ARITHMETIC_FUNCTION_GREATER_OR_EQUAL = 25;
+	/** Arithmetic function - resolve variable value. */
+	public static final int ARITHMETIC_FUNCTION_RESOLVE = 26;
 	
 }

@@ -14,7 +14,7 @@ package net.mtrop.tame.interrupt;
  * Throwable that is thrown by a "break" statement.
  * @author Matthew Tropiano
  */
-public class BreakInterrupt extends CancelInterrupt
+public class BreakInterrupt extends EndInterrupt
 {
 	private static final long serialVersionUID = -8027918516813618299L;
 

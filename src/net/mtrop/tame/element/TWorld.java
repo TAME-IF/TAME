@@ -33,6 +33,8 @@ public class TWorld extends TActionableElement
 	/** Table used for modal actions. */
 	protected ActionModeTable modalActionTable;
 
+	/** Code block ran after each request. */
+	private Block afterRequestBlock;
 	/** Code block ran upon default action fail. */
 	private Block actionFailBlock;
 	/** Code block ran when an action is ambiguous. */
@@ -51,6 +53,7 @@ public class TWorld extends TActionableElement
 		this.actionFailTable = new ActionTable();
 		this.modalActionTable = new ActionModeTable();
 
+		this.afterRequestBlock = null;
 		this.actionFailBlock = null;
 		this.actionAmbiguityBlock = null;
 		this.badActionBlock = null;
@@ -121,6 +124,22 @@ public class TWorld extends TActionableElement
 	}
 
 	/**
+	 * Gets the block executed after each user request.
+	 */
+	public Block getAfterRequestBlock() 
+	{
+		return afterRequestBlock;
+	}
+	
+	/**
+	 * Sets the block executed after each user request.
+	 */
+	public void setAfterRequestBlock(Block afterRequestBlock) 
+	{
+		this.afterRequestBlock = afterRequestBlock;
+	}
+	
+	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.
 	 * @return the read object.
@@ -142,11 +161,14 @@ public class TWorld extends TActionableElement
 		actionFailTable.writeBytes(out);
 		modalActionTable.writeBytes(out);
 		
+		sw.writeBit(afterRequestBlock != null);
 		sw.writeBit(actionFailBlock != null);
 		sw.writeBit(actionAmbiguityBlock != null);
 		sw.writeBit(badActionBlock != null);
 		sw.flushBits();
 		
+		if (afterRequestBlock != null)
+			afterRequestBlock.writeBytes(out);
 		if (actionFailBlock != null)
 			actionFailBlock.writeBytes(out);
 		if (actionAmbiguityBlock != null)
@@ -167,10 +189,12 @@ public class TWorld extends TActionableElement
 		byte blockbits = sr.readByte();
 		
 		if ((blockbits & 0x01) != 0)
-			actionFailBlock = Block.create(in);
+			afterRequestBlock = Block.create(in);
 		if ((blockbits & 0x02) != 0)
-			actionAmbiguityBlock = Block.create(in);
+			actionFailBlock = Block.create(in);
 		if ((blockbits & 0x04) != 0)
+			actionAmbiguityBlock = Block.create(in);
+		if ((blockbits & 0x08) != 0)
 			badActionBlock = Block.create(in);
 	}
 

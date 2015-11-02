@@ -113,6 +113,16 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
+	 * Creates a container value.
+	 */
+	public static Value createContainer(String value)
+	{
+		Value out = new Value();
+		out.set(ValueType.CONTAINER, value);
+		return out;
+	}
+
+	/**
 	 * Creates a room value.
 	 */
 	public static Value createRoom(String value)
@@ -181,6 +191,8 @@ public class Value implements Comparable<Value>, Saveable
 				return createObject((String)v.value);
 			case PLAYER:
 				return createPlayer((String)v.value);
+			case CONTAINER:
+				return createContainer((String)v.value);
 			case ROOM:
 				return createRoom((String)v.value);
 			case WORLD:
@@ -481,6 +493,7 @@ public class Value implements Comparable<Value>, Saveable
 			type == ValueType.OBJECT
 			|| type == ValueType.PLAYER
 			|| type == ValueType.ROOM
+			|| type == ValueType.CONTAINER
 			|| type == ValueType.WORLD;
 	}
 	

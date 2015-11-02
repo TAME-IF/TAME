@@ -11,19 +11,19 @@
 package net.mtrop.tame.interrupt;
 
 /**
- * Interrupt for cancelling out of a block.
+ * Interrupt for ending a request action.
  * @author Matthew Tropiano
  */
-public class CancelInterrupt extends TAMEInterrupt
+public class EndInterrupt extends TAMEInterrupt
 {
 	private static final long serialVersionUID = -3803861797843170253L;
 
-	public CancelInterrupt()
+	public EndInterrupt()
 	{
 		super("A command interrupt was thrown.");
 	}
 	
-	public CancelInterrupt(String message)
+	public EndInterrupt(String message)
 	{
 		super(message);
 	}
