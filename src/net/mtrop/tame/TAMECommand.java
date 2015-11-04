@@ -18,7 +18,6 @@ import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.element.context.TObjectContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
-import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.exception.UnexpectedValueTypeException;
 import net.mtrop.tame.interrupt.BreakInterrupt;
 import net.mtrop.tame.interrupt.EndInterrupt;
@@ -300,7 +299,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Operand1 is the variable. 
 	 * Pushes the resolved value. 
 	 */
-	PUSHOBJECTVALUE (true)
+	PUSHELEMENTVALUE (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
@@ -309,122 +308,33 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value variable = command.getOperand1();
 
 			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in PUSHOBJECTVALUE call.");
-			if (varObject.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in PUSHOBJECTVALUE call.");
+				throw new UnexpectedValueTypeException("Expected variable type in PUSHELEMENTVALUE call.");
+			if (varObject.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in PUSHELEMENTVALUE call.");
 
-			String variableName = variable.asString();
 			String objectName = varObject.asString();
-
-			// return
-			request.pushValue(request.getModuleContext().resolveObjectVariableValue(objectName, variableName));
-		}
-		
-	},
-	
-	/**
-	 * [INTERNAL] Resolves value of a variable on a room and pushes the value.
-	 * Operand0 is the room. 
-	 * Operand1 is the variable. 
-	 * Pushes the resolved value. 
-	 */
-	PUSHROOMVARIABLE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
-		{
-			Value varRoom = command.getOperand0();
-			Value variable = command.getOperand1();
-
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in PUSHROOMVARIABLE call.");
-			if (varRoom.getType() != ValueType.ROOM)
-				throw new UnexpectedValueTypeException("Expected room type in PUSHROOMVARIABLE call.");
-
-			String variableName = variable.asString();
-			String roomName = varRoom.asString();
-
-			// return
-			request.pushValue(request.getModuleContext().resolveRoomVariableValue(roomName, variableName));
-		}
-		
-	},
-	
-	/**
-	 * [INTERNAL] Resolves value of a variable on a player and pushes the value.
-	 * Operand0 is the player. 
-	 * Operand1 is the variable. 
-	 * Pushes the resolved value. 
-	 */
-	PUSHPLAYERVARIABLE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
-		{
-			Value varPlayer = command.getOperand0();
-			Value variable = command.getOperand1();
-
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in PUSHPLAYERVARIABLE call.");
-			if (varPlayer.getType() != ValueType.PLAYER)
-				throw new UnexpectedValueTypeException("Expected player type in PUSHPLAYERVARIABLE call.");
-
-			String variableName = variable.asString();
-			String playerName = varPlayer.asString();
-
-			// return
-			request.pushValue(request.getModuleContext().resolvePlayerVariableValue(playerName, variableName));
-		}
-		
-	},
-	
-	/**
-	 * [INTERNAL] Resolves value of a variable on a container and pushes the value.
-	 * Operand0 is the object. 
-	 * Operand1 is the variable. 
-	 * Pushes the resolved value. 
-	 */
-	PUSHCONTAINERVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
-		{
-			Value varObject = command.getOperand0();
-			Value variable = command.getOperand1();
-
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in PUSHCONTAINERVALUE call.");
-			if (varObject.getType() != ValueType.CONTAINER)
-				throw new UnexpectedValueTypeException("Expected container type in PUSHCONTAINERVALUE call.");
-
-			String variableName = variable.asString();
-			String containerName = varObject.asString();
-
-			// return
-			request.pushValue(request.getModuleContext().resolveContainerVariableValue(containerName, variableName));
-		}
-		
-	},
-	
-	/**
-	 * [INTERNAL] Resolves value of a variable on a world and pushes the value.
-	 * Operand0 is the variable. 
-	 * Pushes the resolved value. 
-	 */
-	PUSHWORLDVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
-		{
-			Value variable = command.getOperand0();
-
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in PUSHWORLDVALUE call.");
-
 			String variableName = variable.asString();
 
-			// return
-			request.pushValue(request.getModuleContext().resolveWorldVariableValue(variableName));
+			switch (varObject.getType())
+			{
+				default:
+					throw new UnexpectedValueTypeException("INTERNAL ERROR IN PUSHELEMENTVALUE.");
+				case OBJECT:
+					request.pushValue(request.getModuleContext().resolveObjectVariableValue(objectName, variableName));
+					break;
+				case ROOM:
+					request.pushValue(request.getModuleContext().resolveRoomVariableValue(objectName, variableName));
+					break;
+				case PLAYER:
+					request.pushValue(request.getModuleContext().resolvePlayerVariableValue(objectName, variableName));
+					break;
+				case CONTAINER:
+					request.pushValue(request.getModuleContext().resolveContainerVariableValue(objectName, variableName));
+					break;
+				case WORLD:
+					request.pushValue(request.getModuleContext().resolveWorldVariableValue(variableName));
+					break;
+			}
 		}
 		
 	},
@@ -445,140 +355,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (!functionValue.isInteger())
 				throw new UnexpectedValueTypeException("Expected integer type in ARITHMETICFUNC call.");
 
-			int functionType = (int)functionValue.asLong();
-			
-			switch (functionType)
-			{
-				default:
-					throw new UnexpectedValueException("Expected arithmetic function type, got illegal value %d.", functionType);
-					
-				case ARITHMETIC_FUNCTION_ABSOLUTE:
-				case ARITHMETIC_FUNCTION_NEGATE:
-				case ARITHMETIC_FUNCTION_LOGICAL_NOT:
-				case ARITHMETIC_FUNCTION_NOT:
-				{
-					Value value = request.popValue();
-
-					if (!value.isLiteral())
-						throw new UnexpectedValueTypeException("Expected literal type in ARITHMETICFUNC call.");
-
-					request.pushValue(unaryFunction(functionType, value));
-				}
-				break;
-				
-				case ARITHMETIC_FUNCTION_ADD:
-				case ARITHMETIC_FUNCTION_SUBTRACT:
-				case ARITHMETIC_FUNCTION_MULTIPLY:
-				case ARITHMETIC_FUNCTION_DIVIDE:
-				case ARITHMETIC_FUNCTION_MODULO:
-				case ARITHMETIC_FUNCTION_AND:
-				case ARITHMETIC_FUNCTION_OR:
-				case ARITHMETIC_FUNCTION_XOR:
-				case ARITHMETIC_FUNCTION_LSHIFT:
-				case ARITHMETIC_FUNCTION_RSHIFT:
-				case ARITHMETIC_FUNCTION_RSHIFTPAD:
-				case ARITHMETIC_FUNCTION_LOGICAL_AND:
-				case ARITHMETIC_FUNCTION_LOGICAL_OR:
-				case ARITHMETIC_FUNCTION_LOGICAL_XOR:
-				case ARITHMETIC_FUNCTION_EQUALS:
-				case ARITHMETIC_FUNCTION_NOT_EQUALS:
-				case ARITHMETIC_FUNCTION_STRICT_EQUALS:
-				case ARITHMETIC_FUNCTION_STRICT_NOT_EQUALS:
-				case ARITHMETIC_FUNCTION_LESS:
-				case ARITHMETIC_FUNCTION_LESS_OR_EQUAL:
-				case ARITHMETIC_FUNCTION_GREATER:
-				case ARITHMETIC_FUNCTION_GREATER_OR_EQUAL:
-				{
-					Value value2 = request.popValue();
-					Value value1 = request.popValue();
-
-					if (!value1.isLiteral())
-						throw new UnexpectedValueTypeException("Expected literal type in ARITHMETICFUNC call.");
-					if (!value2.isLiteral())
-						throw new UnexpectedValueTypeException("Expected literal type in ARITHMETICFUNC call.");
-
-					request.pushValue(binaryFunction(functionType, value1, value2));
-				}
-				break;
-				
-			}
-			
+			TAMELogic.doArithmeticStackFunction(request, (int)functionValue.asLong());
 		}
-		
-		// Unary function.
-		private Value unaryFunction(int functionType, Value value1)
-		{
-			switch (functionType)
-			{
-				default:
-					throw new UnexpectedValueException("INTERNAL ERROR: EXPECTED UNARY OP. GOT %d.", functionType);
-					
-				case ARITHMETIC_FUNCTION_ABSOLUTE:
-					return Value.absolute(value1);
-				case ARITHMETIC_FUNCTION_NEGATE:
-					return Value.negate(value1);
-				case ARITHMETIC_FUNCTION_LOGICAL_NOT:
-					return Value.logicalNot(value1);
-				case ARITHMETIC_FUNCTION_NOT:
-					return Value.not(value1);
-			}
-		}
-		
-		// Binary function.
-		private Value binaryFunction(int functionType, Value value1, Value value2)
-		{
-			switch (functionType)
-			{
-				default:
-					throw new UnexpectedValueException("INTERNAL ERROR: EXPECTED BINARY OP. GOT %d.", functionType);
-					
-				case ARITHMETIC_FUNCTION_ADD:
-					return Value.add(value1, value2);
-				case ARITHMETIC_FUNCTION_SUBTRACT:
-					return Value.subtract(value1, value2);
-				case ARITHMETIC_FUNCTION_MULTIPLY:
-					return Value.multiply(value1, value2);
-				case ARITHMETIC_FUNCTION_DIVIDE:
-					return Value.divide(value1, value2);
-				case ARITHMETIC_FUNCTION_MODULO:
-					return Value.modulo(value1, value2);
-				case ARITHMETIC_FUNCTION_AND:
-					return Value.and(value1, value2);
-				case ARITHMETIC_FUNCTION_OR:
-					return Value.or(value1, value2);
-				case ARITHMETIC_FUNCTION_XOR:
-					return Value.xor(value1, value2);
-				case ARITHMETIC_FUNCTION_LSHIFT:
-					return Value.leftShift(value1, value2);
-				case ARITHMETIC_FUNCTION_RSHIFT:
-					return Value.rightShift(value1, value2);
-				case ARITHMETIC_FUNCTION_RSHIFTPAD:
-					return Value.rightShiftPadded(value1, value2);
-				case ARITHMETIC_FUNCTION_LOGICAL_AND:
-					return Value.logicalAnd(value1, value2);
-				case ARITHMETIC_FUNCTION_LOGICAL_OR:
-					return Value.logicalOr(value1, value2);
-				case ARITHMETIC_FUNCTION_LOGICAL_XOR:
-					return Value.logicalXOr(value1, value2);
-				case ARITHMETIC_FUNCTION_EQUALS:
-					return Value.equals(value1, value2);
-				case ARITHMETIC_FUNCTION_NOT_EQUALS:
-					return Value.notEquals(value1, value2);
-				case ARITHMETIC_FUNCTION_STRICT_EQUALS:
-					return Value.strictEquals(value1, value2);
-				case ARITHMETIC_FUNCTION_STRICT_NOT_EQUALS:
-					return Value.strictNotEquals(value1, value2);
-				case ARITHMETIC_FUNCTION_LESS:
-					return Value.less(value1, value2);
-				case ARITHMETIC_FUNCTION_LESS_OR_EQUAL:
-					return Value.lessOrEqual(value1, value2);
-				case ARITHMETIC_FUNCTION_GREATER:
-					return Value.greater(value1, value2);
-				case ARITHMETIC_FUNCTION_GREATER_OR_EQUAL:
-					return Value.greaterOrEqual(value1, value2);
-			}
-		}
-		
+
 	},
 	
 	/**
@@ -2676,12 +2455,16 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			// must resolve: the passed-in value could be the "current" room/player.
 			
-			if (element.getType() == ValueType.ROOM)
+			if (element.getType() == ValueType.CONTAINER)
+				request.pushValue(Value.create(moduleContext.resolveContainer(element.asString()).getIdentity()));
+			else if (element.getType() == ValueType.ROOM)
 				request.pushValue(Value.create(moduleContext.resolveRoom(element.asString()).getIdentity()));
 			else if (element.getType() == ValueType.PLAYER)
 				request.pushValue(Value.create(moduleContext.resolvePlayer(element.asString()).getIdentity()));
 			else if (element.getType() == ValueType.OBJECT)
 				request.pushValue(Value.create(moduleContext.resolveObject(element.asString()).getIdentity()));
+			else if (element.getType() == ValueType.WORLD)
+				request.pushValue(Value.create(moduleContext.resolveWorld().getIdentity()));
 			else
 				throw new UnexpectedValueTypeException("Expected element type in IDENTITY call.");
 		}
@@ -2812,7 +2595,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}
 	
 	/**
-	 * Increments the 
+	 * Increments the runaway command counter and calls the command.  
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param command the command object.

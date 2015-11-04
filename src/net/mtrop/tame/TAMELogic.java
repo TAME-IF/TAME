@@ -19,10 +19,12 @@ import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.TAMEFatalException;
+import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
+import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Value;
 
@@ -304,6 +306,31 @@ public final class TAMELogic implements TAMEConstants
 		
 		response.trace(request, "Not found.");
 		return false;
+	}
+	
+	/**
+	 * Performs an arithmetic function on the stack.
+	 * @param request
+	 * @param functionType
+	 */
+	public static void doArithmeticStackFunction(TAMERequest request, int functionType)
+	{
+		if (functionType < 0 || functionType >= ArithmeticOperator.values().length)
+			throw new UnexpectedValueException("Expected arithmetic function type, got illegal value %d.", functionType);
+
+		ArithmeticOperator operator =  ArithmeticOperator.values()[functionType];
+		
+		if (operator.isBinary())
+		{
+			Value v2 = request.popValue();
+			Value v1 = request.popValue();
+			request.pushValue(operator.doOperation(v1, v2));
+		}
+		else
+		{
+			Value v1 = request.popValue();
+			request.pushValue(operator.doOperation(v1));
+		}
 	}
 	
 	/**

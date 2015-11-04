@@ -21,7 +21,10 @@ import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.lang.ArgumentType;
+import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.Command;
 import net.mtrop.tame.lang.Value;
 
 /**
@@ -30,7 +33,7 @@ import net.mtrop.tame.lang.Value;
  */
 public final class TAMEScriptReader implements TAMEConstants
 {
-	public static final String STREAMNAME_TEXT = "[Text String]";
+	public static final String STREAMNAME_TEXT = "Text String";
 	
 	/** The singular instance for the kernel. */
 	private static final TSKernel KERNEL_INSTANCE = new TSKernel();
@@ -480,18 +483,26 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseModuleElement()
 		{
+			
+			// DEBUG ==================
+			currentBlock.push(new Block());
+			parseExpression();
+			System.out.println(currentBlock.peek());
+			currentBlock.pop();
+			// ========================
+			
 			return false;
 		}
 		
-		/*
+
+		/**
 		 * Parses an infix expression.
-		 * May throw an ArcheTextOperationException if some values cannot be calculated or combined. 
 		 */
-		private boolean parseExpression()
+		public boolean parseExpression()
 		{
 			// make stacks.
-			Stack<Integer> expressionOperators = new Stack<>();
-			Stack<Value> expressionValues = new Stack<>();
+			Stack<ArithmeticOperator> expressionOperators = new Stack<>();
+			int[] expressionValueCounter = new int[1];
 			
 			// was the last read token a value?
 			boolean lastWasValue = false;
@@ -499,7 +510,137 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			while (keepGoing)
 			{
-				if (currentType(Lexer.TYPE_IDENTIFIER))
+				if (currentType(TSKernel.TYPE_COMMAND_EXPRESSION))
+				{
+					TAMECommand commandType = TAMECommand.valueOf(currentToken().getLexeme().toUpperCase());
+					nextToken();
+					
+					if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+					{
+						addErrorMessage("Expression error - expected '(' after command \""+commandType.name()+".\"");
+						return false;
+					}
+					
+					ArgumentType[] argTypes = commandType.getArgumentTypes();
+					for (int i = 0; i < argTypes.length; i++) 
+					{
+						switch (argTypes[i])
+						{
+							default:
+							case VALUE:
+							{
+								// value - read expression.
+								if (!parseExpression())
+									return false;
+								break;
+							}
+							case ACTION:
+							{
+								if (!isAction())
+								{
+									addErrorMessage("Command requires an ACTION. \""+currentToken().getLexeme()+"\" is not an action type.");
+									return false;
+								}
+								
+								emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+								nextToken();
+								break;
+							}
+							case OBJECT:
+							{
+								if (!isObject())
+								{
+									addErrorMessage("Command requires an OBJECT. \""+currentToken().getLexeme()+"\" is not an object type.");
+									return false;
+								}
+								
+								emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+								nextToken();
+								break;
+							}
+							case PLAYER:
+							{
+								if (!isPlayer())
+								{
+									addErrorMessage("Command requires an PLAYER. \""+currentToken().getLexeme()+"\" is not an player type.");
+									return false;
+								}
+								
+								emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+								nextToken();
+								break;
+							}
+							case ROOM:
+							{
+								if (!isRoom())
+								{
+									addErrorMessage("Command requires an ROOM. \""+currentToken().getLexeme()+"\" is not an room type.");
+									return false;
+								}
+								
+								emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+								nextToken();
+								break;
+							}
+							case CONTAINER:
+							{
+								if (!isContainer())
+								{
+									addErrorMessage("Command requires an CONTAINER. \""+currentToken().getLexeme()+"\" is not an container type.");
+									return false;
+								}
+								
+								emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+								nextToken();
+								break;
+							}
+							case ELEMENT:
+							{
+								if (!isElement())
+								{
+									addErrorMessage("Command requires an ELEMENT. \""+currentToken().getLexeme()+"\" is not an element type.");
+									return false;
+								}
+								
+								emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+								nextToken();
+								break;
+							}
+							
+						} // switch
+						
+						if (i < argTypes.length - 1)
+						{
+							if (!matchType(TSKernel.TYPE_DELIM_COMMA))
+							{
+								addErrorMessage("Expected ',' after command argument. More arguments remain.");
+								return false;
+							}
+						}
+						
+					} // for
+					
+					if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+					{
+						addErrorMessage("Expression error - expected ')' after command arguments.");
+						return false;
+					}
+					
+					emit(Command.create(commandType));
+					expressionValueCounter[0] += 1;
+					lastWasValue = true;
+				}
+				else if (currentType(TSKernel.TYPE_COMMAND_INTERNAL))
+				{
+					addErrorMessage("Expression error - command \""+currentToken().getLexeme()+"\" is an internal reserved command.");
+					return false;
+				}
+				else if (currentType(TSKernel.TYPE_COMMAND))
+				{
+					addErrorMessage("Expression error - command \""+currentToken().getLexeme()+"\" has no return.");
+					return false;
+				}
+				else if (currentType(Lexer.TYPE_IDENTIFIER))
 				{
 					if (lastWasValue)
 					{
@@ -507,11 +648,38 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 					}
 					
-					String identname = currentToken().getLexeme();
-					
-					expressionValues.push(Value.createVariable(identname));
+					Value identToken = tokenToValue();
+
+					if (identToken.isElement())
+					{
+						// must have a dot if an element type.
+						if (!matchType(TSKernel.TYPE_DELIM_DOT))
+						{
+							addErrorMessage("Expression error - expected '.' to dereference a variable.");
+							return false;
+						}
+						
+						if (!isVariable())
+						{
+							addErrorMessage("Expression error - expected variable.");
+							return false;
+						}
+						
+						emit(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, Value.createVariable(currentToken().getLexeme())));
+					}
+					else if (identToken.isVariable())
+					{
+						emit(Command.create(TAMECommand.PUSHVALUE, identToken));
+					}
+					else
+					{
+						addErrorMessage("Expression error - expected variable or element identifier.");
+						return false;
+					}
 					
 					nextToken();
+					
+					expressionValueCounter[0] += 1;
 					lastWasValue = true;
 				}
 				else if (matchType(TSKernel.TYPE_DELIM_LPAREN))
@@ -533,6 +701,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 					}
 
+					expressionValueCounter[0] += 1;
 					lastWasValue = true;
 				}
 				else if (isValidLiteralType())
@@ -543,86 +712,85 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 					}
 					
-					tokenToValue();
-					expressionValues.push(currentValue);
+					Value value = tokenToValue();
+					emit(Command.create(TAMECommand.PUSHVALUE, value));
+					expressionValueCounter[0] += 1;
+					nextToken();
 					lastWasValue = true;
 				}
 				else if (lastWasValue)
 				{
 					if (isBinaryOperatorType())
 					{
-						int nextOperator = -1;
+						ArithmeticOperator nextOperator = null;
 						
 						switch (currentToken().getType())
 						{
-							case TSKernel.TYPE_DELIM_DOT:
-								nextOperator = ARITHMETIC_FUNCTION_RESOLVE;
-								break;
 							case TSKernel.TYPE_DELIM_PLUS:
-								nextOperator = ARITHMETIC_FUNCTION_ADD;
+								nextOperator = ArithmeticOperator.ADD;
 								break;
 							case TSKernel.TYPE_DELIM_MINUS:
-								nextOperator = ARITHMETIC_FUNCTION_SUBTRACT;
+								nextOperator = ArithmeticOperator.SUBTRACT;
 								break;
 							case TSKernel.TYPE_DELIM_STAR:
-								nextOperator = ARITHMETIC_FUNCTION_MULTIPLY;
+								nextOperator = ArithmeticOperator.MULTIPLY;
 								break;
 							case TSKernel.TYPE_DELIM_SLASH:
-								nextOperator = ARITHMETIC_FUNCTION_DIVIDE;
+								nextOperator = ArithmeticOperator.DIVIDE;
 								break;
 							case TSKernel.TYPE_DELIM_PERCENT:
-								nextOperator = ARITHMETIC_FUNCTION_MODULO;
+								nextOperator = ArithmeticOperator.MODULO;
 								break;
 							case TSKernel.TYPE_DELIM_AMPERSAND:
-								nextOperator = ARITHMETIC_FUNCTION_AND;
+								nextOperator = ArithmeticOperator.AND;
 								break;
 							case TSKernel.TYPE_DELIM_AMPERSAND2:
-								nextOperator = ARITHMETIC_FUNCTION_LOGICAL_AND;
+								nextOperator = ArithmeticOperator.LOGICAL_AND;
 								break;
 							case TSKernel.TYPE_DELIM_PIPE:
-								nextOperator = ARITHMETIC_FUNCTION_OR;
+								nextOperator = ArithmeticOperator.OR;
 								break;
 							case TSKernel.TYPE_DELIM_PIPE2:
-								nextOperator = ARITHMETIC_FUNCTION_LOGICAL_OR;
+								nextOperator = ArithmeticOperator.LOGICAL_OR;
 								break;
 							case TSKernel.TYPE_DELIM_CARAT:
-								nextOperator = ARITHMETIC_FUNCTION_XOR;
+								nextOperator = ArithmeticOperator.XOR;
 								break;
 							case TSKernel.TYPE_DELIM_CARAT2:
-								nextOperator = ARITHMETIC_FUNCTION_LOGICAL_XOR;
+								nextOperator = ArithmeticOperator.LOGICAL_XOR;
 								break;
 							case TSKernel.TYPE_DELIM_LESS:
-								nextOperator = ARITHMETIC_FUNCTION_LESS;
+								nextOperator = ArithmeticOperator.LESS;
 								break;
 							case TSKernel.TYPE_DELIM_LESS2:
-								nextOperator = ARITHMETIC_FUNCTION_LSHIFT;
+								nextOperator = ArithmeticOperator.LSHIFT;
 								break;
 							case TSKernel.TYPE_DELIM_LESSEQUAL:
-								nextOperator = ARITHMETIC_FUNCTION_LESS_OR_EQUAL;
+								nextOperator = ArithmeticOperator.LESS_OR_EQUAL;
 								break;
 							case TSKernel.TYPE_DELIM_GREATER:
-								nextOperator = ARITHMETIC_FUNCTION_GREATER;
+								nextOperator = ArithmeticOperator.GREATER;
 								break;
 							case TSKernel.TYPE_DELIM_GREATER2:
-								nextOperator = ARITHMETIC_FUNCTION_RSHIFT;
+								nextOperator = ArithmeticOperator.RSHIFT;
 								break;
 							case TSKernel.TYPE_DELIM_GREATER3:
-								nextOperator = ARITHMETIC_FUNCTION_RSHIFTPAD;
+								nextOperator = ArithmeticOperator.RSHIFTPAD;
 								break;
 							case TSKernel.TYPE_DELIM_GREATEREQUAL:
-								nextOperator = ARITHMETIC_FUNCTION_GREATER_OR_EQUAL;
+								nextOperator = ArithmeticOperator.GREATER_OR_EQUAL;
 								break;
 							case TSKernel.TYPE_DELIM_EQUAL2:
-								nextOperator = ARITHMETIC_FUNCTION_EQUALS;
+								nextOperator = ArithmeticOperator.EQUALS;
 								break;
 							case TSKernel.TYPE_DELIM_EQUAL3:
-								nextOperator = ARITHMETIC_FUNCTION_STRICT_EQUALS;
+								nextOperator = ArithmeticOperator.STRICT_EQUALS;
 								break;
 							case TSKernel.TYPE_DELIM_NOTEQUAL:
-								nextOperator = ARITHMETIC_FUNCTION_NOT_EQUALS;
+								nextOperator = ArithmeticOperator.NOT_EQUALS;
 								break;
 							case TSKernel.TYPE_DELIM_NOTEQUALEQUAL:
-								nextOperator = ARITHMETIC_FUNCTION_STRICT_NOT_EQUALS;
+								nextOperator = ArithmeticOperator.STRICT_NOT_EQUALS;
 								break;
 							default:
 								throw new TAMEScriptParseException("Internal error - unexpected binary operator miss.");
@@ -630,7 +798,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						
 						nextToken();
 
-						if (!operatorReduce(expressionOperators, expressionValues, nextOperator))
+						if (!operatorReduce(expressionOperators, expressionValueCounter, nextOperator))
 							return false;
 						
 						expressionOperators.push(nextOperator);
@@ -646,16 +814,16 @@ public final class TAMEScriptReader implements TAMEConstants
 					switch (currentToken().getType())
 					{
 						case TSKernel.TYPE_DELIM_MINUS:
-							expressionOperators.push(ARITHMETIC_FUNCTION_NEGATE);
+							expressionOperators.push(ArithmeticOperator.NEGATE);
 							break;
 						case TSKernel.TYPE_DELIM_PLUS:
-							expressionOperators.push(ARITHMETIC_FUNCTION_ABSOLUTE);
+							expressionOperators.push(ArithmeticOperator.ABSOLUTE);
 							break;
 						case TSKernel.TYPE_DELIM_TILDE:
-							expressionOperators.push(ARITHMETIC_FUNCTION_NOT);
+							expressionOperators.push(ArithmeticOperator.NOT);
 							break;
 						case TSKernel.TYPE_DELIM_EXCLAMATION:
-							expressionOperators.push(ARITHMETIC_FUNCTION_LOGICAL_NOT);
+							expressionOperators.push(ArithmeticOperator.LOGICAL_NOT);
 							break;
 						default:
 							throw new TAMEScriptParseException("Internal error - unexpected unary operator miss.");
@@ -675,11 +843,11 @@ public final class TAMEScriptReader implements TAMEConstants
 			// end of expression - reduce.
 			while (!expressionOperators.isEmpty())
 			{
-				if (!expressionReduce(expressionOperators, expressionValues))
+				if (!expressionReduce(expressionOperators, expressionValueCounter))
 					return false;
 			}
 			
-			if (expressionValues.isEmpty())
+			if (expressionValueCounter[0] != 1)
 			{
 				addErrorMessage("Expected valid expression.");
 				return false;
@@ -688,54 +856,107 @@ public final class TAMEScriptReader implements TAMEConstants
 			return true;
 		}
 		
-		private boolean operatorReduce(Stack<Integer> expressionOperators, Stack<Value> expressionValues, int nextOperator) 
+		// Operator reduce.
+		private boolean operatorReduce(Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter, ArithmeticOperator operator) 
 		{
-			// TODO Reduces several operators expressions.
-			return false;
+			ArithmeticOperator top = expressionOperators.peek();
+			while (top != null && (top.getPrecedence() > operator.getPrecedence() || (top.getPrecedence() == operator.getPrecedence() && !operator.isRightAssociative())))
+			{
+				if (!expressionReduce(expressionOperators, expressionValueCounter))
+					return false;
+				top = expressionOperators.peek();
+			}
+			
+			return true;
 		}
 
-		private boolean expressionReduce(Stack<Integer> expressionOperators, Stack<Value> expressionValues)
+		// Expression reduce.
+		private boolean expressionReduce(Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter)
 		{
-			// TODO Reduces expressions.
-			return false;
+			if (expressionOperators.isEmpty())
+				throw new TAMEScriptParseException("Internal error - operator stack must have one operator in it.");
+
+			ArithmeticOperator operator = expressionOperators.pop();
+			
+			// TODO: Operand checking for operators that are type strict, or relax type rules.
+			
+			if (operator.isBinary())
+				expressionValueCounter[0] -= 2;
+			else
+				expressionValueCounter[0] -= 1;
+			
+			if (expressionValueCounter[0] < 0)
+				throw new TAMEScriptParseException("Internal error - value counter did not have enough counter.");
+			
+			expressionValueCounter[0] += 1; // the "push"
+			emit(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(operator.ordinal())));
+			return true;
 		}
 
 		// Token to value.
-		private boolean tokenToValue()
+		private Value tokenToValue()
 		{
 			if (isWorld())
-				currentValue = Value.createWorld();
+				return Value.createWorld();
 			else if (isPlayer())
-				currentValue = Value.createPlayer(currentToken().getLexeme());
+				return Value.createPlayer(currentToken().getLexeme());
 			else if (isRoom())
-				currentValue = Value.createRoom(currentToken().getLexeme());
+				return Value.createRoom(currentToken().getLexeme());
 			else if (isObject())
-				currentValue = Value.createObject(currentToken().getLexeme());
+				return Value.createObject(currentToken().getLexeme());
 			else if (isContainer())
-				currentValue = Value.createContainer(currentToken().getLexeme());
+				return Value.createContainer(currentToken().getLexeme());
+			else if (isAction())
+				return Value.createAction(currentToken().getLexeme());
 			else if (currentType(Lexer.TYPE_STRING))
-				currentValue = Value.create(currentToken().getLexeme());
+				return Value.create(currentToken().getLexeme());
 			else if (currentType(Lexer.TYPE_NUMBER))
 			{
 				String lexeme = currentToken().getLexeme();
 				if (lexeme.startsWith("0X") || lexeme.startsWith("0x"))
-					currentValue = Value.create(Long.parseLong(lexeme.substring(2), 16));
+					return Value.create(Long.parseLong(lexeme.substring(2), 16));
 				else if (lexeme.contains("."))
-					currentValue = Value.create(Double.parseDouble(lexeme));
+					return Value.create(Double.parseDouble(lexeme));
 				else
-					currentValue = Value.create(Long.parseLong(lexeme));
+					return Value.create(Long.parseLong(lexeme));
 			}
 			else if (currentType(Lexer.TYPE_IDENTIFIER))
-				currentValue = Value.createVariable(currentToken().getLexeme());
+				return Value.createVariable(currentToken().getLexeme());
 			else if (currentType(TSKernel.TYPE_TRUE))
-				currentValue = Value.create(true);
+				return Value.create(true);
 			else if (currentType(TSKernel.TYPE_FALSE))
-				currentValue = Value.create(false);
+				return Value.create(false);
 			else
 				throw new TAMEScriptParseException("Internal error - unexpected token type.");
-
-			nextToken();
-			return true;
+		}
+		
+		// Checks if an identifier is a variable.
+		public boolean isVariable()
+		{
+			return !isWorld()
+				&& !isPlayer()
+				&& !isRoom()
+				&& !isObject()
+				&& !isContainer()
+				&& !isAction()
+			;
+		}
+		
+		// Checks if an identifier is an element.
+		public boolean isElement()
+		{
+			return isWorld()
+				|| isPlayer()
+				|| isRoom()
+				|| isObject()
+				|| isContainer()
+			;
+		}
+		
+		// Checks if an identifier is an action.
+		public boolean isAction()
+		{
+			return currentModule.getActionByIdentity(currentToken().getLexeme()) != null;
 		}
 		
 		// Checks if an identifier is a world.
@@ -772,32 +993,12 @@ public final class TAMEScriptReader implements TAMEConstants
 			return currentModule.getContainerByIdentity(currentToken().getLexeme()) != null;
 		}
 		
-		/**
-		 * Returns the operator precedence.
-		 * Greater values have higher precedence.
-		 */
-		public int getOperatorPrecedence(int operator)
-		{
-			switch (operator)
-			{
-				default:
-					return Integer.MIN_VALUE;
-				// TODO: Finish this.
-			}
-		}
-
-		/**
-		 * Returns if an operator has right-associativity.
-		 */
-		public boolean isOperatorRightAssociative(int operator)
-		{
-			// TODO: Finish this.
-			return false;
-		}
-		
 		// Return true if token type can be a unary operator.
 		private boolean isValidLiteralType()
 		{
+			if (currentToken() == null)
+				return false;
+			
 			switch (currentToken().getType())
 			{
 				case Lexer.TYPE_STRING:
@@ -813,6 +1014,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		// Return true if token type can be a unary operator.
 		private boolean isUnaryOperatorType()
 		{
+			if (currentToken() == null)
+				return false;
+			
 			switch (currentToken().getType())
 			{
 				case TSKernel.TYPE_DELIM_MINUS:
@@ -828,6 +1032,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		// Return true if token type can be a binary operator.
 		private boolean isBinaryOperatorType()
 		{
+			if (currentToken() == null)
+				return false;
+			
 			switch (currentToken().getType())
 			{
 				case TSKernel.TYPE_DELIM_PLUS:
@@ -857,6 +1064,14 @@ public final class TAMEScriptReader implements TAMEConstants
 				default:
 					return false;
 			}
+		}
+		
+		/**
+		 * Emits a command into the current block.
+		 */
+		private void emit(Command command)
+		{
+			currentBlock.peek().add(command);
 		}
 		
 	}

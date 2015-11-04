@@ -525,7 +525,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Returns the absolute value of a literal value.
 	 * @param value1 the first operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value absolute(Value value1)
 	{
@@ -541,7 +541,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Returns the negative value of a literal value.
 	 * @param value1 the first operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value negate(Value value1)
 	{
@@ -557,7 +557,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Returns the "logical not" value of a literal value.
 	 * @param value1 the first operand.
 	 * @return the resultant value as a boolean value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value logicalNot(Value value1)
 	{
@@ -571,7 +571,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Returns the bitwise compliment value of a literal value.
 	 * @param value1 the first operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value not(Value value1)
 	{
@@ -590,7 +590,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value add(Value value1, Value value2)
 	{
@@ -634,7 +634,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value subtract(Value value1, Value value2)
 	{
@@ -674,7 +674,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value multiply(Value value1, Value value2)
 	{
@@ -794,7 +794,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value and(Value value1, Value value2)
 	{
@@ -826,7 +826,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value or(Value value1, Value value2)
 	{
@@ -858,7 +858,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value xor(Value value1, Value value2)
 	{
@@ -892,7 +892,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand (must be integer).
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value leftShift(Value value1, Value value2)
 	{
@@ -917,7 +917,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand (must be integer).
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value rightShift(Value value1, Value value2)
 	{
@@ -942,7 +942,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand (must be integer).
 	 * @return the resultant value.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value rightShiftPadded(Value value1, Value value2)
 	{
@@ -965,7 +965,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value logicalAnd(Value value1, Value value2)
 	{
@@ -982,7 +982,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value logicalOr(Value value1, Value value2)
 	{
@@ -999,7 +999,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value logicalXOr(Value value1, Value value2)
 	{
@@ -1016,7 +1016,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value equals(Value value1, Value value2)
 	{
@@ -1028,7 +1028,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value notEquals(Value value1, Value value2)
 	{
@@ -1040,7 +1040,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value strictEquals(Value value1, Value value2)
 	{
@@ -1052,7 +1052,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value strictNotEquals(Value value1, Value value2)
 	{
@@ -1065,7 +1065,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value less(Value value1, Value value2)
 	{
@@ -1087,7 +1087,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value lessOrEqual(Value value1, Value value2)
 	{
@@ -1109,7 +1109,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value greater(Value value1, Value value2)
 	{
@@ -1131,7 +1131,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
-	 * @throws ArithmeticException an arithmetic exception, if any.
+	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value greaterOrEqual(Value value1, Value value2)
 	{

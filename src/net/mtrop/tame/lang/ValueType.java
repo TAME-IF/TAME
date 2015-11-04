@@ -16,6 +16,6 @@ public enum ValueType
 	ROOM,
 	WORLD,
 	ACTION,
-	VARIABLE;
+	VARIABLE
 }
 
