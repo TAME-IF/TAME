@@ -51,22 +51,10 @@ public interface CommandType
 	public ArgumentType getReturnType();
 	
 	/**
-	 * Returns if this command has an evaluation initialization block.
-	 * @return true if so, false if not.
-	 */
-	public boolean isInitializationBlockRequired();
-
-	/**
 	 * Returns if this command has an evaluation conditional block.
 	 * @return true if so, false if not.
 	 */
 	public boolean isConditionalBlockRequired();
-
-	/**
-	 * Returns if this command has an evaluation step block, called after the body.
-	 * @return true if so, false if not.
-	 */
-	public boolean isStepBlockRequired();
 
 	/**
 	 * Returns if this command has a body block to call if the evaluation conditional succeeds.
@@ -78,6 +66,6 @@ public interface CommandType
 	 * Returns if this command has a branch block to call if the evaluation conditional fails.
 	 * @return true if so, false if not.
 	 */
-	public boolean isFailureBlockRequired();
+	public boolean isFailureBlockPossible();
 	
 }

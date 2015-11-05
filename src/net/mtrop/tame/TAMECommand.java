@@ -128,7 +128,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Operand1 is the variable. 
 	 * POP is the value.
 	 */
-	POPOBJECTVALUE (true)
+	POPELEMENTVALUE (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
@@ -138,131 +138,35 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPOBJECTVALUE call.");
+				throw new UnexpectedValueTypeException("Expected literal type in POPELEMENTVALUE call.");
 			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in POPOBJECTVALUE call.");
-			if (varObject.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in POPOBJECTVALUE call.");
+				throw new UnexpectedValueTypeException("Expected variable type in POPELEMENTVALUE call.");
+			if (!varObject.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in POPELEMENTVALUE call.");
 			
 			String variableName = variable.asString();
 			String objectName = varObject.asString();
 
-			request.getModuleContext().resolveObjectContext(objectName).setValue(variableName, value);
-		}
-		
-	},
-
-	/**
-	 * [INTERNAL] Sets a variable on a room.
-	 * Operand0 is the room. 
-	 * Operand1 is the variable. 
-	 * POP is the value.
-	 */
-	POPROOMVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
-		{
-			Value varRoom = command.getOperand0();
-			Value varValue = command.getOperand1();
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPROOMVALUE call.");
-			if (!varValue.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in POPROOMVALUE call.");
-			if (varRoom.getType() != ValueType.ROOM)
-				throw new UnexpectedValueTypeException("Expected room type in POPROOMVALUE call.");
-			
-			String variableName = varValue.asString();
-			String roomName = varRoom.asString();
-
-			request.getModuleContext().resolveRoomContext(roomName).setValue(variableName, value);
-		}
-		
-	},
-
-	/**
-	 * [INTERNAL] Sets a variable on a player.
-	 * Operand0 is the player. 
-	 * Operand1 is the variable. 
-	 * POP is the value.
-	 */
-	POPPLAYERVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
-		{
-			Value varPlayer = command.getOperand0();
-			Value varValue = command.getOperand1();
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPPLAYERVALUE call.");
-			if (!varValue.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in POPPLAYERVALUE call.");
-			if (varPlayer.getType() != ValueType.PLAYER)
-				throw new UnexpectedValueTypeException("Expected player type in POPPLAYERVALUE call.");
-			
-			String variableName = varValue.asString();
-			String playerName = varPlayer.asString();
-
-			request.getModuleContext().resolvePlayerContext(playerName).setValue(variableName, value);
-		}
-		
-	},
-
-	/**
-	 * [INTERNAL] Sets a variable on a container.
-	 * Operand0 is the container. 
-	 * Operand1 is the variable. 
-	 * POP is the value.
-	 */
-	POPCONTAINERVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
-		{
-			Value varContainer = command.getOperand0();
-			Value varValue = command.getOperand1();
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPCONTAINERVALUE call.");
-			if (!varValue.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in POPCONTAINERVALUE call.");
-			if (varContainer.getType() != ValueType.CONTAINER)
-				throw new UnexpectedValueTypeException("Expected container type in POPCONTAINERVALUE call.");
-			
-			String variableName = varValue.asString();
-			String containerName = varContainer.asString();
-
-			request.getModuleContext().resolveContainerContext(containerName).setValue(variableName, value);
-		}
-		
-	},
-
-	/**
-	 * [INTERNAL] Sets a variable on the world.
-	 * Operand1 is the variable. 
-	 * POP is the value.
-	 */
-	POPWORLDVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws ErrorInterrupt
-		{
-			Value varValue = command.getOperand0();
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPWORLDVALUE call.");
-			if (!varValue.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in POPWORLDVALUE call.");
-			
-			String variableName = varValue.asString();
-
-			request.getModuleContext().resolveWorldContext().setValue(variableName, value);
+			switch (varObject.getType())
+			{
+				default:
+					throw new UnexpectedValueTypeException("INTERNAL ERROR IN POPELEMENTVALUE.");
+				case OBJECT:
+					request.getModuleContext().resolveObjectContext(objectName).setValue(variableName, value);
+					break;
+				case ROOM:
+					request.getModuleContext().resolveRoomContext(objectName).setValue(variableName, value);
+					break;
+				case PLAYER:
+					request.getModuleContext().resolvePlayerContext(objectName).setValue(variableName, value);
+					break;
+				case CONTAINER:
+					request.getModuleContext().resolveContainerContext(objectName).setValue(variableName, value);
+					break;
+				case WORLD:
+					request.getModuleContext().resolveWorldContext().setValue(variableName, value);
+					break;
+			}
 		}
 		
 	},
@@ -359,6 +263,91 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		}
 
 	},
+	
+	/**
+	 * If block.
+	 * Has a conditional block that is called and then the success 
+	 * block if POP is true, or if false and the fail block exists, call the fail block. 
+	 * Returns nothing. 
+	 */
+	IF (true, true, true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			// block should contain arithmetic commands and a last push.
+			Block conditional = command.getConditionalBlock();
+			if (conditional == null)
+				throw new ModuleExecutionException("Conditional block for IF does NOT EXIST!");
+			conditional.call(request, response);
+			
+			// get remaining expression value.
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type after IF conditional block execution.");
+	
+			if (value.asBoolean())
+			{
+				Block success = command.getSuccessBlock();
+				if (success == null)
+					throw new ModuleExecutionException("Success block for IF does NOT EXIST!");
+				success.call(request, response);
+			}
+			else
+			{
+				Block failure = command.getFailureBlock();
+				if (failure != null)
+					failure.call(request, response);
+			}
+			
+		}
+		
+	},
+	
+	/**
+	 * WHILE block.
+	 * Has a conditional block that is called and then the success block if POP is true. 
+	 * Returns nothing. 
+	 */
+	WHILE (true, true, false)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			while (callConditional(request, response, command))
+			{
+				try {
+					Block success = command.getSuccessBlock();
+					if (success == null)
+						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
+					success.call(request, response);
+				} catch (BreakInterrupt interrupt) {
+					break;
+				} catch (ContinueInterrupt interrupt) {
+					continue;
+				}
+			}
+		}
+		
+		private boolean callConditional(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			// block should contain arithmetic commands and a last push.
+			Block conditional = command.getConditionalBlock();
+			if (conditional == null)
+				throw new ModuleExecutionException("Conditional block for WHILE does NOT EXIST!");
+			conditional.call(request, response);
+			
+			// get remaining expression value.
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type after WHILE conditional block execution.");
+	
+			return value.asBoolean(); 
+		}
+		
+	}, 
 	
 	/**
 	 * Adds a QUIT cue to the response and throws a quit interrupt.
@@ -598,151 +587,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
 
 			response.addCue(cue.asString(), value.asString());
-		}
-		
-	},
-	
-	/**
-	 * If block.
-	 * Has a conditional block that is called and then the success 
-	 * block if POP is true, or if false and the fail block exists, call the fail block. 
-	 * Returns nothing. 
-	 */
-	IF (false, true, false, true, true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			// block should contain arithmetic commands and a last push.
-			Block conditional = command.getConditionalBlock();
-			if (conditional == null)
-				throw new ModuleExecutionException("Conditional block for IF does NOT EXIST!");
-			conditional.call(request, response);
-			
-			// get remaining expression value.
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type after IF conditional block execution.");
-
-			if (value.asBoolean())
-			{
-				Block success = command.getSuccessBlock();
-				if (success == null)
-					throw new ModuleExecutionException("Success block for IF does NOT EXIST!");
-				success.call(request, response);
-			}
-			else
-			{
-				Block failure = command.getFailureBlock();
-				if (failure != null)
-					failure.call(request, response);
-			}
-			
-		}
-		
-	},
-	
-	/**
-	 * WHILE block.
-	 * Has a conditional block that is called and then the success block if POP is true. 
-	 * Returns nothing. 
-	 */
-	WHILE (false, true, false, true, false)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			while (callConditional(request, response, command))
-			{
-				try {
-					Block success = command.getSuccessBlock();
-					if (success == null)
-						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
-					success.call(request, response);
-				} catch (BreakInterrupt interrupt) {
-					break;
-				} catch (ContinueInterrupt interrupt) {
-					continue;
-				}
-			}
-		}
-		
-		private boolean callConditional(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			// block should contain arithmetic commands and a last push.
-			Block conditional = command.getConditionalBlock();
-			if (conditional == null)
-				throw new ModuleExecutionException("Conditional block for WHILE does NOT EXIST!");
-			conditional.call(request, response);
-			
-			// get remaining expression value.
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type after WHILE conditional block execution.");
-
-			return value.asBoolean(); 
-		}
-		
-	},
-	
-	/**
-	 * FOR block.
-	 * Has an init, conditional, and step block that is called and then the success block if POP is true after conditional. 
-	 * Returns nothing. 
-	 */
-	FOR (true, true, true, true, false)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			for (callInit(request, response, command); callConditional(request, response, command); callStep(request, response, command))
-			{
-				try {
-					Block success = command.getSuccessBlock();
-					if (success == null)
-						throw new ModuleExecutionException("Success block for FOR does NOT EXIST!");
-					success.call(request, response);
-				} catch (BreakInterrupt interrupt) {
-					break;
-				} catch (ContinueInterrupt interrupt) {
-					continue;
-				}
-			}
-		}
-		
-		private void callInit(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Block init = command.getInitializationBlock();
-			if (init == null)
-				throw new ModuleExecutionException("Init block for FOR does NOT EXIST!");
-			init.call(request, response);
-		}
-		
-		private void callStep(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Block step = command.getStepBlock();
-			if (step == null)
-				throw new ModuleExecutionException("Step block for FOR does NOT EXIST!");
-			step.call(request, response);
-		}
-		
-		private boolean callConditional(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			// block should contain arithmetic commands and a last push.
-			Block conditional = command.getConditionalBlock();
-			if (conditional == null)
-				throw new ModuleExecutionException("Conditional block for FOR does NOT EXIST!");
-			conditional.call(request, response);
-			
-			// get remaining expression value.
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type after FOR conditional block execution.");
-
-			return value.asBoolean(); 
 		}
 		
 	},
@@ -2476,55 +2320,51 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	private boolean internal;
 	private ArgumentType returnType;
 	private ArgumentType[] argumentTypes;
-	private boolean initializationBlockRequired;
 	private boolean conditionalBlockRequired;
-	private boolean stepBlockRequired;
 	private boolean successBlockRequired;
-	private boolean failureBlockRequired;
+	private boolean failureBlockPossible;
 	
 	private TAMECommand()
 	{
-		this(false, false, false, false, false, false, null, null);
+		this(false, false, false, false, null, null);
 	}
 
 	private TAMECommand(boolean internal)
 	{
-		this(internal, false, false, false, false, false, null, null);
+		this(internal, false, false, false, null, null);
 	}
 	
 	private TAMECommand(ArgumentType returnType, ArgumentType ... argumentTypes)
 	{
-		this(false, false, false, false, false, false, returnType, argumentTypes);
+		this(false, false, false, false, returnType, argumentTypes);
 	}
 
 	private TAMECommand(boolean internal, ArgumentType returnType, ArgumentType ... argumentTypes)
 	{
-		this(internal, false, false, false, false, false, returnType, argumentTypes);
+		this(internal, false, false, false, returnType, argumentTypes);
 	}
 
 	private TAMECommand
 	(
-		boolean initializationBlockRequired, boolean conditionalBlockRequired, boolean stepBlockRequired, boolean successBlockRequired, boolean failureBlockPossible
+		boolean conditionalBlockRequired, boolean successBlockRequired, boolean failureBlockPossible
 	)
 	{
-		this(false, initializationBlockRequired, conditionalBlockRequired, stepBlockRequired, successBlockRequired, failureBlockPossible, null, null);
+		this(false, conditionalBlockRequired, successBlockRequired, failureBlockPossible, null, null);
 	}
 
 	private TAMECommand
 	(
 		boolean internal,
-		boolean initializationBlockRequired, boolean conditionalBlockRequired, boolean stepBlockRequired, boolean successBlockRequired, boolean failureBlockPossible,
+		boolean conditionalBlockRequired, boolean successBlockRequired, boolean failureBlockPossible,
 		ArgumentType returnType, ArgumentType[] argumentTypes
 	)
 	{
 		this.internal = internal;
 		this.returnType = returnType;
 		this.argumentTypes = argumentTypes;
-		this.initializationBlockRequired = initializationBlockRequired;
 		this.conditionalBlockRequired = conditionalBlockRequired;
-		this.stepBlockRequired = stepBlockRequired;
 		this.successBlockRequired = successBlockRequired;
-		this.failureBlockRequired = failureBlockPossible;
+		this.failureBlockPossible = failureBlockPossible;
 	}
 
 	@Override
@@ -2552,17 +2392,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	public boolean isEvaluating() 
 	{
 		return 
-			isInitializationBlockRequired()
-			|| isConditionalBlockRequired()
-			|| isStepBlockRequired()
+			isConditionalBlockRequired()
 			|| isSuccessBlockRequired()
-			|| isFailureBlockRequired();
-	}
-	
-	@Override
-	public boolean isInitializationBlockRequired() 
-	{
-		return initializationBlockRequired;
+			|| isFailureBlockPossible();
 	}
 	
 	@Override
@@ -2572,21 +2404,15 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}
 	
 	@Override
-	public boolean isStepBlockRequired() 
-	{
-		return stepBlockRequired;
-	}
-	
-	@Override
 	public boolean isSuccessBlockRequired() 
 	{
 		return successBlockRequired;
 	}
 	
 	@Override
-	public boolean isFailureBlockRequired() 
+	public boolean isFailureBlockPossible() 
 	{
-		return failureBlockRequired;
+		return failureBlockPossible;
 	}
 
 	protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt

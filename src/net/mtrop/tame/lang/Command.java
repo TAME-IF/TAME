@@ -26,12 +26,8 @@ public class Command implements CallableType, Saveable
 	private Value operand0;
 	/** Command operand 1. */
 	private Value operand1;
-	/** Init block for loops. */
-	private Block initializationBlock;
 	/** Conditional block for loops. */
 	private Block conditionalBlock;
-	/** Step block for loops. */
-	private Block stepBlock;
 	/** Success block for conditionals. */
 	private Block successBlock;
 	/** Failure block for conditionals. */
@@ -44,14 +40,12 @@ public class Command implements CallableType, Saveable
 	}
 	
 	// Hidden constructor.
-	private Command(TAMECommand opcode, Value operand0, Value operand1, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock, Block failureBlock) 
+	private Command(TAMECommand opcode, Value operand0, Value operand1, Block conditionalBlock, Block successBlock, Block failureBlock) 
 	{
 		this.operation = opcode;
 		this.operand0 = operand0;
 		this.operand1 = operand1;
-		this.initializationBlock = initializationBlock;
 		this.conditionalBlock = conditionalBlock;
-		this.stepBlock = stepBlock;
 		this.successBlock = successBlock;
 		this.failureBlock = failureBlock;
 	}
@@ -62,7 +56,7 @@ public class Command implements CallableType, Saveable
 	 */
 	public static Command create(TAMECommand command)
 	{
-		return new Command(command, null, null, null, null, null, null, null);
+		return new Command(command, null, null, null, null, null);
 	}
 
 	/**
@@ -72,7 +66,7 @@ public class Command implements CallableType, Saveable
 	 */
 	public static Command create(TAMECommand command, Value operand0)
 	{
-		return new Command(command, operand0, null, null, null, null, null, null);
+		return new Command(command, operand0, null, null, null, null);
 	}
 
 	/**
@@ -83,7 +77,7 @@ public class Command implements CallableType, Saveable
 	 */
 	public static Command create(TAMECommand command, Value operand0, Value operand1)
 	{
-		return new Command(command, operand0, operand1, null, null, null, null, null);
+		return new Command(command, operand0, operand1, null, null, null);
 	}
 
 	/**
@@ -94,7 +88,7 @@ public class Command implements CallableType, Saveable
 	 */
 	public static Command create(TAMECommand command, Block conditionalBlock, Block successBlock)
 	{
-		return new Command(command, null, null, null, conditionalBlock, null, successBlock, null);
+		return new Command(command, null, null, conditionalBlock, successBlock, null);
 	}
 
 	/**
@@ -106,7 +100,7 @@ public class Command implements CallableType, Saveable
 	 */
 	public static Command create(TAMECommand command, Block conditionalBlock, Block successBlock, Block failureBlock)
 	{
-		return new Command(command, null, null, null, conditionalBlock, null, successBlock, failureBlock);
+		return new Command(command, null, null, conditionalBlock, successBlock, failureBlock);
 	}
 
 	/**
@@ -120,7 +114,7 @@ public class Command implements CallableType, Saveable
 	 */
 	public static Command create(TAMECommand command, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock, Block failureBlock)
 	{
-		return new Command(command, null, null, initializationBlock, conditionalBlock, stepBlock, successBlock, failureBlock);
+		return new Command(command, null, null, conditionalBlock, successBlock, failureBlock);
 	}
 
 	@Override
@@ -139,19 +133,9 @@ public class Command implements CallableType, Saveable
 		return operand1;
 	}
 	
-	public Block getInitializationBlock()
-	{
-		return initializationBlock;
-	}
-
 	public Block getConditionalBlock()
 	{
 		return conditionalBlock;
-	}
-
-	public Block getStepBlock()
-	{
-		return stepBlock;
 	}
 
 	public Block getSuccessBlock()
@@ -173,12 +157,8 @@ public class Command implements CallableType, Saveable
 			sb.append(' ').append(operand0);
 		if (operand1 != null)
 			sb.append(' ').append(operand1);
-		if (initializationBlock != null)
-			sb.append(" INIT{").append(initializationBlock).append('}');
 		if (conditionalBlock != null)
 			sb.append(" CONDITIONAL{").append(conditionalBlock).append('}');
-		if (stepBlock != null)
-			sb.append(" STEP{").append(stepBlock).append('}');
 		if (successBlock != null)
 			sb.append(" SUCCESS{").append(successBlock).append('}');
 		if (failureBlock != null)
@@ -207,9 +187,7 @@ public class Command implements CallableType, Saveable
 		
 		sw.writeBit(operand0 != null);
 		sw.writeBit(operand1 != null);
-		sw.writeBit(initializationBlock != null);
 		sw.writeBit(conditionalBlock != null);
-		sw.writeBit(stepBlock != null);
 		sw.writeBit(successBlock != null);
 		sw.writeBit(failureBlock != null);
 		sw.flushBits();
@@ -218,12 +196,8 @@ public class Command implements CallableType, Saveable
 			operand0.writeBytes(out);
 		if (operand1 != null)
 			operand1.writeBytes(out);
-		if (initializationBlock != null)
-			initializationBlock.writeBytes(out);
 		if (conditionalBlock != null)
 			conditionalBlock.writeBytes(out);
-		if (stepBlock != null)
-			stepBlock.writeBytes(out);
 		if (successBlock != null)
 			successBlock.writeBytes(out);
 		if (failureBlock != null)
@@ -245,14 +219,10 @@ public class Command implements CallableType, Saveable
 			this.operand1 = Value.create(in);
 	
 		if ((objectbits & 0x04) != 0)
-			this.initializationBlock = Block.create(in);
-		if ((objectbits & 0x08) != 0)
 			this.conditionalBlock = Block.create(in);
-		if ((objectbits & 0x10) != 0)
-			this.stepBlock = Block.create(in);
-		if ((objectbits & 0x20) != 0)
+		if ((objectbits & 0x08) != 0)
 			this.successBlock = Block.create(in);
-		if ((objectbits & 0x40) != 0)
+		if ((objectbits & 0x10) != 0)
 			this.failureBlock = Block.create(in);
 		
 	}

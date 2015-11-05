@@ -898,10 +898,8 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
-		else if (!(value1.isNumeric() && value2.isInteger()))
-			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
 		
-		long v1 = value1.isFloatingPoint() ? value1.asLongBits() : value1.asLong();
+		long v1 = value1.asLong();
 		long v2 = value2.asLong();
 		
 		if (value1.isFloatingPoint())
@@ -923,10 +921,8 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
-		else if (!(value1.isNumeric() && value2.isInteger()))
-			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
 		
-		long v1 = value1.isFloatingPoint() ? value1.asLongBits() : value1.asLong();
+		long v1 = value1.asLong();
 		long v2 = value2.asLong();
 		
 		if (value1.isFloatingPoint())
@@ -948,10 +944,8 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
-		else if (!(value1.isNumeric() && value2.isInteger()))
-			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
 		
-		long v1 = value1.isFloatingPoint() ? value1.asLongBits() : value1.asLong();
+		long v1 = value1.asLong();
 		long v2 = value2.asLong();
 		
 		if (value1.isFloatingPoint())
