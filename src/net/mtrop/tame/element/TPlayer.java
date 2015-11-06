@@ -51,10 +51,6 @@ public class TPlayer extends TActionableElement
 	protected Block actionAmbiguityBlock;
 	/** Code block ran upon bad action. */
 	protected Block badActionBlock;
-	/** Code block ran upon focusing on this. */
-	protected Block focusBlock;
-	/** Code block ran upon focusing away from this. */
-	protected Block unfocusBlock;
 
 	/**
 	 * Constructs an instance of a game world.
@@ -75,8 +71,6 @@ public class TPlayer extends TActionableElement
 		this.actionFailBlock = null;
 		this.actionAmbiguityBlock = null;
 		this.badActionBlock = null;
-		this.focusBlock = null;
-		this.unfocusBlock = null;
 	}
 	
 	/**
@@ -223,38 +217,6 @@ public class TPlayer extends TActionableElement
 		actionFailBlock = block;
 	}
 
-	/** 
-	 * Get this player's "onFocus" block. 
-	 */
-	public Block getFocusBlock()
-	{
-		return focusBlock;
-	}
-	
-	/** 
-	 * Set this player's "onFocus" block. 
-	 */
-	public void setFocusBlock(Block block)
-	{
-		focusBlock = block;
-	}
-	
-	/** 
-	 * Get this player's "onUnfocus" block. 
-	 */
-	public Block getUnfocusBlock()
-	{
-		return unfocusBlock;
-	}
-	
-	/** 
-	 * Set this player's "onUnfocus" block. 
-	 */
-	public void setUnfocusBlock(Block block)
-	{
-		unfocusBlock = block;
-	}
-
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
@@ -274,8 +236,6 @@ public class TPlayer extends TActionableElement
 		sw.writeBit(actionFailBlock != null);
 		sw.writeBit(actionAmbiguityBlock != null);
 		sw.writeBit(badActionBlock != null);
-		sw.writeBit(focusBlock != null);
-		sw.writeBit(unfocusBlock != null);
 		sw.flushBits();
 		
 		if (actionForbidBlock != null)
@@ -286,10 +246,6 @@ public class TPlayer extends TActionableElement
 			actionAmbiguityBlock.writeBytes(out);
 		if (badActionBlock != null)
 			badActionBlock.writeBytes(out);
-		if (focusBlock != null)
-			focusBlock.writeBytes(out);
-		if (unfocusBlock != null)
-			unfocusBlock.writeBytes(out);
 	}
 	
 	@Override
@@ -318,10 +274,6 @@ public class TPlayer extends TActionableElement
 			actionAmbiguityBlock = Block.create(in);
 		if ((blockbits & 0x08) != 0)
 			badActionBlock = Block.create(in);
-		if ((blockbits & 0x10) != 0)
-			focusBlock = Block.create(in);
-		if ((blockbits & 0x20) != 0)
-			unfocusBlock = Block.create(in);
 	}
 
 }

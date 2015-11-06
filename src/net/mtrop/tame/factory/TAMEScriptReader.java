@@ -19,6 +19,7 @@ import com.blackrook.lang.Parser;
 import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.ArithmeticOperator;
@@ -144,24 +145,25 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_DELIM_NOTEQUAL = 			43;
 		static final int TYPE_DELIM_NOTEQUALEQUAL =		44;
 
-		static final int TYPE_WORLD = 					50;
-		static final int TYPE_ROOM = 					51;
-		static final int TYPE_PLAYER = 					52;
-		static final int TYPE_OBJECT = 					53;
-		static final int TYPE_CONTAINER =				54;
-		static final int TYPE_ACTION = 					55;
-		static final int TYPE_GENERAL = 				56;
-		static final int TYPE_MODAL = 					57;
-		static final int TYPE_TRANSITIVE = 				58;
-		static final int TYPE_DITRANSITIVE = 			59;
-		static final int TYPE_OPEN = 					60;
-		static final int TYPE_NAMED = 					61;
-		static final int TYPE_MODES = 					62;
-		static final int TYPE_CONJOINS = 				63;
-		static final int TYPE_EXCLUDES = 				64;
-		static final int TYPE_RESTRICTS = 				65;
+		static final int TYPE_MODULE = 					50;
+		static final int TYPE_WORLD = 					51;
+		static final int TYPE_ROOM = 					52;
+		static final int TYPE_PLAYER = 					53;
+		static final int TYPE_OBJECT = 					54;
+		static final int TYPE_CONTAINER =				55;
+		static final int TYPE_ACTION = 					56;
+		static final int TYPE_GENERAL = 				57;
+		static final int TYPE_MODAL = 					58;
+		static final int TYPE_TRANSITIVE = 				59;
+		static final int TYPE_DITRANSITIVE = 			60;
+		static final int TYPE_OPEN = 					61;
+		static final int TYPE_NAMED = 					62;
+		static final int TYPE_MODES = 					63;
+		static final int TYPE_CONJOINS = 				64;
+		static final int TYPE_EXCLUDES = 				65;
+		static final int TYPE_RESTRICTS = 				66;
 
-		static final int TYPE_ONINIT = 					70;
+		static final int TYPE_INIT = 					70;
 		static final int TYPE_ONACTION =				71;
 		static final int TYPE_ONACTIONWITH =			72;
 		static final int TYPE_ONACTIONWITHOTHER =		73;
@@ -169,12 +171,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_ONPLAYERBROWSE =			75;
 		static final int TYPE_ONCONTAINERBROWSE =		76;
 		static final int TYPE_ONMODALACTION =			77;
-		static final int TYPE_ONFOCUS =					78;
-		static final int TYPE_ONUNFOCUS =				79;
-		static final int TYPE_ONBADACTION =				80;
-		static final int TYPE_ONAMBIGUOUSACTION =		81;
-		static final int TYPE_ONFORBIDDENACTION =		82;
-		static final int TYPE_ONACTIONFAIL =			83;
+		static final int TYPE_ONUNKNOWNACTION =			78;
+		static final int TYPE_ONAMBIGUOUSACTION =		79;
+		static final int TYPE_ONFORBIDDENACTION =		80;
+		static final int TYPE_ONFAILEDACTION =			81;
 		
 		private TSKernel()
 		{
@@ -224,6 +224,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addDelimiter("!=", TYPE_DELIM_NOTEQUAL);
 			addDelimiter("!==", TYPE_DELIM_NOTEQUALEQUAL);
 			
+			addCaseInsensitiveKeyword("module", TYPE_MODULE);
 			addCaseInsensitiveKeyword("world", TYPE_WORLD);
 			addCaseInsensitiveKeyword("room", TYPE_ROOM);
 			addCaseInsensitiveKeyword("player", TYPE_PLAYER);
@@ -240,7 +241,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("conjoins", TYPE_CONJOINS);
 			addCaseInsensitiveKeyword("excludes", TYPE_EXCLUDES);
 			addCaseInsensitiveKeyword("restricts", TYPE_RESTRICTS);
-			addCaseInsensitiveKeyword("oninit", TYPE_ONINIT);
+			addCaseInsensitiveKeyword("init", TYPE_INIT);
 			addCaseInsensitiveKeyword("onaction", TYPE_ONACTION);
 			addCaseInsensitiveKeyword("onactionwith", TYPE_ONACTIONWITH);
 			addCaseInsensitiveKeyword("onactionwithother", TYPE_ONACTIONWITHOTHER);
@@ -248,12 +249,10 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("onplayerbrowse", TYPE_ONPLAYERBROWSE);
 			addCaseInsensitiveKeyword("oncontainerbrowse", TYPE_ONCONTAINERBROWSE);
 			addCaseInsensitiveKeyword("onmodalaction", TYPE_ONMODALACTION);
-			addCaseInsensitiveKeyword("onfocus", TYPE_ONFOCUS);
-			addCaseInsensitiveKeyword("onunfocus", TYPE_ONUNFOCUS);
-			addCaseInsensitiveKeyword("onbadaction", TYPE_ONBADACTION);
+			addCaseInsensitiveKeyword("onunknownaction", TYPE_ONUNKNOWNACTION);
 			addCaseInsensitiveKeyword("onambiguousaction", TYPE_ONAMBIGUOUSACTION);
 			addCaseInsensitiveKeyword("onforbiddenaction", TYPE_ONFORBIDDENACTION);
-			addCaseInsensitiveKeyword("onactionfail", TYPE_ONACTIONFAIL);
+			addCaseInsensitiveKeyword("onfailedaction", TYPE_ONFAILEDACTION);
 			
 			for (TAMECommand command : TAMECommand.values())
 			{
@@ -470,14 +469,260 @@ public final class TAMEScriptReader implements TAMEConstants
 		private boolean parseModuleElement()
 		{
 			// DEBUG ==================
-			currentBlock.push(new Block());
-			boolean out = parseBlock();
-			System.out.println(currentBlock.peek());
-			currentBlock.pop();
+			boolean out = parseAction();
 			// ========================
 			
 			return out;
 		}
+
+		/**
+		 * Parses an action clause (after "action").
+		 * 		[GENERAL] [IDENTIFIER] [ActionNames] ";"
+		 * 		[OPEN] [IDENTIFIER] [ActionNames] ";"
+		 * 		[MODAL] [IDENTIFIER] [ActionNames] [ActionAdditionalNames] ";"
+		 * 		[TRANSITIVE] [IDENTIFIER] [ActionNames] ";"
+		 * 		[DITRANSITIVE] [IDENTIFIER] [ActionNames] [ActionAdditionalNames] ";"
+		 */
+		public boolean parseAction()
+		{
+			if (currentType(TSKernel.TYPE_GENERAL))
+			{
+				TAction.Type actionType = TAction.Type.GENERAL;
+				nextToken();
+
+				if (!isVariable())
+				{
+					addErrorMessage("Identity "+currentToken().getLexeme()+" is already declared.");
+					return false;
+				}
+
+				TAction action = new TAction(currentToken().getLexeme());
+				action.setType(actionType);
+
+				if (!parseActionNames(action))
+					return false;
+				
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected end of action declaration \";\".");
+					return false;
+				}
+				
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_OPEN))
+			{
+				TAction.Type actionType = TAction.Type.OPEN;
+				nextToken();
+
+				if (!isVariable())
+				{
+					addErrorMessage("Identity "+currentToken().getLexeme()+" is already declared.");
+					return false;
+				}
+
+				TAction action = new TAction(currentToken().getLexeme());
+				action.setType(actionType);
+
+				if (!parseActionNames(action))
+					return false;
+				
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected end of action declaration \";\".");
+					return false;
+				}
+				
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_MODAL))
+			{
+				TAction.Type actionType = TAction.Type.MODAL;
+				nextToken();
+				
+				if (!isVariable())
+				{
+					addErrorMessage("Identity "+currentToken().getLexeme()+" is already declared.");
+					return false;
+				}
+
+				TAction action = new TAction(currentToken().getLexeme());
+				action.setType(actionType);
+
+				if (!parseActionNames(action))
+					return false;
+				
+				if (!parseActionAdditionalNames(action, TSKernel.TYPE_MODES))
+					return false;
+				
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected end of action declaration \";\".");
+					return false;
+				}
+
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_TRANSITIVE))
+			{
+				TAction.Type actionType = TAction.Type.TRANSITIVE;
+				nextToken();
+				
+				if (!isVariable())
+				{
+					addErrorMessage("Identity "+currentToken().getLexeme()+" is already declared.");
+					return false;
+				}
+
+				TAction action = new TAction(currentToken().getLexeme());
+				action.setType(actionType);
+
+				if (!parseActionNames(action))
+					return false;
+
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected end of action declaration \";\".");
+					return false;
+				}
+
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_DITRANSITIVE))
+			{
+				TAction.Type actionType = TAction.Type.DITRANSITIVE;
+				nextToken();
+				
+				if (!isVariable())
+				{
+					addErrorMessage("Identity "+currentToken().getLexeme()+" is already declared.");
+					return false;
+				}
+
+				TAction action = new TAction(currentToken().getLexeme());
+				action.setType(actionType);
+
+				if (!parseActionNames(action))
+					return false;
+
+				if (!parseActionAdditionalNames(action, TSKernel.TYPE_CONJOINS))
+					return false;
+				
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected end of action declaration \";\".");
+					return false;
+				}
+
+				return true;
+			}
+			else
+			{
+				addErrorMessage("Expected action type (general, open, modal, transitive, ditransitive).");
+				return false;
+			}
+		}
+
+		/**
+		 * Parses action names.
+		 * [ActionNames] := 
+		 * 		[NAMED] [STRING] [ActionNameList]
+		 * 		[e]
+		 */
+		private boolean parseActionNames(TAction action)
+		{
+			if (matchType(TSKernel.TYPE_NAMED))
+			{
+				if (!currentType(Lexer.TYPE_STRING))
+				{
+					addErrorMessage("Expected action name (must be string).");
+					return false;
+				}
+				
+				action.getNames().put(currentToken().getLexeme());
+				nextToken();
+				
+				return parseActionNameList(action);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses action name list.
+		 * [ActionNameList] :=
+		 * 		"," [STRING] [ActionNameList]
+		 * 		[e]
+		 */
+		private boolean parseActionNameList(TAction action)
+		{
+			if (matchType(TSKernel.TYPE_DELIM_COMMA))
+			{
+				if (!currentType(Lexer.TYPE_STRING))
+				{
+					addErrorMessage("Expected action name (must be string).");
+					return false;
+				}
+				
+				action.getNames().put(currentToken().getLexeme());
+				nextToken();
+				
+				return parseActionNameList(action);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses addt'l action names.
+		 * [ActionAdditionalNames] := 
+		 * 		[CONJOINS] [STRING] [ActionAdditionalNameList]
+		 * 		[e]
+		 */
+		private boolean parseActionAdditionalNames(TAction action, int expectedKeywordType)
+		{
+			if (matchType(expectedKeywordType))
+			{
+				if (!currentType(Lexer.TYPE_STRING))
+				{
+					addErrorMessage("Expected name (must be string).");
+					return false;
+				}
+				
+				action.getExtraStrings().put(currentToken().getLexeme());
+				nextToken();
+				
+				return parseActionAdditionalNameList(action);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses action name list.
+		 * [ActionAdditionalNameList] :=
+		 * 		"," [STRING] [ActionAdditionalNameList]
+		 * 		[e]
+		 */
+		private boolean parseActionAdditionalNameList(TAction action)
+		{
+			if (matchType(TSKernel.TYPE_DELIM_COMMA))
+			{
+				if (!currentType(Lexer.TYPE_STRING))
+				{
+					addErrorMessage("Expected name (must be string).");
+					return false;
+				}
+				
+				action.getExtraStrings().put(currentToken().getLexeme());
+				nextToken();
+				
+				return parseActionAdditionalNameList(action);
+			}
+			
+			return true;
+		}
+		
 
 		/**
 		 * Parses a block.

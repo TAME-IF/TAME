@@ -343,40 +343,10 @@ public final class TAMELogic implements TAMEConstants
 	public static void doPlayerSwitch(TAMERequest request, TAMEResponse response, TPlayer nextPlayer) throws TAMEInterrupt 
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		TPlayerContext currentPlayerContext; 
-		
-		// unfocus.
-		currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		if (currentPlayerContext != null)
-		{
-			TPlayer currentPlayer = currentPlayerContext.getElement();
-			response.trace(request, "Check %s for unfocus block.", currentPlayer);
-			Block block = currentPlayer.getUnfocusBlock();
-			if (block != null)
-			{
-				response.trace(request, "Calling unfocus block on %s.", currentPlayer);
-				callBlock(request, response, currentPlayerContext, block);
-			}
-		}
-		else
-		{
-			response.trace(request, "No current player. Skipping unfocus.");
-		}
 		
 		// set next player.
 		response.trace(request, "Setting current player to %s.", nextPlayer);
 		moduleContext.setCurrentPlayer(nextPlayer);
-		
-		// focus.
-		currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		TPlayer currentPlayer = currentPlayerContext.getElement();
-		response.trace(request, "Check %s for focus block.", currentPlayer);
-		Block block = currentPlayer.getFocusBlock();
-		if (block != null)
-		{
-			response.trace(request, "Calling focus block on %s.", currentPlayer);
-			callBlock(request, response, currentPlayerContext, block);
-		}
 	}
 
 	/**
@@ -421,17 +391,7 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		TRoom currentRoom = ownership.getCurrentRoom(player);
 		
-		response.trace(request, "Check %s for unfocus block.", currentRoom);
-		Block block = currentRoom.getUnfocusBlock();
-		if (block != null)
-		{
-			TRoomContext roomContext = moduleContext.getRoomContext(currentRoom);
-			response.trace(request, "Calling unfocus block on %s.", currentRoom);
-			TAMELogic.callBlock(request, response, roomContext, block);
-		}
-
 		response.trace(request, "Popping top room from %s.", player);
 		ownership.popRoomFromPlayer(player);
 	}
@@ -450,16 +410,6 @@ public final class TAMELogic implements TAMEConstants
 
 		response.trace(request, "Pushing %s on %s.", nextRoom, player);
 		moduleContext.getOwnershipMap().pushRoomOntoPlayer(player, nextRoom);
-		
-		response.trace(request, "Check %s for focus block.", nextRoom);
-		Block block = nextRoom.getFocusBlock();
-		if (block != null)
-		{
-			TRoomContext roomContext = moduleContext.getRoomContext(nextRoom);
-			response.trace(request, "Calling focus block on %s.", nextRoom);
-			TAMELogic.callBlock(request, response, roomContext, block);
-		}
-		
 	}
 	
 	/**

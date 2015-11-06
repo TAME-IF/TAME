@@ -48,11 +48,6 @@ public class TRoom extends TActionableElement
 	/** Code block ran upon default action disallow. */
 	protected Block actionForbidBlock;
 
-	/** Code block ran upon focusing on this. */
-	protected Block focusBlock;
-	/** Code block ran upon focusing away from this. */
-	protected Block unfocusBlock;
-	
 	/**
 	 * Constructs an instance of a game world.
 	 */
@@ -67,8 +62,6 @@ public class TRoom extends TActionableElement
 		actionForbidTable = new ActionTable();
 		
 		actionForbidBlock = null;
-		focusBlock = null;
-		unfocusBlock = null;
 	}
 
 	/**
@@ -138,38 +131,6 @@ public class TRoom extends TActionableElement
 		actionForbidBlock = block;
 	}
 
-	/** 
-	 * Get this room's "onFocus" block. 
-	 */
-	public Block getFocusBlock()
-	{
-		return focusBlock;
-	}
-	
-	/** 
-	 * Set this room's "onFocus" block. 
-	 */
-	public void setFocusBlock(Block block)
-	{
-		focusBlock = block;
-	}
-	
-	/** 
-	 * Get this room's "onUnfocus" block. 
-	 */
-	public Block getUnfocusBlock()
-	{
-		return unfocusBlock;
-	}
-	
-	/** 
-	 * Set this room's "onUnfocus" block. 
-	 */
-	public void setUnfocusBlock(Block block)
-	{
-		unfocusBlock = block;
-	}
-
 	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.
@@ -198,16 +159,10 @@ public class TRoom extends TActionableElement
 		actionForbidTable.writeBytes(out);
 		
 		sw.writeBit(actionForbidBlock != null);
-		sw.writeBit(focusBlock != null);
-		sw.writeBit(unfocusBlock != null);
 		sw.flushBits();
 
 		if (actionForbidBlock != null)
 			actionForbidBlock.writeBytes(out);
-		if (focusBlock != null)
-			focusBlock.writeBytes(out);
-		if (unfocusBlock != null)
-			unfocusBlock.writeBytes(out);
 	}
 	
 	@Override
@@ -229,10 +184,6 @@ public class TRoom extends TActionableElement
 		
 		if ((blockbits & 0x01) != 0)
 			actionForbidBlock = Block.create(in);
-		if ((blockbits & 0x02) != 0)
-			focusBlock = Block.create(in);
-		if ((blockbits & 0x04) != 0)
-			unfocusBlock = Block.create(in);
 	}
 
 }

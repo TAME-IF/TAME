@@ -1,0 +1,109 @@
+module.title = "Test Module";
+module.author = "Matt Tropiano";
+
+action general ah_intro;
+
+action general a_quit named "quit", "exit";
+action open a_save named "save";
+action modal a_go named "go", "walk", "move" modes "east", "west", "north", "south";
+action transitive a_examine named "look at", "examine";
+action ditransitive a_use named "use" conjoins "with", "and";
+
+action general a_1 named "action1";
+action general a_2 named "action2";
+
+player p_main;
+room r_main;
+object o_brassdoor;
+object o_brasskey;
+container c_main;
+
+world
+{
+	init() ;
+
+	procedure_name ;
+
+	onAction(ah_intro) ;
+	onModalAction(a_go, "west") ;
+	onFailedAction() ;
+	onFailedAction(a_use) ;
+	onUnknownAction() ;
+	onAmbiguousAction() ;
+	onAmbiguousAction(a_use) ;
+
+	afterRequest() ;
+}
+
+player p_main excludes a_1
+{
+	init() ;
+
+	procedure_name ;
+
+	onAction(ah_intro) ;
+	onModalAction(a_go, "west") ;
+	onFailedAction() ;
+	onFailedAction(a_use) ;
+	onUnknownAction() ;
+	onAmbiguousAction() ;
+	onAmbiguousAction(a_use) ;
+	onForbiddenAction() ;
+	onForbiddenAction(a_1) ;
+}
+
+room r_main restricts a_2
+{
+	init() ;
+
+	procedure_name ;
+	
+	onAction(ah_intro) ;
+	onModalAction(a_go, "west") ;
+	onFailedAction() ;
+	onFailedAction(a_use) ;
+	onForbiddenAction() ;
+	onForbiddenAction(a_1) ;
+}
+
+object o_brassdoor named "Brass Door", "Door"
+{
+	init() ;
+
+	procedure_name ;
+
+	onAction(ah_intro) ;
+	onActionWith(o_brasskey) ;
+	onActionWithOther() ;
+	onPlayerBrowse() ;
+	onRoomBrowse() ;
+	onContainerBrowse() ;
+	
+}
+
+object o_brasskey named "Brass Key", "Key"
+{
+	init() ;
+
+	procedure_name ;
+	
+	onAction(ah_intro) ;
+	onActionWith(o_brassdoor)
+	{
+		enqueueActionObject2(a_use, o_brassdoor, o_brasskey);
+	}
+	onActionWithOther() ;
+	onPlayerBrowse() ;
+	onRoomBrowse() ;
+	onContainerBrowse() ;
+	
+}
+
+
+container c_main
+{
+	init() ;
+	
+	procedure_name ;
+
+}
