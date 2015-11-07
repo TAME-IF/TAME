@@ -175,6 +175,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_ONAMBIGUOUSACTION =		79;
 		static final int TYPE_ONFORBIDDENACTION =		80;
 		static final int TYPE_ONFAILEDACTION =			81;
+		static final int TYPE_AFTERREQUEST =			82;
 		
 		private TSKernel()
 		{
@@ -253,6 +254,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("onambiguousaction", TYPE_ONAMBIGUOUSACTION);
 			addCaseInsensitiveKeyword("onforbiddenaction", TYPE_ONFORBIDDENACTION);
 			addCaseInsensitiveKeyword("onfailedaction", TYPE_ONFAILEDACTION);
+			addCaseInsensitiveKeyword("afterrequest", TYPE_AFTERREQUEST);
 			
 			for (TAMECommand command : TAMECommand.values())
 			{
@@ -1454,7 +1456,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		// Checks if an identifier is a variable.
-		public boolean isVariable()
+		private boolean isVariable()
 		{
 			return !isWorld()
 				&& !isPlayer()
@@ -1466,7 +1468,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		// Checks if an identifier is an element.
-		public boolean isElement()
+		private boolean isElement()
 		{
 			return isWorld()
 				|| isPlayer()
@@ -1477,19 +1479,19 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		// Checks if an identifier is an action.
-		public boolean isAction()
+		private boolean isAction()
 		{
 			return currentModule.getActionByIdentity(currentToken().getLexeme()) != null;
 		}
 		
 		// Checks if an identifier is a world.
-		public boolean isWorld()
+		private boolean isWorld()
 		{
 			return currentToken().getLexeme().equals(IDENTITY_CURRENT_WORLD);
 		}
 		
 		// Checks if an identifier is a player.
-		public boolean isPlayer()
+		private boolean isPlayer()
 		{
 			String identifier = currentToken().getLexeme();
 			return identifier.equals(IDENTITY_CURRENT_PLAYER)
@@ -1497,7 +1499,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		// Checks if an identifier is a room.
-		public boolean isRoom()
+		private boolean isRoom()
 		{
 			String identifier = currentToken().getLexeme();
 			return identifier.equals(IDENTITY_CURRENT_ROOM)
@@ -1505,15 +1507,97 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		// Checks if an identifier is an object.
-		public boolean isObject()
+		private boolean isObject()
 		{
 			return currentModule.getObjectByIdentity(currentToken().getLexeme()) != null;
 		}
 		
 		// Checks if an identifier is a container.
-		public boolean isContainer()
+		private boolean isContainer()
 		{
 			return currentModule.getContainerByIdentity(currentToken().getLexeme()) != null;
+		}
+		
+		// Return true if token type is a valid block on a world.
+		private boolean isWorldBlockType()
+		{
+			switch (currentToken().getType())
+			{
+				case TSKernel.TYPE_INIT:
+				case TSKernel.TYPE_ONACTION:
+				case TSKernel.TYPE_ONMODALACTION:
+				case TSKernel.TYPE_ONFAILEDACTION:
+				case TSKernel.TYPE_ONUNKNOWNACTION:
+				case TSKernel.TYPE_ONAMBIGUOUSACTION:
+				case TSKernel.TYPE_AFTERREQUEST:
+					return true;
+				default:
+					return false;
+			}
+		}
+		
+		// Return true if token type is a valid block on a player.
+		private boolean isPlayerBlockType()
+		{
+			switch (currentToken().getType())
+			{
+				case TSKernel.TYPE_INIT:
+				case TSKernel.TYPE_ONACTION:
+				case TSKernel.TYPE_ONMODALACTION:
+				case TSKernel.TYPE_ONFAILEDACTION:
+				case TSKernel.TYPE_ONUNKNOWNACTION:
+				case TSKernel.TYPE_ONAMBIGUOUSACTION:
+				case TSKernel.TYPE_ONFORBIDDENACTION:
+					return true;
+				default:
+					return false;
+			}
+		}
+		
+		// Return true if token type is a valid block on a player.
+		private boolean isRoomBlockType()
+		{
+			switch (currentToken().getType())
+			{
+				case TSKernel.TYPE_INIT:
+				case TSKernel.TYPE_ONACTION:
+				case TSKernel.TYPE_ONMODALACTION:
+				case TSKernel.TYPE_ONFAILEDACTION:
+				case TSKernel.TYPE_ONFORBIDDENACTION:
+					return true;
+				default:
+					return false;
+			}
+		}
+		
+		// Return true if token type is a valid block on an object.
+		private boolean isObjectBlockType()
+		{
+			switch (currentToken().getType())
+			{
+				case TSKernel.TYPE_INIT:
+				case TSKernel.TYPE_ONACTION:
+				case TSKernel.TYPE_ONACTIONWITH:
+				case TSKernel.TYPE_ONACTIONWITHOTHER:
+				case TSKernel.TYPE_ONPLAYERBROWSE:
+				case TSKernel.TYPE_ONROOMBROWSE:
+				case TSKernel.TYPE_ONCONTAINERBROWSE:
+					return true;
+				default:
+					return false;
+			}
+		}
+		
+		// Return true if token type is a valid block on a container.
+		private boolean isContainerBlockType()
+		{
+			switch (currentToken().getType())
+			{
+				case TSKernel.TYPE_INIT:
+					return true;
+				default:
+					return false;
+			}
 		}
 		
 		// Return true if token type can be a unary operator.

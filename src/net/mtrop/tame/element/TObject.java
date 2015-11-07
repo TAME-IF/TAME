@@ -31,6 +31,8 @@ public class TObject extends TActionableElement
 {
 	/** Table used for ditransitive actions. */
 	protected ActionWithTable actionWithTable;
+	/** Table used for ditransitive actions. */
+	protected Block actionWithOtherBlock;
 	/** Element's names. */
 	protected CaseInsensitiveHash names;
 	/** Code block ran upon browsing a room with this object in it. */
@@ -82,6 +84,22 @@ public class TObject extends TActionableElement
 		return actionWithTable;
 	}
 	
+	/**
+	 * Gets the block to call if used with another object not handled by "action with."
+	 */
+	public Block getActionWithOtherBlock() 
+	{
+		return actionWithOtherBlock;
+	}
+	
+	/**
+	 * Sets the block to call if used with another object not handled by "action with."
+	 */
+	public void setActionWithOtherBlock(Block block) 
+	{
+		this.actionWithOtherBlock = block;
+	}
+	
 	/** 
 	 * Get the "browsing in possession of a room" action block.
 	 */
@@ -93,9 +111,9 @@ public class TObject extends TActionableElement
 	/** 
 	 * Set the "browsing in possession of a room" action block.
 	 */
-	public void setRoomBrowseBlock(Block eab)
+	public void setRoomBrowseBlock(Block block)
 	{
-		roomBrowseBlock = eab;
+		roomBrowseBlock = block;
 	}
 	
 	/** 
@@ -109,9 +127,9 @@ public class TObject extends TActionableElement
 	/** 
 	 * Set the "browsing in possession of a player" action block. 
 	 */
-	public void setPlayerBrowseBlock(Block eab)
+	public void setPlayerBrowseBlock(Block block)
 	{
-		playerBrowseBlock = eab;
+		playerBrowseBlock = block;
 	}
 	
 	/** 
@@ -125,9 +143,9 @@ public class TObject extends TActionableElement
 	/** 
 	 * Set the "browsing in possession of a container" action block. 
 	 */
-	public void setContainerBrowseBlock(Block eab)
+	public void setContainerBrowseBlock(Block block)
 	{
-		containerBrowseBlock = eab;
+		containerBrowseBlock = block;
 	}
 	
 	@Override
