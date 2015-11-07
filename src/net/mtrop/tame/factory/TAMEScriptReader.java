@@ -1673,6 +1673,12 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 		}
 		
+		// Attempts to reduce redundant calls and unnecessary ones.
+		private void optimizeBlock(Block block)
+		{
+			
+		}
+		
 		/**
 		 * Emits a command into the current block.
 		 */

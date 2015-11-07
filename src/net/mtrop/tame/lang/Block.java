@@ -11,7 +11,7 @@ import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 
-import com.blackrook.commons.linkedlist.Queue;
+import com.blackrook.commons.list.List;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -22,14 +22,14 @@ import com.blackrook.io.SuperWriter;
 public class Block implements CallableType, Iterable<Command>, Saveable
 {
 	/** List of statements. */
-	private Queue<Command> statementQueue; 
+	private List<Command> statementQueue; 
 
 	/**
 	 * Creates a new empty block.
 	 */
 	public Block()
 	{
-		this.statementQueue = new Queue<Command>();
+		this.statementQueue = new List<Command>();
 	}
 
 	/**
@@ -55,6 +55,11 @@ public class Block implements CallableType, Iterable<Command>, Saveable
 		return statementQueue.size();
 	}
 
+	public void trim()
+	{
+		
+	}
+	
 	@Override
 	public void call(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
