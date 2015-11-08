@@ -1,1 +1,11 @@
-x;
+action general ah_intro;
+
+action general a_quit named "quit", "exit";
+action open a_save named "save";
+action modal a_go named "go", "walk", "move" modes "east", "west", "north", "south";
+action transitive a_examine named "look at", "examine";
+action ditransitive a_use named "use" conjoins "with", "and";
+
+action general a_1 named "action1";
+action general a_2 named "action2";
+

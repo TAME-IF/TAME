@@ -21,6 +21,7 @@ import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
@@ -39,63 +40,9 @@ public final class TAMEScriptReader implements TAMEConstants
 	private static final TSKernel KERNEL_INSTANCE = new TSKernel();
 	/** The singular instance for the default includer. */
 	private static final DefaultIncluder DEFAULT_INCLUDER = new DefaultIncluder();
+	/** The default options. */
+	private static final DefaultReaderOptions DEFAULT_OPTIONS = new DefaultReaderOptions();
 	
-	/** 
-	 * Default includer to use when none specified.
-	 * This includer can either pull from the classpath, URIs, or files.
-	 * <p>
-	 * <ul>
-	 * <li>Paths that start with {@code classpath:} are parsed as resource paths in the current classpath.</li>
-	 * <li>
-	 * 		Else, the path is interpreted as a file path, with the following search order:
-	 * 		<ul>
-	 * 			<li>Relative to parent of source stream.</li>
-	 * 			<li>As is.</li>
-	 * 		</ul>
-	 * </li>
-	 * </ul> 
-	 */
-	public static class DefaultIncluder implements TAMEScriptIncluder
-	{
-		private static final String CLASSPATH_PREFIX = "classpath:";
-		
-		// cannot be instantiated outside of this class.
-		private DefaultIncluder(){}
-		
-		@Override
-		public InputStream getIncludeResource(String streamName, String path) throws IOException
-		{
-			if (Common.isWindows() && streamName.contains("\\")) // check for Windows paths.
-				streamName = streamName.replace('\\', '/');
-			
-			String streamParent = null;
-			int lidx = -1; 
-			if ((lidx = streamName.lastIndexOf('/')) >= 0)
-				streamParent = streamName.substring(0, lidx + 1);
-			
-			if (path.startsWith(CLASSPATH_PREFIX) || (streamParent != null && streamParent.startsWith(CLASSPATH_PREFIX)))
-				return Common.openResource(((streamParent != null ? streamParent : "") + path).substring(CLASSPATH_PREFIX.length()));
-			else
-			{
-				File f = null;
-				if (streamParent != null)
-				{
-					f = new File(streamParent + path);
-					if (f.exists())
-						return new FileInputStream(f);
-					else
-						return new FileInputStream(new File(path));
-				}
-				else
-				{
-					return new FileInputStream(new File(path));
-				}
-				
-			}
-			
-		}
-	}
-
 	/** The Lexer Kernel for the ArcheText Lexers. */
 	private static class TSKernel extends CommonLexerKernel
 	{
@@ -316,6 +263,9 @@ public final class TAMEScriptReader implements TAMEConstants
 	 */
 	private static class TSParser extends Parser
 	{
+		/** The parser options. */
+		private TAMEScriptReaderOptions options;
+
 		/** Set of prototypes. */
 		private HashedQueueMap<String, String> prototypes;
 		
@@ -336,7 +286,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		/** Current value. */
 		private Value currentValue;
 		
-		private TSParser(TSLexer lexer)
+		private TSParser(TSLexer lexer, TAMEScriptReaderOptions options)
 		{
 			super(lexer);
 			prototypes = new HashedQueueMap<>();
@@ -470,13 +420,122 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseModuleElement()
 		{
-			// DEBUG ==================
-			boolean out = parseAction();
-			// ========================
+			if (matchType(TSKernel.TYPE_ACTION))
+			{
+				if (!parseAction())
+					return false;
+				
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected end of action declaration \";\".");
+					return false;
+				}
+				
+				return true;
+			}
 			
-			return out;
+			addErrorMessage("Expected module element declaration start (module, world, player, room, object, container, action).");
+			return false;
 		}
 
+		/**
+		 * Parses a world.
+		 * [World] :=
+		 * 		";"
+		 * 		"{" [WorldBody] "}"
+		 */
+		public boolean parseWorld()
+		{
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				if (prototypes.containsKey("world"))
+				{
+					addErrorMessage("World was already prototyped.");
+					return false;
+				}
+				
+				prototypes.enqueue("world", "world");
+				currentModule.setWorld(new TWorld());
+				return true;
+			}
+
+			TWorld world = Common.coalesce(currentModule.getWorld(), new TWorld());
+			
+			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for world body start or \";\" (prototyping).");
+				return false;
+			}
+
+			prototypes.removeUsingKey("world");
+			parseWorldBody(world);
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			{
+				addErrorMessage("Expected end-of-world \"}\".");
+				return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * Parses the world body.
+		 * [WorldBody] :=
+		 * 		[WorldBlock] [WorldBody]
+		 * 		[e]
+		 */
+		private boolean parseWorldBody(TWorld world)
+		{
+			if (isWorldBlockType())
+			{
+				if (currentType(TSKernel.TYPE_INIT))
+				{
+					nextToken();
+					
+					if (!parseInitBlock(world))
+						return false;
+				}
+				
+
+				// TODO: Finish.
+				
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an init block declaration.
+		 * [InitBlock] :=
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseInitBlock(TElement element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after init.");
+				return false;
+			}
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\" after init.");
+				return false;
+			}
+			
+			Block initBlock;
+			currentBlock.push(initBlock = new Block());
+			
+			if (!parseBlock())
+				return false;
+			
+			element.setInitBlock(initBlock);
+			
+			return true;
+		}
+		
 		/**
 		 * Parses an action clause (after "action").
 		 * 		[GENERAL] [IDENTIFIER] [ActionNames] ";"
@@ -500,16 +559,12 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(currentToken().getLexeme());
 				action.setType(actionType);
-
+				nextToken();
+				
 				if (!parseActionNames(action))
 					return false;
 				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Expected end of action declaration \";\".");
-					return false;
-				}
-				
+				currentModule.addAction(action);
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_OPEN))
@@ -525,16 +580,12 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(currentToken().getLexeme());
 				action.setType(actionType);
+				nextToken();
 
 				if (!parseActionNames(action))
 					return false;
 				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Expected end of action declaration \";\".");
-					return false;
-				}
-				
+				currentModule.addAction(action);
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_MODAL))
@@ -550,6 +601,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(currentToken().getLexeme());
 				action.setType(actionType);
+				nextToken();
 
 				if (!parseActionNames(action))
 					return false;
@@ -557,12 +609,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				if (!parseActionAdditionalNames(action, TSKernel.TYPE_MODES))
 					return false;
 				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Expected end of action declaration \";\".");
-					return false;
-				}
-
+				currentModule.addAction(action);
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_TRANSITIVE))
@@ -578,16 +625,12 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(currentToken().getLexeme());
 				action.setType(actionType);
+				nextToken();
 
 				if (!parseActionNames(action))
 					return false;
 
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Expected end of action declaration \";\".");
-					return false;
-				}
-
+				currentModule.addAction(action);
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_DITRANSITIVE))
@@ -603,19 +646,15 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(currentToken().getLexeme());
 				action.setType(actionType);
+				nextToken();
 
 				if (!parseActionNames(action))
 					return false;
 
 				if (!parseActionAdditionalNames(action, TSKernel.TYPE_CONJOINS))
 					return false;
-				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Expected end of action declaration \";\".");
-					return false;
-				}
 
+				currentModule.addAction(action);
 				return true;
 			}
 			else
@@ -746,7 +785,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					addErrorMessage("Expected end of block '}'.");
 					return false;
 				}
-
+				
 				return true;
 			}
 			
@@ -1701,7 +1740,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	{
 		FileInputStream fis = new FileInputStream(file);
 		try {
-			return read(file.getPath(), fis, DEFAULT_INCLUDER);
+			return read(file.getPath(), fis, DEFAULT_OPTIONS, DEFAULT_INCLUDER);
 		} finally {
 			Common.close(fis);
 		}
@@ -1717,7 +1756,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 */
 	public static TAMEModule read(String text) throws IOException
 	{
-		return read(STREAMNAME_TEXT, new StringReader(text), DEFAULT_INCLUDER);
+		return read(STREAMNAME_TEXT, new StringReader(text), DEFAULT_OPTIONS, DEFAULT_INCLUDER);
 	}
 
 	/**
@@ -1731,7 +1770,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 */
 	public static TAMEModule read(String streamName, InputStream in) throws IOException
 	{
-		return read(streamName, new InputStreamReader(in), DEFAULT_INCLUDER);
+		return read(streamName, new InputStreamReader(in), DEFAULT_OPTIONS, DEFAULT_INCLUDER);
 	}
 
 	/**
@@ -1745,7 +1784,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 */
 	public static TAMEModule read(String streamName, Reader reader) throws IOException
 	{
-		return read(streamName, reader, DEFAULT_INCLUDER);
+		return read(streamName, reader, DEFAULT_OPTIONS, DEFAULT_INCLUDER);
 	}
 
 	/**
@@ -1778,7 +1817,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 */
 	public static TAMEModule read(String text, TAMEScriptIncluder includer) throws IOException
 	{
-		return read(STREAMNAME_TEXT, new StringReader(text), includer);
+		return read(STREAMNAME_TEXT, new StringReader(text), DEFAULT_OPTIONS, includer);
 	}
 
 	/**
@@ -1793,7 +1832,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 */
 	public static TAMEModule read(String streamName, InputStream in, TAMEScriptIncluder includer) throws IOException
 	{
-		return read(streamName, new InputStreamReader(in), includer);
+		return read(streamName, new InputStreamReader(in), DEFAULT_OPTIONS, includer);
 	}
 
 	/**
@@ -1808,9 +1847,130 @@ public final class TAMEScriptReader implements TAMEConstants
 	 */
 	public static TAMEModule read(String streamName, Reader reader, TAMEScriptIncluder includer) throws IOException
 	{
-		TSLexer lexer = new TSLexer(streamName, reader, includer);
-		TSParser parser = new TSParser(lexer);
-		return parser.readModule();
+		return read(streamName, reader, DEFAULT_OPTIONS, includer);
+	}
+
+	/**
+	 * Reads TAMEModule objects into a new root from a starting text file.
+	 * Note: Calls apply() with a new root.
+	 * @param file	the file to read from.
+	 * @param options the reader options for compiling.
+	 * @return A new TAMEModule that contains all the read object hierarchy.
+	 * @throws IOException if the stream can't be read.
+	 * @throws NullPointerException if f is null. 
+	 */
+	public static TAMEModule read(File file, TAMEScriptReaderOptions options) throws IOException
+	{
+		FileInputStream fis = new FileInputStream(file);
+		try {
+			return read(file.getPath(), fis, options, DEFAULT_INCLUDER);
+		} finally {
+			Common.close(fis);
+		}
+	}
+
+	/**
+	 * Reads TAMEModule objects from a String of text into a new root.
+	 * Note: Calls apply() with a new root.
+	 * @param text the String to read from.
+	 * @return A new TAMEModule that contains all the read object hierarchy.
+	 * @throws IOException if the stream can't be read.
+	 * @throws NullPointerException if f is null. 
+	 */
+	public static TAMEModule read(String text, TAMEScriptReaderOptions options) throws IOException
+	{
+		return read(STREAMNAME_TEXT, new StringReader(text), options, DEFAULT_INCLUDER);
+	}
+
+	/**
+	 * Reads TAMEModule objects into a new root.
+	 * Note: Calls apply() with a new root.
+	 * @param streamName the name of the stream.
+	 * @param in the stream to read from.
+	 * @return A new TAMEModule that contains all the read object hierarchy.
+	 * @throws IOException if the stream can't be read.
+	 * @throws NullPointerException if in is null. 
+	 */
+	public static TAMEModule read(String streamName, InputStream in, TAMEScriptReaderOptions options) throws IOException
+	{
+		return read(streamName, new InputStreamReader(in), options, DEFAULT_INCLUDER);
+	}
+
+	/**
+	 * Reads TAMEModule objects into a new root from a reader stream.
+	 * Note: Calls apply() with a new root.
+	 * @param streamName the name of the stream.
+	 * @param reader the reader to read from.
+	 * @return A new TAMEModule that contains all the read object hierarchy.
+	 * @throws IOException if the stream can't be read.
+	 * @throws NullPointerException if f is null. 
+	 */
+	public static TAMEModule read(String streamName, Reader reader, TAMEScriptReaderOptions options) throws IOException
+	{
+		return read(streamName, reader, options, DEFAULT_INCLUDER);
+	}
+
+	/**
+	 * Reads TAMEModule objects into a new root from a starting text file.
+	 * Note: Calls apply() with a new root.
+	 * @param file	the file to read from.
+	 * @param includer the includer to use to resolve "included" paths.
+	 * @return A new TAMEModule that contains all the read object hierarchy.
+	 * @throws IOException if the stream can't be read.
+	 * @throws NullPointerException if f is null. 
+	 */
+	public static TAMEModule read(File file, TAMEScriptReaderOptions options, TAMEScriptIncluder includer) throws IOException
+	{
+		FileInputStream fis = new FileInputStream(file);
+		try {
+			return read(file.getPath(), fis, options, includer);
+		} finally {
+			Common.close(fis);
+		}
+	}
+
+	/**
+	 * Reads TAMEModule objects from a String of text into a new root.
+	 * Note: Calls apply() with a new root.
+	 * @param text the String to read from.
+	 * @param includer the includer to use to resolve "included" paths.
+	 * @return A new TAMEModule that contains all the read object hierarchy.
+	 * @throws IOException if the stream can't be read.
+	 * @throws NullPointerException if f is null. 
+	 */
+	public static TAMEModule read(String text, TAMEScriptReaderOptions options, TAMEScriptIncluder includer) throws IOException
+	{
+		return read(STREAMNAME_TEXT, new StringReader(text), includer);
+	}
+
+	/**
+	 * Reads TAMEModule objects into a new root.
+	 * Note: Calls apply() with a new root.
+	 * @param streamName the name of the stream.
+	 * @param in the stream to read from.
+	 * @param includer the includer to use to resolve "included" paths.
+	 * @return A new TAMEModule that contains all the read object hierarchy.
+	 * @throws IOException if the stream can't be read.
+	 * @throws NullPointerException if in is null. 
+	 */
+	public static TAMEModule read(String streamName, InputStream in, TAMEScriptReaderOptions options, TAMEScriptIncluder includer) throws IOException
+	{
+		return read(streamName, new InputStreamReader(in), options, includer);
+	}
+
+	/**
+	 * Reads TAMEModule objects into a new root from a reader stream.
+	 * Note: Calls apply() with a new root.
+	 * @param streamName the name of the stream.
+	 * @param reader the reader to read from.
+	 * @param includer the includer to use to resolve "included" paths.
+	 * @return A new TAMEModule that contains all the read object hierarchy.
+	 * @throws IOException if the stream can't be read.
+	 * @throws NullPointerException if f is null. 
+	 */
+	public static TAMEModule read(String streamName, Reader reader, TAMEScriptReaderOptions options, TAMEScriptIncluder includer) throws IOException
+	{
+		return (new TSParser(new TSLexer(streamName, reader, includer), options)).readModule();
 	}
 
 }

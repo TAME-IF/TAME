@@ -39,38 +39,11 @@ public abstract class TElement implements Saveable
 	/** Procedure block map. */
 	private ActionTable procedureBlock;
 
-	/**
-	 * Set on initial creation. This flag is checked to ensure all objects were defined.
-	 * If this is set on any object after the time of compile, then an object was only
-	 * prototyped, but not completely defined. It is set by default and must be cleared.
-	 */
-	private boolean prototyped;
-
 	protected TElement()
 	{
 		this.identity = null;
 		this.initBlock = null;
 		this.procedureBlock = new ActionTable();
-		this.prototyped = true;
-	}
-	
-	/**
-	 * Sets if this is prototyped.
-	 * This is set on initial creation. This flag is checked to ensure all objects were defined.
-	 * If this is set on any object after the time of compile, then an object was only
-	 * prototyped, but not completely defined. It is set by default and must be cleared.
-	 */
-	public void setPrototyped(boolean prototyped)
-	{
-		this.prototyped = prototyped;
-	}
-	
-	/** 
-	 * Checks if the prototype flag is set. 
-	 */
-	public boolean isPrototyped()
-	{
-		return prototyped;
 	}
 	
 	/** 
