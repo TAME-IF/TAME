@@ -60,8 +60,6 @@ room r_main restricts a_2
 	
 	onAction(ah_intro) ;
 	onModalAction(a_go, "west") ;
-	onFailedAction() ;
-	onFailedAction(a_use) ;
 	onForbiddenAction() ;
 	onForbiddenAction(a_1) ;
 }

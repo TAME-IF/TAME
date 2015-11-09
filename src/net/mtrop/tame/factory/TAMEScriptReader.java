@@ -32,6 +32,7 @@ import net.mtrop.tame.element.TAction.Type;
 import net.mtrop.tame.element.TActionableElement;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.ArithmeticOperator;
@@ -384,10 +385,127 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		/**
+		 * Parses a room.
+		 * [Room] :=
+		 * 		";"
+		 * 		[IDENTIFIER] "{" [RoomBody] "}"
+		 */
+		public boolean parseRoom()
+		{
+			// room identity.
+			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			{
+				addErrorMessage("Room requires an action type was already prototyped.");
+				return false;
+			}
+
+			String identity = currentToken().getLexeme();
+			nextToken();
+			
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				if (prototypes.containsValue("room", identity))
+				{
+					addErrorMessage("Room \"" + identity + "\" was already prototyped.");
+					return false;
+				}
+				
+				prototypes.add("room", identity);
+				TRoom element = new TRoom();
+				element.setIdentity(identity);
+				currentModule.addRoom(element);
+				
+				return true;
+			}
+
+			TRoom room = Common.coalesce(currentModule.getRoomByIdentity(identity), new TRoom());
+			room.setIdentity(identity);
+			
+			prototypes.removeValue("room", identity);
+			
+			if (!parseActionPermissionClause(room))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for room body start or \";\" (prototyping).");
+				return false;
+			}
+
+			if (!parseRoomBody(room))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			{
+				addErrorMessage("Expected end-of-player \"}\".");
+				return false;
+			}
+
+			return true;
+		}
+		
+		/**
+		 * Parses the room body.
+		 * [RoomBody] :=
+		 * 		[RoomBlock] [RoomBody]
+		 * 		[e]
+		 */
+		private boolean parseRoomBody(TRoom room)
+		{
+			while (isRoomBlockType())
+			{
+				if (currentType(TSKernel.TYPE_INIT))
+				{
+					nextToken();
+					
+					if (!parseInitBlock(room))
+						return false;
+					
+					continue;
+				}
+								
+				if (currentType(TSKernel.TYPE_ONACTION))
+				{
+					nextToken();
+					
+					if (!parseOnActionBlock(room, Type.GENERAL, Type.OPEN))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONMODALACTION))
+				{
+					nextToken();
+					
+					if (!parseOnModalActionBlock(room))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONFORBIDDENACTION))
+				{
+					nextToken();
+					
+					if (!parseOnForbiddenActionBlock(room))
+						return false;
+					
+					continue;
+				}
+					
+				break;
+			}
+			
+			return true;
+		}
+				
+		/**
 		 * Parses a player.
 		 * [Player] :=
 		 * 		";"
-		 * 		"{" [PlayerBody] "}"
+		 * 		[IDENTIFIER] "{" [PlayerBody] "}"
 		 */
 		public boolean parsePlayer()
 		{
@@ -445,7 +563,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
-		 * Parses the world body.
+		 * Parses the player body.
 		 * [PlayerBody] :=
 		 * 		[PlayerBlock] [PlayerBody]
 		 * 		[e]

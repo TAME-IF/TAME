@@ -10,6 +10,7 @@ action general a_1 named "action1";
 action general a_2 named "action2";
 
 player p_main;
+room r_main;
 
 world
 {
@@ -42,4 +43,17 @@ player p_main excludes a_1
 	onForbiddenAction() ;
 	onForbiddenAction(a_1) ;
 }
+
+room r_main restricts a_2
+{
+	init() ;
+
+	procedure_name ;
+	
+	onAction(ah_intro) ;
+	onModalAction(a_go, "west") ;
+	onForbiddenAction() ;
+	onForbiddenAction(a_1) ;
+}
+
 
