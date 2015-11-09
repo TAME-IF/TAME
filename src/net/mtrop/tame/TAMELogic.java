@@ -86,7 +86,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		try {
 			if (interpreterContext.action == null)
-				doBadAction(request, response);
+				doUnknownAction(request, response);
 			else
 			{
 				TAction action = interpreterContext.action;
@@ -104,13 +104,13 @@ public final class TAMELogic implements TAMEConstants
 						break;
 					case TRANSITIVE:
 						if (interpreterContext.objectAmbiguous)
-							doAmbiguousAction(request, response);
+							doAmbiguousAction(request, response, interpreterContext.action);
 						else
 							request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1));
 						break;
 					case DITRANSITIVE:
 						if (interpreterContext.objectAmbiguous)
-							doAmbiguousAction(request, response);
+							doAmbiguousAction(request, response, interpreterContext.action);
 						else
 							request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1, interpreterContext.object2));
 						break;
@@ -544,9 +544,10 @@ public final class TAMELogic implements TAMEConstants
 	 * Attempts to call the ambiguous action blocks.
 	 * @param request the request object.
 	 * @param response the response object.
+	 * @param action the action used.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public static void doAmbiguousAction(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	public static void doAmbiguousAction(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
 	{
 		response.trace(request, "Finding ambiguous action blocks...");
 
@@ -559,10 +560,18 @@ public final class TAMELogic implements TAMEConstants
 			TPlayer currentPlayer = currentPlayerContext.getElement();
 			response.trace(request, "For current player %s...", currentPlayer);
 			
+			// get specific block on player.
+			if ((blockToCall = currentPlayer.getAmbiguousActionTable().get(action.getIdentity())) != null)
+			{
+				response.trace(request, "Found specific ambiguous action block on player.");
+				callBlock(request, response, currentPlayerContext, blockToCall);
+				return;
+			}
+
 			// get block on player.
 			if ((blockToCall = currentPlayer.getAmbiguousActionBlock()) != null)
 			{
-				response.trace(request, "Found ambiguous action block on player.");
+				response.trace(request, "Found default ambiguous action block on player.");
 				callBlock(request, response, currentPlayerContext, blockToCall);
 				return;
 			}
@@ -571,10 +580,18 @@ public final class TAMELogic implements TAMEConstants
 
 		TWorldContext worldContext = moduleContext.getWorldContext();
 		
+		// get specific block on world.
+		if ((blockToCall = worldContext.getElement().getAmbiguousActionTable().get(action.getIdentity())) != null)
+		{
+			response.trace(request, "Found specific ambiguous action block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return;
+		}
+
 		// get block on world.
 		if ((blockToCall = worldContext.getElement().getAmbiguousActionBlock()) != null)
 		{
-			response.trace(request, "Found ambiguous action block on world.");
+			response.trace(request, "Found default ambiguous action block on world.");
 			callBlock(request, response, worldContext, blockToCall);
 			return;
 		}
@@ -589,9 +606,9 @@ public final class TAMELogic implements TAMEConstants
 	 * @param response the response object.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public static void doBadAction(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	public static void doUnknownAction(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		response.trace(request, "Finding bad action blocks...");
+		response.trace(request, "Finding unknown action blocks...");
 
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
@@ -603,9 +620,9 @@ public final class TAMELogic implements TAMEConstants
 			response.trace(request, "For current player %s...", currentPlayer);
 			
 			// get block on player.
-			if ((blockToCall = currentPlayer.getBadActionBlock()) != null)
+			if ((blockToCall = currentPlayer.getUnknownActionBlock()) != null)
 			{
-				response.trace(request, "Found bad action block on player.");
+				response.trace(request, "Found unknown action block on player.");
 				callBlock(request, response, currentPlayerContext, blockToCall);
 				return;
 			}
@@ -615,14 +632,14 @@ public final class TAMELogic implements TAMEConstants
 		TWorldContext worldContext = moduleContext.getWorldContext();
 		
 		// get block on world.
-		if ((blockToCall = worldContext.getElement().getBadActionBlock()) != null)
+		if ((blockToCall = worldContext.getElement().getUnknownActionBlock()) != null)
 		{
-			response.trace(request, "Found bad action block on world.");
+			response.trace(request, "Found unknown action block on world.");
 			callBlock(request, response, worldContext, blockToCall);
 			return;
 		}
 
-		response.trace(request, "No bad action block to call. Sending error.");
+		response.trace(request, "No unknown action block to call. Sending error.");
 		response.addCue(CUE_ERROR, "ACTION IS BAD or NOT FOUND! (make a better in-universe handler!).");
 	}
 
@@ -1059,14 +1076,14 @@ public final class TAMELogic implements TAMEConstants
 		
 		Block blockToCall;
 		
-		if ((blockToCall = world.getActionFailTable().get(action.getIdentity())) != null)
+		if ((blockToCall = world.getActionFailedTable().get(action.getIdentity())) != null)
 		{
 			response.trace(request, "Found specific action failure block on world.");
 			callBlock(request, response, context, blockToCall);
 			return true;
 		}
 
-		if ((blockToCall = world.getActionFailBlock()) != null)
+		if ((blockToCall = world.getActionFailedBlock()) != null)
 		{
 			response.trace(request, "Found default action failure block on world.");
 			callBlock(request, response, context, blockToCall);
@@ -1092,14 +1109,14 @@ public final class TAMELogic implements TAMEConstants
 		
 		Block blockToCall;
 		
-		if ((blockToCall = player.getActionFailTable().get(action.getIdentity())) != null)
+		if ((blockToCall = player.getActionFailedTable().get(action.getIdentity())) != null)
 		{
 			response.trace(request, "Found specific action failure block on player.");
 			callBlock(request, response, context, blockToCall);
 			return true;
 		}
 
-		if ((blockToCall = player.getActionFailBlock()) != null)
+		if ((blockToCall = player.getActionFailedBlock()) != null)
 		{
 			response.trace(request, "Found default action failure block on player.");
 			callBlock(request, response, context, blockToCall);
@@ -1125,12 +1142,12 @@ public final class TAMELogic implements TAMEConstants
 		// get forbid block.
 		Block forbidBlock = null;
 
-		if ((forbidBlock = player.getActionForbidTable().get(action.getIdentity())) != null)
+		if ((forbidBlock = player.getActionForbiddenTable().get(action.getIdentity())) != null)
 		{
 			response.trace(request, "Got specific forbid block on player.");
 			callBlock(request, response, context, forbidBlock);
 		}
-		else if ((forbidBlock = player.getActionForbidBlock()) != null)
+		else if ((forbidBlock = player.getActionForbiddenBlock()) != null)
 		{
 			response.trace(request, "Got default forbid block on player.");
 			callBlock(request, response, context, forbidBlock);
@@ -1156,12 +1173,12 @@ public final class TAMELogic implements TAMEConstants
 		// get forbid block.
 		Block forbidBlock = null;
 		
-		if ((forbidBlock = room.getActionForbidTable().get(action.getIdentity())) != null)
+		if ((forbidBlock = room.getActionForbiddenTable().get(action.getIdentity())) != null)
 		{
 			response.trace(request, "Calling specific forbid block on room.");
 			callBlock(request, response, context, forbidBlock);
 		}
-		else if ((forbidBlock = room.getActionForbidBlock()) != null)
+		else if ((forbidBlock = room.getActionForbiddenBlock()) != null)
 		{
 			response.trace(request, "Calling default forbid block on room.");
 			callBlock(request, response, context, forbidBlock);

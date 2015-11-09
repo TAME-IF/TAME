@@ -11,7 +11,11 @@ public final class TAMEScriptReaderTest
 	public static void main(String[] args) throws Exception
 	{
 		String res = "./scripts/test.tsc";
-		TAMEModule module = TAMEScriptReader.read(new File(res));
+		try {
+			TAMEModule module = TAMEScriptReader.read(new File(res));
+		} catch (TAMEScriptParseException e) {
+			System.err.println(e.getMessage());
+		}
 		Common.noop();
 	}
 }

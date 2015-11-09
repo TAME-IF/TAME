@@ -26,12 +26,15 @@ import net.mtrop.tame.struct.ActionTable;
  * Contains immutable World data. 
  * @author Matthew Tropiano
  */
-public class TWorld extends TActionableElement
+public class TWorld extends TActionableElement 
+	implements ActionFailedHandler, ActionModalHandler, ActionUnknownHandler, ActionAmbiguousHandler
 {
 	/** Blocks executed on action failure. */
-	private ActionTable actionFailTable;
+	private ActionTable actionFailedTable;
 	/** Table used for modal actions. */
-	protected ActionModeTable modalActionTable;
+	private ActionModeTable modalActionTable;
+	/** Blocks ran when an action is ambiguous. */
+	private ActionTable actionAmbiguousTable;
 
 	/** Code block ran after each request. */
 	private Block afterRequestBlock;
@@ -39,8 +42,8 @@ public class TWorld extends TActionableElement
 	private Block actionFailBlock;
 	/** Code block ran when an action is ambiguous. */
 	private Block actionAmbiguityBlock;
-	/** Code block ran upon bad action. */
-	private Block badActionBlock;
+	/** Code block ran upon unknown action. */
+	private Block unknownActionBlock;
 
 	/**
 	 * Constructs an instance of a game world.
@@ -50,75 +53,66 @@ public class TWorld extends TActionableElement
 		super();
 		setIdentity(TAMEConstants.IDENTITY_CURRENT_WORLD);
 		
-		this.actionFailTable = new ActionTable();
+		this.actionFailedTable = new ActionTable();
 		this.modalActionTable = new ActionModeTable();
+		this.actionAmbiguousTable = new ActionTable();
 
 		this.afterRequestBlock = null;
 		this.actionFailBlock = null;
 		this.actionAmbiguityBlock = null;
-		this.badActionBlock = null;
+		this.unknownActionBlock = null;
 	}
 
-	/** 
-	 * Get this module's action fail table. 
-	 */
-	public ActionTable getActionFailTable()
+	@Override
+	public ActionTable getActionFailedTable()
 	{
-		return actionFailTable;
+		return actionFailedTable;
 	}
 
-	/** 
-	 * Gets the modal action table. 
-	 */
+	@Override
 	public ActionModeTable getModalActionTable()
 	{
 		return modalActionTable;
 	}
 
-	/** 
-	 * Get this module's "onBadAction" block. 
-	 */
-	public Block getBadActionBlock()
+	@Override
+	public ActionTable getAmbiguousActionTable()
 	{
-		return badActionBlock;
+		return actionAmbiguousTable;
+	}
+	
+	@Override
+	public Block getUnknownActionBlock()
+	{
+		return unknownActionBlock;
 	}
 
-	/** 
-	 * Set this module's "onBadAction" block. 
-	 */
-	public void setBadActionBlock(Block eab)	
+	@Override
+	public void setUnknownActionBlock(Block eab)	
 	{
-		badActionBlock = eab;
+		unknownActionBlock = eab;
 	}
 
-	/** 
-	 * Get this module's default "onAmbiguousAction" block. 
-	 */
+	@Override
 	public Block getAmbiguousActionBlock()
 	{
 		return actionAmbiguityBlock;
 	}
 
-	/** 
-	 * Set this module's default "onAmbiguousAction" block. 
-	 */
+	@Override
 	public void setAmbiguousActionBlock(Block eab)
 	{
 		actionAmbiguityBlock = eab;
 	}
 
-	/** 
-	 * Get this module's default "onActionFail" block. 
-	 */
-	public Block getActionFailBlock()
+	@Override
+	public Block getActionFailedBlock()
 	{
 		return actionFailBlock;
 	}
 
-	/** 
-	 * Set this module's default "onActionFail" block. 
-	 */
-	public void setActionFailBlock(Block eab)
+	@Override
+	public void setActionFailedBlock(Block eab)
 	{
 		actionFailBlock = eab;
 	}
@@ -158,13 +152,14 @@ public class TWorld extends TActionableElement
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		super.writeBytes(out);
 		
-		actionFailTable.writeBytes(out);
+		actionFailedTable.writeBytes(out);
 		modalActionTable.writeBytes(out);
+		actionAmbiguousTable.writeBytes(out);
 		
 		sw.writeBit(afterRequestBlock != null);
 		sw.writeBit(actionFailBlock != null);
 		sw.writeBit(actionAmbiguityBlock != null);
-		sw.writeBit(badActionBlock != null);
+		sw.writeBit(unknownActionBlock != null);
 		sw.flushBits();
 		
 		if (afterRequestBlock != null)
@@ -173,8 +168,8 @@ public class TWorld extends TActionableElement
 			actionFailBlock.writeBytes(out);
 		if (actionAmbiguityBlock != null)
 			actionAmbiguityBlock.writeBytes(out);
-		if (badActionBlock != null)
-			badActionBlock.writeBytes(out);
+		if (unknownActionBlock != null)
+			unknownActionBlock.writeBytes(out);
 	}
 	
 	@Override
@@ -183,8 +178,9 @@ public class TWorld extends TActionableElement
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readBytes(in);
 		
-		actionFailTable = ActionTable.create(in);
+		actionFailedTable = ActionTable.create(in);
 		modalActionTable = ActionModeTable.create(in);
+		actionAmbiguousTable = ActionTable.create(in);
 		
 		byte blockbits = sr.readByte();
 		
@@ -195,7 +191,7 @@ public class TWorld extends TActionableElement
 		if ((blockbits & 0x04) != 0)
 			actionAmbiguityBlock = Block.create(in);
 		if ((blockbits & 0x08) != 0)
-			badActionBlock = Block.create(in);
+			unknownActionBlock = Block.create(in);
 	}
 
 }

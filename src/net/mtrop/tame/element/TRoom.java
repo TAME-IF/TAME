@@ -33,7 +33,7 @@ import com.blackrook.io.SuperWriter;
  * @author Matthew Tropiano
  *
  */
-public class TRoom extends TActionableElement
+public class TRoom extends TActionableElement implements ActionForbiddenHandler, ActionModalHandler
 {
 	/** Set function for action list. */
 	protected PermissionType permissionType;
@@ -64,33 +64,25 @@ public class TRoom extends TActionableElement
 		actionForbidBlock = null;
 	}
 
-	/**
-	 * Gets the action permission type.
-	 */
+	@Override
 	public PermissionType getPermissionType()
 	{
 		return permissionType;
 	}
 
-	/**
-	 * Sets the action permission type.
-	 */
+	@Override
 	public void setPermissionType(PermissionType permissionType)
 	{
 		this.permissionType = permissionType;
 	}
 
-	/**
-	 * Adds an action to the action list to be excluded/restricted.
-	 */
+	@Override
 	public void addPermittedAction(TAction action)
 	{
 		permittedActionList.put(action.getIdentity());
 	}
 	
-	/**
-	 * Returns if an action is allowed for this room.
-	 */
+	@Override
 	public boolean allowsAction(TAction action)
 	{
 		if (permissionType == PermissionType.EXCLUDE)
@@ -110,23 +102,19 @@ public class TRoom extends TActionableElement
 	/**
 	 * Gets the action forbidden table for specific actions. 
 	 */
-	public ActionTable getActionForbidTable()
+	public ActionTable getActionForbiddenTable()
 	{
 		return actionForbidTable;
 	}
 	
-	/** 
-	 * Get this room's default "onActionForbid" block. 
-	 */
-	public Block getActionForbidBlock()
+	@Override
+	public Block getActionForbiddenBlock()
 	{
 		return actionForbidBlock;
 	}
 	
-	/** 
-	 * Gets this room's default "onActionForbid" block. 
-	 */
-	public void setActionForbidBlock(Block block)
+	@Override
+	public void setActionForbiddenBlock(Block block)
 	{
 		actionForbidBlock = block;
 	}

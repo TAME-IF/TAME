@@ -7,10 +7,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Arrays;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.hash.HashedHashMap;
 import com.blackrook.commons.hash.HashedQueueMap;
 import com.blackrook.commons.linkedlist.Stack;
+import com.blackrook.commons.list.List;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
 import com.blackrook.lang.Lexer;
@@ -19,13 +22,22 @@ import com.blackrook.lang.Parser;
 import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.element.ActionAmbiguousHandler;
+import net.mtrop.tame.element.ActionFailedHandler;
+import net.mtrop.tame.element.ActionForbiddenHandler;
+import net.mtrop.tame.element.ActionModalHandler;
+import net.mtrop.tame.element.ActionUnknownHandler;
 import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TAction.Type;
+import net.mtrop.tame.element.TActionableElement;
 import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Command;
+import net.mtrop.tame.lang.PermissionType;
 import net.mtrop.tame.lang.Value;
 
 /**
@@ -267,7 +279,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		private TAMEScriptReaderOptions options;
 
 		/** Set of prototypes. */
-		private HashedQueueMap<String, String> prototypes;
+		private HashedHashMap<String, String> prototypes;
 		
 		/** Current root. */
 		private TAMEModule currentModule;
@@ -289,7 +301,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		private TSParser(TSLexer lexer, TAMEScriptReaderOptions options)
 		{
 			super(lexer);
-			prototypes = new HashedQueueMap<>();
+			prototypes = new HashedHashMap<>();
 			currentModule = null;
 			currentElement = null;
 			currentElementIdentifier = null;
@@ -332,89 +344,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			return currentModule;
 		}
 
-		@Override
-		protected String getTypeErrorText(int tokenType) 
-		{
-			switch (tokenType)
-			{
-				case TSKernel.TYPE_ACTION:
-					return "'action'";
-				case TSKernel.TYPE_ROOM:
-					return "'room'";
-				case TSKernel.TYPE_PLAYER:
-					return "'player'";
-				case TSKernel.TYPE_OBJECT:
-					return "'object'";
-				case TSKernel.TYPE_CONTAINER:
-					return "'container'";
-				case TSKernel.TYPE_DELIM_LPAREN:
-					return "'('";
-				case TSKernel.TYPE_DELIM_RPAREN:
-					return "')'";
-				case TSKernel.TYPE_DELIM_LBRACE:
-					return "'{'";
-				case TSKernel.TYPE_DELIM_RBRACE:
-					return "'}'";
-				case TSKernel.TYPE_DELIM_SEMICOLON:
-					return "';'";
-				case TSKernel.TYPE_DELIM_DOT:
-					return "'.'";
-				case TSKernel.TYPE_DELIM_COLON:
-					return "':'";
-				case TSKernel.TYPE_DELIM_COMMA:
-					return "','";
-				case TSKernel.TYPE_DELIM_EQUAL:
-					return "'='";
-				case TSKernel.TYPE_DELIM_EQUAL2:
-					return "'=='";
-				case TSKernel.TYPE_DELIM_EQUAL3:
-					return "'==='";
-				case TSKernel.TYPE_DELIM_NOTEQUAL:
-					return "'!='";
-				case TSKernel.TYPE_DELIM_NOTEQUALEQUAL:
-					return "'!=='";
-				case TSKernel.TYPE_DELIM_GREATER:
-					return "'>'";
-				case TSKernel.TYPE_DELIM_GREATER2:
-					return "'>>'";
-				case TSKernel.TYPE_DELIM_GREATER3:
-					return "'>>>'";
-				case TSKernel.TYPE_DELIM_LESS:
-					return "'<'";
-				case TSKernel.TYPE_DELIM_LESS2:
-					return "'<<'";
-				case TSKernel.TYPE_DELIM_GREATEREQUAL:
-					return "'>='";
-				case TSKernel.TYPE_DELIM_LESSEQUAL:
-					return "'<='";
-				case TSKernel.TYPE_DELIM_AMPERSAND:
-					return "'&'";
-				case TSKernel.TYPE_DELIM_AMPERSAND2:
-					return "'&&'";
-				case TSKernel.TYPE_DELIM_PIPE:
-					return "'|'";
-				case TSKernel.TYPE_DELIM_PIPE2:
-					return "'||'";
-				case TSKernel.TYPE_DELIM_CARAT:
-					return "'^'";
-				case TSKernel.TYPE_DELIM_CARAT2:
-					return "'^^'";
-				case TSKernel.TYPE_DELIM_PLUS:
-					return "'+'";
-				case TSKernel.TYPE_DELIM_MINUS:
-					return "'-'";
-				case TSKernel.TYPE_DELIM_STAR:
-					return "'*'";
-				case TSKernel.TYPE_DELIM_SLASH:
-					return "'/'";
-				case TSKernel.TYPE_DELIM_PERCENT:
-					return "'%'";
-				case TSKernel.TYPE_DELIM_EXCLAMATION:
-					return "'!'";
-			}
-			return null;
-		}
-	
 		/**
 		 * Parses a module element.
 		 */
@@ -433,11 +362,174 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				return true;
 			}
+
+			if (matchType(TSKernel.TYPE_WORLD))
+			{
+				if (!parseWorld())
+					return false;
+				
+				return true;
+			}
 			
+			if (matchType(TSKernel.TYPE_PLAYER))
+			{
+				if (!parsePlayer())
+					return false;
+				
+				return true;
+			}
+
 			addErrorMessage("Expected module element declaration start (module, world, player, room, object, container, action).");
 			return false;
 		}
 
+		/**
+		 * Parses a player.
+		 * [Player] :=
+		 * 		";"
+		 * 		"{" [PlayerBody] "}"
+		 */
+		public boolean parsePlayer()
+		{
+			// player identity.
+			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			{
+				addErrorMessage("Player requires an action type was already prototyped.");
+				return false;
+			}
+
+			String identity = currentToken().getLexeme();
+			nextToken();
+			
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				if (prototypes.containsValue("player", identity))
+				{
+					addErrorMessage("Player \"" + identity + "\" was already prototyped.");
+					return false;
+				}
+				
+				prototypes.add("player", identity);
+				TPlayer p = new TPlayer();
+				p.setIdentity(identity);
+				currentModule.addPlayer(p);
+				
+				return true;
+			}
+
+			TPlayer player = Common.coalesce(currentModule.getPlayerByIdentity(identity), new TPlayer());
+			player.setIdentity(identity);
+			
+			prototypes.removeValue("player", identity);
+			
+			if (!parseActionPermissionClause(player))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for player body start or \";\" (prototyping).");
+				return false;
+			}
+
+			if (!parsePlayerBody(player))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			{
+				addErrorMessage("Expected end-of-player \"}\".");
+				return false;
+			}
+
+			return true;
+		}
+		
+		/**
+		 * Parses the world body.
+		 * [PlayerBody] :=
+		 * 		[PlayerBlock] [PlayerBody]
+		 * 		[e]
+		 */
+		private boolean parsePlayerBody(TPlayer player)
+		{
+			while (isPlayerBlockType())
+			{
+				if (currentType(TSKernel.TYPE_INIT))
+				{
+					nextToken();
+					
+					if (!parseInitBlock(player))
+						return false;
+					
+					continue;
+				}
+								
+				if (currentType(TSKernel.TYPE_ONACTION))
+				{
+					nextToken();
+					
+					if (!parseOnActionBlock(player, Type.GENERAL, Type.OPEN))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONMODALACTION))
+				{
+					nextToken();
+					
+					if (!parseOnModalActionBlock(player))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONFAILEDACTION))
+				{
+					nextToken();
+					
+					if (!parseOnFailedActionBlock(player))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONAMBIGUOUSACTION))
+				{
+					nextToken();
+					
+					if (!parseOnAmbiguousActionBlock(player))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONFORBIDDENACTION))
+				{
+					nextToken();
+					
+					if (!parseOnForbiddenActionBlock(player))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONUNKNOWNACTION))
+				{
+					nextToken();
+					
+					if (!parseOnUnknownActionBlock(player))
+						return false;
+					
+					continue;
+				}
+					
+				break;
+			}
+			
+			return true;
+		}
+		
 		/**
 		 * Parses a world.
 		 * [World] :=
@@ -455,7 +547,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				prototypes.enqueue("world", "world");
+				prototypes.add("world", "world");
 				currentModule.setWorld(new TWorld());
 				return true;
 			}
@@ -469,7 +561,9 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 
 			prototypes.removeUsingKey("world");
-			parseWorldBody(world);
+			
+			if (!parseWorldBody(world))
+				return false;
 			
 			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
 			{
@@ -488,7 +582,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseWorldBody(TWorld world)
 		{
-			if (isWorldBlockType())
+			while (isWorldBlockType())
 			{
 				if (currentType(TSKernel.TYPE_INIT))
 				{
@@ -496,42 +590,72 @@ public final class TAMEScriptReader implements TAMEConstants
 					
 					if (!parseInitBlock(world))
 						return false;
+					
+					continue;
 				}
-				
+								
+				if (currentType(TSKernel.TYPE_ONACTION))
+				{
+					nextToken();
+					
+					if (!parseOnActionBlock(world, Type.GENERAL, Type.OPEN))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONMODALACTION))
+				{
+					nextToken();
+					
+					if (!parseOnModalActionBlock(world))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONFAILEDACTION))
+				{
+					nextToken();
+					
+					if (!parseOnFailedActionBlock(world))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONAMBIGUOUSACTION))
+				{
+					nextToken();
+					
+					if (!parseOnAmbiguousActionBlock(world))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONUNKNOWNACTION))
+				{
+					nextToken();
+					
+					if (!parseOnUnknownActionBlock(world))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_AFTERREQUEST))
+				{
+					nextToken();
+					
+					if (!parseAfterRequestBlock(world))
+						return false;
+					
+					continue;
+				}
 
-				// TODO: Finish.
-				
+				break;
 			}
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an init block declaration.
-		 * [InitBlock] :=
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseInitBlock(TElement element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after init.");
-				return false;
-			}
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\" after init.");
-				return false;
-			}
-			
-			Block initBlock;
-			currentBlock.push(initBlock = new Block());
-			
-			if (!parseBlock())
-				return false;
-			
-			element.setInitBlock(initBlock);
 			
 			return true;
 		}
@@ -764,32 +888,549 @@ public final class TAMEScriptReader implements TAMEConstants
 			return true;
 		}
 		
+		/**
+		 * Parses action permission list.
+		 * [ActionPermissionClause] :=
+		 * 		[EXCLUDES] [ACTION] [ActionPermissionClauseList]
+		 * 		[RESTRICTS] [ACTION] [ActionPermissionClauseList]
+		 * 		[e]
+		 */
+		private boolean parseActionPermissionClause(ActionForbiddenHandler element)
+		{
+			if (matchType(TSKernel.TYPE_EXCLUDES))
+			{
+				element.setPermissionType(PermissionType.EXCLUDE);
+				
+				if (!isAction())
+				{
+					addErrorMessage("Expected action after \"excludes\".");
+					return false;
+				}
+				
+				element.addPermittedAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
+				nextToken();
+				
+				return parseActionPermissionClauseList(element);
+			}
+
+			if (matchType(TSKernel.TYPE_RESTRICTS))
+			{
+				element.setPermissionType(PermissionType.RESTRICT);
+				
+				if (!isAction())
+				{
+					addErrorMessage("Expected action after \"restricts\".");
+					return false;
+				}
+				
+				element.addPermittedAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
+				nextToken();
+				
+				return parseActionPermissionClauseList(element);
+			}
+			
+			return true;
+		}
 
 		/**
+		 * Parses action name list.
+		 * [ActionPermissionClause] :=
+		 * 		"," [ACTION] [ActionPermissionClause]
+		 * 		[e]
+		 */
+		private boolean parseActionPermissionClauseList(ActionForbiddenHandler element)
+		{
+			if (matchType(TSKernel.TYPE_DELIM_COMMA))
+			{
+				if (!isAction())
+				{
+					addErrorMessage("Expected action after \"excludes\".");
+					return false;
+				}
+				
+				element.addPermittedAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
+				nextToken();
+				
+				return parseActionPermissionClauseList(element);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an init block declaration.
+		 * [InitBlock] :=
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseInitBlock(TElement element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after init.");
+				return false;
+			}
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			element.setInitBlock(currentBlock.pop());
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on action block declaration.
+		 * [OnActionBlock] :=
+		 * 		"(" [GENERALOROPENACTIONIDENTIFIER] ")" [Block]
+		 */
+		private boolean parseOnActionBlock(TActionableElement element, Type ... requiredActionTypes)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			if (!isAction())
+			{
+				addErrorMessage("Expected valid action identifier.");
+				return false;
+			}
+			
+			String actionId = currentToken().getLexeme();
+			TAction action = currentModule.getActionByIdentity(actionId);
+			boolean matched = false;
+			for (Type t : requiredActionTypes)
+			{
+				if (action.getType() == t)
+				{
+					matched = true;
+					break;
+				}
+			}
+			if (!matched)
+			{
+				addErrorMessage("Expected valid action type (" + Arrays.toString(requiredActionTypes) + ").");
+				return false;
+			}
+			
+			nextToken();
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			if (element.getActionTable().get(actionId) != null)
+			{
+				addErrorMessage("Action block for action \"" + actionId + "\" already declared.");
+				return false;
+			}
+			element.getActionTable().add(actionId, currentBlock.pop());
+			
+			return true;
+		}
+
+		/**
+		 * Parses an on modal action block declaration.
+		 * [OnModalActionBlock] :=
+		 * 		"(" [MODALACTIONIDENTIFIER] "," [STRING] ")" [Block]
+		 */
+		private boolean parseOnModalActionBlock(ActionModalHandler element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			if (!isAction())
+			{
+				addErrorMessage("Expected valid action identifier.");
+				return false;
+			}
+			
+			String actionId = currentToken().getLexeme();
+			TAction action = currentModule.getActionByIdentity(actionId);
+			if (action.getType() != Type.MODAL)
+			{
+				addErrorMessage("Expected modal action for modal action declaration.");
+				return false;
+			}
+			
+			nextToken();
+
+			if (!matchType(TSKernel.TYPE_DELIM_COMMA))
+			{
+				addErrorMessage("Expected \",\" after action.");
+				return false;
+			}
+
+			if (!currentType(Lexer.TYPE_STRING))
+			{
+				addErrorMessage("Expected valid modal type for action \"" + actionId + "\".");
+				return false;
+			}
+			
+			String mode = currentToken().getLexeme();
+			if (!action.getExtraStrings().contains(mode))
+			{
+				addErrorMessage("Expected valid mode for action "+actionId+".");
+				return false;
+			}
+			
+			nextToken();
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+
+			if (element.getModalActionTable().get(actionId, mode) != null)
+			{
+				addErrorMessage("Modal action block for action \"" + actionId + "\" already declared.");
+				return false;
+			}
+			element.getModalActionTable().add(actionId, mode, currentBlock.pop());
+			
+			return true;
+		}
+
+		/**
+		 * Parses an on failed action block declaration.
+		 * [OnFailedActionBlock] :=
+		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseOnFailedActionBlock(ActionFailedHandler element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			String actionId = null;
+
+			if (isAction())
+			{
+				actionId = currentToken().getLexeme();
+				nextToken();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected \")\".");
+					return false;
+				}
+				
+			}
+			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\" or action identifier.");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			if (actionId != null)
+			{
+				if (element.getActionFailedTable().get(actionId) != null)
+				{
+					addErrorMessage("Failed action block for action \"" + actionId + "\" already declared.");
+					return false;
+				}
+				element.getActionFailedTable().add(actionId, currentBlock.pop());
+			}
+			else
+			{
+				if (element.getActionFailedBlock() != null)
+				{
+					addErrorMessage("Default failed action block already declared.");
+					return false;
+				}
+				element.setActionFailedBlock(currentBlock.pop());
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on failed action block declaration.
+		 * [OnForbiddenActionBlock] :=
+		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseOnForbiddenActionBlock(ActionForbiddenHandler element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			String actionId = null;
+
+			if (isAction())
+			{
+				actionId = currentToken().getLexeme();
+				nextToken();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected \")\".");
+					return false;
+				}
+				
+			}
+			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\" or action identifier.");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			if (actionId != null)
+			{
+				if (element.getActionForbiddenTable().get(actionId) != null)
+				{
+					addErrorMessage("Forbidden action block for action \"" + actionId + "\" already declared.");
+					return false;
+				}
+				element.getActionForbiddenTable().add(actionId, currentBlock.pop());
+			}
+			else
+			{
+				if (element.getActionForbiddenBlock() != null)
+				{
+					addErrorMessage("Default forbidden action block already declared.");
+					return false;
+				}
+				element.setActionForbiddenBlock(currentBlock.pop());
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on ambiguous action block declaration.
+		 * [OnAmbiguousActionBlock] :=
+		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseOnAmbiguousActionBlock(ActionAmbiguousHandler element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			String actionId = null;
+
+			if (isAction())
+			{
+				actionId = currentToken().getLexeme();
+				nextToken();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected \")\".");
+					return false;
+				}
+				
+			}
+			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\" or action identifier.");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			if (actionId != null)
+			{
+				if (element.getAmbiguousActionTable().get(actionId) != null)
+				{
+					addErrorMessage("Ambiguous action block for action \"" + actionId + "\" already declared.");
+					return false;
+				}
+				element.getAmbiguousActionTable().add(actionId, currentBlock.pop());
+			}
+			else
+			{
+				if (element.getAmbiguousActionBlock() != null)
+				{
+					addErrorMessage("Default ambiguous action block already declared.");
+					return false;
+				}
+				element.setAmbiguousActionBlock(currentBlock.pop());
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on unknown action block declaration.
+		 * [OnUnknownActionBlock] :=
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseOnUnknownActionBlock(ActionUnknownHandler element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after unknown action declaration.");
+				return false;
+			}
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			if (element.getUnknownActionBlock() != null)
+			{
+				addErrorMessage("\"Unknown Action\" block already declared.");
+				return false;
+			}
+			element.setUnknownActionBlock(currentBlock.pop());
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on unknown action block declaration.
+		 * [AfterRequestBlock] :=
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseAfterRequestBlock(TWorld element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after \"after request\" declaration.");
+				return false;
+			}
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			if (element.getAfterRequestBlock() != null)
+			{
+				addErrorMessage("\"After Request\" block already declared.");
+				return false;
+			}
+			element.setAfterRequestBlock(currentBlock.pop());
+			
+			return true;
+		}
+		
+		/**
 		 * Parses a block.
+		 * Pushes a block onto the block stack.
 		 * [Block] :=
 		 * 		"{" [StatementList] "}"
 		 * 		[Statement]
 		 */
 		public boolean parseBlock()
 		{
+			currentBlock.push(new Block());
+			
 			if (currentType(TSKernel.TYPE_DELIM_LBRACE))
 			{
 				nextToken();
 				
 				if (!parseStatementList())
+				{
+					currentBlock.pop();
 					return false;
+				}
 				
 				if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
 				{
+					currentBlock.pop();
 					addErrorMessage("Expected end of block '}'.");
 					return false;
 				}
 				
+				currentBlock.push(optimizeBlock(currentBlock.pop()));
 				return true;
 			}
 			
-			return parseStatement();
+			if (!parseStatement())
+			{
+				currentBlock.pop();
+				return false;
+			}
+			
+			currentBlock.push(optimizeBlock(currentBlock.pop()));
+			return true;
+		}
+		
+		/**
+		 * Parses a block that consists of only one statement.
+		 * Pushes a block onto the block stack.
+		 * [BlockStatement] :=
+		 * 		[Statement]
+		 */
+		public boolean parseBlockStatement()
+		{
+			currentBlock.push(new Block());
+			
+			if (!parseStatement())
+			{
+				currentBlock.pop();
+				return false;
+			}
+			
+			currentBlock.push(optimizeBlock(currentBlock.pop()));
+			return true;
+		}
+
+		/**
+		 * Parses a block that consists of the commands that evaluate an expression.
+		 * Pushes a block onto the block stack.
+		 * [BlockExpression] :=
+		 * 		[Expression]
+		 */
+		public boolean parseBlockExpression()
+		{
+			currentBlock.push(new Block());
+			
+			if (!parseExpression())
+			{
+				currentBlock.pop();
+				return false;
+			}
+			
+			currentBlock.push(optimizeBlock(currentBlock.pop()));
+			return true;
 		}
 		
 		/**
@@ -1261,12 +1902,10 @@ public final class TAMEScriptReader implements TAMEConstants
 				// conditional block.
 				if (commandType.isConditionalBlockRequired())
 				{
-					currentBlock.push(conditionalBlock = new Block());
-					
-					if (!parseExpression())
+					if (!parseBlockExpression())
 						return false;
 					
-					currentBlock.pop();
+					conditionalBlock = currentBlock.pop();
 				}
 				
 				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
@@ -1278,12 +1917,10 @@ public final class TAMEScriptReader implements TAMEConstants
 				// success block.
 				if (commandType.isSuccessBlockRequired())
 				{
-					currentBlock.push(successBlock = new Block());
-					
-					if (!parseStatementList())
+					if (!parseBlock())
 						return false;
 					
-					currentBlock.pop();
+					successBlock = currentBlock.pop();
 				}
 				
 				// failure block.
@@ -1291,12 +1928,10 @@ public final class TAMEScriptReader implements TAMEConstants
 				{
 					if (matchType(TSKernel.TYPE_ELSE))
 					{
-						currentBlock.push(failureBlock = new Block());
-						
-						if (!parseExpression())
+						if (!parseBlock())
 							return false;
 						
-						currentBlock.pop();
+						failureBlock = currentBlock.pop();
 					}
 					
 				}
@@ -1712,9 +2347,58 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 		}
 		
-		// Attempts to reduce redundant calls and unnecessary ones.
-		private void optimizeBlock(Block block)
+		// Attempts to reduce redundant calls and unnecessary ones on blocks.
+		// Returns a new block (unless optimization is off).
+		private Block optimizeBlock(Block block)
 		{
+			return block;
+			
+			/*
+			if (!options.isOptimizing())
+				return block;
+			
+			List<Command> tempList = new List<>();
+			Block outBlock = new Block();
+			
+			for (Command c : block)
+				tempList.add(c);
+
+			final int STATE_OPERATOR = 0;
+			final int STATE_OPERAND1 = 1;
+			final int STATE_OPERAND2 = 2;
+			int state = STATE_OPERATOR;
+			int i = tempList.size() - 1;
+			Command temp, arithfunc, operand2, operand1;
+			
+			while (!tempList.isEmpty())
+			{
+				temp = tempList.getByIndex(i);
+				
+				switch (state)
+				{
+					case STATE_OPERATOR:
+					{
+						
+					}
+					break;
+					
+					case STATE_OPERAND1:
+					{
+						
+					}
+					break;
+
+					case STATE_OPERAND2:
+					{
+						
+					}
+					break;
+				}
+				
+				i--;
+			}
+			*/
+			
 			// TODO: Finish.
 		}
 		

@@ -9,3 +9,37 @@ action ditransitive a_use named "use" conjoins "with", "and";
 action general a_1 named "action1";
 action general a_2 named "action2";
 
+player p_main;
+
+world
+{
+	init() ;
+
+	onAction(ah_intro) ;
+	onModalAction(a_go, "west") ;
+	onFailedAction() ;
+	onFailedAction(a_use) ;
+	onUnknownAction() ;
+	onAmbiguousAction() ;
+	onAmbiguousAction(a_use) ;
+
+	afterRequest() ;
+}
+
+player p_main excludes a_1
+{
+	init() ;
+
+	//procedure_name ;
+
+	onAction(ah_intro) ;
+	onModalAction(a_go, "west") ;
+	onFailedAction() ;
+	onFailedAction(a_use) ;
+	onUnknownAction() ;
+	onAmbiguousAction() ;
+	onAmbiguousAction(a_use) ;
+	onForbiddenAction() ;
+	onForbiddenAction(a_1) ;
+}
+

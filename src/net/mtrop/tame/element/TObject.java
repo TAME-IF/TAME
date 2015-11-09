@@ -31,10 +31,10 @@ public class TObject extends TActionableElement
 {
 	/** Table used for ditransitive actions. */
 	protected ActionWithTable actionWithTable;
-	/** Table used for ditransitive actions. */
-	protected Block actionWithOtherBlock;
 	/** Element's names. */
 	protected CaseInsensitiveHash names;
+	/** Table used for ditransitive actions. */
+	protected Block actionWithOtherBlock;
 	/** Code block ran upon browsing a room with this object in it. */
 	protected Block roomBrowseBlock;
 	/** Code block ran upon browsing a player with this object in it. */
@@ -50,24 +50,12 @@ public class TObject extends TActionableElement
 		super();
 		this.names = new CaseInsensitiveHash(3);
 		this.actionWithTable = new ActionWithTable();
+		this.actionWithOtherBlock = null;
 		this.roomBrowseBlock = null;
 		this.playerBrowseBlock = null;
 		this.containerBrowseBlock = null;
 	}
 	
-	/**
-	 * Creates this object from an input stream, expecting its byte representation. 
-	 * @param in the input stream to read from.
-	 * @return the read object.
-	 * @throws IOException if a read error occurs.
-	 */
-	public static TObject create(InputStream in) throws IOException
-	{
-		TObject out = new TObject();
-		out.readBytes(in);
-		return out;
-	}
-
 	/**
 	 * Gets the initial names on this object.
 	 */
@@ -148,6 +136,19 @@ public class TObject extends TActionableElement
 		containerBrowseBlock = block;
 	}
 	
+	/**
+	 * Creates this object from an input stream, expecting its byte representation. 
+	 * @param in the input stream to read from.
+	 * @return the read object.
+	 * @throws IOException if a read error occurs.
+	 */
+	public static TObject create(InputStream in) throws IOException
+	{
+		TObject out = new TObject();
+		out.readBytes(in);
+		return out;
+	}
+
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
@@ -159,11 +160,14 @@ public class TObject extends TActionableElement
 		for (String name : names)
 			sw.writeString(name.toLowerCase(), "UTF-8");
 			
+		sw.writeBit(actionWithOtherBlock != null);
 		sw.writeBit(roomBrowseBlock != null);
 		sw.writeBit(playerBrowseBlock != null);
 		sw.writeBit(containerBrowseBlock != null);
 		sw.flushBits();
 
+		if (actionWithOtherBlock != null)
+			actionWithOtherBlock.writeBytes(out);
 		if (roomBrowseBlock != null)
 			roomBrowseBlock.writeBytes(out);
 		if (playerBrowseBlock != null)
@@ -187,10 +191,12 @@ public class TObject extends TActionableElement
 		byte blockbits = sr.readByte();
 		
 		if ((blockbits & 0x01) != 0)
-			roomBrowseBlock = Block.create(in);
+			actionWithOtherBlock = Block.create(in);
 		if ((blockbits & 0x02) != 0)
-			playerBrowseBlock = Block.create(in);
+			roomBrowseBlock = Block.create(in);
 		if ((blockbits & 0x04) != 0)
+			playerBrowseBlock = Block.create(in);
+		if ((blockbits & 0x08) != 0)
 			containerBrowseBlock = Block.create(in);
 	}
 
