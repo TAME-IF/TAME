@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.struct.ActionTable;
 import net.mtrop.tame.struct.ActionWithTable;
 
 import com.blackrook.commons.hash.CaseInsensitiveHash;
@@ -31,10 +32,11 @@ public class TObject extends TActionableElement
 {
 	/** Table used for ditransitive actions. */
 	protected ActionWithTable actionWithTable;
+	/** Table used for ditransitive with other actions. */
+	protected ActionTable actionWithOtherTable;
+	
 	/** Element's names. */
 	protected CaseInsensitiveHash names;
-	/** Table used for ditransitive actions. */
-	protected Block actionWithOtherBlock;
 	/** Code block ran upon browsing a room with this object in it. */
 	protected Block roomBrowseBlock;
 	/** Code block ran upon browsing a player with this object in it. */
@@ -50,7 +52,8 @@ public class TObject extends TActionableElement
 		super();
 		this.names = new CaseInsensitiveHash(3);
 		this.actionWithTable = new ActionWithTable();
-		this.actionWithOtherBlock = null;
+		this.actionWithOtherTable = new ActionTable();
+		
 		this.roomBrowseBlock = null;
 		this.playerBrowseBlock = null;
 		this.containerBrowseBlock = null;
@@ -75,17 +78,9 @@ public class TObject extends TActionableElement
 	/**
 	 * Gets the block to call if used with another object not handled by "action with."
 	 */
-	public Block getActionWithOtherBlock() 
+	public ActionTable getActionWithOtherTable() 
 	{
-		return actionWithOtherBlock;
-	}
-	
-	/**
-	 * Sets the block to call if used with another object not handled by "action with."
-	 */
-	public void setActionWithOtherBlock(Block block) 
-	{
-		this.actionWithOtherBlock = block;
+		return actionWithOtherTable;
 	}
 	
 	/** 
@@ -155,19 +150,17 @@ public class TObject extends TActionableElement
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		super.writeBytes(out);
 		actionWithTable.writeBytes(out);
+		actionWithOtherTable.writeBytes(out);
 		
 		sw.writeInt(names.size());
 		for (String name : names)
 			sw.writeString(name.toLowerCase(), "UTF-8");
 			
-		sw.writeBit(actionWithOtherBlock != null);
 		sw.writeBit(roomBrowseBlock != null);
 		sw.writeBit(playerBrowseBlock != null);
 		sw.writeBit(containerBrowseBlock != null);
 		sw.flushBits();
 
-		if (actionWithOtherBlock != null)
-			actionWithOtherBlock.writeBytes(out);
 		if (roomBrowseBlock != null)
 			roomBrowseBlock.writeBytes(out);
 		if (playerBrowseBlock != null)
@@ -182,6 +175,7 @@ public class TObject extends TActionableElement
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readBytes(in);
 		actionWithTable = ActionWithTable.create(in);
+		actionWithOtherTable = ActionTable.create(in);
 		
 		names.clear();
 		int size = sr.readInt();
@@ -191,12 +185,10 @@ public class TObject extends TActionableElement
 		byte blockbits = sr.readByte();
 		
 		if ((blockbits & 0x01) != 0)
-			actionWithOtherBlock = Block.create(in);
-		if ((blockbits & 0x02) != 0)
 			roomBrowseBlock = Block.create(in);
-		if ((blockbits & 0x04) != 0)
+		if ((blockbits & 0x02) != 0)
 			playerBrowseBlock = Block.create(in);
-		if ((blockbits & 0x08) != 0)
+		if ((blockbits & 0x04) != 0)
 			containerBrowseBlock = Block.create(in);
 	}
 

@@ -1,3 +1,9 @@
+module
+{
+	title "Test Module";
+	author "Matt Tropiano";
+}
+
 action general ah_intro;
 
 action general a_quit named "quit", "exit";
@@ -11,10 +17,15 @@ action general a_2 named "action2";
 
 player p_main;
 room r_main;
+object o_brassdoor;
+object o_brasskey;
+container c_main;
 
 world
 {
 	init() ;
+
+//	procedure_name ;
 
 	onAction(ah_intro) ;
 	onModalAction(a_go, "west") ;
@@ -31,7 +42,7 @@ player p_main excludes a_1
 {
 	init() ;
 
-	//procedure_name ;
+//	procedure_name ;
 
 	onAction(ah_intro) ;
 	onModalAction(a_go, "west") ;
@@ -48,7 +59,7 @@ room r_main restricts a_2
 {
 	init() ;
 
-	procedure_name ;
+//	procedure_name ;
 	
 	onAction(ah_intro) ;
 	onModalAction(a_go, "west") ;
@@ -56,4 +67,44 @@ room r_main restricts a_2
 	onForbiddenAction(a_1) ;
 }
 
+object o_brassdoor named "Brass Door", "Door"
+{
+	init() ;
 
+//	procedure_name ;
+
+	onAction(a_examine) ;
+	onActionWith(a_use, o_brasskey) ;
+	onActionWithOther(a_use) ;
+	onPlayerBrowse() ;
+	onRoomBrowse() ;
+	onContainerBrowse() ;
+	
+}
+
+object o_brasskey named "Brass Key", "Key"
+{
+	init() ;
+
+//	procedure_name ;
+	
+	onAction(a_examine) ;
+	onActionWith(a_use, o_brassdoor)
+	{
+		enqueueActionObject2(a_use, o_brassdoor, o_brasskey);
+	}
+	onActionWithOther(a_use) ;
+	onPlayerBrowse() ;
+	onRoomBrowse() ;
+	onContainerBrowse() ;
+	
+}
+
+
+container c_main
+{
+	init() ;
+	
+//	procedure_name ;
+
+}

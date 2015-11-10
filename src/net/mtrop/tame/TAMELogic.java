@@ -914,13 +914,13 @@ public final class TAMELogic implements TAMEConstants
 		// attempt action with other on both objects.
 		if (!success)
 		{
-			if ((blockToCall = object1.getActionWithOtherBlock()) != null)
+			if ((blockToCall = object1.getActionWithOtherTable().get(action.getIdentity())) != null)
 			{
 				response.trace(request, "Found action with other block on object %s.", object1);
 				callBlock(request, response, currentObject1Context, blockToCall);
 				success = true;
 			}
-			if ((blockToCall = object2.getActionWithOtherBlock()) != null)
+			if ((blockToCall = object2.getActionWithOtherTable().get(action.getIdentity())) != null)
 			{
 				response.trace(request, "Found action with other block on object %s.", object2);
 				callBlock(request, response, currentObject2Context, blockToCall);

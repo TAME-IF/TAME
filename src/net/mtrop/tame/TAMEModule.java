@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -22,6 +23,7 @@ import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.hash.HashMap;
+import com.blackrook.commons.list.List;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -31,9 +33,9 @@ import com.blackrook.io.SuperWriter;
  */
 public class TAMEModule implements Saveable
 {
-	/** Module name. */
-	private String moduleName;
-
+	/** Module attributes. */
+	private CaseInsensitiveHashMap<String> attributes;
+	
 	/** The world. */
 	private TWorld world;
 	/** List of actions. */
@@ -55,6 +57,8 @@ public class TAMEModule implements Saveable
 	 */
 	public TAMEModule()
 	{
+		this.attributes = new CaseInsensitiveHashMap<String>(4);
+		
 		this.actions = new HashMap<String, TAction>(20);
 		this.world = null;
 		this.players = new HashMap<String, TPlayer>(2);
@@ -64,16 +68,43 @@ public class TAMEModule implements Saveable
 		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
 	}
 
-	public String getModuleName() 
+	/**
+	 * Adds an attribute to the module. Attributes are case-insensitive.
+	 * There are a bunch of suggested ones that all clients/servers should read.
+	 * @param attribute the attribute name.
+	 * @param value the value.
+	 */
+	public void addAttribute(String attribute, String value)
 	{
-		return moduleName;
+		attributes.put(attribute, value);
 	}
 	
-	public void setModuleName(String moduleName) 
+	/**
+	 * Gets an attribute value from the module. 
+	 * Attributes are case-insensitive.
+	 * There are a bunch of suggested ones that all clients/servers should read.
+	 * @param attribute the attribute name.
+	 * @return the corresponding value or null if not found.
+	 */
+	public String getAttribute(String attribute)
 	{
-		if (Common.isEmpty(moduleName))
-			throw new IllegalArgumentException("Identity cannot be blank.");
-		this.moduleName = moduleName;
+		return attributes.get(attribute);
+	}
+	
+	/**
+	 * Gets all of this module's attributes.
+	 * @return an array of all of the attributes. Never returns null.
+	 */
+	public String[] getAllAttributes()
+	{
+		List<String> outList = new List<>();
+		Iterator<String> it = attributes.keyIterator();
+		while (it.hasNext())
+			outList.add(it.next());
+		
+		String[] out = new String[outList.size()];
+		outList.toArray(out);
+		return out;
 	}
 	
 	/**
@@ -239,7 +270,14 @@ public class TAMEModule implements Saveable
 		
 		sw.writeBytes("TAME".getBytes("ASCII"));
 		sw.writeByte((byte)0x01);
-		sw.writeString(moduleName, "UTF-8");
+		
+		sw.writeInt(attributes.size());
+		for (ObjectPair<String, String> pair : attributes)
+		{
+			sw.writeString(pair.getKey(), "UTF-8");
+			sw.writeString(pair.getValue(), "UTF-8");
+		}
+		
 		sw.writeBytes(digest);
 		sw.writeByteArray(data);
 	}
@@ -277,7 +315,12 @@ public class TAMEModule implements Saveable
 		if (sr.readByte() != 0x01)
 			throw new ModuleException("Module does not have a recognized version.");
 
-		moduleName = sr.readString("UTF-8");
+		attributes.clear();
+		
+		int attribCount = sr.readInt();
+		while(attribCount-- > 0)
+			attributes.put(sr.readString("UTF-8"), sr.readString("UTF-8"));
+		
 		byte[] readDigest = sr.readBytes(20);
 		byte[] data = sr.readByteArray();
 				

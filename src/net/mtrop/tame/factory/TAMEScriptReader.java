@@ -11,9 +11,7 @@ import java.util.Arrays;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.hash.HashedHashMap;
-import com.blackrook.commons.hash.HashedQueueMap;
 import com.blackrook.commons.linkedlist.Stack;
-import com.blackrook.commons.list.List;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
 import com.blackrook.lang.Lexer;
@@ -30,7 +28,9 @@ import net.mtrop.tame.element.ActionUnknownHandler;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TAction.Type;
 import net.mtrop.tame.element.TActionableElement;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
@@ -284,32 +284,15 @@ public final class TAMEScriptReader implements TAMEConstants
 		
 		/** Current root. */
 		private TAMEModule currentModule;
-		/** Current object. */
-		private TElement currentElement;
-		/** Current value from a parseValue() call. */
-		private String currentElementIdentifier;
-		/** Current element block type. */
-		private String currentElementBlockType;
-		/** Current element block type. */
-		private String currentElementBlockArgument;
 		/** Current block. */
 		private Stack<Block> currentBlock;
-		/** Current command type. */
-		private TAMECommand currentCommand;
-		/** Current value. */
-		private Value currentValue;
 		
 		private TSParser(TSLexer lexer, TAMEScriptReaderOptions options)
 		{
 			super(lexer);
 			prototypes = new HashedHashMap<>();
 			currentModule = null;
-			currentElement = null;
-			currentElementIdentifier = null;
-			currentElementBlockType = null;
-			currentElementBlockArgument = null;
 			currentBlock = new Stack<Block>();
-			currentCommand = null;
 		}
 		
 		/**
@@ -350,6 +333,14 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseModuleElement()
 		{
+			if (matchType(TSKernel.TYPE_MODULE))
+			{
+				if (!parseModuleAttributes())
+					return false;
+				
+				return true;
+			}
+			
 			if (matchType(TSKernel.TYPE_ACTION))
 			{
 				if (!parseAction())
@@ -380,14 +371,327 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 
+			if (matchType(TSKernel.TYPE_ROOM))
+			{
+				if (!parseRoom())
+					return false;
+				
+				return true;
+			}
+
+			if (matchType(TSKernel.TYPE_OBJECT))
+			{
+				if (!parseObject())
+					return false;
+				
+				return true;
+			}
+
+			if (matchType(TSKernel.TYPE_CONTAINER))
+			{
+				if (!parseContainer())
+					return false;
+				
+				return true;
+			}
+
 			addErrorMessage("Expected module element declaration start (module, world, player, room, object, container, action).");
 			return false;
 		}
 
 		/**
+		 * [ModuleAttribute] :=
+		 * 		"{" [ModuleAttributeList] "}"
+		 */
+		private boolean parseModuleAttributes()
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" to start module attributes.");
+				return false;
+			}
+
+			if (!parseModuleAttributeList())
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			{
+				addErrorMessage("Expected \"}\" to end module attributes.");
+				return false;
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * [ModuleAttribute] :=
+		 * 		"{" [ModuleAttributeList] "}"
+		 */
+		private boolean parseModuleAttributeList()
+		{
+			if (currentType(Lexer.TYPE_IDENTIFIER))
+			{
+				String attribute = currentToken().getLexeme();
+				nextToken();
+
+				if (currentType(Lexer.TYPE_STRING | Lexer.TYPE_NUMBER))
+				{
+					addErrorMessage("Expected literal value.");
+					return false;
+				}
+
+				String value = currentToken().getLexeme();
+				nextToken();
+
+				currentModule.addAttribute(attribute, value);
+				
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected \";\" to end the attribute.");
+					return false;
+				}
+				
+				return parseModuleAttributeList();
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses a container.
+		 * [Container] :=
+		 * 		[IDENTIFIER] ";"
+		 * 		[IDENTIFIER] "{" [ObjectBody] "}"
+		 */
+		public boolean parseContainer()
+		{
+			// object identity.
+			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			{
+				addErrorMessage("Container requires an identity.");
+				return false;
+			}
+
+			String identity = currentToken().getLexeme();
+			nextToken();
+			
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				if (prototypes.containsValue("container", identity))
+				{
+					addErrorMessage("Container \"" + identity + "\" was already prototyped.");
+					return false;
+				}
+				
+				prototypes.add("container", identity);
+				TContainer element = new TContainer();
+				element.setIdentity(identity);
+				currentModule.addContainer(element);
+				
+				return true;
+			}
+
+			TContainer container = Common.coalesce(currentModule.getContainerByIdentity(identity), new TContainer());
+			container.setIdentity(identity);
+			
+			prototypes.removeValue("container", identity);
+			
+			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for container body start or \";\" (prototyping).");
+				return false;
+			}
+
+			if (!parseContainerBody(container))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			{
+				addErrorMessage("Expected end-of-object \"}\".");
+				return false;
+			}
+
+			return true;
+		}
+		
+		/**
+		 * Parses the container body.
+		 * [ContainerBody] :=
+		 * 		[ContainerBlock] [ContainerBody]
+		 * 		[e]
+		 */
+		private boolean parseContainerBody(TContainer container)
+		{
+			while (isContainerBlockType())
+			{
+				if (currentType(TSKernel.TYPE_INIT))
+				{
+					nextToken();
+					
+					if (!parseInitBlock(container))
+						return false;
+					
+					continue;
+				}
+								
+				break;
+			}
+			
+			return true;
+		}
+				
+		/**
+		 * Parses an object.
+		 * [Object] :=
+		 * 		[IDENTIFIER] ";"
+		 * 		[IDENTIFIER] "{" [ObjectBody] "}"
+		 */
+		public boolean parseObject()
+		{
+			// object identity.
+			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			{
+				addErrorMessage("Object requires an identity.");
+				return false;
+			}
+
+			String identity = currentToken().getLexeme();
+			nextToken();
+			
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				if (prototypes.containsValue("object", identity))
+				{
+					addErrorMessage("Object \"" + identity + "\" was already prototyped.");
+					return false;
+				}
+				
+				prototypes.add("object", identity);
+				TObject element = new TObject();
+				element.setIdentity(identity);
+				currentModule.addObject(element);
+				
+				return true;
+			}
+
+			TObject object = Common.coalesce(currentModule.getObjectByIdentity(identity), new TObject());
+			object.setIdentity(identity);
+			
+			prototypes.removeValue("object", identity);
+			
+			if (!parseObjectNames(object))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for object body start or \";\" (prototyping).");
+				return false;
+			}
+
+			if (!parseObjectBody(object))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			{
+				addErrorMessage("Expected end-of-object \"}\".");
+				return false;
+			}
+
+			return true;
+		}
+		
+		/**
+		 * Parses the object body.
+		 * [ObjectBody] :=
+		 * 		[ObjectBlock] [ObjectBody]
+		 * 		[e]
+		 */
+		private boolean parseObjectBody(TObject object)
+		{
+			while (isObjectBlockType())
+			{
+				if (currentType(TSKernel.TYPE_INIT))
+				{
+					nextToken();
+					
+					if (!parseInitBlock(object))
+						return false;
+					
+					continue;
+				}
+								
+				if (currentType(TSKernel.TYPE_ONACTION))
+				{
+					nextToken();
+					
+					if (!parseOnActionBlock(object, Type.TRANSITIVE, Type.DITRANSITIVE))
+						return false;
+					
+					continue;
+				}
+				
+				if (currentType(TSKernel.TYPE_ONACTIONWITH))
+				{
+					nextToken();
+					
+					if (!parseOnActionWithBlock(object))
+						return false;
+					
+					continue;
+				}
+				
+				if (currentType(TSKernel.TYPE_ONACTIONWITHOTHER))
+				{
+					nextToken();
+					
+					if (!parseOnActionWithOtherBlock(object))
+						return false;
+					
+					continue;
+				}
+				
+				if (currentType(TSKernel.TYPE_ONPLAYERBROWSE))
+				{
+					nextToken();
+					
+					if (!parsePlayerBrowseBlock(object))
+						return false;
+					
+					continue;
+				}
+				
+				if (currentType(TSKernel.TYPE_ONROOMBROWSE))
+				{
+					nextToken();
+					
+					if (!parseRoomBrowseBlock(object))
+						return false;
+					
+					continue;
+				}
+				
+				if (currentType(TSKernel.TYPE_ONCONTAINERBROWSE))
+				{
+					nextToken();
+					
+					if (!parseContainerBrowseBlock(object))
+						return false;
+					
+					continue;
+				}
+				
+				break;
+			}
+			
+			return true;
+		}
+				
+		/**
 		 * Parses a room.
 		 * [Room] :=
-		 * 		";"
+		 * 		[IDENTIFIER] ";"
 		 * 		[IDENTIFIER] "{" [RoomBody] "}"
 		 */
 		public boolean parseRoom()
@@ -395,7 +699,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			// room identity.
 			if (!currentType(Lexer.TYPE_IDENTIFIER))
 			{
-				addErrorMessage("Room requires an action type was already prototyped.");
+				addErrorMessage("Room requires an identity.");
 				return false;
 			}
 
@@ -438,7 +742,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
 			{
-				addErrorMessage("Expected end-of-player \"}\".");
+				addErrorMessage("Expected end-of-room \"}\".");
 				return false;
 			}
 
@@ -504,7 +808,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		/**
 		 * Parses a player.
 		 * [Player] :=
-		 * 		";"
+		 * 		[IDENTIFIER] ";"
 		 * 		[IDENTIFIER] "{" [PlayerBody] "}"
 		 */
 		public boolean parsePlayer()
@@ -512,7 +816,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			// player identity.
 			if (!currentType(Lexer.TYPE_IDENTIFIER))
 			{
-				addErrorMessage("Player requires an action type was already prototyped.");
+				addErrorMessage("Player requires an identity.");
 				return false;
 			}
 
@@ -1076,6 +1380,56 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
+		 * Parses object names.
+		 * [ObjectNames] := 
+		 * 		[NAMED] [STRING] [ObjectNameList]
+		 * 		[e]
+		 */
+		private boolean parseObjectNames(TObject object)
+		{
+			if (matchType(TSKernel.TYPE_NAMED))
+			{
+				if (!currentType(Lexer.TYPE_STRING))
+				{
+					addErrorMessage("Expected object name (must be string).");
+					return false;
+				}
+				
+				object.getNames().put(currentToken().getLexeme());
+				nextToken();
+				
+				return parseObjectNameList(object);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses object name list.
+		 * [ObjectNameList] :=
+		 * 		"," [STRING] [ObjectNameList]
+		 * 		[e]
+		 */
+		private boolean parseObjectNameList(TObject object)
+		{
+			if (matchType(TSKernel.TYPE_DELIM_COMMA))
+			{
+				if (!currentType(Lexer.TYPE_STRING))
+				{
+					addErrorMessage("Expected object name (must be string).");
+					return false;
+				}
+				
+				object.getNames().put(currentToken().getLexeme());
+				nextToken();
+				
+				return parseObjectNameList(object);
+			}
+			
+			return true;
+		}
+		
+		/**
 		 * Parses an init block declaration.
 		 * [InitBlock] :=
 		 * 		"(" ")" [Block]
@@ -1220,7 +1574,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			if (element.getModalActionTable().get(actionId, mode) != null)
 			{
-				addErrorMessage("Modal action block for action \"" + actionId + "\" already declared.");
+				addErrorMessage("Modal action block for action \"" + actionId + "\" and \"" + mode + "\" already declared.");
 				return false;
 			}
 			element.getModalActionTable().add(actionId, mode, currentBlock.pop());
@@ -1465,6 +1819,197 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 			element.setAfterRequestBlock(currentBlock.pop());
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on-action-with block declaration.
+		 * [OnActionWithBlock] :=
+		 * 		"(" [DITRANSITIVEACTIONIDENTIFIER] "," [OBJECT] ")" [Block]
+		 */
+		private boolean parseOnActionWithBlock(TObject element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			if (!isAction())
+			{
+				addErrorMessage("Expected valid action identifier.");
+				return false;
+			}
+			
+			String actionId = currentToken().getLexeme();
+			TAction action = currentModule.getActionByIdentity(actionId);
+			if (action.getType() != Type.DITRANSITIVE)
+			{
+				addErrorMessage("Expected ditransitive action for on-action-with declaration.");
+				return false;
+			}
+			
+			nextToken();
+
+			if (!matchType(TSKernel.TYPE_DELIM_COMMA))
+			{
+				addErrorMessage("Expected \",\" after action.");
+				return false;
+			}
+
+			if (!isObject())
+			{
+				addErrorMessage("Expected valid object for on-action-with declaration.");
+				return false;
+			}
+			
+			String objectId = currentToken().getLexeme();
+			nextToken();
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+
+			if (element.getActionWithTable().get(actionId, objectId) != null)
+			{
+				addErrorMessage("Action block for action \"" + actionId + "\" and object \"" + objectId + "\" already declared.");
+				return false;
+			}
+			element.getActionWithTable().add(actionId, objectId, currentBlock.pop());
+			
+			return true;
+		}
+
+		/**
+		 * Parses an on-action-with block declaration.
+		 * [OnActionWithOtherBlock] :=
+		 * 		"(" [DITRANSITIVEACTIONIDENTIFIER] ")" [Block]
+		 */
+		private boolean parseOnActionWithOtherBlock(TObject element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			if (!isAction())
+			{
+				addErrorMessage("Expected valid action identifier.");
+				return false;
+			}
+			
+			String actionId = currentToken().getLexeme();
+			TAction action = currentModule.getActionByIdentity(actionId);
+			if (action.getType() != Type.DITRANSITIVE)
+			{
+				addErrorMessage("Expected ditransitive action for on-action-with-other declaration.");
+				return false;
+			}
+			nextToken();
+
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+
+			if (element.getActionWithOtherTable().get(actionId) != null)
+			{
+				addErrorMessage("Action-with-other block for action \"" + actionId + "\" already declared.");
+				return false;
+			}
+			element.getActionWithOtherTable().add(actionId, currentBlock.pop());
+			
+			return true;
+		}
+
+		/**
+		 * Parses an on-room-browse block declaration.
+		 * [OnRoomBrowse] :=
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseRoomBrowseBlock(TObject element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after onRoomBrowse.");
+				return false;
+			}
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			element.setRoomBrowseBlock(currentBlock.pop());
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on-player-browse block declaration.
+		 * [OnPlayerBrowse] :=
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parsePlayerBrowseBlock(TObject element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after onPlayerBrowse.");
+				return false;
+			}
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			element.setPlayerBrowseBlock(currentBlock.pop());
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on-container-browse block declaration.
+		 * [OnContainerBrowse] :=
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseContainerBrowseBlock(TObject element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after onContainerBrowse.");
+				return false;
+			}
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\".");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			element.setContainerBrowseBlock(currentBlock.pop());
 			
 			return true;
 		}
