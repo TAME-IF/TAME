@@ -82,7 +82,15 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMERequest request = createRequest(moduleContext, input, tracing);
 		TAMEResponse response = new TAMEResponse();
+		
+		// time this stuff.
+		long nanos;
+		
+		nanos = System.nanoTime();
 		InterpreterContext interpreterContext = interpret(request);
+		response.setInterpretNanos(System.nanoTime() - nanos);
+	
+		nanos = System.nanoTime();
 		
 		try {
 			if (interpreterContext.action == null)
@@ -173,7 +181,8 @@ public final class TAMELogic implements TAMEConstants
 		} catch (TAMEInterrupt interrupt) {
 			response.addCue(CUE_ERROR, interrupt.getMessage());
 		}
-		
+	
+		response.setRequestNanos(System.nanoTime() - nanos);
 		return response;
 	}
 	

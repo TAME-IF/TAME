@@ -27,6 +27,10 @@ public class TAMEResponse implements TAMEConstants
 	private Queue<Cue> responseCues;
 	/** Command counter. */
 	private int commandsExecuted;
+	/** Time in nanos to process a full request. */
+	private long requestNanos;
+	/** Time in nanos to interpret input. */
+	private long interpretNanos;
 	
 	/**
 	 * Creates a new request object.
@@ -127,6 +131,42 @@ public class TAMEResponse implements TAMEConstants
 	{
 		if (request.isTracing()) 
 			addCue(CUE_TRACE, String.format(format, args));
+	}
+
+	/**
+	 * Sets the request nanos for the full processing.
+	 * @param requestNanos the time in nanoseconds for processing the request.
+	 */
+	void setRequestNanos(long requestNanos) 
+	{
+		this.requestNanos = requestNanos;
+	}
+	
+	/**
+	 * Sets the amount of nanos it took to process the input itself.
+	 * @param interpretNanos the time in nanoseconds to interpret client input.
+	 */
+	void setInterpretNanos(long interpretNanos) 
+	{
+		this.interpretNanos = interpretNanos;
+	}
+	
+	/**
+	 * Gets the request nanos for the full processing.
+	 * @return the time in nanoseconds for processing the request.
+	 */
+	public long getRequestNanos() 
+	{
+		return requestNanos;
+	}
+	
+	/**
+	 * Gets the amount of nanos it took to process the input itself.
+	 * @return the time in nanoseconds to interpret client input.
+	 */
+	public long getInterpretNanos() 
+	{
+		return interpretNanos;
 	}
 	
 }

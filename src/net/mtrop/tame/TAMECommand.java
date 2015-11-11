@@ -415,7 +415,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the value to print. 
 	 * Returns nothing. 
 	 */
-	PRINT (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
+	TEXT (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -435,7 +435,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the value to print. 
 	 * Returns nothing. 
 	 */
-	PRINTLN (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
+	TEXTLN (false, /*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
