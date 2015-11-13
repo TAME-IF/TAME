@@ -64,6 +64,26 @@ public class TAMEConsoleClientMain
 			// TODO: Finish.
 		}
 		
+		public void handleTip(String content)
+		{
+			// TODO: Finish.
+		}
+		
+		public void handleInfo(String content)
+		{
+			// TODO: Finish.
+		}
+		
+		public void handleError(String content)
+		{
+			// TODO: Finish.
+		}
+		
+		public void handleFatal(String content)
+		{
+			// TODO: Finish.
+		}
+		
 		public void handleText(String content)
 		{
 			// TODO: Finish.

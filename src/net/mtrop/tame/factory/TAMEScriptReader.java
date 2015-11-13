@@ -443,7 +443,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				String value = currentToken().getLexeme();
 				nextToken();
 
-				currentModule.addAttribute(attribute, value);
+				currentModule.getHeader().addAttribute(attribute, value);
 				
 				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
 				{

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -23,7 +22,6 @@ import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.hash.HashMap;
-import com.blackrook.commons.list.List;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -33,8 +31,8 @@ import com.blackrook.io.SuperWriter;
  */
 public class TAMEModule implements Saveable
 {
-	/** Module attributes. */
-	private CaseInsensitiveHashMap<String> attributes;
+	/** Module header. */
+	private TAMEModuleHeader header;
 	
 	/** The world. */
 	private TWorld world;
@@ -57,7 +55,7 @@ public class TAMEModule implements Saveable
 	 */
 	public TAMEModule()
 	{
-		this.attributes = new CaseInsensitiveHashMap<String>(4);
+		this.header = new TAMEModuleHeader();
 		
 		this.actions = new HashMap<String, TAction>(20);
 		this.world = null;
@@ -65,46 +63,32 @@ public class TAMEModule implements Saveable
 		this.rooms = new HashMap<String, TRoom>(10);
 		this.objects = new HashMap<String, TObject>(20);
 		this.containers = new HashMap<String, TContainer>(5);
+
 		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
 	}
 
 	/**
-	 * Adds an attribute to the module. Attributes are case-insensitive.
-	 * There are a bunch of suggested ones that all clients/servers should read.
-	 * @param attribute the attribute name.
-	 * @param value the value.
+	 * Reads a module header and only the header from a module stream.
+	 * @param in the input stream to read from.
+	 * @return a module header.
 	 */
-	public void addAttribute(String attribute, String value)
+	public static TAMEModuleHeader readModuleHeader(InputStream in) throws IOException
 	{
-		attributes.put(attribute, value);
-	}
-	
-	/**
-	 * Gets an attribute value from the module. 
-	 * Attributes are case-insensitive.
-	 * There are a bunch of suggested ones that all clients/servers should read.
-	 * @param attribute the attribute name.
-	 * @return the corresponding value or null if not found.
-	 */
-	public String getAttribute(String attribute)
-	{
-		return attributes.get(attribute);
-	}
-	
-	/**
-	 * Gets all of this module's attributes.
-	 * @return an array of all of the attributes. Never returns null.
-	 */
-	public String[] getAllAttributes()
-	{
-		List<String> outList = new List<>();
-		Iterator<String> it = attributes.keyIterator();
-		while (it.hasNext())
-			outList.add(it.next());
-		
-		String[] out = new String[outList.size()];
-		outList.toArray(out);
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		if (!sr.readString("ASCII").equals("TAME"))
+			throw new ModuleException("Module is not a TAME module.");
+			
+		TAMEModuleHeader out = new TAMEModuleHeader();
+		out.readBytes(in);
 		return out;
+	}
+	
+	/**
+	 * Returns the module header.
+	 */
+	public TAMEModuleHeader getHeader()
+	{
+		return header;
 	}
 	
 	/**
@@ -270,13 +254,8 @@ public class TAMEModule implements Saveable
 		
 		sw.writeBytes("TAME".getBytes("ASCII"));
 		sw.writeByte((byte)0x01);
-		
-		sw.writeInt(attributes.size());
-		for (ObjectPair<String, String> pair : attributes)
-		{
-			sw.writeString(pair.getKey(), "UTF-8");
-			sw.writeString(pair.getValue(), "UTF-8");
-		}
+
+		header.writeBytes(out);
 		
 		sw.writeBytes(digest);
 		sw.writeByteArray(data);
@@ -304,23 +283,17 @@ public class TAMEModule implements Saveable
 			pair.getValue().writeBytes(out);
 		
 	}
-	
+
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
+		header = readModuleHeader(in);
+		
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		if (!sr.readString("ASCII").equals("TAME"))
-			throw new ModuleException("Module is not a TAME module.");
-			
+
 		if (sr.readByte() != 0x01)
 			throw new ModuleException("Module does not have a recognized version.");
 
-		attributes.clear();
-		
-		int attribCount = sr.readInt();
-		while(attribCount-- > 0)
-			attributes.put(sr.readString("UTF-8"), sr.readString("UTF-8"));
-		
 		byte[] readDigest = sr.readBytes(20);
 		byte[] data = sr.readByteArray();
 				
