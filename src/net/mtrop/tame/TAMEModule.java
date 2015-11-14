@@ -57,8 +57,8 @@ public class TAMEModule implements Saveable
 	{
 		this.header = new TAMEModuleHeader();
 		
-		this.actions = new HashMap<String, TAction>(20);
 		this.world = null;
+		this.actions = new HashMap<String, TAction>(20);
 		this.players = new HashMap<String, TPlayer>(2);
 		this.rooms = new HashMap<String, TRoom>(10);
 		this.objects = new HashMap<String, TObject>(20);
@@ -68,6 +68,18 @@ public class TAMEModule implements Saveable
 	}
 
 	/**
+	 * Reads a module from binary content.
+	 * @param in the input stream to read from.
+	 * @return a deserialized module.
+	 */
+	public static TAMEModule create(InputStream in) throws IOException
+	{
+		TAMEModule out = new TAMEModule();
+		out.readBytes(in);
+		return out;
+	}
+	
+	/**
 	 * Reads a module header and only the header from a module stream.
 	 * @param in the input stream to read from.
 	 * @return a module header.
@@ -76,7 +88,7 @@ public class TAMEModule implements Saveable
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		if (!sr.readString("ASCII").equals("TAME"))
-			throw new ModuleException("Module is not a TAME module.");
+			throw new ModuleException("Not a TAME module.");
 			
 		TAMEModuleHeader out = new TAMEModuleHeader();
 		out.readBytes(in);
@@ -253,9 +265,11 @@ public class TAMEModule implements Saveable
 		byte[] digest = Common.sha1(data);
 		
 		sw.writeBytes("TAME".getBytes("ASCII"));
-		sw.writeByte((byte)0x01);
 
 		header.writeBytes(out);
+		
+		// write version
+		sw.writeByte((byte)0x01);
 		
 		sw.writeBytes(digest);
 		sw.writeByteArray(data);
@@ -299,7 +313,7 @@ public class TAMEModule implements Saveable
 				
 		byte[] digest = Common.sha1(data);
 		if (!Arrays.equals(readDigest, digest))
-			throw new ModuleException("Module digest does not match data!");
+			throw new ModuleException("Module digest does not match data! Possible data corruption!");
 
 		GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(data));
 		readImmutableData(gzin);

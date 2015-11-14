@@ -465,8 +465,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		public boolean parseContainer()
 		{
-			// object identity.
-			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			// container identity.
+			if (!isVariable())
 			{
 				addErrorMessage("Container requires an identity.");
 				return false;
@@ -492,8 +492,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 
-			TContainer container = Common.coalesce(currentModule.getContainerByIdentity(identity), new TContainer());
-			container.setIdentity(identity);
+			TContainer container;
+			if ((container = currentModule.getContainerByIdentity(identity)) == null)
+			{
+				container = new TContainer();
+				container.setIdentity(identity);
+				currentModule.addContainer(container);
+			}
 			
 			prototypes.removeValue("container", identity);
 			
@@ -550,7 +555,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseObject()
 		{
 			// object identity.
-			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			if (!isVariable())
 			{
 				addErrorMessage("Object requires an identity.");
 				return false;
@@ -576,8 +581,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 
-			TObject object = Common.coalesce(currentModule.getObjectByIdentity(identity), new TObject());
-			object.setIdentity(identity);
+			TObject object;
+			if ((object = currentModule.getObjectByIdentity(identity)) == null)
+			{
+				object = new TObject();
+				object.setIdentity(identity);
+				currentModule.addObject(object);
+			}
 			
 			prototypes.removeValue("object", identity);
 			
@@ -697,7 +707,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseRoom()
 		{
 			// room identity.
-			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			if (!isVariable())
 			{
 				addErrorMessage("Room requires an identity.");
 				return false;
@@ -723,8 +733,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 
-			TRoom room = Common.coalesce(currentModule.getRoomByIdentity(identity), new TRoom());
-			room.setIdentity(identity);
+			TRoom room;
+			if ((room = currentModule.getRoomByIdentity(identity)) == null)
+			{
+				room = new TRoom();
+				room.setIdentity(identity);
+				currentModule.addRoom(room);
+			}
 			
 			prototypes.removeValue("room", identity);
 			
@@ -814,7 +829,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parsePlayer()
 		{
 			// player identity.
-			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			if (!isVariable())
 			{
 				addErrorMessage("Player requires an identity.");
 				return false;
@@ -840,8 +855,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 
-			TPlayer player = Common.coalesce(currentModule.getPlayerByIdentity(identity), new TPlayer());
-			player.setIdentity(identity);
+			TPlayer player;
+			if ((player = currentModule.getPlayerByIdentity(identity)) == null)
+			{
+				player = new TPlayer();
+				player.setIdentity(identity);
+				currentModule.addPlayer(player);
+			}
 			
 			prototypes.removeValue("player", identity);
 			
@@ -974,8 +994,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 
-			TWorld world = Common.coalesce(currentModule.getWorld(), new TWorld());
-			
+			TWorld world;
+			if ((world = currentModule.getWorld()) == null)
+			{
+				world = new TWorld();
+				currentModule.setWorld(world);
+			}
+						
 			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
 			{
 				addErrorMessage("Expected \"{\" for world body start or \";\" (prototyping).");

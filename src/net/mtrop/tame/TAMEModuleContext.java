@@ -27,17 +27,18 @@ import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
+import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
-import net.mtrop.tame.lang.StateSaveable;
+import net.mtrop.tame.lang.Saveable;
 import net.mtrop.tame.lang.Value;
 
 /**
  * A mutable context for a module.
  * @author Matthew Tropiano
  */
-public class TAMEModuleContext implements TAMEConstants, StateSaveable
+public class TAMEModuleContext implements TAMEConstants, Saveable
 {
 	/** A random number generator. */
 	private TAMEModule module;
@@ -510,9 +511,13 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 
 	@Override
-	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
+	public void writeBytes(OutputStream out) throws IOException 
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+
+		sw.writeBytes("TSAV".getBytes("ASCII"));
+		// write version
+		sw.writeByte((byte)0x01);
 
 		sw.writeBoolean(currentPlayer != null);
 		if (currentPlayer != null)
@@ -553,12 +558,18 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 
 	@Override
-	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
+	public void readBytes(InputStream in) throws IOException 
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		String identity;
 		int size;
 		
+		if (!sr.readString("ASCII").equals("TSAV"))
+			throw new ModuleException("Not a TAME module save state.");
+		
+		if (sr.readByte() != 0x01)
+			throw new ModuleException("Module save state does not have a recognized version.");
+
 		// has current player.
 		if (sr.readBoolean())
 		{
@@ -619,18 +630,18 @@ public class TAMEModuleContext implements TAMEConstants, StateSaveable
 	}
 
 	@Override
-	public byte[] toStateBytes(TAMEModule module) throws IOException
+	public byte[] toBytes() throws IOException
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeStateBytes(module, bos);
+		writeBytes(bos);
 		return bos.toByteArray();
 	}
 
 	@Override
-	public void fromStateBytes(TAMEModule module, byte[] data) throws IOException 
+	public void fromBytes(byte[] data) throws IOException 
 	{
 		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readStateBytes(module, bis);
+		readBytes(bis);
 		bis.close();
 	}
 	

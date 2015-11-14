@@ -1,23 +1,215 @@
 package net.mtrop.tame.console;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
+import com.blackrook.commons.Common;
+import com.blackrook.commons.list.List;
+
+import net.mtrop.tame.TAMEConstants;
+import net.mtrop.tame.TAMELogic;
 import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.TAMEModuleContext;
 import net.mtrop.tame.TAMEResponse;
 import net.mtrop.tame.TAMEResponseReader;
+import net.mtrop.tame.factory.DefaultReaderOptions;
+import net.mtrop.tame.factory.TAMEScriptReader;
 import net.mtrop.tame.struct.Cue;
 
 /**
  * A console client implementation.
  * @author Matthew Tropiano
  */
-public class TAMEConsoleClientMain 
+public class TAMEConsoleClientMain implements TAMEConstants 
 {
 	// Entry point.
 	public static void main(String ... args)
 	{
-		// TODO: Finish.
+		TAMEModule module = null;
+		TAMEModuleContext moduleContext = null;
+		
+		boolean script = false;
+		boolean debug = false;
+		boolean load = false;
+		boolean defines = false;
+		boolean verbose = false;
+		String path = null;
+		String binpath = null;
+		String loadpath = null;
+		List<String> defineList = new List<>();
+
+		for (String arg : args)
+		{
+			if (arg.equalsIgnoreCase("-s"))
+				script = true;
+			else if (arg.equalsIgnoreCase("-v"))
+				verbose = true;
+			else if (arg.equalsIgnoreCase("-l"))
+				load = true;
+			else if (arg.equalsIgnoreCase("-debug"))
+				debug = true;
+			else if (script && arg.equalsIgnoreCase("-d"))
+				defines = true;
+			else if (script)
+				path = arg;
+			else if (defines)
+				defineList.add(arg);
+			else if (load)
+				loadpath = arg;
+			else
+				binpath = arg;
+		}
+		
+		if (script)
+		{
+			if (Common.isEmpty(path))
+			{
+				System.out.println("ERROR: No module script file specified!");
+				System.exit(1);
+			}
+			else
+			{
+				module = parseScript(path, verbose, true, defineList); 
+			}
+		}
+		else
+		{
+			if (Common.isEmpty(binpath))
+			{
+				System.out.println("ERROR: No module file specified!");
+				System.exit(2);
+			}
+			else
+			{
+				module = readBinary(path); 
+			}
+		}
+		
+		if (module == null)
+		{
+			System.out.println("ERROR: No module!");
+			System.exit(3);
+		}
+		
+		moduleContext = new TAMEModuleContext(module);
+		
+		Context context = new Context(module, moduleContext, System.out, System.err, debug);
+		
+		if (load)
+		{
+			if (!loadGame(moduleContext, loadpath))
+				return;
+		}
+		else
+		{
+			processResponse(TAMELogic.handleInit(moduleContext, debug), context);
+		}
+		
+		if (!context.quit)
+			context.gameLoop();
+	}
+	
+	static TAMEModule parseScript(String path, boolean verbose, boolean optimizing, List<String> defines)
+	{
+		DefaultReaderOptions opts = new DefaultReaderOptions();
+		opts.setVerbose(verbose);
+		opts.setOptimizing(optimizing);
+		String[] defineArray = new String[defines.size()];
+		defines.toArray(defineArray);
+		opts.setDefines(defineArray);
+		
+		File file = new File(path);
+		if (!file.exists())
+		{
+			System.out.println("ERROR: Module "+path+" does not exist!");
+			return null;
+		}
+		
+		TAMEModule out = null;
+		FileInputStream in = null;
+		try {
+			in = new FileInputStream(file);
+			out = TAMEScriptReader.read(file, opts);
+		} catch (SecurityException e) {
+			System.out.println("ERROR: Could not read from "+file.getPath()+". Access denied.");
+			return null;
+		} catch (IOException e) {
+			System.out.println("ERROR: Could not read from "+file.getPath());
+			return null;
+		} finally {
+			Common.close(in);
+		}
+		
+		return out;
+	}
+	
+	static TAMEModule readBinary(String path)
+	{
+		File file = new File(path);
+		if (!file.exists())
+		{
+			System.out.println("ERROR: Module "+path+" does not exist!");
+			return null;
+		}
+		
+		TAMEModule out = null;
+		FileInputStream in = null;
+		try {
+			in = new FileInputStream(file);
+			out = TAMEModule.create(in);
+		} catch (SecurityException e) {
+			System.out.println("ERROR: Could not read from "+file.getPath()+". Access denied.");
+			return null;
+		} catch (IOException e) {
+			System.out.println("ERROR: Could not read from "+file.getPath());
+			return null;
+		} finally {
+			Common.close(in);
+		}
+		
+		return out;
+	}
+	
+	static boolean loadGame(TAMEModuleContext context, String path)
+	{
+		File file = new File(path);
+		if (!file.exists())
+		{
+			System.out.println("ERROR: Save file "+path+" does not exist!");
+			return false;
+		}
+		
+		FileInputStream in = null;
+		try {
+			in = new FileInputStream(file);
+			context.readBytes(in);
+		} catch (SecurityException e) {
+			System.out.println("ERROR: Could not read from "+file.getPath()+". Access denied.");
+			return false;
+		} catch (IOException e) {
+			System.out.println("ERROR: Could not read from "+file.getPath());
+			return false;
+		} finally {
+			Common.close(in);
+		}
+		
+		return true;
+	}
+	
+	static void processResponse(TAMEResponse response, Context context)
+	{
+		CueHandler currentHandler = new CueHandler(response, context);
+		while (!context.quit && currentHandler.read())
+		{
+			if (context.paused)
+			{
+				System.out.print("(Continue) ");
+				Common.getLine();
+				context.paused = false;
+			}
+		}
 	}
 	
 	/**
@@ -27,8 +219,38 @@ public class TAMEConsoleClientMain
 	{
 		TAMEModule module;
 		TAMEModuleContext context;
-		CueHandler currentHander;
+		PrintStream out;
+		PrintStream err;
 		boolean paused;
+		boolean quit;
+		boolean tracer;
+		
+		Context(TAMEModule module, TAMEModuleContext context, PrintStream out, PrintStream err, boolean tracer)
+		{
+			this.module = module;
+			this.context = context;
+			this.out = out;
+			this.err = err;
+			this.tracer = tracer;
+
+			this.paused = false;
+			this.quit = false;
+		}
+		
+		void gameLoop()
+		{
+			boolean good = true;
+			String line;
+			while (good)
+			{
+				out.print("> ");
+				if ((line = Common.getLine()) != null)
+					processResponse(TAMELogic.handleRequest(context, line, tracer), this);
+				else
+					good = false;
+			}
+		}
+		
 	}
 	
 	/**
@@ -37,68 +259,66 @@ public class TAMEConsoleClientMain
 	static class CueHandler extends TAMEResponseReader
 	{
 		StringBuilder textBuffer;
-		PrintStream out;
-		PrintStream err;
-		
-		CueHandler(TAMEResponse response, Context context, PrintStream out, PrintStream err) 
+		Context context;
+
+		CueHandler(TAMEResponse response, Context context) 
 		{
 			super(response);
+			this.context = context;
 			this.textBuffer = new StringBuilder();
-			this.out = out;
-			this.err = err;
 		}
 
 		@Override
 		public boolean handleCue(Cue cue) 
 		{
+			if (!cue.getType().equals(CUE_TEXT) && textBuffer.length() > 0)
+			{
+				context.out.println(textBuffer.toString());
+				textBuffer.delete(0, textBuffer.length());
+			}
+			
 			switch (cue.getType())
 			{
 				default:
 					return true;
-				// TODO: Finish.
+				case CUE_QUIT:
+					context.quit = true;
+					return false;
+				case CUE_SAVE:
+					// TODO: SAVE SHIT
+					return true;
+				case CUE_LOAD:
+					// TODO: LOAD SHIT
+					return true;
+				case CUE_WAIT:
+					Common.sleep(Common.parseLong(cue.getContent()));
+					return true;
+				case CUE_TEXT:
+					if (textBuffer.length() > 0)
+						textBuffer.append(' ');
+					textBuffer.append(cue.getContent());
+					return true;
+				case CUE_PAUSE:
+					context.paused = true;
+					return false;
+				case CUE_TRACE:
+					context.out.println("[TRACE]" + cue.getContent());
+					return true;
+				case CUE_TIP:
+					context.out.println("(TIP: " + cue.getContent() + ")");
+					return true;
+				case CUE_INFO:
+					context.out.println("INFO: " + cue.getContent());
+					return true;
+				case CUE_ERROR:
+					context.out.println("ERROR: " + cue.getContent());
+					return true;
+				case CUE_FATAL:
+					context.out.println("!!FATAL!! " + cue.getContent());
+					context.quit = true;
+					return false;
 			}
-		}
-		
-		public void handleTrace(String content)
-		{
-			// TODO: Finish.
-		}
-		
-		public void handleTip(String content)
-		{
-			// TODO: Finish.
-		}
-		
-		public void handleInfo(String content)
-		{
-			// TODO: Finish.
-		}
-		
-		public void handleError(String content)
-		{
-			// TODO: Finish.
-		}
-		
-		public void handleFatal(String content)
-		{
-			// TODO: Finish.
-		}
-		
-		public void handleText(String content)
-		{
-			// TODO: Finish.
-		}
-		
-		public void handlePause(String content)
-		{
-			// TODO: Finish.
-		}
-
-		public void handleWait(String content)
-		{
-			// TODO: Finish.
-		}
-		
+		}		
 	}
 	
 }

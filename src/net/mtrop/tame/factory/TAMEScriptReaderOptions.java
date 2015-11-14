@@ -8,6 +8,14 @@ package net.mtrop.tame.factory;
 public interface TAMEScriptReaderOptions 
 {
 	/**
+	 * Gets what to predefine in the preprocessor.
+	 * This can affect what gets compiled and what doesn't.
+	 * Must not return null.
+	 * @return a list of defined tokens.
+	 */
+	public String[] getDefines();
+	
+	/**
 	 * Gets if this reader optimizes finished blocks.
 	 * @return true if so, false if not.
 	 */

@@ -6,6 +6,7 @@ package net.mtrop.tame.factory;
  */
 public class DefaultReaderOptions implements TAMEScriptReaderOptions
 {
+	private String[] defines;
 	private boolean optimizing;
 	private boolean verbose;
 
@@ -13,6 +14,21 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 	{
 		this.optimizing = true;
 		this.verbose = false;
+	}
+	
+	/**
+	 * Sets the defines used for compiling. 
+	 * @param defines the list of defined tokens.
+	 */
+	public void setDefines(String ... defines)
+	{
+		this.defines = defines;
+	}
+	
+	@Override
+	public String[] getDefines() 
+	{
+		return defines;
 	}
 	
 	/**

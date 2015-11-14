@@ -21,8 +21,6 @@ import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.TAMEFatalException;
 import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.interrupt.EndInterrupt;
-import net.mtrop.tame.interrupt.ErrorInterrupt;
-import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
@@ -72,6 +70,36 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
+	 * Handles context initialization, returning the response from it.
+	 * @param moduleContext the module context.
+	 * @param tracing if true, this does tracing.
+	 * @return a TAMERequest a new request.
+	 */
+	public static TAMEResponse handleInit(TAMEModuleContext moduleContext, boolean tracing)
+	{
+		TAMERequest request = createRequest(moduleContext, "[INITIALIZE]", tracing);
+		TAMEResponse response = new TAMEResponse();
+
+		response.setInterpretNanos(0L);
+
+		// time this stuff.
+		long nanos = System.nanoTime();
+
+		try {
+			initializeContext(request, response);
+			processActionLoop(request, response);
+		} catch (TAMEFatalException exception) {
+			response.addCue(CUE_FATAL, exception.getMessage());
+		} catch (TAMEInterrupt interrupt) {
+			response.addCue(CUE_ERROR, interrupt.getMessage());
+		}
+		
+		response.setRequestNanos(System.nanoTime() - nanos);
+
+		return response;
+	}
+	
+	/**
 	 * Handles a full request.
 	 * @param moduleContext the module context.
 	 * @param input the client input query.
@@ -93,91 +121,10 @@ public final class TAMELogic implements TAMEConstants
 		nanos = System.nanoTime();
 		
 		try {
-			if (interpreterContext.action == null)
-				doUnknownAction(request, response);
-			else
-			{
-				TAction action = interpreterContext.action;
-				switch (action.getType())
-				{
-					default:
-					case GENERAL:
-						request.addActionItem(TAMEAction.createInitial(action));
-						break;
-					case OPEN:
-						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.target));
-						break;
-					case MODAL:
-						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.mode));
-						break;
-					case TRANSITIVE:
-						if (interpreterContext.objectAmbiguous)
-							doAmbiguousAction(request, response, interpreterContext.action);
-						else
-							request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1));
-						break;
-					case DITRANSITIVE:
-						if (interpreterContext.objectAmbiguous)
-							doAmbiguousAction(request, response, interpreterContext.action);
-						else
-							request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1, interpreterContext.object2));
-						break;
-				}
-			}
-			
-			
-			boolean initial = true;
-			while (request.hasActionItems())
-			{
-				TAMEAction tameAction = request.getActionItem();
-				TAction action = tameAction.getAction();
-				
-				try {
-				
-					switch (action.getType())
-					{
-						default:
-						case GENERAL:
-							doActionGeneral(request, response, action);
-							break;
-						case OPEN:
-							doActionOpen(request, response, action, tameAction.getTarget());
-							break;
-						case MODAL:
-							doActionModal(request, response, action, tameAction.getTarget());
-							break;
-						case TRANSITIVE:
-							doActionTransitive(request, response, action, tameAction.getObject1());
-							break;
-						case DITRANSITIVE:
-							if (tameAction.getObject2() == null)
-								doActionTransitive(request, response, action, tameAction.getObject1());
-							else
-								doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
-							break;
-					}
-					
-					request.checkStackClear();
-					
-				} catch (EndInterrupt end) {
-					// Catches end.
-				}
-				
-				// do the "after" stuff.
-				if (!request.hasActionItems() && initial)
-				{
-					initial = false;
-					doAfterRequest(request, response);
-				}
-				
-			}
-			
+			enqueueInterpretedAction(request, response, interpreterContext);			
+			processActionLoop(request, response);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
-		} catch (ErrorInterrupt interrupt) {
-			response.addCue(CUE_ERROR, interrupt.getMessage());
-		} catch (RunawayRequestInterrupt interrupt) {
-			response.addCue(CUE_ERROR, interrupt.getMessage());
 		} catch (TAMEInterrupt interrupt) {
 			response.addCue(CUE_ERROR, interrupt.getMessage());
 		}
@@ -185,7 +132,7 @@ public final class TAMELogic implements TAMEConstants
 		response.setRequestNanos(System.nanoTime() - nanos);
 		return response;
 	}
-	
+
 	/**
 	 * Creates the request object.
 	 * @param moduleContext the module context.
@@ -1021,6 +968,98 @@ public final class TAMELogic implements TAMEConstants
 		callInitOnContexts(request, response, moduleContext.getPlayerContextList().valueIterator());
 		callInitBlock(request, response, moduleContext.getWorldContext());
 		
+	}
+
+	/**
+	 * Does an action loop: this keeps processing queued actions 
+	 * until there is nothing left to process.
+	 * @param request the request context.
+	 * @param response the response object.
+	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
+	 */
+	private static void processActionLoop(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
+	{
+		boolean initial = true;
+		while (request.hasActionItems())
+		{
+			TAMEAction tameAction = request.getActionItem();
+			TAction action = tameAction.getAction();
+			
+			try {
+			
+				switch (action.getType())
+				{
+					default:
+					case GENERAL:
+						doActionGeneral(request, response, action);
+						break;
+					case OPEN:
+						doActionOpen(request, response, action, tameAction.getTarget());
+						break;
+					case MODAL:
+						doActionModal(request, response, action, tameAction.getTarget());
+						break;
+					case TRANSITIVE:
+						doActionTransitive(request, response, action, tameAction.getObject1());
+						break;
+					case DITRANSITIVE:
+						if (tameAction.getObject2() == null)
+							doActionTransitive(request, response, action, tameAction.getObject1());
+						else
+							doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
+						break;
+				}
+				
+				request.checkStackClear();
+				
+			} catch (EndInterrupt end) {
+				// Catches end.
+			}
+			
+			// do the "after" stuff.
+			if (!request.hasActionItems() && initial)
+			{
+				initial = false;
+				doAfterRequest(request, response);
+			}
+			
+		}
+		
+	}
+
+	private static void enqueueInterpretedAction(TAMERequest request, TAMEResponse response, InterpreterContext interpreterContext) throws TAMEInterrupt 
+	{
+		if (interpreterContext.action == null)
+			doUnknownAction(request, response);
+		else
+		{
+			TAction action = interpreterContext.action;
+			switch (action.getType())
+			{
+				default:
+				case GENERAL:
+					request.addActionItem(TAMEAction.createInitial(action));
+					break;
+				case OPEN:
+					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.target));
+					break;
+				case MODAL:
+					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.mode));
+					break;
+				case TRANSITIVE:
+					if (interpreterContext.objectAmbiguous)
+						doAmbiguousAction(request, response, interpreterContext.action);
+					else
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1));
+					break;
+				case DITRANSITIVE:
+					if (interpreterContext.objectAmbiguous)
+						doAmbiguousAction(request, response, interpreterContext.action);
+					else
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1, interpreterContext.object2));
+					break;
+			}
+		}
 	}
 
 	/**
