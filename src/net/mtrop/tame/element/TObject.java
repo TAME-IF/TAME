@@ -44,10 +44,7 @@ public class TObject extends TActionableElement
 	/** Code block ran upon browsing a container with this object in it. */
 	protected Block containerBrowseBlock;
 
-	/**
-	 * Constructs an instance of a game world.
-	 */
-	public TObject()
+	private TObject()
 	{
 		super();
 		this.names = new CaseInsensitiveHash(3);
@@ -59,6 +56,16 @@ public class TObject extends TActionableElement
 		this.containerBrowseBlock = null;
 	}
 	
+	/**
+	 * Creates an empty object.
+	 * @param identity its main identity.
+	 */
+	public TObject(String identity) 
+	{
+		this();
+		setIdentity(identity);
+	}
+
 	/**
 	 * Gets the initial names on this object.
 	 */

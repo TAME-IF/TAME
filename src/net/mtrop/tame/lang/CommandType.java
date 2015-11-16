@@ -32,6 +32,13 @@ public interface CommandType
 	public void call(TAMERequest request, TAMEResponse response, Command statement) throws TAMEInterrupt;
 	
 	/**
+	 * Does this represent a block type?
+	 * These are parsed in the language.
+	 * @return true if so, false if not.
+	 */
+	public boolean isBlock();
+	
+	/**
 	 * Is this an internal command type?
 	 * Internal commands are not exposed to the parser.
 	 * @return true if so, false if not.
@@ -49,23 +56,5 @@ public interface CommandType
 	 * @return the return type, or null for no return.
 	 */
 	public ArgumentType getReturnType();
-	
-	/**
-	 * Returns if this command has an evaluation conditional block.
-	 * @return true if so, false if not.
-	 */
-	public boolean isConditionalBlockRequired();
-
-	/**
-	 * Returns if this command has a body block to call if the evaluation conditional succeeds.
-	 * @return true if so, false if not.
-	 */
-	public boolean isSuccessBlockRequired();
-
-	/**
-	 * Returns if this command has a branch block to call if the evaluation conditional fails.
-	 * @return true if so, false if not.
-	 */
-	public boolean isFailureBlockPossible();
 	
 }

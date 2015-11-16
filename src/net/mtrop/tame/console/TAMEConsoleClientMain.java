@@ -24,12 +24,25 @@ import net.mtrop.tame.struct.Cue;
  */
 public class TAMEConsoleClientMain implements TAMEConstants 
 {
+	
+	private static void printHelp(PrintStream out)
+	{
+		out.println("TAME Console Client by Matt Tropiano (C) 2015");
+		out.println("Usage: tame [module] <gameload> (-debug)");
+		out.println("[module]:");
+		out.println("    \"binaryfile\"");
+		out.println("    -s \"scriptfile\" (-v) (-d [defines])");
+		out.println("<gameload>:");
+		out.println("    -l \"statefile\"");
+	}
+	
 	// Entry point.
 	public static void main(String ... args)
 	{
 		TAMEModule module = null;
 		TAMEModuleContext moduleContext = null;
 		
+		boolean help = false;
 		boolean script = false;
 		boolean debug = false;
 		boolean load = false;
@@ -42,7 +55,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 
 		for (String arg : args)
 		{
-			if (arg.equalsIgnoreCase("-s"))
+			if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help") || arg.equalsIgnoreCase("/?"))
+				help = true;
+			else if (arg.equalsIgnoreCase("-s"))
 				script = true;
 			else if (arg.equalsIgnoreCase("-v"))
 				verbose = true;
@@ -60,6 +75,12 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				loadpath = arg;
 			else
 				binpath = arg;
+		}
+		
+		if (args.length == 0 || help)
+		{
+			printHelp(System.out);
+			System.exit(0);
 		}
 		
 		if (script)

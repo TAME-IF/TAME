@@ -50,8 +50,7 @@ public class TWorld extends TActionableElement
 	 */
 	public TWorld()
 	{
-		super();
-		setIdentity(TAMEConstants.IDENTITY_CURRENT_WORLD);
+		super(TAMEConstants.IDENTITY_CURRENT_WORLD);
 		
 		this.actionFailedTable = new ActionTable();
 		this.modalActionTable = new ActionModeTable();

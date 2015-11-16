@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.lang.PermissionType;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionModeTable;
@@ -56,13 +55,9 @@ public class TPlayer extends TActionableElement
 	/** Code block ran upon bad action. */
 	protected Block unknownActionBlock;
 
-	/**
-	 * Constructs an instance of a game world.
-	 */
-	public TPlayer()
+	private TPlayer()
 	{
 		super();
-		setIdentity(TAMEConstants.IDENTITY_CURRENT_WORLD);
 		
 		this.permissionType = PermissionType.EXCLUDE;
 		this.permittedActionList = new Hash<String>(2);
@@ -76,6 +71,16 @@ public class TPlayer extends TActionableElement
 		this.actionFailedBlock = null;
 		this.actionAmbiguityBlock = null;
 		this.unknownActionBlock = null;
+	}
+
+	/**
+	 * Creates an empty player.
+	 * @param identity its main identity.
+	 */
+	public TPlayer(String identity)
+	{
+		this();
+		setIdentity(identity);
 	}
 	
 	@Override

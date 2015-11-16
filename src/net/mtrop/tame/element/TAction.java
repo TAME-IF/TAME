@@ -66,6 +66,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	{
 		this.names = new CaseInsensitiveHash();
 		this.extraStrings = new CaseInsensitiveHash();
+		this.type = Type.GENERAL;
 	}
 	
 	/**
@@ -74,11 +75,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	public TAction(String identity)
 	{
 		this();
-		if (Common.isEmpty(identity))
-			throw new IllegalArgumentException("Identity cannot be blank.");
-		
-		this.identity = identity;
-		this.type = Type.GENERAL;
+		setIdentity(identity);
 	}
 	
 	/** 
@@ -92,7 +89,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	/**
 	 * Sets this action's identity.
 	 */
-	public void setIdentity(String identity)
+	private void setIdentity(String identity)
 	{
 		if (Common.isEmpty(identity))
 			throw new IllegalArgumentException("Identity cannot be blank.");

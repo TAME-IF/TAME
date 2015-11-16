@@ -48,10 +48,7 @@ public class TRoom extends TActionableElement implements ActionForbiddenHandler,
 	/** Code block ran upon default action disallow. */
 	protected Block actionForbidBlock;
 
-	/**
-	 * Constructs an instance of a game world.
-	 */
-	public TRoom()
+	private TRoom()
 	{
 		super();
 		
@@ -64,6 +61,16 @@ public class TRoom extends TActionableElement implements ActionForbiddenHandler,
 		actionForbidBlock = null;
 	}
 
+	/**
+	 * Creates an empty room.
+	 * @param identity its main identity.
+	 */
+	public TRoom(String identity)
+	{
+		this();
+		setIdentity(identity);
+	}
+	
 	@Override
 	public PermissionType getPermissionType()
 	{

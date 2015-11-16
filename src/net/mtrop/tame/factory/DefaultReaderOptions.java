@@ -1,19 +1,26 @@
 package net.mtrop.tame.factory;
 
+import java.io.PrintStream;
+
 /**
  * Default script reader options implementation.
  * @author Matthew Tropiano
  */
 public class DefaultReaderOptions implements TAMEScriptReaderOptions
 {
+	private static final String[] NO_DEFINES = {}; 
+	
 	private String[] defines;
 	private boolean optimizing;
 	private boolean verbose;
+	private PrintStream verboseOut;
 
 	public DefaultReaderOptions()
 	{
+		this.defines = NO_DEFINES;
 		this.optimizing = true;
 		this.verbose = false;
+		this.verboseOut = System.out;
 	}
 	
 	/**
@@ -62,4 +69,18 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 		return verbose;
 	}
 
+	/**
+	 * Sets the output stream to print verbose messages to.
+	 * By default, this is {@link System#out}.
+	 */
+	public void setVerboseOut(PrintStream verboseOut) 
+	{
+		this.verboseOut = verboseOut;
+	}
+
+	@Override
+	public PrintStream getVerboseOut() 
+	{
+		return verboseOut;
+	}
 }

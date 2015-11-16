@@ -1,5 +1,7 @@
 package net.mtrop.tame.factory;
 
+import java.io.PrintStream;
+
 /**
  * An interface for reader options. 
  * These influence reader/compiler behavior.
@@ -27,5 +29,11 @@ public interface TAMEScriptReaderOptions
 	 * @return true if so, false if not.
 	 */
 	public boolean isVerbose();
+	
+	/**
+	 * Gets the output stream to print verbose messages to.
+	 * @return the print stream to use.
+	 */
+	public PrintStream getVerboseOut();
 	
 }

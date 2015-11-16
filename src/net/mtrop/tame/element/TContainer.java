@@ -9,6 +9,22 @@ import java.io.InputStream;
  */
 public class TContainer extends TElement 
 {
+	
+	private TContainer()
+	{
+		super();
+	}
+	
+	/**
+	 * Creates an empty container.
+	 * @param identity its main identity.
+	 */
+	public TContainer(String identity) 
+	{
+		this();
+		setIdentity(identity);
+	}
+
 	/**
 	 * Creates this container from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.

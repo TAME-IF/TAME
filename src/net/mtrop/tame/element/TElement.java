@@ -41,9 +41,14 @@ public abstract class TElement implements Saveable
 
 	protected TElement()
 	{
-		this.identity = null;
 		this.initBlock = null;
 		this.procedureBlock = new ActionTable();
+	}
+	
+	protected TElement(String identity)
+	{
+		this();
+		setIdentity(identity);
 	}
 	
 	/** 
@@ -57,7 +62,7 @@ public abstract class TElement implements Saveable
 	/** 
 	 * Sets the identity (primary identifier name). 
 	 */
-	public void setIdentity(String identity)
+	protected void setIdentity(String identity)
 	{
 		if (Common.isEmpty(identity))
 			throw new IllegalArgumentException("Identity cannot be blank.");

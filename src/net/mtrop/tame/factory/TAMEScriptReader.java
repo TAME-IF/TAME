@@ -10,7 +10,6 @@ import java.io.StringReader;
 import java.util.Arrays;
 
 import com.blackrook.commons.Common;
-import com.blackrook.commons.hash.HashedHashMap;
 import com.blackrook.commons.linkedlist.Stack;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
@@ -63,79 +62,81 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_FALSE = 					1;
 		static final int TYPE_TRUE = 					2;
 
-		static final int TYPE_COMMAND_INTERNAL = 		3;
-		static final int TYPE_COMMAND_CONTROL = 		4;
-		static final int TYPE_ELSE =					5;
-		static final int TYPE_COMMAND_STATEMENT = 		6;
-		static final int TYPE_COMMAND_EXPRESSION = 		7;
+		static final int TYPE_WHILE =					3;
+		static final int TYPE_FOR =						4;
+		static final int TYPE_IF =						5;
+		static final int TYPE_ELSE =					6;
+		static final int TYPE_COMMAND_INTERNAL = 		7;
+		static final int TYPE_COMMAND_STATEMENT = 		8;
+		static final int TYPE_COMMAND_EXPRESSION = 		9;
 
-		static final int TYPE_DELIM_LPAREN =			10;
-		static final int TYPE_DELIM_RPAREN =			11;
-		static final int TYPE_DELIM_LBRACE = 			12;
-		static final int TYPE_DELIM_RBRACE = 			13;
-		static final int TYPE_DELIM_LBRACK = 			14;
-		static final int TYPE_DELIM_RBRACK = 			15;
-		static final int TYPE_DELIM_COLON = 			16;
-		static final int TYPE_DELIM_SEMICOLON = 		17;
-		static final int TYPE_DELIM_COMMA = 			18;
-		static final int TYPE_DELIM_DOT = 				19;
-		static final int TYPE_DELIM_PLUS =				20;
-		static final int TYPE_DELIM_MINUS =				21;
-		static final int TYPE_DELIM_TILDE =				22;
-		static final int TYPE_DELIM_EXCLAMATION =		23;
-		static final int TYPE_DELIM_STAR = 				24;
-		static final int TYPE_DELIM_SLASH = 			25;
-		static final int TYPE_DELIM_PERCENT = 			26;
-		static final int TYPE_DELIM_AMPERSAND = 		27;
-		static final int TYPE_DELIM_AMPERSAND2 = 		28;
-		static final int TYPE_DELIM_PIPE = 				29;
-		static final int TYPE_DELIM_PIPE2 = 			30;
-		static final int TYPE_DELIM_CARAT = 			31;
-		static final int TYPE_DELIM_CARAT2 = 			32;
-		static final int TYPE_DELIM_LESS = 				33;
-		static final int TYPE_DELIM_LESS2 = 			34;
-		static final int TYPE_DELIM_LESSEQUAL = 		35;
-		static final int TYPE_DELIM_GREATER =			36;
-		static final int TYPE_DELIM_GREATER2 = 			37;
-		static final int TYPE_DELIM_GREATER3 = 			38;
-		static final int TYPE_DELIM_GREATEREQUAL = 		39;
-		static final int TYPE_DELIM_EQUAL = 			40;
-		static final int TYPE_DELIM_EQUAL2 = 			41;
-		static final int TYPE_DELIM_EQUAL3 = 			42;
-		static final int TYPE_DELIM_NOTEQUAL = 			43;
-		static final int TYPE_DELIM_NOTEQUALEQUAL =		44;
+		static final int TYPE_DELIM_LPAREN =			20;
+		static final int TYPE_DELIM_RPAREN =			21;
+		static final int TYPE_DELIM_LBRACE = 			22;
+		static final int TYPE_DELIM_RBRACE = 			23;
+		static final int TYPE_DELIM_LBRACK = 			24;
+		static final int TYPE_DELIM_RBRACK = 			25;
+		static final int TYPE_DELIM_COLON = 			26;
+		static final int TYPE_DELIM_SEMICOLON = 		27;
+		static final int TYPE_DELIM_COMMA = 			28;
+		static final int TYPE_DELIM_DOT = 				29;
+		static final int TYPE_DELIM_PLUS =				30;
+		static final int TYPE_DELIM_MINUS =				41;
+		static final int TYPE_DELIM_TILDE =				42;
+		static final int TYPE_DELIM_EXCLAMATION =		43;
+		static final int TYPE_DELIM_STAR = 				44;
+		static final int TYPE_DELIM_SLASH = 			45;
+		static final int TYPE_DELIM_PERCENT = 			46;
+		static final int TYPE_DELIM_AMPERSAND = 		47;
+		static final int TYPE_DELIM_AMPERSAND2 = 		48;
+		static final int TYPE_DELIM_PIPE = 				49;
+		static final int TYPE_DELIM_PIPE2 = 			50;
+		static final int TYPE_DELIM_CARAT = 			51;
+		static final int TYPE_DELIM_CARAT2 = 			52;
+		static final int TYPE_DELIM_LESS = 				53;
+		static final int TYPE_DELIM_LESS2 = 			54;
+		static final int TYPE_DELIM_LESSEQUAL = 		55;
+		static final int TYPE_DELIM_GREATER =			56;
+		static final int TYPE_DELIM_GREATER2 = 			57;
+		static final int TYPE_DELIM_GREATER3 = 			58;
+		static final int TYPE_DELIM_GREATEREQUAL = 		59;
+		static final int TYPE_DELIM_EQUAL = 			60;
+		static final int TYPE_DELIM_EQUAL2 = 			61;
+		static final int TYPE_DELIM_EQUAL3 = 			62;
+		static final int TYPE_DELIM_NOTEQUAL = 			63;
+		static final int TYPE_DELIM_NOTEQUALEQUAL =		64;
 
-		static final int TYPE_MODULE = 					50;
-		static final int TYPE_WORLD = 					51;
-		static final int TYPE_ROOM = 					52;
-		static final int TYPE_PLAYER = 					53;
-		static final int TYPE_OBJECT = 					54;
-		static final int TYPE_CONTAINER =				55;
-		static final int TYPE_ACTION = 					56;
-		static final int TYPE_GENERAL = 				57;
-		static final int TYPE_MODAL = 					58;
-		static final int TYPE_TRANSITIVE = 				59;
-		static final int TYPE_DITRANSITIVE = 			60;
-		static final int TYPE_OPEN = 					61;
-		static final int TYPE_NAMED = 					62;
-		static final int TYPE_MODES = 					63;
-		static final int TYPE_CONJOINS = 				64;
-		static final int TYPE_EXCLUDES = 				65;
-		static final int TYPE_RESTRICTS = 				66;
+		static final int TYPE_MODULE = 					70;
+		static final int TYPE_WORLD = 					71;
+		static final int TYPE_ROOM = 					72;
+		static final int TYPE_PLAYER = 					73;
+		static final int TYPE_OBJECT = 					74;
+		static final int TYPE_CONTAINER =				75;
+		static final int TYPE_ACTION = 					76;
+		static final int TYPE_GENERAL = 				77;
+		static final int TYPE_MODAL = 					78;
+		static final int TYPE_TRANSITIVE = 				79;
+		static final int TYPE_DITRANSITIVE = 			80;
+		static final int TYPE_OPEN = 					81;
+		static final int TYPE_NAMED = 					82;
+		static final int TYPE_MODES = 					83;
+		static final int TYPE_CONJOINS = 				84;
+		static final int TYPE_EXCLUDES = 				85;
+		static final int TYPE_RESTRICTS = 				86;
 
-		static final int TYPE_INIT = 					70;
-		static final int TYPE_ONACTION =				71;
-		static final int TYPE_ONACTIONWITH =			72;
-		static final int TYPE_ONACTIONWITHOTHER =		73;
-		static final int TYPE_ONROOMBROWSE =			74;
-		static final int TYPE_ONPLAYERBROWSE =			75;
-		static final int TYPE_ONCONTAINERBROWSE =		76;
-		static final int TYPE_ONMODALACTION =			77;
-		static final int TYPE_ONUNKNOWNACTION =			78;
-		static final int TYPE_ONAMBIGUOUSACTION =		79;
-		static final int TYPE_ONFORBIDDENACTION =		80;
-		static final int TYPE_ONFAILEDACTION =			81;
-		static final int TYPE_AFTERREQUEST =			82;
+		static final int TYPE_INIT = 					90;
+		static final int TYPE_ONACTION =				91;
+		static final int TYPE_ONACTIONWITH =			92;
+		static final int TYPE_ONACTIONWITHOTHER =		93;
+		static final int TYPE_ONROOMBROWSE =			94;
+		static final int TYPE_ONPLAYERBROWSE =			95;
+		static final int TYPE_ONCONTAINERBROWSE =		96;
+		static final int TYPE_ONMODALACTION =			97;
+		static final int TYPE_ONUNKNOWNACTION =			98;
+		static final int TYPE_ONAMBIGUOUSACTION =		99;
+		static final int TYPE_ONFORBIDDENACTION =		100;
+		static final int TYPE_ONFAILEDACTION =			101;
+		static final int TYPE_AFTERREQUEST =			102;
 		
 		private TSKernel()
 		{
@@ -148,6 +149,9 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("true", TYPE_TRUE);
 			addCaseInsensitiveKeyword("false", TYPE_FALSE);
 			addCaseInsensitiveKeyword("else", TYPE_ELSE);
+			addCaseInsensitiveKeyword("if", TYPE_IF);
+			addCaseInsensitiveKeyword("while", TYPE_WHILE);
+			addCaseInsensitiveKeyword("for", TYPE_FOR);
 
 			addDelimiter("(", TYPE_DELIM_LPAREN);
 			addDelimiter(")", TYPE_DELIM_RPAREN);
@@ -220,9 +224,10 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				String name = command.name();
 				if (command.isInternal())
-					addCaseInsensitiveKeyword(name, TYPE_COMMAND_INTERNAL);
-				else if (command.isEvaluating())
-					addCaseInsensitiveKeyword(name, TYPE_COMMAND_CONTROL);
+				{
+					if(!command.isBlock())
+						addCaseInsensitiveKeyword(name, TYPE_COMMAND_INTERNAL);
+				}
 				else if (command.getReturnType() != null)
 					addCaseInsensitiveKeyword(name, TYPE_COMMAND_EXPRESSION);
 				else
@@ -279,9 +284,6 @@ public final class TAMEScriptReader implements TAMEConstants
 		/** The parser options. */
 		private TAMEScriptReaderOptions options;
 
-		/** Set of prototypes. */
-		private HashedHashMap<String, String> prototypes;
-		
 		/** Current root. */
 		private TAMEModule currentModule;
 		/** Current block. */
@@ -290,9 +292,11 @@ public final class TAMEScriptReader implements TAMEConstants
 		private TSParser(TSLexer lexer, TAMEScriptReaderOptions options)
 		{
 			super(lexer);
-			prototypes = new HashedHashMap<>();
-			currentModule = null;
-			currentBlock = new Stack<Block>();
+			for (String def : options.getDefines())
+				lexer.addDefineMacro(def);
+			this.options = options;
+			this.currentModule = null;
+			this.currentBlock = new Stack<Block>();
 		}
 		
 		/**
@@ -466,9 +470,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseContainer()
 		{
 			// container identity.
-			if (!isVariable())
+			if (!currentType(Lexer.TYPE_IDENTIFIER))
 			{
-				addErrorMessage("Container requires an identity.");
+				addErrorMessage("Expected container identity.");
 				return false;
 			}
 
@@ -478,30 +482,18 @@ public final class TAMEScriptReader implements TAMEConstants
 			// prototype?
 			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
 			{
-				if (prototypes.containsValue("container", identity))
-				{
-					addErrorMessage("Container \"" + identity + "\" was already prototyped.");
-					return false;
-				}
-				
-				prototypes.add("container", identity);
-				TContainer element = new TContainer();
-				element.setIdentity(identity);
+				TContainer element = new TContainer(identity);
 				currentModule.addContainer(element);
-				
 				return true;
 			}
 
 			TContainer container;
 			if ((container = currentModule.getContainerByIdentity(identity)) == null)
 			{
-				container = new TContainer();
-				container.setIdentity(identity);
+				container = new TContainer(identity);
 				currentModule.addContainer(container);
 			}
-			
-			prototypes.removeValue("container", identity);
-			
+									
 			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
 			{
 				addErrorMessage("Expected \"{\" for container body start or \";\" (prototyping).");
@@ -555,9 +547,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseObject()
 		{
 			// object identity.
-			if (!isVariable())
+			if (!currentType(Lexer.TYPE_IDENTIFIER))
 			{
-				addErrorMessage("Object requires an identity.");
+				addErrorMessage("Expected object identity.");
 				return false;
 			}
 
@@ -567,30 +559,18 @@ public final class TAMEScriptReader implements TAMEConstants
 			// prototype?
 			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
 			{
-				if (prototypes.containsValue("object", identity))
-				{
-					addErrorMessage("Object \"" + identity + "\" was already prototyped.");
-					return false;
-				}
-				
-				prototypes.add("object", identity);
-				TObject element = new TObject();
-				element.setIdentity(identity);
+				TObject element = new TObject(identity);
 				currentModule.addObject(element);
-				
 				return true;
 			}
 
 			TObject object;
 			if ((object = currentModule.getObjectByIdentity(identity)) == null)
 			{
-				object = new TObject();
-				object.setIdentity(identity);
+				object = new TObject(identity);
 				currentModule.addObject(object);
 			}
-			
-			prototypes.removeValue("object", identity);
-			
+									
 			if (!parseObjectNames(object))
 				return false;
 			
@@ -707,9 +687,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseRoom()
 		{
 			// room identity.
-			if (!isVariable())
+			if (!currentType(Lexer.TYPE_IDENTIFIER))
 			{
-				addErrorMessage("Room requires an identity.");
+				addErrorMessage("Expected room identity.");
 				return false;
 			}
 
@@ -719,30 +699,18 @@ public final class TAMEScriptReader implements TAMEConstants
 			// prototype?
 			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
 			{
-				if (prototypes.containsValue("room", identity))
-				{
-					addErrorMessage("Room \"" + identity + "\" was already prototyped.");
-					return false;
-				}
-				
-				prototypes.add("room", identity);
-				TRoom element = new TRoom();
-				element.setIdentity(identity);
+				TRoom element = new TRoom(identity);
 				currentModule.addRoom(element);
-				
 				return true;
 			}
 
 			TRoom room;
 			if ((room = currentModule.getRoomByIdentity(identity)) == null)
 			{
-				room = new TRoom();
-				room.setIdentity(identity);
+				room = new TRoom(identity);
 				currentModule.addRoom(room);
 			}
-			
-			prototypes.removeValue("room", identity);
-			
+						
 			if (!parseActionPermissionClause(room))
 				return false;
 			
@@ -829,9 +797,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parsePlayer()
 		{
 			// player identity.
-			if (!isVariable())
+			if (!currentType(Lexer.TYPE_IDENTIFIER))
 			{
-				addErrorMessage("Player requires an identity.");
+				addErrorMessage("Expected player identity.");
 				return false;
 			}
 
@@ -841,29 +809,17 @@ public final class TAMEScriptReader implements TAMEConstants
 			// prototype?
 			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
 			{
-				if (prototypes.containsValue("player", identity))
-				{
-					addErrorMessage("Player \"" + identity + "\" was already prototyped.");
-					return false;
-				}
-				
-				prototypes.add("player", identity);
-				TPlayer p = new TPlayer();
-				p.setIdentity(identity);
-				currentModule.addPlayer(p);
-				
+				TPlayer element = new TPlayer(identity);
+				currentModule.addPlayer(element);
 				return true;
 			}
 
 			TPlayer player;
 			if ((player = currentModule.getPlayerByIdentity(identity)) == null)
 			{
-				player = new TPlayer();
-				player.setIdentity(identity);
+				player = new TPlayer(identity);
 				currentModule.addPlayer(player);
 			}
-			
-			prototypes.removeValue("player", identity);
 			
 			if (!parseActionPermissionClause(player))
 				return false;
@@ -983,13 +939,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			// prototype?
 			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
 			{
-				if (prototypes.containsKey("world"))
-				{
-					addErrorMessage("World was already prototyped.");
-					return false;
-				}
-				
-				prototypes.add("world", "world");
 				currentModule.setWorld(new TWorld());
 				return true;
 			}
@@ -1007,8 +956,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
-			prototypes.removeUsingKey("world");
-			
 			if (!parseWorldBody(world))
 				return false;
 			
@@ -2071,9 +2018,27 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 			
-			if (!parseStatement())
+			if (currentType(TSKernel.TYPE_DELIM_SEMICOLON))
 			{
-				currentBlock.pop();
+				nextToken();
+				return true;
+			}
+			
+			// control block handling.
+			if (currentType(TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
+			{
+				if (!parseControl())
+					return false;
+				
+				return true;
+			}
+			
+			if (!parseStatement())
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				addErrorMessage("Expected \";\" to terminate statement.");
 				return false;
 			}
 			
@@ -2124,12 +2089,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		/**
 		 * Parses a statement. Emits commands to the current block.
 		 * [Statement] := 
-		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION] ";"
-		 * 		[VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION] ";"
-		 * 		[COMMANDEXPRESSION] ";"
-		 * 		[COMMANDSTATEMENT] ";"
+		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
+		 * 		[VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
+		 * 		[COMMANDEXPRESSION]
+		 * 		[COMMANDSTATEMENT]
 		 * 		[COMMANDBLOCK]
-		 *		";"
+		 *		[e]
 		 */
 		public boolean parseStatement()
 		{
@@ -2164,12 +2129,6 @@ public final class TAMEScriptReader implements TAMEConstants
 					if (!parseExpression())
 						return false;
 					
-					if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-					{
-						addErrorMessage("Statement error - expected \";\" at end of statement.");
-						return false;
-					}
-					
 					emit(Command.create(TAMECommand.POPELEMENTVALUE, identToken, variable));
 				}
 				else if (identToken.isVariable())
@@ -2186,12 +2145,6 @@ public final class TAMEScriptReader implements TAMEConstants
 					if (!parseExpression())
 						return false;
 					
-					if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-					{
-						addErrorMessage("Statement error - expected \";\" at end of statement.");
-						return false;
-					}
-					
 					emit(Command.create(TAMECommand.POPVALUE, variable));
 				}
 				else
@@ -2206,20 +2159,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				addErrorMessage("Statement error - command \""+currentToken().getLexeme()+"\" is an internal reserved command.");
 				return false;
 			}
-			else if (currentType(TSKernel.TYPE_COMMAND_CONTROL))
-			{
-				TAMECommand commandType = tokenToCommand();
-				nextToken();
-				
-				if (!parseControlCommand(commandType))
-					return false;
-				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Statement error - expected \";\" at end of statement.");
-					return false;
-				}
-			}
 			else if (currentType(TSKernel.TYPE_COMMAND_STATEMENT))
 			{
 				TAMECommand commandType = tokenToCommand();
@@ -2228,11 +2167,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				if (!parseCommandCall(commandType))
 					return false;
 
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Statement error - expected \";\" at end of statement.");
-					return false;
-				}
 			}
 			else if (currentType(TSKernel.TYPE_COMMAND_EXPRESSION))
 			{
@@ -2243,16 +2177,6 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				
 				emit(Command.create(TAMECommand.POP));
-
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Statement error - expected \";\" at end of statement.");
-					return false;
-				}
-			}
-			else if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-			{
-				return true;
 			}
 
 			return true;
@@ -2266,11 +2190,32 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		public boolean parseStatementList()
 		{
-			if (!currentType(Lexer.TYPE_IDENTIFIER, TSKernel.TYPE_COMMAND_INTERNAL, TSKernel.TYPE_COMMAND_STATEMENT, TSKernel.TYPE_COMMAND_CONTROL, TSKernel.TYPE_COMMAND_EXPRESSION, TSKernel.TYPE_DELIM_SEMICOLON))
+			if (!currentType(Lexer.TYPE_IDENTIFIER, TSKernel.TYPE_COMMAND_INTERNAL, TSKernel.TYPE_COMMAND_STATEMENT, TSKernel.TYPE_COMMAND_EXPRESSION, TSKernel.TYPE_DELIM_SEMICOLON, TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
 				return true;
+			
+			if (currentType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				nextToken();
+				return parseStatementList();
+			}
+			
+			// control block handling.
+			if (currentType(TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
+			{
+				if (!parseControl())
+					return false;
+				
+				return parseStatementList();
+			}
 			
 			if (!parseStatement())
 				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				addErrorMessage("Expected \";\" to terminate statement.");
+				return false;
+			}
 			
 			return parseStatementList();
 		}
@@ -2534,100 +2479,168 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		public boolean parseCommandCall(TAMECommand commandType) 
 		{
-			if (commandType.isEvaluating())
+			// clause - no argument list at all.
+			if (commandType.getArgumentTypes() == null)
 			{
-				if (!parseControlCommand(commandType))
-					return false;
+				emit(Command.create(commandType));
+				return true;
+			}
+
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expression error - expected '(' after command \""+commandType.name()+".\"");
+				return false;
+			}
+			
+			if (!parseCommandArguments(commandType))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expression error - expected ')' after command arguments.");
+				return false;
+			}
+			
+			emit(Command.create(commandType));
+			return true;
+		}
+
+		/**
+		 * Parses a control block.
+		 * [ControlBlock] :=
+		 * 		[IF] "(" [EXPRESSION] ")" [BLOCK] [ELSE] [BLOCK]
+		 * 		[WHILE] "(" [EXPRESSION] ")" [BLOCK]
+		 * 		[FOR] "(" [STATEMENT] ";" [EXPRESSION] ";" [STATEMENT] ")" [BLOCK]
+		 */
+		private boolean parseControl() 
+		{
+			if (currentType(TSKernel.TYPE_IF))
+			{
+				nextToken();
 				
+				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				{
+					addErrorMessage("Expected '(' after \"if\".");
+					return false;
+				}
+
+				Block conditionalBlock = null;
+				Block successBlock = null;
+				Block failureBlock = null;
+				
+				if (!parseBlockExpression())
+					return false;
+				conditionalBlock = currentBlock.pop();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected ')' after conditional expression.");
+					return false;
+				}
+
+				if (!parseBlock())
+					return false;
+				successBlock = currentBlock.pop();
+				
+				if (currentType(TSKernel.TYPE_ELSE))
+				{
+					nextToken();
+
+					if (!parseBlock())
+						return false;
+					failureBlock = currentBlock.pop();
+				}
+
+				emit(Command.create(TAMECommand.IF, conditionalBlock, successBlock, failureBlock));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_WHILE))
+			{
+				nextToken();
+
+				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				{
+					addErrorMessage("Expected '(' after \"while\".");
+					return false;
+				}
+
+				Block conditionalBlock = null;
+				Block successBlock = null;
+				
+				if (!parseBlockExpression())
+					return false;
+				conditionalBlock = currentBlock.pop();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected ')' after conditional expression.");
+					return false;
+				}
+
+				if (!parseBlock())
+					return false;
+				successBlock = currentBlock.pop();
+
+				emit(Command.create(TAMECommand.WHILE, conditionalBlock, successBlock));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_FOR))
+			{
+				nextToken();
+
+				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				{
+					addErrorMessage("Expected '(' after \"for\".");
+					return false;
+				}
+
+				Block initBlock = null;
+				Block conditionalBlock = null;
+				Block stepBlock = null;
+				Block successBlock = null;
+				
+				if (!parseBlockStatement())
+					return false;
+				initBlock = currentBlock.pop();
+
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected ';' after inital statement in \"for\".");
+					return false;
+				}
+
+				if (!parseBlockExpression())
+					return false;
+				conditionalBlock = currentBlock.pop();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected ';' after conditional statement in \"for\".");
+					return false;
+				}
+
+				if (!parseBlockStatement())
+					return false;
+				stepBlock = currentBlock.pop();
+
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected ')' after stepping statement in \"for\".");
+					return false;
+				}
+
+				if (!parseBlock())
+					return false;
+				successBlock = currentBlock.pop();
+
+				emit(Command.create(TAMECommand.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
 				return true;
 			}
 			else
 			{
-				// clause - no argument list at all.
-				if (commandType.getArgumentTypes() == null)
-				{
-					emit(Command.create(commandType));
-					return true;
-				}
-
-				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-				{
-					addErrorMessage("Expression error - expected '(' after command \""+commandType.name()+".\"");
-					return false;
-				}
-				
-				if (!parseCommandArguments(commandType))
-					return false;
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expression error - expected ')' after command arguments.");
-					return false;
-				}
-				
-				emit(Command.create(commandType));
-				return true;
-			}
-		}
-
-		/**
-		 * Parses command arguments.
-		 */
-		private boolean parseControlCommand(TAMECommand commandType) 
-		{
-			Block conditionalBlock = null;
-			Block successBlock = null;
-			Block failureBlock = null;
-			
-			if (commandType.isConditionalBlockRequired())
-			{
-				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-				{
-					addErrorMessage("Statement error - expected '(' after command \""+commandType.name()+".\"");
-					return false;
-				}
-
-				// conditional block.
-				if (commandType.isConditionalBlockRequired())
-				{
-					if (!parseBlockExpression())
-						return false;
-					
-					conditionalBlock = currentBlock.pop();
-				}
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Statement error - expected ')' after expression.");
-					return false;
-				}
-				
-				// success block.
-				if (commandType.isSuccessBlockRequired())
-				{
-					if (!parseBlock())
-						return false;
-					
-					successBlock = currentBlock.pop();
-				}
-				
-				// failure block.
-				if (commandType.isFailureBlockPossible())
-				{
-					if (matchType(TSKernel.TYPE_ELSE))
-					{
-						if (!parseBlock())
-							return false;
-						
-						failureBlock = currentBlock.pop();
-					}
-					
-				}
-				
-			}
-			
-			emit(Command.create(commandType, conditionalBlock, successBlock, failureBlock));
-			return true;
+				addErrorMessage("INTERNAL ERROR!! CONTROL BLOCK: You should not see this!");
+				return false;
+			}	
 		}
 		
 		/**
@@ -3039,12 +3052,13 @@ public final class TAMEScriptReader implements TAMEConstants
 		// Returns a new block (unless optimization is off).
 		private Block optimizeBlock(Block block)
 		{
+			if (!options.isOptimizing())
+				return block;
+						
+			// TODO: Write this.
 			return block;
 			
 			/*
-			if (!options.isOptimizing())
-				return block;
-			
 			List<Command> tempList = new List<>();
 			Block outBlock = new Block();
 			
@@ -3087,7 +3101,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 			*/
 			
-			// TODO: Finish.
 		}
 		
 		/**
@@ -3096,6 +3109,23 @@ public final class TAMEScriptReader implements TAMEConstants
 		private void emit(Command command)
 		{
 			currentBlock.peek().add(command);
+		}
+		
+		/**
+		 * Prints an object to verbose out.
+		 */
+		private void verbose(Object output)
+		{
+			if (options.isVerbose() && options.getVerboseOut() != null)
+				options.getVerboseOut().println(String.valueOf(output));
+		}
+		
+		/**
+		 * Prints a formatted string to verbose out.
+		 */
+		private void verbosef(String formatText, Object ... args)
+		{
+			verbose(String.format(formatText, args));
 		}
 		
 	}

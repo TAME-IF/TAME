@@ -14,11 +14,17 @@ public abstract class TActionableElement extends TElement
 {
 	/** Table of associated actions. */
 	private ActionTable actionTable;
-	
-	public TActionableElement()
+
+	protected TActionableElement()
 	{
 		super();
 		this.actionTable = new ActionTable();
+	}
+	
+	protected TActionableElement(String identity)
+	{
+		this();
+		super.setIdentity(identity);
 	}
 	
 	/**

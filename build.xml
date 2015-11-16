@@ -66,7 +66,7 @@
 		<delete file="${jar.dir}/${jar.console.client.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.console.client.filename}">
 			<fileset dir="${bin.dir}">
-			    <include name="**/client/console/" />
+			    <include name="**/console/" />
 			</fileset>
 		</jar>
 	</target>
@@ -84,7 +84,7 @@
 		<delete file="${jar.dir}/${jar.shared.filename}" casesensitive="false" /> 
 		<jar destfile="${jar.dir}/${jar.shared.filename}">
 			<fileset dir="${bin.dir}" >
-			    <exclude name="**/client/" />
+			    <exclude name="**/console/" />
 			    <exclude name="**/compiler/" />
 			    <exclude name="**/test/" />
 			</fileset>
@@ -98,7 +98,7 @@
 		    	<attribute name="Main-Class" value="com.blackrook.tame.compiler.TAMECompilerMain"/>
             </manifest>
 			<fileset dir="${bin.dir}" >
-			    <exclude name="**/client/" />
+			    <exclude name="**/console/" />
 			    <exclude name="**/test/" />
 			</fileset>
 		</jar>
