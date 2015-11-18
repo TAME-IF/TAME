@@ -11,6 +11,8 @@
 	<property file="build.properties" />
 	<property file="versions.properties" />
 
+	
+	
 	<!-- Versions -->
 	<property name="exe.compiler.version" value="9.9.9.9" />
 	<property name="exe.console.client.version" value="9.9.9.9" />
@@ -25,18 +27,37 @@
 	<property name="common.lang.lib" value="${dev.base}/CommonLang/bin" />
 	<property name="launch4j.dir" value="${lib.base}/launch4j" />
 	<property name="launch4j.lib.jar" value="launch4j.jar" />
-	<property name="launch4j.xstream.lib.jar" value="lib/xstream.jar" />
-
+	<property name="launch4j.xstream.lib.jar" value="lib/xstream.jar" />	
+	
 	<!-- Project Info -->
 	<property name="project.archive" value="tame" />
 	<property name="project.javadoc.title" value="TAME" />
 	<property name="project.classpath" value="${common.lib}${S}${common.io.lib}${S}${common.lang.lib}" />
 	<property name="project.javadoc.packages" value="
-	"
-	/>
+		net.mtrop.tame,
+		net.mtrop.tame.element,
+		net.mtrop.tame.element.context,
+		net.mtrop.tame.exception,
+		net.mtrop.tame.factory,
+		net.mtrop.tame.interrupt,
+		net.mtrop.tame.lang,
+		net.mtrop.tame.struct
+	"/>
 	
 	<import file="build-import.xml" />
 
+	<property name="jar.tame.filename" value="${jar.filename}" />
+	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${exe.compiler.version}.jar" />
+	<property name="jar.console.client.one.filename" value="${project.archive}-client-${exe.console.client.version}.jar" />	
+
+	<!-- Taskdefs -->
+
+	<taskdef 
+		name="launch4j"
+		classname="net.sf.launch4j.ant.Launch4jTask"
+		classpath="${launch4j.lib.jar}${S}${launch4j.xstream.lib.jar}"
+	/>
+	
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
         <javadoc access="protected" 
         	additionalparam="-J-Xmx512m  " author="true" 
@@ -62,27 +83,9 @@
         </javadoc>
     </target>	
 
-		<target name="jar.tame.console.client" description="Jars up the compiler classes only.">
-		<delete file="${jar.dir}/${jar.console.client.filename}" casesensitive="false" />
-		<jar destfile="${jar.dir}/${jar.console.client.filename}">
-			<fileset dir="${bin.dir}">
-			    <include name="**/console/" />
-			</fileset>
-		</jar>
-	</target>
-
-	<target name="jar.tame.compiler" description="Jars up the proprietary clients only.">
-		<delete file="${jar.dir}/${jar.compiler.filename}" casesensitive="false" /> 
-		<jar destfile="${jar.dir}/${jar.compiler.filename}">
-			<fileset dir="${bin.dir}">
-			    <include name="**/compiler/" />
-			</fileset>
-		</jar>
-	</target>
-
-	<target name="jar.tame.shared" description="Jars up the minimum TAME classes. Nothing executable.">
-		<delete file="${jar.dir}/${jar.shared.filename}" casesensitive="false" /> 
-		<jar destfile="${jar.dir}/${jar.shared.filename}">
+	<target name="jar.tame" description="Jars up TAME classes. Nothing executable.">
+		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" /> 
+		<jar destfile="${jar.dir}/${jar.tame.filename}">
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/console/" />
 			    <exclude name="**/compiler/" />
@@ -95,7 +98,7 @@
 		<delete file="${jar.dir}/${jar.compiler.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.compiler.one.filename}">
 			<manifest>
-		    	<attribute name="Main-Class" value="com.blackrook.tame.compiler.TAMECompilerMain"/>
+		    	<attribute name="Main-Class" value="net.mtrop.tame.compiler.TAMECompilerMain"/>
             </manifest>
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/console/" />
@@ -120,7 +123,7 @@
 		<delete file="${jar.dir}/${jar.console.client.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.console.client.one.filename}">
 			<manifest>
-		    	<attribute name="Main-Class" value="com.blackrook.tame.client.console.TAMEConsoleMain"/>
+		    	<attribute name="Main-Class" value="net.mtrop.tame.client.console.TAMEConsoleMain"/>
             </manifest>
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/compiler/" />
@@ -141,7 +144,7 @@
 		</jar>
 	</target>
 
-	<target name="jar.all" depends="jar.tame.shared, jar.tame.console.client, jar.tame.compiler, jar.tame.compiler.one, jar.tame.console.client.one" description="Make all JARs.">
+	<target name="jar.all" depends="jar.tame, jar.tame.compiler.one, jar.tame.console.client.one" description="Make all JARs.">
 	</target>
 	
 	<target name="exe.compiler" depends="jar.tame.compiler.one">

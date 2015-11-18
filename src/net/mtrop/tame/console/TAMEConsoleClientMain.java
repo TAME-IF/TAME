@@ -30,10 +30,10 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		out.println("TAME Console Client by Matt Tropiano (C) 2015");
 		out.println("Usage: tame [module] <gameload> (-debug)");
 		out.println("[module]:");
-		out.println("    \"binaryfile\"");
-		out.println("    -s \"scriptfile\" (-v) (-d [defines])");
+		out.println("    [binaryfile]");
+		out.println("    -s [scriptfile] (-v) (-d [defines])");
 		out.println("<gameload>:");
-		out.println("    -l \"statefile\"");
+		out.println("    -l [statefile]");
 	}
 	
 	// Entry point.
