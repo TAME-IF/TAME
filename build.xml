@@ -10,8 +10,6 @@
 
 	<property file="build.properties" />
 	<property file="versions.properties" />
-
-	
 	
 	<!-- Versions -->
 	<property name="exe.compiler.version" value="9.9.9.9" />
@@ -26,8 +24,8 @@
 	<property name="common.io.lib" value="${dev.base}/CommonIO/bin" />
 	<property name="common.lang.lib" value="${dev.base}/CommonLang/bin" />
 	<property name="launch4j.dir" value="${lib.base}/launch4j" />
-	<property name="launch4j.lib.jar" value="launch4j.jar" />
-	<property name="launch4j.xstream.lib.jar" value="lib/xstream.jar" />	
+	<property name="launch4j.lib.jar" value="${launch4j.dir}/launch4j.jar" />
+	<property name="launch4j.xstream.lib.jar" value="${launch4j.dir}/lib/xstream.jar" />	
 	
 	<!-- Project Info -->
 	<property name="project.archive" value="tame" />
@@ -50,6 +48,10 @@
 	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${exe.compiler.version}.jar" />
 	<property name="jar.console.client.one.filename" value="${project.archive}-client-${exe.console.client.version}.jar" />	
 
+	<property name="exe.dir" value="${build.dir}/win32" />
+	<property name="exe.compiler.filename" value="tamec.exe" />
+	<property name="exe.console.client.filename" value="tame.exe" />
+	
 	<!-- Taskdefs -->
 
 	<taskdef 
@@ -57,6 +59,17 @@
 		classname="net.sf.launch4j.ant.Launch4jTask"
 		classpath="${launch4j.lib.jar}${S}${launch4j.xstream.lib.jar}"
 	/>
+	
+	<target name="init.exe" depends="clean.exe" description="Initializes the EXE folders.">
+		<mkdir dir="${exe.dir}" />
+	</target>
+
+	<target name="clean.exe" description="Cleans up the exe builds.">
+		<delete dir="${exe.dir}" includeemptydirs="true" casesensitive="false" /> 
+	</target>
+
+	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.exe"  description="Cleans up everything.">
+	</target>
 	
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
         <javadoc access="protected" 
@@ -83,7 +96,7 @@
         </javadoc>
     </target>	
 
-	<target name="jar.tame" description="Jars up TAME classes. Nothing executable.">
+	<target name="jar.tame" depends="compile" description="Jars up TAME classes. Nothing executable.">
 		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" /> 
 		<jar destfile="${jar.dir}/${jar.tame.filename}">
 			<fileset dir="${bin.dir}" >
@@ -94,7 +107,7 @@
 		</jar>
 	</target>
 	
-	<target name="jar.tame.compiler.one" description="Jars up all classes needed to run the compiler in one standalone JAR.">
+	<target name="jar.tame.compiler.one" depends="compile" description="Jars up all classes needed to run the compiler in one standalone JAR.">
 		<delete file="${jar.dir}/${jar.compiler.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.compiler.one.filename}">
 			<manifest>
@@ -119,11 +132,11 @@
 		</jar>
 	</target>
 
-	<target name="jar.tame.console.client.one" description="Jars up all classes needed to run the console client in one standalone JAR.">
+	<target name="jar.tame.console.client.one" depends="compile" description="Jars up all classes needed to run the console client in one standalone JAR.">
 		<delete file="${jar.dir}/${jar.console.client.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.console.client.one.filename}">
 			<manifest>
-		    	<attribute name="Main-Class" value="net.mtrop.tame.client.console.TAMEConsoleMain"/>
+		    	<attribute name="Main-Class" value="net.mtrop.tame.console.TAMEConsoleClientMain"/>
             </manifest>
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/compiler/" />
@@ -146,8 +159,8 @@
 
 	<target name="jar.all" depends="jar.tame, jar.tame.compiler.one, jar.tame.console.client.one" description="Make all JARs.">
 	</target>
-	
-	<target name="exe.compiler" depends="jar.tame.compiler.one">
+
+	<target name="exe.compiler" depends="jar.tame.compiler.one, clean.exe, init.exe">
 		<delete file="${exe.dir}/${exe.compiler.filename}" />
 		<launch4j 
 			configFile="./launch4j/TAMECompiler.xml" 
@@ -160,7 +173,7 @@
 		/>
 	</target>
 	
-	<target name="exe.console.client" depends="jar.tame.console.client.one">
+	<target name="exe.console.client" depends="jar.tame.console.client.one, init.exe">
 		<delete file="${exe.dir}/${exe.console.client.filename}" />
 		<launch4j 
 			configFile="./launch4j/TAMEConsoleClient.xml" 
@@ -173,7 +186,10 @@
 		/>
 	</target>
 	
-	<target name="exe.all" depends="exe.compiler, exe.console.client" description="Make all EXEs.">
+	<target name="exe" depends="exe.compiler, exe.console.client" description="Make all EXEs.">
+	</target>
+
+	<target name="release" depends="zip, exe">
 	</target>
 
 </project>

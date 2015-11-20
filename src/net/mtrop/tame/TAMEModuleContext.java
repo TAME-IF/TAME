@@ -140,6 +140,21 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
+	 * Sets the initial object lookup names.
+	 * Should only be called on first initialize.
+	 */
+	public void setInitialObjectNames()
+	{
+		for (ObjectPair<String, TObjectContext> element : objectContextHash)
+		{
+			TObjectContext context = element.getValue();
+			TObject object = context.getElement();
+			for (String name : object.getNames())
+				context.addName(name);
+		}
+	}
+	
+	/**
 	 * Returns the world context.
 	 */
 	public TWorldContext getWorldContext()

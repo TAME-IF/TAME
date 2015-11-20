@@ -24,6 +24,7 @@ import com.blackrook.io.SuperWriter;
 
 /**
  * All values in the interpreter are of this type, which stores a type.
+ * FIXME: All value math should conform to ECMAScript standards.
  * @author Matthew Tropiano
  */
 public class Value implements Comparable<Value>, Saveable
@@ -788,6 +789,8 @@ public class Value implements Comparable<Value>, Saveable
 		else
 			throw new ArithmeticException("These values can't be modulo divided: " + value1 + ", " + value2);
 	}
+	
+	// TODO: Add power (exponentiation).
 	
 	/**
 	 * Returns the "bitwise and" of two non-string literals.

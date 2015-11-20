@@ -153,6 +153,12 @@ public final class TAMECompilerMain
 	// Main entry.
 	public static void main(String[] args) 
 	{
+		if (args.length == 0)
+		{
+			printHelp();
+			System.exit(0);
+		}
+		
 		Options options = new Options();
 		
 		if (!scanOptions(options, args))

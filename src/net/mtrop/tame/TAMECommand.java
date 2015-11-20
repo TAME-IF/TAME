@@ -1120,33 +1120,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Gets a number to a certain power.
-	 * First POP is the power.
-	 * Second POP is the number. 
-	 * Returns float.
-	 */
-	POW (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value power = request.popValue();
-			Value number = request.popValue();
-			
-			if (!number.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POW call.");
-			if (!power.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POW call.");
-
-			double d = number.asDouble();
-			double f = power.asDouble();
-
-			request.pushValue(Value.create(Math.pow(d, f)));
-		}
-		
-	},
-	
-	/**
 	 * Gets the square root of a number.
 	 * POP is the number.
 	 * Returns float.

@@ -961,7 +961,8 @@ public final class TAMELogic implements TAMEConstants
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		
 		response.trace(request, "Starting init...");
-		
+
+		moduleContext.setInitialObjectNames();
 		callInitOnContexts(request, response, moduleContext.getContainerContextList().valueIterator());
 		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
 		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());
