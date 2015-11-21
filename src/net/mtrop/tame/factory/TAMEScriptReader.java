@@ -286,7 +286,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		/** The parser options. */
 		private TAMEScriptReaderOptions options;
 
-		/** Current root. */
+		/** Current module. */
 		private TAMEModule currentModule;
 		/** Current block. */
 		private Stack<Block> currentBlock;
@@ -302,7 +302,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
-		 * Reads objects into the target root.
+		 * Reads objects into the target module.
 		 */
 		TAMEModule readModule()
 		{
@@ -3133,9 +3133,8 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root from a starting text file.
-	 * Note: Calls apply() with a new root.
-	 * @param file	the file to read from.
+	 * Reads TAMEModule objects into a new module from a starting text file.
+	 * @param file the file to read from.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
@@ -3153,8 +3152,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects from a String of text into a new root.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects from a String of text into a new module.
 	 * @param text the String to read from.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
@@ -3167,8 +3165,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module.
 	 * @param streamName the name of the stream.
 	 * @param in the stream to read from.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3183,8 +3180,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root from a reader stream.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module from a reader stream.
 	 * @param streamName the name of the stream.
 	 * @param reader the reader to read from.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3199,8 +3195,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root from a starting text file.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module from a starting text file.
 	 * @param file	the file to read from.
 	 * @param includer the includer to use to resolve "included" paths.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3220,8 +3215,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects from a String of text into a new root.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects from a String of text into a new module.
 	 * @param text the String to read from.
 	 * @param includer the includer to use to resolve "included" paths.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3235,8 +3229,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module.
 	 * @param streamName the name of the stream.
 	 * @param in the stream to read from.
 	 * @param includer the includer to use to resolve "included" paths.
@@ -3252,8 +3245,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root from a reader stream.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module from a reader stream.
 	 * @param streamName the name of the stream.
 	 * @param reader the reader to read from.
 	 * @param includer the includer to use to resolve "included" paths.
@@ -3269,8 +3261,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root from a starting text file.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module from a starting text file.
 	 * @param file	the file to read from.
 	 * @param options the reader options for compiling.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3290,8 +3281,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects from a String of text into a new root.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects from a String of text into a new module.
 	 * @param text the String to read from.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws IOException if the stream can't be read.
@@ -3303,8 +3293,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module.
 	 * @param streamName the name of the stream.
 	 * @param in the stream to read from.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3319,8 +3308,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root from a reader stream.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module from a reader stream.
 	 * @param streamName the name of the stream.
 	 * @param reader the reader to read from.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3335,8 +3323,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root from a starting text file.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module from a starting text file.
 	 * @param file	the file to read from.
 	 * @param includer the includer to use to resolve "included" paths.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3356,8 +3343,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects from a String of text into a new root.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects from a String of text into a new module.
 	 * @param text the String to read from.
 	 * @param includer the includer to use to resolve "included" paths.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
@@ -3370,8 +3356,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module.
 	 * @param streamName the name of the stream.
 	 * @param in the stream to read from.
 	 * @param includer the includer to use to resolve "included" paths.
@@ -3387,8 +3372,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	}
 
 	/**
-	 * Reads TAMEModule objects into a new root from a reader stream.
-	 * Note: Calls apply() with a new root.
+	 * Reads TAMEModule objects into a new module from a reader stream.
 	 * @param streamName the name of the stream.
 	 * @param reader the reader to read from.
 	 * @param includer the includer to use to resolve "included" paths.
