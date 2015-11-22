@@ -10,6 +10,8 @@ public final class ValueTest {
 	{
 		Value vfalse = Value.create(false);
 		Value vtrue = Value.create(true);
+		Value vinf = Value.create(Double.POSITIVE_INFINITY);
+		Value vnan = Value.create(Double.NaN);
 
 		Value v0 = Value.create(0);
 		

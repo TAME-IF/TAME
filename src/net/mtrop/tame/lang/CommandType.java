@@ -32,11 +32,11 @@ public interface CommandType
 	public void call(TAMERequest request, TAMEResponse response, Command statement) throws TAMEInterrupt;
 	
 	/**
-	 * Does this represent a block type?
+	 * Does this represent a linguistic construct?
 	 * These are parsed in the language.
 	 * @return true if so, false if not.
 	 */
-	public boolean isBlock();
+	public boolean isLanguage();
 	
 	/**
 	 * Is this an internal command type?

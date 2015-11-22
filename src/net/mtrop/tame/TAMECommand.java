@@ -407,22 +407,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}, 
 	
 	/**
-	 * Adds a QUIT cue to the response and throws a quit interrupt.
-	 * Is keyword. Returns nothing. 
-	 */
-	QUIT ()
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			response.addCue(CUE_QUIT);
-			response.trace(request, "Throwing quit...");
-			throw new QuitInterrupt();
-		}
-		
-	},
-	
-	/**
 	 * Adds a throws a break interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
@@ -431,23 +415,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
-			response.trace(request, "Throwing break...");
+			response.trace(request, "Throwing break interrupt...");
 			throw new BreakInterrupt();
-		}
-		
-	},
-	
-	/**
-	 * Adds a throws an end interrupt.
-	 * Is keyword. Returns nothing. 
-	 */
-	END ()
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			response.trace(request, "Throwing end...");
-			throw new EndInterrupt();
 		}
 		
 	},
@@ -461,8 +430,39 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
-			response.trace(request, "Throwing continue...");
+			response.trace(request, "Throwing continue interrupt...");
 			throw new ContinueInterrupt();
+		}
+		
+	},
+	
+	/**
+	 * Adds a QUIT cue to the response and throws a quit interrupt.
+	 * Is keyword. Returns nothing. 
+	 */
+	QUIT ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			response.trace(request, "Throwing quit interrupt...");
+			response.addCue(CUE_QUIT);
+			throw new QuitInterrupt();
+		}
+		
+	},
+	
+	/**
+	 * Adds a throws an end interrupt.
+	 * Is keyword. Returns nothing. 
+	 */
+	END ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			response.trace(request, "Throwing end interrupt...");
+			throw new EndInterrupt();
 		}
 		
 	},
@@ -733,7 +733,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the value, cast to a string. 
 	 * Returns integer. 
 	 */
-	STRINGLENGTH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	STRLEN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -755,7 +755,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Third POP is the string to do replacing in. 
 	 * Returns string. 
 	 */
-	STRINGREPLACE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	STRREPLACE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -786,7 +786,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the string. 
 	 * Returns integer.
 	 */
-	STRINGINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -813,7 +813,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the string. 
 	 * Returns integer.
 	 */
-	STRINGLASTINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRLASTINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -840,7 +840,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the string. 
 	 * Returns boolean.
 	 */
-	STRINGCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -867,7 +867,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the string. 
 	 * Returns boolean.
 	 */
-	STRINGCONTAINSPATTERN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRCONTAINSPATTERN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -902,7 +902,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the string. 
 	 * Returns boolean.
 	 */
-	STRINGCONTAINSTOKEN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRCONTAINSTOKEN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -937,7 +937,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Third POP is the string to divide. 
 	 * Returns string. 
 	 */
-	SUBSTRING (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	SUBSTR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -967,7 +967,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the string. 
 	 * Returns string. 
 	 */
-	LOWERCASE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	STRLOWER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -987,7 +987,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the string. 
 	 * Returns string. 
 	 */
-	UPPERCASE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	STRUPPER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1008,7 +1008,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the string. 
 	 * Returns string or empty string if index is out of range.
 	 */
-	CHARACTER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRCHAR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1989,7 +1989,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the player.
 	 * Returns nothing.
 	 */
-	FOCUSONPLAYER (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
+	SETPLAYER (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -2010,7 +2010,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the new room.
 	 * Returns nothing.
 	 */
-	FOCUSONROOM (/*Return: */ null, /*Args: */ ArgumentType.ROOM)
+	SETROOM (/*Return: */ null, /*Args: */ ArgumentType.ROOM)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -2209,7 +2209,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the action.
 	 * Returns nothing.
 	 */
-	ENQUEUEACTION (/*Return: */ null, /*Args: */ ArgumentType.ACTION)
+	QUEUEACTION (/*Return: */ null, /*Args: */ ArgumentType.ACTION)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -2231,7 +2231,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the action.
 	 * Returns nothing.
 	 */
-	ENQUEUEACTIONSTRING (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.VALUE)
+	QUEUEACTIONSTRING (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -2258,7 +2258,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the action.
 	 * Returns nothing.
 	 */
-	ENQUEUEACTIONOBJECT (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT)
+	QUEUEACTIONOBJECT (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -2287,7 +2287,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Third POP is the action.
 	 * Returns nothing.
 	 */
-	ENQUEUEACTIONOBJECT2 (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
+	QUEUEACTIONOBJECT2 (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -2347,14 +2347,14 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	;
 	
-	private boolean block;
+	private boolean language;
 	private boolean internal;
 	private ArgumentType returnType;
 	private ArgumentType[] argumentTypes;
 	
 	private TAMECommand()
 	{
-		this(false, false, null, null);
+		this(true, true, null, null);
 	}
 
 	private TAMECommand(boolean internal)
@@ -2374,16 +2374,16 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	private TAMECommand(boolean internal, boolean block, ArgumentType returnType, ArgumentType[] argumentTypes)
 	{
-		this.block = block;
+		this.language = block;
 		this.internal = internal;
 		this.returnType = returnType;
 		this.argumentTypes = argumentTypes;
 	}
 
 	@Override
-	public boolean isBlock() 
+	public boolean isLanguage() 
 	{
-		return block;
+		return language;
 	}
 	
 	@Override

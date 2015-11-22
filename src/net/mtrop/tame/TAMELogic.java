@@ -199,11 +199,13 @@ public final class TAMELogic implements TAMEConstants
 		request.pushContext(context);
 		try {
 			block.call(request, response);
+		} catch (Throwable t) {
+			throw t;
 		} finally {
 			response.trace(request, "Popping %s...", context);
 			request.popContext();
-			request.checkStackClear();
 		}
+		request.checkStackClear();
 	}
 	
 	/**
@@ -218,9 +220,10 @@ public final class TAMELogic implements TAMEConstants
 	{
 		try {
 			block.call(request, response);
-		} finally {
-			request.checkStackClear();
+		} catch (Throwable t) {
+			throw t;
 		}
+		request.checkStackClear();
 	}
 	
 	/**
@@ -661,7 +664,10 @@ public final class TAMELogic implements TAMEConstants
 				{
 					response.trace(request, "Found general action block on room.");
 					if (openTarget != null)
-						currentRoomContext.setValue(openTarget, Value.create(openTarget));
+					{
+						response.trace(request, "Setting variable \"%s\" to \"%s\"", OPEN_TARGET_VARIABLE, openTarget);
+						currentRoomContext.setValue(OPEN_TARGET_VARIABLE, Value.create(openTarget));
+					}
 					callBlock(request, response, currentRoomContext, blockToCall);
 					return;
 				}
@@ -674,7 +680,10 @@ public final class TAMELogic implements TAMEConstants
 			{
 				response.trace(request, "Found general action block on player.");
 				if (openTarget != null)
-					currentPlayerContext.setValue(openTarget, Value.create(openTarget));
+				{
+					response.trace(request, "Setting variable \"%s\" to \"%s\"", OPEN_TARGET_VARIABLE, openTarget);
+					currentPlayerContext.setValue(OPEN_TARGET_VARIABLE, Value.create(openTarget));
+				}
 				callBlock(request, response, currentPlayerContext, blockToCall);
 				return;
 			}
@@ -691,7 +700,10 @@ public final class TAMELogic implements TAMEConstants
 		{
 			response.trace(request, "Found general action block on world.");
 			if (openTarget != null)
-				worldContext.setValue(openTarget, Value.create(openTarget));
+			{
+				response.trace(request, "Setting variable \"%s\" to \"%s\"", OPEN_TARGET_VARIABLE, openTarget);
+				worldContext.setValue(OPEN_TARGET_VARIABLE, Value.create(openTarget));
+			}
 			callBlock(request, response, worldContext, blockToCall);
 			return;
 		}

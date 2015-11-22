@@ -1,0 +1,249 @@
+action transitive a_take named "take", "pick up";
+action transitive a_examine named "examine", "look at";
+action ditransitive a_use named "use" conjoins "with", "and", "on";
+action general a_look named "look", "examine surroundings", "look around";
+action general a_quit named "quit";
+action general a_inv named "inv", "inventory", "view inventory", "look at the inventory", "look at inventory";
+action general a_save named "save";
+action general a_load named "load";
+action open a_say named "say";
+action general a_test named "test";
+action general a_counter named "counter";
+action general a_tick;
+
+object o_1984;
+object o_twilight;
+
+object o_incinerator named "incinerator", "huge incinerator"
+{
+	onRoomBrowse() 
+	{ 
+		textln("A huge incinerator is here."); 
+	}
+	
+	onAction(a_use)
+	{
+		textln("I need to use this WITH something...");
+	}
+		
+	onAction(a_examine)
+	{
+		textln("It's a firey, flamey incinerator used for incinerating things.");
+	}
+		
+	onActionWith(a_use, o_twilight)
+	{
+		textln("BURN, BABY - BURN!!");
+		removeObject(o_twilight);
+	} 
+		
+	onActionWithOther(a_use)
+	{
+		textln("Why the HELL would I want to do that?!");
+	} 
+		
+}
+
+object o_1984 named "old book", "book", "the book"
+{
+	init()
+	{
+		exam = 0;
+	}
+	
+	onAction(a_take)
+	{
+		if (playerHasObject(player,o_1984))
+			textln("I already have this.");
+		else
+		{
+			givePlayerObject(player, o_1984);
+			if (!exam)
+				textln("You take the book.");
+			else
+				textln("You take 1984.");
+		}
+	}
+		
+	onAction(a_examine)
+	{
+		if (!exam)
+		{
+			textln("It's George Orwell's 1984. Interesting.");
+			addObjectName(o_1984, "1984");
+			exam = 1;
+		}
+		else
+			textln("It's George Orwell's 1984.");
+		
+	}
+	
+	onAction(a_use)
+	{
+		textln("Heck yeah this is a sweet book.");
+	}
+	
+	onRoomBrowse()
+	{
+		if (exam)
+			textln("George Orwell's 1984 is here.");
+		else
+			textln("An old book is here.");
+	}
+
+	onPlayerBrowse()
+	{
+		if (exam)
+			textln("George Orwell's 1984.");
+		else
+			textln("An old book.");
+	}
+}
+
+object o_twilight named "shitty book", "book", "the book"
+{
+	init()
+	{
+		exam = 0;
+	}
+	
+	onAction(a_use)
+	{
+		textln("Oh Lord I can't take it anymore.");
+	}
+
+	onAction(a_take)
+	{
+		if (playerHasObject(player,o_twilight))
+			textln("I already have this. Question is, WHY do I even have it in the first place?");
+		else
+		{
+			givePlayerObject(player, o_twilight);
+			if (!exam)
+				textln("You take the book.");
+			else
+				textln("You take... ugh... Twilight.");
+		}
+	}
+		
+	onAction(a_examine)
+	{
+		if (!exam)
+		{
+			textln("It's Twilight. Eww. Its practically dripping with misplaced commas...");
+			addObjectName(o_twilight, "twilight");
+			exam = 1;
+		}
+		else
+			textln("It's Twilight. Better find the hambeast that lost it.");
+		
+	}
+	
+	onRoomBrowse()
+	{
+		if (exam)
+			textln("Twilight is here. I wish it wasn't.");
+		else
+			textln("A shitty book is here.");
+	}
+
+	onPlayerBrowse()
+	{
+		if (exam)
+			textln("Twilight.");
+		else
+			textln("A shitty book.");
+	}
+}
+
+player p_default
+{
+	onAction(a_say)
+	{
+		textln("\""+target+"\"");
+	}
+	
+	onUnknownAction()
+	{
+		textln("I'm not quite sure what you mean.");
+	}
+		
+	onFailedAction()
+	{
+		textln("I don't think I can do that.");
+	}
+		
+	onForbiddenAction()
+	{
+		textln("I can't do that here.");
+	}
+		
+	onAmbiguousAction()
+	{
+		textln("A lot of things are here that can described using that. Perhaps I should be more specific...");
+	}
+		
+}
+
+room r_room
+{
+	init()
+	{
+		giveRoomObject(r_room, o_1984);
+		giveRoomObject(r_room, o_twilight);
+		giveRoomObject(r_room, o_incinerator);
+	}
+
+	onAction(a_look)
+	{
+		textln("You look around the room.");
+		browseRoom(r_room);
+	}
+}
+
+
+world 
+{
+	init()
+	{
+		setplayer(p_default);
+		setroom(r_room);
+		counter = 0;
+	}
+	
+	onAction(a_inv)
+	{
+		textln("In my inventory, I have:");
+		browsePlayer(player);
+	}
+		
+	onAction(a_test)
+	{
+		queueActionString(a_say, "Hello, good morning! BUTTS");
+		queueActionObject(a_examine, o_1984);
+		queueActionObject(a_take, o_1984);
+		queueActionObject(a_use, o_1984);
+		queueActionObject2(a_use, o_twilight, o_incinerator);
+		queueAction(a_quit);
+	}
+
+	onAction(a_quit)
+	{
+		quit;
+	}
+	
+	onAction(a_save)
+	{
+		save("butt");
+	}
+	onAction(a_load)
+	{
+		load("butt");
+	}
+		
+	onAction(a_counter)
+	{
+		textln(world.counter);
+	}
+	
+}

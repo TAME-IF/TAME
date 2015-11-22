@@ -1,0 +1,34 @@
+module
+{
+	title "Cue Test";
+}
+
+action general a_quit named "quit";
+action general a_text named "text";
+action general a_pause named "pause";
+action general a_wait named "wait";
+action general a_save named "save";
+action general a_load named "load";
+action general a_trace named "trace";
+action general a_tip named "tip";
+action general a_info named "info";
+action general a_error named "error";
+action general a_fatal named "fatal";
+ 
+world 
+{
+   init()
+       textln("Cue Test. Type the name of a cue to test.");
+ 
+   onAction(a_quit)		quit;
+   onAction(a_text)		textln("This is some text.");
+   onAction(a_pause)	{textln("One"); pause(); textln("Two");}
+   onAction(a_wait)		{textln("One"); wait(1000); textln("Two");}
+   onAction(a_save)		addCue("SAVE","game");
+   onAction(a_load)		addCue("LOAD","game");
+   onAction(a_tip)		tip("If you type crap in, this does stuff!");
+   onAction(a_info)		info("You should type more things!");
+   onAction(a_error)	addCue("ERROR","Some horseshit happened!");
+   onAction(a_fatal)	addCue("FATAL","OH LORDY YOU DONE FUCKED UP, NOW!");
+   
+}

@@ -579,7 +579,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		String identity;
 		int size;
 		
-		if (!sr.readString("ASCII").equals("TSAV"))
+		if (!(new String(sr.readBytes(4), "ASCII")).equals("TSAV"))
 			throw new ModuleException("Not a TAME module save state.");
 		
 		if (sr.readByte() != 0x01)

@@ -61,14 +61,20 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_COMMENT = 				0;
 		static final int TYPE_FALSE = 					1;
 		static final int TYPE_TRUE = 					2;
+		static final int TYPE_INFINITY = 				3;
+		static final int TYPE_NAN = 					4;
 
-		static final int TYPE_WHILE =					3;
-		static final int TYPE_FOR =						4;
-		static final int TYPE_IF =						5;
-		static final int TYPE_ELSE =					6;
-		static final int TYPE_COMMAND_INTERNAL = 		7;
-		static final int TYPE_COMMAND_STATEMENT = 		8;
-		static final int TYPE_COMMAND_EXPRESSION = 		9;
+		static final int TYPE_WHILE =					9;
+		static final int TYPE_FOR =						10;
+		static final int TYPE_IF =						11;
+		static final int TYPE_ELSE =					12;
+		static final int TYPE_QUIT =					13;
+		static final int TYPE_END =						14;
+		static final int TYPE_BREAK =					15;
+		static final int TYPE_CONTINUE =				16;
+		static final int TYPE_COMMAND_INTERNAL = 		17;
+		static final int TYPE_COMMAND_STATEMENT = 		18;
+		static final int TYPE_COMMAND_EXPRESSION = 		19;
 
 		static final int TYPE_DELIM_LPAREN =			20;
 		static final int TYPE_DELIM_RPAREN =			21;
@@ -149,10 +155,17 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			addCaseInsensitiveKeyword("true", TYPE_TRUE);
 			addCaseInsensitiveKeyword("false", TYPE_FALSE);
+			addCaseInsensitiveKeyword("Infinity", TYPE_INFINITY);
+			addCaseInsensitiveKeyword("NaN", TYPE_NAN);
+			
 			addCaseInsensitiveKeyword("else", TYPE_ELSE);
 			addCaseInsensitiveKeyword("if", TYPE_IF);
 			addCaseInsensitiveKeyword("while", TYPE_WHILE);
 			addCaseInsensitiveKeyword("for", TYPE_FOR);
+			addCaseInsensitiveKeyword("quit", TYPE_QUIT);
+			addCaseInsensitiveKeyword("end", TYPE_END);
+			addCaseInsensitiveKeyword("break", TYPE_BREAK);
+			addCaseInsensitiveKeyword("continue", TYPE_CONTINUE);
 
 			addDelimiter("(", TYPE_DELIM_LPAREN);
 			addDelimiter(")", TYPE_DELIM_RPAREN);
@@ -227,7 +240,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				String name = command.name();
 				if (command.isInternal())
 				{
-					if(!command.isBlock())
+					if(!command.isLanguage())
 						addCaseInsensitiveKeyword(name, TYPE_COMMAND_INTERNAL);
 				}
 				else if (command.getReturnType() != null)
@@ -290,6 +303,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		private TAMEModule currentModule;
 		/** Current block. */
 		private Stack<Block> currentBlock;
+		/** Control block count. */
+		private int controlBlock;
 		
 		private TSParser(TSLexer lexer, TAMEScriptReaderOptions options)
 		{
@@ -2035,7 +2050,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 			
-			if (!parseStatement())
+			if (!parseExecutableStatement())
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
@@ -2047,7 +2062,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			currentBlock.push(optimizeBlock(currentBlock.pop()));
 			return true;
 		}
-		
+
 		/**
 		 * Parses a block that consists of only one statement.
 		 * Pushes a block onto the block stack.
@@ -2100,7 +2115,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		public boolean parseStatement()
 		{
-			if (currentType(Lexer.TYPE_IDENTIFIER))
+			if (currentType(Lexer.TYPE_IDENTIFIER) || isElement())
 			{
 				Value identToken = tokenToValue();
 
@@ -2192,7 +2207,20 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		public boolean parseStatementList()
 		{
-			if (!currentType(Lexer.TYPE_IDENTIFIER, TSKernel.TYPE_COMMAND_INTERNAL, TSKernel.TYPE_COMMAND_STATEMENT, TSKernel.TYPE_COMMAND_EXPRESSION, TSKernel.TYPE_DELIM_SEMICOLON, TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
+			if (!currentType(
+					Lexer.TYPE_IDENTIFIER, 
+					TSKernel.TYPE_COMMAND_INTERNAL, 
+					TSKernel.TYPE_COMMAND_STATEMENT, 
+					TSKernel.TYPE_COMMAND_EXPRESSION, 
+					TSKernel.TYPE_DELIM_SEMICOLON, 
+					TSKernel.TYPE_IF, 
+					TSKernel.TYPE_WHILE, 
+					TSKernel.TYPE_FOR,
+					TSKernel.TYPE_QUIT,
+					TSKernel.TYPE_END,
+					TSKernel.TYPE_BREAK,
+					TSKernel.TYPE_CONTINUE
+				))
 				return true;
 			
 			if (currentType(TSKernel.TYPE_DELIM_SEMICOLON))
@@ -2210,7 +2238,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return parseStatementList();
 			}
 			
-			if (!parseStatement())
+			if (!parseExecutableStatement())
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
@@ -2358,6 +2386,9 @@ public final class TAMEScriptReader implements TAMEConstants
 								break;
 							case TSKernel.TYPE_DELIM_PERCENT:
 								nextOperator = ArithmeticOperator.MODULO;
+								break;
+							case TSKernel.TYPE_DELIM_STARSTAR:
+								nextOperator = ArithmeticOperator.POWER;
 								break;
 							case TSKernel.TYPE_DELIM_AMPERSAND:
 								nextOperator = ArithmeticOperator.AND;
@@ -2579,11 +2610,14 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 
+				controlBlock++;
+
 				if (!parseBlock())
 					return false;
 				successBlock = currentBlock.pop();
 
 				emit(Command.create(TAMECommand.WHILE, conditionalBlock, successBlock));
+				controlBlock--;
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_FOR))
@@ -2631,11 +2665,14 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 
+				controlBlock++;
+
 				if (!parseBlock())
 					return false;
 				successBlock = currentBlock.pop();
 
 				emit(Command.create(TAMECommand.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
+				controlBlock--;
 				return true;
 			}
 			else
@@ -2645,6 +2682,59 @@ public final class TAMEScriptReader implements TAMEConstants
 			}	
 		}
 		
+		/**
+		 * Parses a control block.
+		 * [ControlCommand] :=
+		 * 		[QUIT]
+		 * 		[BREAK]
+		 * 		[CONTINUE]
+		 * 		[END]
+		 * 		[Statement]
+		 */
+		private boolean parseExecutableStatement() 
+		{
+			if (currentType(TSKernel.TYPE_QUIT))
+			{
+				nextToken();
+				emit(Command.create(TAMECommand.QUIT));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_END))
+			{
+				nextToken();
+				emit(Command.create(TAMECommand.END));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_CONTINUE))
+			{
+				if (controlBlock == 0)
+				{
+					addErrorMessage("Command \"continue\" used without \"for\" or \"while\".");
+					return false;
+				}
+				
+				nextToken();
+				emit(Command.create(TAMECommand.CONTINUE));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_BREAK))
+			{
+				if (controlBlock == 0)
+				{
+					addErrorMessage("Command \"break\" used without \"for\" or \"while\".");
+					return false;
+				}
+				
+				nextToken();
+				emit(Command.create(TAMECommand.BREAK));
+				return true;
+			}
+			else if (!parseStatement())
+				return false;
+			
+			return true;
+		}
+
 		/**
 		 * Parses command arguments.
 		 */
@@ -2774,8 +2864,6 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			ArithmeticOperator operator = expressionOperators.pop();
 			
-			// TODO: Operand checking for operators that are type strict, or relax type rules.
-			
 			if (operator.isBinary())
 				expressionValueCounter[0] -= 2;
 			else
@@ -2822,6 +2910,10 @@ public final class TAMEScriptReader implements TAMEConstants
 				return Value.create(true);
 			else if (currentType(TSKernel.TYPE_FALSE))
 				return Value.create(false);
+			else if (currentType(TSKernel.TYPE_INFINITY))
+				return Value.create(Double.POSITIVE_INFINITY);
+			else if (currentType(TSKernel.TYPE_NAN))
+				return Value.create(Double.NaN);
 			else
 				throw new TAMEScriptParseException("Internal error - unexpected token type.");
 		}
@@ -2989,6 +3081,8 @@ public final class TAMEScriptReader implements TAMEConstants
 				case Lexer.TYPE_NUMBER:
 				case TSKernel.TYPE_TRUE:
 				case TSKernel.TYPE_FALSE:
+				case TSKernel.TYPE_INFINITY:
+				case TSKernel.TYPE_NAN:
 					return true;
 				default:
 					return false;
@@ -3059,50 +3153,6 @@ public final class TAMEScriptReader implements TAMEConstants
 						
 			// TODO: Write this.
 			return block;
-			
-			/*
-			List<Command> tempList = new List<>();
-			Block outBlock = new Block();
-			
-			for (Command c : block)
-				tempList.add(c);
-
-			final int STATE_OPERATOR = 0;
-			final int STATE_OPERAND1 = 1;
-			final int STATE_OPERAND2 = 2;
-			int state = STATE_OPERATOR;
-			int i = tempList.size() - 1;
-			Command temp, arithfunc, operand2, operand1;
-			
-			while (!tempList.isEmpty())
-			{
-				temp = tempList.getByIndex(i);
-				
-				switch (state)
-				{
-					case STATE_OPERATOR:
-					{
-						
-					}
-					break;
-					
-					case STATE_OPERAND1:
-					{
-						
-					}
-					break;
-
-					case STATE_OPERAND2:
-					{
-						
-					}
-					break;
-				}
-				
-				i--;
-			}
-			*/
-			
 		}
 		
 		/**

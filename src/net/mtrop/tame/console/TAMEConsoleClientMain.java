@@ -2,6 +2,7 @@ package net.mtrop.tame.console;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
@@ -104,7 +105,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			}
 			else
 			{
-				module = readBinary(path); 
+				module = readBinary(binpath); 
 			}
 		}
 		
@@ -158,6 +159,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			return null;
 		} catch (IOException e) {
 			System.out.println("ERROR: Could not read from "+file.getPath());
+			System.out.println(Common.getExceptionString(e));
 			return null;
 		} finally {
 			Common.close(in);
@@ -185,12 +187,33 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			return null;
 		} catch (IOException e) {
 			System.out.println("ERROR: Could not read from "+file.getPath());
+			System.out.println(Common.getExceptionString(e));
 			return null;
 		} finally {
 			Common.close(in);
 		}
 		
 		return out;
+	}
+	
+	static boolean saveGame(TAMEModuleContext context, String path)
+	{
+		File file = new File(path);
+		FileOutputStream out = null;
+		try {
+			out = new FileOutputStream(file);
+			context.writeBytes(out);
+		} catch (SecurityException e) {
+			System.out.println("ERROR: Could not write "+file.getPath()+". Access denied.");
+			return false;
+		} catch (IOException e) {
+			System.out.println("ERROR: Could not write "+file.getPath());
+			return false;
+		} finally {
+			Common.close(out);
+		}
+		
+		return true;
 	}
 	
 	static boolean loadGame(TAMEModuleContext context, String path)
@@ -266,7 +289,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		{
 			boolean good = true;
 			String line;
-			while (good)
+			while (good && !quit)
 			{
 				out.print("> ");
 				if ((line = Common.getLine()) != null)
@@ -310,17 +333,15 @@ public class TAMEConsoleClientMain implements TAMEConstants
 					context.quit = true;
 					return false;
 				case CUE_SAVE:
-					// TODO: SAVE SHIT
+					saveGame(context.context, cue.getContent()+".sav");
 					return true;
 				case CUE_LOAD:
-					// TODO: LOAD SHIT
+					loadGame(context.context, cue.getContent()+".sav");
 					return true;
 				case CUE_WAIT:
 					Common.sleep(Common.parseLong(cue.getContent()));
 					return true;
 				case CUE_TEXT:
-					if (textBuffer.length() > 0)
-						textBuffer.append(' ');
 					textBuffer.append(cue.getContent());
 					return true;
 				case CUE_PAUSE:

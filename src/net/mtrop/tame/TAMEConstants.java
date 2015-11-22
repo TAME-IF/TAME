@@ -39,4 +39,7 @@ public interface TAMEConstants
 	/** Hardcoded runaway max. */
 	public static final int RUNAWAY_THRESHOLD = 100000;
 
+	/** Open target name. */
+	public static final String OPEN_TARGET_VARIABLE = "_target";
+
 }

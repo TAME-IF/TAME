@@ -87,7 +87,7 @@ public class TAMEModule implements Saveable
 	public static TAMEModuleHeader readModuleHeader(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		if (!sr.readString("ASCII").equals("TAME"))
+		if (!(new String(sr.readBytes(4), "ASCII")).equals("TAME"))
 			throw new ModuleException("Not a TAME module.");
 			
 		TAMEModuleHeader out = new TAMEModuleHeader();
@@ -260,6 +260,7 @@ public class TAMEModule implements Saveable
 		GZIPOutputStream gzout = new GZIPOutputStream(bos);
 		writeImmutableData(gzout);
 		gzout.flush();
+		gzout.close();
 
 		byte[] data = bos.toByteArray();
 		byte[] digest = Common.sha1(data);

@@ -6,7 +6,7 @@ package net.mtrop.tame.lang;
  */
 public enum ArithmeticOperator
 {
-	ABSOLUTE (12, false, true)
+	ABSOLUTE (13, false, true)
 	{ 
 		@Override
 		public Value doOperation(Value value1) 
@@ -15,7 +15,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	NEGATE (12, false, true)
+	NEGATE (13, false, true)
 	{  
 		@Override
 		public Value doOperation(Value value1) 
@@ -24,7 +24,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LOGICAL_NOT (12, false, true)
+	LOGICAL_NOT (13, false, true)
 	{  
 		@Override
 		public Value doOperation(Value value1) 
@@ -33,7 +33,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	NOT (12, false, true)
+	NOT (13, false, true)
 	{  
 		@Override
 		public Value doOperation(Value value1) 
@@ -84,6 +84,15 @@ public enum ArithmeticOperator
 		public Value doOperation(Value value1, Value value2) 
 		{
 			return Value.modulo(value1, value2);
+		}
+	},
+	
+	POWER (12, true, true)
+	{ 
+		@Override
+		public Value doOperation(Value value1, Value value2) 
+		{
+			return Value.power(value1, value2);
 		}
 	},
 	

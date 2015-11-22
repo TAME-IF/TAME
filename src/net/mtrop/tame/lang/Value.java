@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import net.mtrop.tame.TAMEConstants;
+import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.exception.ModuleExecutionException;
 
 import com.blackrook.io.SuperReader;
@@ -245,7 +246,12 @@ public class Value implements Comparable<Value>, Saveable
 	public boolean equalsIgnoreType(Value v)
 	{
 		if (isLiteral() && v.isLiteral())
-			return value.equals(v.value);
+		{
+			if (isString() && v.isString())
+				return value.equals(v.value);
+			else
+				return asDouble() == v.asDouble();
+		}
 		else
 			return equals(v); 
 	}
@@ -306,14 +312,64 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeByte((byte)type.ordinal());
-		sw.writeString(value.toString());
+		
+		switch (type)
+		{
+			case BOOLEAN:
+				sw.writeBoolean((Boolean)value);
+				break;
+			case INTEGER:
+				sw.writeLong((Long)value);
+				break;
+			case FLOAT:
+				sw.writeDouble((Double)value);
+				break;
+			default:
+			case STRING:
+			case OBJECT:
+			case CONTAINER:
+			case PLAYER:
+			case ROOM:
+			case WORLD:
+			case ACTION:
+			case VARIABLE:
+				sw.writeString(value.toString(), "UTF-8");
+				break;
+		}
+		
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		set(ValueType.values()[sr.readByte()], sr.readString());
+		type = ValueType.values()[sr.readByte()];
+		
+		switch (type)
+		{
+			case BOOLEAN:
+				value = sr.readBoolean();
+				break;
+			case INTEGER:
+				value = sr.readLong();
+				break;
+			case FLOAT:
+				value = sr.readDouble();
+				break;
+			case STRING:
+			case OBJECT:
+			case CONTAINER:
+			case PLAYER:
+			case ROOM:
+			case WORLD:
+			case ACTION:
+			case VARIABLE:
+				value = sr.readString("UTF-8");
+				break;
+			default:
+				throw new ModuleException("Bad value type. Internal error!");
+		}
+
 	}
 
 	@Override
@@ -347,17 +403,7 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public boolean asBoolean()
 	{
-		if (isBoolean())
-			return (Boolean)value;
-		else if (isNumeric())
-		{
-			double d = asDouble();
-			return !Double.isNaN(d) && d != 0.0;
-		}
-		else if (isString())
-			return ((String)value).length() != 0;
-		else
-			return true;
+		return isTrue();
 	}
 	
 	/**
@@ -372,6 +418,10 @@ public class Value implements Comparable<Value>, Saveable
 			return (Long)value;
 		if (isFloatingPoint())
 			return (long)(double)(Double)value;
+		if (isInfinite())
+			return 0L;
+		if (isNaN())
+			return 0L;
 		try {
 			return Long.parseLong(asString());
 		} catch (NumberFormatException e) {
@@ -393,7 +443,7 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Returns the double value of this value.
-	 * @return the double value of this value.
+	 * @return the double value of this value, or {@link Double#NaN} if not parsable as a number.
 	 */
 	public double asDouble()
 	{
@@ -405,14 +455,18 @@ public class Value implements Comparable<Value>, Saveable
 			return (Double)value;
 		if (isString())
 		{
+			if (((String)value).equalsIgnoreCase("NaN"))
+				return Double.NaN;
+			if (((String)value).equalsIgnoreCase("Infinity"))
+				return Double.POSITIVE_INFINITY;
 			try {
 				return Double.parseDouble(asString());
 			} catch (NumberFormatException e) {
-				return 0.0;
+				return Double.NaN;
 			}
 		}
 		
-		return 0.0;
+		return Double.NaN;
 	}
 
 	/**
@@ -424,6 +478,43 @@ public class Value implements Comparable<Value>, Saveable
 		return String.valueOf(value);
 	}
 
+	/**
+	 * Returns if this value evaluates to <code>true</code>.
+	 * @return true if so, false if not.
+	 */
+	public boolean isTrue()
+	{
+		if (isBoolean())
+			return (Boolean)value;
+		else if (isNumeric())
+		{
+			double d = asDouble();
+			return Double.isInfinite(d) || (!Double.isNaN(d) && d != 0.0);
+		}
+		else if (isString())
+			return ((String)value).length() != 0;
+		else
+			return true;
+	}
+	
+	/**
+	 * Returns if this value evaluates to <code>NaN</code>.
+	 * @return true if so, false if not.
+	 */
+	public boolean isNaN()
+	{
+		return Double.isNaN(asDouble());
+	}
+	
+	/**
+	 * Returns if this value evaluates to positive or negative infinity.
+	 * @return true if so, false if not.
+	 */
+	public boolean isInfinite()
+	{
+		return Double.isInfinite(asDouble());
+	}
+	
 	/**
 	 * Returns if this value is a boolean value.
 	 * @return true if so, false if not.
@@ -604,30 +695,24 @@ public class Value implements Comparable<Value>, Saveable
 			boolean v2 = value2.asBoolean();
 			return create(v1 || v2);
 		}
-		else if (value1.isBoolean() ^ value2.isBoolean())
-		{
-			throw new ArithmeticException("Can't add a boolean to another type.");
-		}
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
 			String v2 = value2.asString();
 			return create(v1 + v2);
 		}
-		else if (value1.isFloatingPoint() || value2.isFloatingPoint())
-		{
-			double v1 = value1.asDouble();
-			double v2 = value2.asDouble();
-			return create(v1 + v2);
-		}
-		else if (value1.isInteger() || value2.isInteger())
+		else if (value1.isInteger() && value2.isInteger())
 		{
 			long v1 = value1.asLong();
 			long v2 = value2.asLong();
 			return create(v1 + v2);
 		}
 		else
-			throw new ArithmeticException("These values can't be added: " + value1 + ", " + value2);
+		{
+			double v1 = value1.asDouble();
+			double v2 = value2.asDouble();
+			return create(v1 + v2);
+		}
 	}
 	
 	/**
@@ -641,8 +726,6 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be subtracted: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-			throw new ArithmeticException("These values can't be subtracted: " + value1 + ", " + value2);
 
 		if (value1.isBoolean() && value2.isBoolean())
 		{
@@ -650,24 +733,18 @@ public class Value implements Comparable<Value>, Saveable
 			boolean v2 = value2.asBoolean();
 			return create(v1 && !v2);
 		}
-		else if (value1.isBoolean() ^ value2.isBoolean())
-		{
-			throw new ArithmeticException("Can't subtract a boolean from another type.");
-		}
-		else if (value1.isFloatingPoint() || value2.isFloatingPoint())
-		{
-			double v1 = value1.asDouble();
-			double v2 = value2.asDouble();
-			return create(v1 - v2);
-		}
-		else if (value1.isInteger() || value2.isInteger())
+		else if (value1.isInteger() && value2.isInteger())
 		{
 			long v1 = value1.asLong();
 			long v2 = value2.asLong();
 			return create(v1 - v2);
 		}
 		else
-			throw new ArithmeticException("These values can't be subtracted: " + value1 + ", " + value2);
+		{
+			double v1 = value1.asDouble();
+			double v2 = value2.asDouble();
+			return create(v1 - v2);
+		}
 	}
 	
 	/**
@@ -681,8 +758,6 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be multiplied: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-			throw new ArithmeticException("These values can't be multiplied: " + value1 + ", " + value2);
 
 		if (value1.isBoolean() && value2.isBoolean())
 		{
@@ -690,24 +765,18 @@ public class Value implements Comparable<Value>, Saveable
 			boolean v2 = value2.asBoolean();
 			return create(v1 && v2);
 		}
-		else if (value1.isBoolean() ^ value2.isBoolean())
-		{
-			throw new ArithmeticException("Can't multiply a boolean with another type.");
-		}
-		else if (value1.isFloatingPoint() || value2.isFloatingPoint())
-		{
-			double v1 = value1.asDouble();
-			double v2 = value2.asDouble();
-			return create(v1 * v2);
-		}
-		else if (value1.isInteger() || value2.isInteger())
+		else if (value1.isInteger() && value2.isInteger())
 		{
 			long v1 = value1.asLong();
 			long v2 = value2.asLong();
 			return create(v1 * v2);
 		}
 		else
-			throw new ArithmeticException("These values can't be multiplied: " + value1 + ", " + value2);
+		{
+			double v1 = value1.asDouble();
+			double v2 = value2.asDouble();
+			return create(v1 * v2);
+		}
 	}
 	
 	/**
@@ -721,33 +790,25 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be divided: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-			throw new ArithmeticException("These values can't be divided: " + value1 + ", " + value2);
 
-		if (value1.isBoolean() || value2.isBoolean())
-		{
-			throw new ArithmeticException("Can't divide a boolean with another type.");
-		}
-		else if (value1.isFloatingPoint() || value2.isFloatingPoint())
-		{
-			double v1 = value1.asDouble();
-			double v2 = value2.asDouble();
-			if (v2 == 0.0)
-				throw new ArithmeticException("Can't divide by 0.");
-			else
-				return create(v1 / v2);
-		}
-		else if (value1.isInteger() || value2.isInteger())
+		if (value1.isInteger() || value2.isInteger())
 		{
 			long v1 = value1.asLong();
 			long v2 = value2.asLong();
 			if (v2 == 0L)
-				throw new ArithmeticException("Can't divide by 0.");
+				return create(Double.POSITIVE_INFINITY);
 			else
 				return create(v1 / v2);
 		}
 		else
-			throw new ArithmeticException("These values can't be divided: " + value1 + ", " + value2);
+		{
+			double v1 = value1.asDouble();
+			double v2 = value2.asDouble();
+			if (v2 == 0.0)
+				return create(Double.POSITIVE_INFINITY);
+			else
+				return create(v1 / v2);
+		}
 	}
 	
 	/**
@@ -761,39 +822,41 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be modulo divided: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-			throw new ArithmeticException("These values can't be modulo divided: " + value1 + ", " + value2);
 
-		if (value1.isBoolean() || value2.isBoolean())
-		{
-			throw new ArithmeticException("Can't modulo divide a boolean with another type.");
-		}
-		else if (value1.isFloatingPoint() || value2.isFloatingPoint())
-		{
-			double v1 = value1.asDouble();
-			double v2 = value2.asDouble();
-			if (v2 == 0.0)
-				throw new ArithmeticException("Can't divide by 0.");
-			else
-				return create(v1 % v2);
-		}
-		else if (value1.isInteger() || value2.isInteger())
+		if (value1.isInteger() || value2.isInteger())
 		{
 			long v1 = value1.asLong();
 			long v2 = value2.asLong();
 			if (v2 == 0L)
-				throw new ArithmeticException("Can't divide by 0.");
+				return create(Double.NaN);
 			else
 				return create(v1 % v2);
 		}
 		else
-			throw new ArithmeticException("These values can't be modulo divided: " + value1 + ", " + value2);
+		{
+			double v1 = value1.asDouble();
+			double v2 = value2.asDouble();
+			if (v2 == 0.0)
+				return create(Double.NaN);
+			else
+				return create(v1 / v2);
+		}
 	}
 	
-	// TODO: Add power (exponentiation).
+	public static Value power(Value value1, Value value2)
+	{
+		if (!(value1.isLiteral() || value2.isLiteral()))
+			throw new ArithmeticException("These values can't be modulo divided: " + value1 + ", " + value2);
+
+		double v1 = value1.asDouble();
+		double v2 = value2.asDouble();
+		double p = Math.pow(v1, v2);
+		return create((value1.isInteger() && value2.isInteger()) ? (long)p : p);
+	}
 	
 	/**
-	 * Returns the "bitwise and" of two non-string literals.
+	 * Returns the "bitwise and" of two literals.
+	 * Strings and doubles are converted to longs.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -802,8 +865,6 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value and(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be bitwise and'ed: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
 			throw new ArithmeticException("These values can't be bitwise and'ed: " + value1 + ", " + value2);
 		
 		if (value1.isBoolean() && value2.isBoolean())
@@ -814,18 +875,15 @@ public class Value implements Comparable<Value>, Saveable
 		}
 		else
 		{
-			long v1 = value1.isFloatingPoint() ? value1.asLongBits() : value1.asLong();
-			long v2 = value2.isFloatingPoint() ? value2.asLongBits() : value2.asLong();
-			long out = v1 & v2;
-			if (value1.isFloatingPoint() || value2.isFloatingPoint())
-				return create(Double.longBitsToDouble(out));
-			else
-				return create(out);
+			long v1 = value1.asLong();
+			long v2 = value2.asLong();
+			return create(v1 & v2);
 		}
 	}
 
 	/**
-	 * Returns the "bitwise or" of two non-string literals.
+	 * Returns the "bitwise or" of two literals.
+	 * Strings and doubles are converted to longs.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -834,8 +892,6 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value or(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be bitwise or'ed: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
 			throw new ArithmeticException("These values can't be bitwise or'ed: " + value1 + ", " + value2);
 		
 		if (value1.isBoolean() && value2.isBoolean())
@@ -846,18 +902,15 @@ public class Value implements Comparable<Value>, Saveable
 		}
 		else
 		{
-			long v1 = value1.isFloatingPoint() ? value1.asLongBits() : value1.asLong();
-			long v2 = value2.isFloatingPoint() ? value2.asLongBits() : value2.asLong();
-			long out = v1 | v2;
-			if (value1.isFloatingPoint() || value2.isFloatingPoint())
-				return create(Double.longBitsToDouble(out));
-			else
-				return create(out);
+			long v1 = value1.asLong();
+			long v2 = value2.asLong();
+			return create(v1 | v2);
 		}
 	}
 
 	/**
-	 * Returns the "bitwise xor" of two non-string literals.
+	 * Returns the "bitwise xor" of two literals.
+	 * Strings and doubles are converted to longs.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -867,9 +920,6 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be bitwise xor'ed: " + value1 + ", " + value2);
-		else if (value1.isString() || value2.isString())
-			throw new ArithmeticException("These values can't be bitwise xor'ed: " + value1 + ", " + value2);
-		
 		if (value1.isBoolean() && value2.isBoolean())
 		{
 			boolean v1 = value1.asBoolean();
@@ -878,22 +928,16 @@ public class Value implements Comparable<Value>, Saveable
 		}
 		else
 		{
-			long v1 = value1.isFloatingPoint() ? value1.asLongBits() : value1.asLong();
-			long v2 = value2.isFloatingPoint() ? value2.asLongBits() : value2.asLong();
-			long out = v1 ^ v2;
-			if (value1.isFloatingPoint() || value2.isFloatingPoint())
-				return create(Double.longBitsToDouble(out));
-			else
-				return create(out);
+			long v1 = value1.asLong();
+			long v2 = value2.asLong();
+			return create(v1 ^ v2);
 		}
 	}
 
 	/**
 	 * Returns the left shift of the first value shifted X units by the second.
-	 * The first value must be numeric.
-	 * The second value must be an integer.
 	 * @param value1 the first operand.
-	 * @param value2 the second operand (must be integer).
+	 * @param value2 the second operand.
 	 * @return the resultant value.
 	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
@@ -904,19 +948,13 @@ public class Value implements Comparable<Value>, Saveable
 		
 		long v1 = value1.asLong();
 		long v2 = value2.asLong();
-		
-		if (value1.isFloatingPoint())
-			return create(Double.longBitsToDouble(v1 << v2));
-		else
-			return create(v1 << v2);	
+		return create(v1 << v2);	
 	}
 
 	/**
 	 * Returns the right shift of the first value shifted X units by the second.
-	 * The first value must be numeric.
-	 * The second value must be an integer.
 	 * @param value1 the first operand.
-	 * @param value2 the second operand (must be integer).
+	 * @param value2 the second operand.
 	 * @return the resultant value.
 	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
@@ -927,19 +965,13 @@ public class Value implements Comparable<Value>, Saveable
 		
 		long v1 = value1.asLong();
 		long v2 = value2.asLong();
-		
-		if (value1.isFloatingPoint())
-			return create(Double.longBitsToDouble(v1 >> v2));
-		else
-			return create(v1 >> v2);	
+		return create(v1 >> v2);	
 	}
 
 	/**
 	 * Returns the right padded shift of the first value shifted X units by the second.
-	 * The first value must be numeric.
-	 * The second value must be an integer.
 	 * @param value1 the first operand.
-	 * @param value2 the second operand (must be integer).
+	 * @param value2 the second operand.
 	 * @return the resultant value.
 	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
@@ -950,11 +982,7 @@ public class Value implements Comparable<Value>, Saveable
 		
 		long v1 = value1.asLong();
 		long v2 = value2.asLong();
-		
-		if (value1.isFloatingPoint())
-			return create(Double.longBitsToDouble(v1 >>> v2));
-		else
-			return create(v1 >>> v2);	
+		return create(v1 >>> v2);	
 	}
 
 	/**
