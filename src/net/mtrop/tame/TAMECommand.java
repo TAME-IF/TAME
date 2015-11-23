@@ -213,7 +213,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			if (!variable.isVariable())
 				throw new UnexpectedValueTypeException("Expected variable type in PUSHELEMENTVALUE call.");
-			if (varObject.isElement())
+			if (!varObject.isElement())
 				throw new UnexpectedValueTypeException("Expected element type in PUSHELEMENTVALUE call.");
 
 			String objectName = varObject.asString();
@@ -1709,7 +1709,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is object.
 	 * Returns nothing.
 	 */
-	REMOVEOBJECT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
+	REMOVEOBJECT (/*Return: */ null, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -2217,7 +2217,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value varAction = request.popValue();
 			
 			if (varAction.getType() != ValueType.ACTION)
-				throw new UnexpectedValueTypeException("Expected action type in ENQUEUEACTION call.");
+				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTION call.");
 
 			TAction action = request.getModuleContext().resolveAction(varAction.asString());
 			request.addActionItem(TAMEAction.create(action));
@@ -2240,9 +2240,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value varAction = request.popValue();
 			
 			if (!varTarget.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in ENQUEUEACTIONSTRING call.");
+				throw new UnexpectedValueTypeException("Expected literal type in QUEUEACTIONSTRING call.");
 			if (varAction.getType() != ValueType.ACTION)
-				throw new UnexpectedValueTypeException("Expected action type in ENQUEUEACTIONSTRING call.");
+				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONSTRING call.");
 
 			TAction action = request.getModuleContext().resolveAction(varAction.asString());
 			String target = varAction.asString();
@@ -2267,9 +2267,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value varAction = request.popValue();
 			
 			if (varObject.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in ENQUEUEACTIONOBJECT call.");
+				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT call.");
 			if (varAction.getType() != ValueType.ACTION)
-				throw new UnexpectedValueTypeException("Expected action type in ENQUEUEACTIONOBJECT call.");
+				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONOBJECT call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TAction action = moduleContext.resolveAction(varAction.asString());
@@ -2297,11 +2297,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value varAction = request.popValue();
 			
 			if (varObject2.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in ENQUEUEACTIONOBJECT2 call.");
+				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT2 call.");
 			if (varObject.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in ENQUEUEACTIONOBJECT2 call.");
+				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT2 call.");
 			if (varAction.getType() != ValueType.ACTION)
-				throw new UnexpectedValueTypeException("Expected action type in ENQUEUEACTIONOBJECT2 call.");
+				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONOBJECT2 call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TAction action = moduleContext.resolveAction(varAction.asString());

@@ -3,7 +3,7 @@ package net.mtrop.tame.element;
 import net.mtrop.tame.lang.Block;
 
 /**
- * Attached to classes that use "Action Failed" blocks.
+ * Attached to classes that use "Action Unknown" blocks.
  * @author Matthew Tropiano
  */
 public interface ActionUnknownHandler

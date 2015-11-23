@@ -795,12 +795,8 @@ public final class TAMELogic implements TAMEConstants
 			return;
 		}
 
-		// try fail on player.
-		if (currentPlayerContext != null && callPlayerActionFailBlock(request, response, action, currentPlayerContext))
-			return;
-
-		// try fail on world.
-		callWorldActionFailBlock(request, response, action, worldContext);
+		if (!callActionFailBlock(request, response, action, moduleContext))
+			response.addCue(CUE_ERROR, "ACTION FAILED (make a better in-universe handler!).");
 	}
 	
 	/**
@@ -813,10 +809,18 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static void doActionTransitive(TAMERequest request, TAMEResponse response, TAction action, TObject object) throws TAMEInterrupt
 	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		
+		if (object == null)
+		{
+			response.trace(request, "Performing transitive action %s with no object (incomplete)!", action);
+			if (!callActionIncompleteBlock(request, response, action, moduleContext))
+				response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+			return;
+		}
+		
 		response.trace(request, "Performing transitive action %s on %s", action, object);
 
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		TObjectContext currentObjectContext = moduleContext.getObjectContext(object);
 		Block blockToCall = null;
 		
@@ -831,14 +835,8 @@ public final class TAMELogic implements TAMEConstants
 			return;
 		}
 		
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		
-		// try fail on player.
-		if (currentPlayerContext != null && callPlayerActionFailBlock(request, response, action, currentPlayerContext))
-			return;
-
-		// try fail on world.
-		callWorldActionFailBlock(request, response, action, worldContext);
+		if (!callActionFailBlock(request, response, action, moduleContext))
+			response.addCue(CUE_ERROR, "ACTION FAILED (make a better in-universe handler!).");
 	}
 
 	/**
@@ -852,10 +850,30 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static void doActionDitransitive(TAMERequest request, TAMEResponse response, TAction action, TObject object1, TObject object2) throws TAMEInterrupt
 	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		
+		if (object1 == null && object2 == null)
+		{
+			response.trace(request, "Performing ditransitive action %s with no objects (incomplete)!", action);
+			if (!callActionIncompleteBlock(request, response, action, moduleContext))
+				response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+			return;
+		}
+
+		// One object parsed? Call as transitive.
+		if (object1 != null && object2 == null)
+		{
+			response.trace(request, "Performing ditransitive action %s on %s as a transitive one...", action, object1);
+			doActionTransitive(request, response, action, object1);
+			return;
+		}
+
+		// Something screwed up?
+		if (object1 == null && object2 != null)
+			throw new TAMEFatalException("Interpreter produced a bad condition! Object2 without object1!");
+		
 		response.trace(request, "Performing ditransitive action %s on %s with %s", action, object1, object2);
 
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		TObjectContext currentObject1Context = moduleContext.getObjectContext(object1);
 		TObjectContext currentObject2Context = moduleContext.getObjectContext(object2);
 		Block blockToCall = null;
@@ -899,16 +917,9 @@ public final class TAMELogic implements TAMEConstants
 		// if we STILL can't do it...
 		if (!success)
 		{
-			TWorldContext worldContext = moduleContext.getWorldContext();
-			
-			// try fail on player.
-			if (currentPlayerContext != null && callPlayerActionFailBlock(request, response, action, currentPlayerContext))
-				return;
-
-			// try fail on world.
-			if (!callWorldActionFailBlock(request, response, action, worldContext))
+			response.trace(request, "No blocks called in ditransitive action call.");
+			if (!callActionFailBlock(request, response, action, moduleContext))
 				response.addCue(CUE_ERROR, "ACTION FAILED (make a better in-universe handler!).");
-
 		}
 		
 	}
@@ -1123,31 +1134,141 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
-	 * Calls the appropriate action fail block on the world if it exists.
+	 * Calls the appropriate action incomplete blocks if they exist.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action attempted.
+	 * @param moduleContext the module context.
+	 * @return true if a fail block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callActionIncompleteBlock(TAMERequest request, TAMEResponse response, TAction action, TAMEModuleContext moduleContext) throws TAMEInterrupt
+	{
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		
+		// try incomplete on player.
+		if (currentPlayerContext != null && callPlayerActionIncompleteBlock(request, response, action, currentPlayerContext))
+			return true;
+	
+		// try incomplete on world.
+		return callWorldActionIncompleteBlock(request, response, action, worldContext);
+	}
+
+	/**
+	 * Calls the appropriate action incomplete block on the world if it exists.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action attempted.
+	 * @param worldContext the world context.
+	 * @return true if a block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callWorldActionIncompleteBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext worldContext) throws TAMEInterrupt 
+	{
+		TWorld world = worldContext.getElement();
+		
+		Block blockToCall;
+		
+		if ((blockToCall = world.getActionIncompleteTable().get(action.getIdentity())) != null)
+		{
+			response.trace(request, "Found specific action incomplete block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return true;
+		}
+	
+		if ((blockToCall = world.getActionIncompleteBlock()) != null)
+		{
+			response.trace(request, "Found default action incomplete block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return true;
+		}
+	
+		response.trace(request, "No action incomplete block on world.");
+		return false;
+	}
+
+	/**
+	 * Calls the appropriate action incomplete block on a player if it exists.
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param action the action attempted.
 	 * @param context the player context.
+	 * @return true if a block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callPlayerActionIncompleteBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext context) throws TAMEInterrupt 
+	{
+		TPlayer player = context.getElement();
+		
+		Block blockToCall;
+		
+		if ((blockToCall = player.getActionIncompleteTable().get(action.getIdentity())) != null)
+		{
+			response.trace(request, "Found specific action incomplete block on player.");
+			callBlock(request, response, context, blockToCall);
+			return true;
+		}
+	
+		if ((blockToCall = player.getActionIncompleteBlock()) != null)
+		{
+			response.trace(request, "Found default action incomplete block on player.");
+			callBlock(request, response, context, blockToCall);
+			return true;
+		}
+	
+		response.trace(request, "No action incomplete block on player.");
+		return false;
+	}
+
+	/**
+	 * Calls the appropriate action fail blocks if they exist.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action attempted.
+	 * @param moduleContext the module context.
 	 * @return true if a fail block was called, false if not.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	private static boolean callWorldActionFailBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext context) throws TAMEInterrupt 
+	private static boolean callActionFailBlock(TAMERequest request, TAMEResponse response, TAction action, TAMEModuleContext moduleContext) throws TAMEInterrupt
 	{
-		TWorld world = context.getElement();
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		
+		// try fail on player.
+		if (currentPlayerContext != null && callPlayerActionFailBlock(request, response, action, currentPlayerContext))
+			return true;
+	
+		// try fail on world.
+		return callWorldActionFailBlock(request, response, action, worldContext);
+	}
+
+	/**
+	 * Calls the appropriate action fail block on the world if it exists.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action attempted.
+	 * @param worldContext the world context.
+	 * @return true if a fail block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callWorldActionFailBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext worldContext) throws TAMEInterrupt 
+	{
+		TWorld world = worldContext.getElement();
 		
 		Block blockToCall;
 		
 		if ((blockToCall = world.getActionFailedTable().get(action.getIdentity())) != null)
 		{
 			response.trace(request, "Found specific action failure block on world.");
-			callBlock(request, response, context, blockToCall);
+			callBlock(request, response, worldContext, blockToCall);
 			return true;
 		}
 
 		if ((blockToCall = world.getActionFailedBlock()) != null)
 		{
 			response.trace(request, "Found default action failure block on world.");
-			callBlock(request, response, context, blockToCall);
+			callBlock(request, response, worldContext, blockToCall);
 			return true;
 		}
 

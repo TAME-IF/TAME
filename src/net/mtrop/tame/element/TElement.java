@@ -143,6 +143,7 @@ public abstract class TElement implements Saveable
 		
 		sw.writeBit(initBlock != null);
 		sw.flushBits();
+		
 		if (initBlock != null)
 			initBlock.writeBytes(out);
 	}

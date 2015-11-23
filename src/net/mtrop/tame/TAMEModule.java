@@ -257,10 +257,8 @@ public class TAMEModule implements Saveable
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(32768);
-		GZIPOutputStream gzout = new GZIPOutputStream(bos);
-		writeImmutableData(gzout);
-		gzout.flush();
-		gzout.close();
+		writeImmutableData(bos);
+		bos.close();
 
 		byte[] data = bos.toByteArray();
 		byte[] digest = Common.sha1(data);
@@ -316,9 +314,9 @@ public class TAMEModule implements Saveable
 		if (!Arrays.equals(readDigest, digest))
 			throw new ModuleException("Module digest does not match data! Possible data corruption!");
 
-		GZIPInputStream gzin = new GZIPInputStream(new ByteArrayInputStream(data));
-		readImmutableData(gzin);
-		gzin.close();
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readImmutableData(bis);
+		bis.close();
 	}
 
 	private void readImmutableData(InputStream in) throws IOException

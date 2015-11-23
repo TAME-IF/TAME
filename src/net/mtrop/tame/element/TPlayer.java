@@ -29,8 +29,7 @@ import com.blackrook.io.SuperWriter;
  * @author Matthew Tropiano
  */
 public class TPlayer extends TActionableElement 
-	implements ActionForbiddenHandler, ActionFailedHandler, ActionModalHandler, 
-	ActionUnknownHandler, ActionAmbiguousHandler
+	implements ActionForbiddenHandler, ActionFailedHandler, ActionModalHandler, ActionUnknownHandler, ActionAmbiguousHandler, ActionIncompleteHandler
 {
 	/** Set function for action list. */
 	protected PermissionType permissionType;
@@ -45,6 +44,8 @@ public class TPlayer extends TActionableElement
 	protected ActionTable actionFailedTable;
 	/** Blocks ran when an action is ambiguous. */
 	protected ActionTable actionAmbiguousTable;
+	/** Blocks ran when an action is incomplete. */
+	protected ActionTable actionIncompleteTable;
 	
 	/** Code block ran upon default action disallow. */
 	protected Block actionForbiddenBlock;
@@ -52,6 +53,8 @@ public class TPlayer extends TActionableElement
 	protected Block actionFailedBlock;
 	/** Code block ran when an action is ambiguous. */
 	protected Block actionAmbiguityBlock;
+	/** Code block ran upon incomplete action. */
+	protected Block actionIncompleteBlock;
 	/** Code block ran upon bad action. */
 	protected Block unknownActionBlock;
 
@@ -66,10 +69,12 @@ public class TPlayer extends TActionableElement
 		this.actionForbiddenTable = new ActionTable();
 		this.actionFailedTable = new ActionTable();
 		this.actionAmbiguousTable = new ActionTable();
+		this.actionIncompleteTable = new ActionTable();
 		
 		this.actionForbiddenBlock = null;
 		this.actionFailedBlock = null;
 		this.actionAmbiguityBlock = null;
+		this.actionIncompleteBlock = null;
 		this.unknownActionBlock = null;
 	}
 
@@ -182,6 +187,24 @@ public class TPlayer extends TActionableElement
 		actionFailedBlock = block;
 	}
 
+	@Override
+	public ActionTable getActionIncompleteTable() 
+	{
+		return actionIncompleteTable;
+	}
+
+	@Override
+	public Block getActionIncompleteBlock() 
+	{
+		return actionIncompleteBlock;
+	}
+
+	@Override
+	public void setActionIncompleteBlock(Block block) 
+	{
+		actionIncompleteBlock = block;
+	}
+
 	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.
@@ -210,10 +233,12 @@ public class TPlayer extends TActionableElement
 		actionForbiddenTable.writeBytes(out);
 		actionFailedTable.writeBytes(out);
 		actionAmbiguousTable.writeBytes(out);
+		actionIncompleteTable.writeBytes(out);
 
 		sw.writeBit(actionForbiddenBlock != null);
 		sw.writeBit(actionFailedBlock != null);
 		sw.writeBit(actionAmbiguityBlock != null);
+		sw.writeBit(actionIncompleteBlock != null);
 		sw.writeBit(unknownActionBlock != null);
 		sw.flushBits();
 		
@@ -223,6 +248,8 @@ public class TPlayer extends TActionableElement
 			actionFailedBlock.writeBytes(out);
 		if (actionAmbiguityBlock != null)
 			actionAmbiguityBlock.writeBytes(out);
+		if (actionIncompleteBlock != null)
+			actionIncompleteBlock.writeBytes(out);
 		if (unknownActionBlock != null)
 			unknownActionBlock.writeBytes(out);
 	}
@@ -243,6 +270,7 @@ public class TPlayer extends TActionableElement
 		actionForbiddenTable = ActionTable.create(in);
 		actionFailedTable = ActionTable.create(in);
 		actionAmbiguousTable = ActionTable.create(in);
+		actionIncompleteTable = ActionTable.create(in);
 		
 		byte blockbits = sr.readByte();
 		
@@ -253,6 +281,8 @@ public class TPlayer extends TActionableElement
 		if ((blockbits & 0x04) != 0)
 			actionAmbiguityBlock = Block.create(in);
 		if ((blockbits & 0x08) != 0)
+			actionIncompleteBlock = Block.create(in);
+		if ((blockbits & 0x10) != 0)
 			unknownActionBlock = Block.create(in);
 	}
 

@@ -22,6 +22,7 @@ import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.ActionAmbiguousHandler;
 import net.mtrop.tame.element.ActionFailedHandler;
 import net.mtrop.tame.element.ActionForbiddenHandler;
+import net.mtrop.tame.element.ActionIncompleteHandler;
 import net.mtrop.tame.element.ActionModalHandler;
 import net.mtrop.tame.element.ActionUnknownHandler;
 import net.mtrop.tame.element.TAction;
@@ -143,7 +144,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_ONAMBIGUOUSACTION =		99;
 		static final int TYPE_ONFORBIDDENACTION =		100;
 		static final int TYPE_ONFAILEDACTION =			101;
-		static final int TYPE_AFTERREQUEST =			102;
+		static final int TYPE_ONINCOMPLETEACTION =		102;
+		static final int TYPE_AFTERREQUEST =			103;
 		
 		private TSKernel()
 		{
@@ -233,6 +235,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("onambiguousaction", TYPE_ONAMBIGUOUSACTION);
 			addCaseInsensitiveKeyword("onforbiddenaction", TYPE_ONFORBIDDENACTION);
 			addCaseInsensitiveKeyword("onfailedaction", TYPE_ONFAILEDACTION);
+			addCaseInsensitiveKeyword("onincompleteaction", TYPE_ONINCOMPLETEACTION);
 			addCaseInsensitiveKeyword("afterrequest", TYPE_AFTERREQUEST);
 			
 			for (TAMECommand command : TAMECommand.values())
@@ -929,6 +932,16 @@ public final class TAMEScriptReader implements TAMEConstants
 					continue;
 				}
 					
+				if (currentType(TSKernel.TYPE_ONINCOMPLETEACTION))
+				{
+					nextToken();
+					
+					if (!parseOnIncompleteActionBlock(player))
+						return false;
+					
+					continue;
+				}
+					
 				if (currentType(TSKernel.TYPE_ONUNKNOWNACTION))
 				{
 					nextToken();
@@ -1040,6 +1053,16 @@ public final class TAMEScriptReader implements TAMEConstants
 					nextToken();
 					
 					if (!parseOnAmbiguousActionBlock(world))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONINCOMPLETEACTION))
+				{
+					nextToken();
+					
+					if (!parseOnIncompleteActionBlock(world))
 						return false;
 					
 					continue;
@@ -1749,6 +1772,65 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
+		 * Parses an on ambiguous action block declaration.
+		 * [OnIncompleteActionBlock] :=
+		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseOnIncompleteActionBlock(ActionIncompleteHandler element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			String actionId = null;
+
+			if (isAction())
+			{
+				actionId = currentToken().getLexeme();
+				nextToken();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected \")\".");
+					return false;
+				}
+				
+			}
+			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\" or action identifier.");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			if (actionId != null)
+			{
+				if (element.getActionIncompleteTable().get(actionId) != null)
+				{
+					addErrorMessage("Incomplete action block for action \"" + actionId + "\" already declared.");
+					return false;
+				}
+				element.getActionIncompleteTable().add(actionId, currentBlock.pop());
+			}
+			else
+			{
+				if (element.getActionIncompleteBlock() != null)
+				{
+					addErrorMessage("Default incomplete action block already declared.");
+					return false;
+				}
+				element.setActionIncompleteBlock(currentBlock.pop());
+			}
+			
+			return true;
+		}
+		
+		/**
 		 * Parses an on unknown action block declaration.
 		 * [OnUnknownActionBlock] :=
 		 * 		"(" ")" [Block]
@@ -2121,6 +2203,8 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				if (identToken.isElement())
 				{
+					nextToken();
+
 					// must have a dot if an element type.
 					if (!matchType(TSKernel.TYPE_DELIM_DOT))
 					{
@@ -2150,7 +2234,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 				else if (identToken.isVariable())
 				{
-					Value variable = tokenToValue();
 					nextToken();
 					
 					if (!matchType(TSKernel.TYPE_DELIM_EQUAL))
@@ -2162,7 +2245,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					if (!parseExpression())
 						return false;
 					
-					emit(Command.create(TAMECommand.POPVALUE, variable));
+					emit(Command.create(TAMECommand.POPVALUE, identToken));
 				}
 				else
 				{
@@ -2208,11 +2291,14 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseStatementList()
 		{
 			if (!currentType(
-					Lexer.TYPE_IDENTIFIER, 
 					TSKernel.TYPE_COMMAND_INTERNAL, 
 					TSKernel.TYPE_COMMAND_STATEMENT, 
 					TSKernel.TYPE_COMMAND_EXPRESSION, 
 					TSKernel.TYPE_DELIM_SEMICOLON, 
+					Lexer.TYPE_IDENTIFIER,
+					TSKernel.TYPE_WORLD,
+					TSKernel.TYPE_PLAYER,
+					TSKernel.TYPE_ROOM,
 					TSKernel.TYPE_IF, 
 					TSKernel.TYPE_WHILE, 
 					TSKernel.TYPE_FOR,
@@ -2286,7 +2372,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					addErrorMessage("Expression error - command \""+currentToken().getLexeme()+"\" is an internal reserved command.");
 					return false;
 				}
-				else if (currentType(Lexer.TYPE_IDENTIFIER))
+				else if (currentType(Lexer.TYPE_IDENTIFIER, TSKernel.TYPE_WORLD, TSKernel.TYPE_PLAYER, TSKernel.TYPE_ROOM))
 				{
 					if (lastWasValue)
 					{
@@ -2298,6 +2384,8 @@ public final class TAMEScriptReader implements TAMEConstants
 
 					if (identToken.isElement())
 					{
+						nextToken();
+						
 						// must have a dot if an element type.
 						if (!matchType(TSKernel.TYPE_DELIM_DOT))
 						{
@@ -2998,6 +3086,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				case TSKernel.TYPE_ONFAILEDACTION:
 				case TSKernel.TYPE_ONUNKNOWNACTION:
 				case TSKernel.TYPE_ONAMBIGUOUSACTION:
+				case TSKernel.TYPE_ONINCOMPLETEACTION:
 				case TSKernel.TYPE_AFTERREQUEST:
 					return true;
 				default:
@@ -3016,6 +3105,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				case TSKernel.TYPE_ONFAILEDACTION:
 				case TSKernel.TYPE_ONUNKNOWNACTION:
 				case TSKernel.TYPE_ONAMBIGUOUSACTION:
+				case TSKernel.TYPE_ONINCOMPLETEACTION:
 				case TSKernel.TYPE_ONFORBIDDENACTION:
 					return true;
 				default:
