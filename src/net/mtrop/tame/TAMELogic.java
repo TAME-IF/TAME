@@ -6,6 +6,7 @@ import com.blackrook.commons.CommonTokenizer;
 import com.blackrook.commons.linkedlist.Queue;
 
 import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TAction.Type;
 import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
@@ -624,9 +625,19 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static void doActionOpen(TAMERequest request, TAMEResponse response, TAction action, String openTarget) throws TAMEInterrupt
 	{
-		response.trace(request, "Performing general action %s", action);
-
 		TAMEModuleContext moduleContext = request.getModuleContext();
+
+		// shared with General actions - check type.
+		if (action.getType() == Type.OPEN && openTarget == null)
+		{
+			response.trace(request, "Performing open action %s with no target (incomplete)!", action);
+			if (!callActionIncompleteBlock(request, response, action, moduleContext))
+				response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+			return;
+		}
+
+		response.trace(request, "Performing general/open action %s", action);
+
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		Block blockToCall = null;
 		
@@ -726,9 +737,18 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static void doActionModal(TAMERequest request, TAMEResponse response, TAction action, String mode) throws TAMEInterrupt
 	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+
+		if (mode == null)
+		{
+			response.trace(request, "Performing modal action %s with no mode (incomplete)!", action);
+			if (!callActionIncompleteBlock(request, response, action, moduleContext))
+				response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+			return;
+		}
+
 		response.trace(request, "Performing modal action %s, \"%s\"", action, mode);
 
-		TAMEModuleContext moduleContext = request.getModuleContext();
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		Block blockToCall = null;
 		
