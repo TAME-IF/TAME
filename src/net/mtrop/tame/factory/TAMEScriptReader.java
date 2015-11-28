@@ -20,6 +20,7 @@ import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.ActionAmbiguousHandler;
+import net.mtrop.tame.element.ActionBadHandler;
 import net.mtrop.tame.element.ActionFailedHandler;
 import net.mtrop.tame.element.ActionForbiddenHandler;
 import net.mtrop.tame.element.ActionIncompleteHandler;
@@ -145,7 +146,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_ONFORBIDDENACTION =		100;
 		static final int TYPE_ONFAILEDACTION =			101;
 		static final int TYPE_ONINCOMPLETEACTION =		102;
-		static final int TYPE_AFTERREQUEST =			103;
+		static final int TYPE_ONBADACTION =				103;
+		static final int TYPE_AFTERREQUEST =			104;
 		
 		private TSKernel()
 		{
@@ -236,6 +238,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("onforbiddenaction", TYPE_ONFORBIDDENACTION);
 			addCaseInsensitiveKeyword("onfailedaction", TYPE_ONFAILEDACTION);
 			addCaseInsensitiveKeyword("onincompleteaction", TYPE_ONINCOMPLETEACTION);
+			addCaseInsensitiveKeyword("onbadaction", TYPE_ONBADACTION);
 			addCaseInsensitiveKeyword("afterrequest", TYPE_AFTERREQUEST);
 			
 			for (TAMECommand command : TAMECommand.values())
@@ -892,6 +895,16 @@ public final class TAMEScriptReader implements TAMEConstants
 					continue;
 				}
 					
+				if (currentType(TSKernel.TYPE_ONBADACTION))
+				{
+					nextToken();
+					
+					if (!parseOnBadActionBlock(player))
+						return false;
+					
+					continue;
+				}
+					
 				if (currentType(TSKernel.TYPE_ONMODALACTION))
 				{
 					nextToken();
@@ -1023,6 +1036,16 @@ public final class TAMEScriptReader implements TAMEConstants
 					nextToken();
 					
 					if (!parseOnActionBlock(world, Type.GENERAL, Type.OPEN))
+						return false;
+					
+					continue;
+				}
+					
+				if (currentType(TSKernel.TYPE_ONBADACTION))
+				{
+					nextToken();
+					
+					if (!parseOnBadActionBlock(world))
 						return false;
 					
 					continue;
@@ -1766,6 +1789,65 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				element.setAmbiguousActionBlock(currentBlock.pop());
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an on bad action block declaration.
+		 * [OnBadActionBlock] :=
+		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
+		 * 		"(" ")" [Block]
+		 */
+		private boolean parseOnBadActionBlock(ActionBadHandler element)
+		{
+			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after action block declaration.");
+				return false;
+			}
+
+			String actionId = null;
+
+			if (isAction())
+			{
+				actionId = currentToken().getLexeme();
+				nextToken();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected \")\".");
+					return false;
+				}
+				
+			}
+			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+			{
+				addErrorMessage("Expected \")\" or action identifier.");
+				return false;
+			}
+			
+			if (!parseBlock())
+				return false;
+			
+			if (actionId != null)
+			{
+				if (element.getBadActionTable().get(actionId) != null)
+				{
+					addErrorMessage("Bad action block for action \"" + actionId + "\" already declared.");
+					return false;
+				}
+				element.getBadActionTable().add(actionId, currentBlock.pop());
+			}
+			else
+			{
+				if (element.getBadActionBlock() != null)
+				{
+					addErrorMessage("Default bad action block already declared.");
+					return false;
+				}
+				element.setBadActionBlock(currentBlock.pop());
 			}
 			
 			return true;
@@ -3082,6 +3164,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				case TSKernel.TYPE_INIT:
 				case TSKernel.TYPE_ONACTION:
+				case TSKernel.TYPE_ONBADACTION:
 				case TSKernel.TYPE_ONMODALACTION:
 				case TSKernel.TYPE_ONFAILEDACTION:
 				case TSKernel.TYPE_ONUNKNOWNACTION:
@@ -3101,6 +3184,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				case TSKernel.TYPE_INIT:
 				case TSKernel.TYPE_ONACTION:
+				case TSKernel.TYPE_ONBADACTION:
 				case TSKernel.TYPE_ONMODALACTION:
 				case TSKernel.TYPE_ONFAILEDACTION:
 				case TSKernel.TYPE_ONUNKNOWNACTION:

@@ -27,7 +27,7 @@ import net.mtrop.tame.struct.ActionTable;
  * @author Matthew Tropiano
  */
 public class TWorld extends TActionableElement 
-	implements ActionFailedHandler, ActionModalHandler, ActionUnknownHandler, ActionAmbiguousHandler, ActionIncompleteHandler
+	implements ActionFailedHandler, ActionModalHandler, ActionUnknownHandler, ActionAmbiguousHandler, ActionIncompleteHandler, ActionBadHandler
 {
 	/** Blocks executed on action failure. */
 	private ActionTable actionFailedTable;
@@ -37,6 +37,8 @@ public class TWorld extends TActionableElement
 	private ActionTable actionAmbiguousTable;
 	/** Blocks ran when an action is incomplete. */
 	protected ActionTable actionIncompleteTable;
+	/** Blocks ran when an action is valid, but a predicate isn't. */
+	protected ActionTable badActionTable;
 
 	/** Code block ran after each request. */
 	private Block afterRequestBlock;
@@ -46,6 +48,8 @@ public class TWorld extends TActionableElement
 	private Block actionAmbiguityBlock;
 	/** Code block ran upon incomplete action. */
 	protected Block actionIncompleteBlock;
+	/** Code block ran when an action is valid, but a predicate isn't. */
+	protected Block badActionBlock;
 	/** Code block ran upon unknown action. */
 	private Block unknownActionBlock;
 
@@ -60,11 +64,13 @@ public class TWorld extends TActionableElement
 		this.modalActionTable = new ActionModeTable();
 		this.actionAmbiguousTable = new ActionTable();
 		this.actionIncompleteTable = new ActionTable();
+		this.badActionTable = new ActionTable();
 
 		this.afterRequestBlock = null;
 		this.actionFailBlock = null;
 		this.actionAmbiguityBlock = null;
 		this.actionIncompleteBlock = null;
+		this.badActionBlock = null;
 		this.unknownActionBlock = null;
 	}
 
@@ -140,6 +146,24 @@ public class TWorld extends TActionableElement
 		actionIncompleteBlock = block;
 	}
 
+	@Override
+	public ActionTable getBadActionTable()
+	{
+		return badActionTable;
+	}
+
+	@Override
+	public Block getBadActionBlock() 
+	{
+		return badActionBlock;
+	}
+
+	@Override
+	public void setBadActionBlock(Block block) 
+	{
+		this.badActionBlock = block;
+	}
+
 	/**
 	 * Gets the block executed after each user request.
 	 */
@@ -179,11 +203,13 @@ public class TWorld extends TActionableElement
 		modalActionTable.writeBytes(out);
 		actionAmbiguousTable.writeBytes(out);
 		actionIncompleteTable.writeBytes(out);
+		badActionTable.writeBytes(out);
 		
 		sw.writeBit(afterRequestBlock != null);
 		sw.writeBit(actionFailBlock != null);
 		sw.writeBit(actionAmbiguityBlock != null);
 		sw.writeBit(actionIncompleteBlock != null);
+		sw.writeBit(badActionBlock != null);
 		sw.writeBit(unknownActionBlock != null);
 		sw.flushBits();
 		
@@ -195,6 +221,8 @@ public class TWorld extends TActionableElement
 			actionAmbiguityBlock.writeBytes(out);
 		if (actionIncompleteBlock != null)
 			actionIncompleteBlock.writeBytes(out);
+		if (badActionBlock != null)
+			badActionBlock.writeBytes(out);
 		if (unknownActionBlock != null)
 			unknownActionBlock.writeBytes(out);
 	}
@@ -209,6 +237,7 @@ public class TWorld extends TActionableElement
 		modalActionTable = ActionModeTable.create(in);
 		actionAmbiguousTable = ActionTable.create(in);
 		actionIncompleteTable = ActionTable.create(in);
+		badActionTable = ActionTable.create(in);
 
 		byte blockbits = sr.readByte();
 		
@@ -221,6 +250,8 @@ public class TWorld extends TActionableElement
 		if ((blockbits & 0x08) != 0)
 			actionIncompleteBlock = Block.create(in);
 		if ((blockbits & 0x10) != 0)
+			badActionBlock = Block.create(in);
+		if ((blockbits & 0x20) != 0)
 			unknownActionBlock = Block.create(in);
 	}
 

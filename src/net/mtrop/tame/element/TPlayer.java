@@ -24,12 +24,13 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
 /**
- * The viewpoint inside an adventure game.
+ * The viewpoint inside a world.
  * The viewpoint can travel to different rooms, changing view aspects.
  * @author Matthew Tropiano
  */
 public class TPlayer extends TActionableElement 
-	implements ActionForbiddenHandler, ActionFailedHandler, ActionModalHandler, ActionUnknownHandler, ActionAmbiguousHandler, ActionIncompleteHandler
+	implements ActionForbiddenHandler, ActionFailedHandler, ActionModalHandler, 
+	ActionUnknownHandler, ActionAmbiguousHandler, ActionIncompleteHandler, ActionBadHandler
 {
 	/** Set function for action list. */
 	protected PermissionType permissionType;
@@ -46,6 +47,8 @@ public class TPlayer extends TActionableElement
 	protected ActionTable actionAmbiguousTable;
 	/** Blocks ran when an action is incomplete. */
 	protected ActionTable actionIncompleteTable;
+	/** Blocks ran when an action is valid, but a predicate isn't. */
+	protected ActionTable badActionTable;
 	
 	/** Code block ran upon default action disallow. */
 	protected Block actionForbiddenBlock;
@@ -55,7 +58,9 @@ public class TPlayer extends TActionableElement
 	protected Block actionAmbiguityBlock;
 	/** Code block ran upon incomplete action. */
 	protected Block actionIncompleteBlock;
-	/** Code block ran upon bad action. */
+	/** Code block ran when an action is valid, but a predicate isn't. */
+	protected Block badActionBlock;
+	/** Code block ran upon an unknown action. */
 	protected Block unknownActionBlock;
 
 	private TPlayer()
@@ -70,11 +75,13 @@ public class TPlayer extends TActionableElement
 		this.actionFailedTable = new ActionTable();
 		this.actionAmbiguousTable = new ActionTable();
 		this.actionIncompleteTable = new ActionTable();
+		this.badActionTable = new ActionTable();
 		
 		this.actionForbiddenBlock = null;
 		this.actionFailedBlock = null;
 		this.actionAmbiguityBlock = null;
 		this.actionIncompleteBlock = null;
+		this.badActionBlock = null;
 		this.unknownActionBlock = null;
 	}
 
@@ -205,6 +212,24 @@ public class TPlayer extends TActionableElement
 		actionIncompleteBlock = block;
 	}
 
+	@Override
+	public ActionTable getBadActionTable()
+	{
+		return badActionTable;
+	}
+
+	@Override
+	public Block getBadActionBlock() 
+	{
+		return badActionBlock;
+	}
+
+	@Override
+	public void setBadActionBlock(Block block) 
+	{
+		this.badActionBlock = block;
+	}
+
 	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.
@@ -234,11 +259,13 @@ public class TPlayer extends TActionableElement
 		actionFailedTable.writeBytes(out);
 		actionAmbiguousTable.writeBytes(out);
 		actionIncompleteTable.writeBytes(out);
+		badActionTable.writeBytes(out);
 
 		sw.writeBit(actionForbiddenBlock != null);
 		sw.writeBit(actionFailedBlock != null);
 		sw.writeBit(actionAmbiguityBlock != null);
 		sw.writeBit(actionIncompleteBlock != null);
+		sw.writeBit(badActionBlock != null);
 		sw.writeBit(unknownActionBlock != null);
 		sw.flushBits();
 		
@@ -250,6 +277,8 @@ public class TPlayer extends TActionableElement
 			actionAmbiguityBlock.writeBytes(out);
 		if (actionIncompleteBlock != null)
 			actionIncompleteBlock.writeBytes(out);
+		if (badActionBlock != null)
+			badActionBlock.writeBytes(out);
 		if (unknownActionBlock != null)
 			unknownActionBlock.writeBytes(out);
 	}
@@ -271,6 +300,7 @@ public class TPlayer extends TActionableElement
 		actionFailedTable = ActionTable.create(in);
 		actionAmbiguousTable = ActionTable.create(in);
 		actionIncompleteTable = ActionTable.create(in);
+		badActionTable = ActionTable.create(in);
 		
 		byte blockbits = sr.readByte();
 		
@@ -283,6 +313,8 @@ public class TPlayer extends TActionableElement
 		if ((blockbits & 0x08) != 0)
 			actionIncompleteBlock = Block.create(in);
 		if ((blockbits & 0x10) != 0)
+			badActionBlock = Block.create(in);
+		if ((blockbits & 0x20) != 0)
 			unknownActionBlock = Block.create(in);
 	}
 
