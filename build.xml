@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) 2015 Matt Tropiano
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Lesser Public License v2.1
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+   
+    Contributors:
+        Matt Tropiano - initial API and implementation
+ -->
 <!DOCTYPE project>
 <!-- ====================================================================== 
      Text Adventure Module Engine   
@@ -12,8 +22,8 @@
 	<property file="versions.properties" />
 	
 	<!-- Versions -->
-	<property name="exe.compiler.version" value="9.9.9.9" />
-	<property name="exe.console.client.version" value="9.9.9.9" />
+	<property name="exe.compiler.version" value="1.0.0.0" />
+	<property name="exe.console.client.version" value="1.0.0.0" />
 	
 	<!-- Dependencies -->
 	<property name="dev.base" value=".." />
@@ -47,10 +57,26 @@
 	<property name="jar.tame.filename" value="${jar.filename}" />
 	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${exe.compiler.version}.jar" />
 	<property name="jar.console.client.one.filename" value="${project.archive}-client-${exe.console.client.version}.jar" />	
+	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${exe.compiler.version}-min.jar" />
+	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${exe.console.client.version}-min.jar" />	
 
 	<property name="exe.dir" value="${build.dir}/win32" />
 	<property name="exe.compiler.filename" value="tamec.exe" />
 	<property name="exe.console.client.filename" value="tame.exe" />
+	
+	<!-- Filesets -->
+	
+	<zipfileset 
+		id="fileset.compiler.min" 
+		src="${jar.dir}/${jar.compiler.one.filename}" 
+		includesfile="build-tamec-exe-include.def" 
+	/>
+
+	<zipfileset 
+		id="fileset.client.min" 
+		src="${jar.dir}/${jar.console.client.one.filename}" 
+		includesfile="build-tame-exe-include.def" 
+	/>
 	
 	<!-- Taskdefs -->
 
@@ -79,7 +105,7 @@
         	sourcepath="${src.dir}" 
         	packagenames="${project.javadoc.packages}"
         	destdir="${docs.dir}" 
-    		source="1.7" 
+    		source="1.8" 
         	splitindex="true" 
         	use="true" 
         	version="true" 
@@ -157,14 +183,34 @@
 		</jar>
 	</target>
 
+	<target name="jar.tame.compiler.one.min" depends="jar.tame.compiler.one" description="Jars up the minified set of classes needed to run the compiler in one standalone JAR.">
+		<delete file="${jar.dir}/${jar.compiler.one.min.filename}" casesensitive="false" />
+		<jar destfile="${jar.dir}/${jar.compiler.one.min.filename}">
+			<manifest>
+		    	<attribute name="Main-Class" value="net.mtrop.tame.compiler.TAMECompilerMain"/>
+            </manifest>
+			<zipfileset refid="fileset.compiler.min" />
+		</jar>
+	</target>
+	
+	<target name="jar.tame.console.client.one.min" depends="jar.tame.console.client.one" description="Jars up the minified set of classes needed to run the console client in one standalone JAR.">
+		<delete file="${jar.dir}/${jar.console.client.one.min.filename}" casesensitive="false" />
+		<jar destfile="${jar.dir}/${jar.console.client.one.min.filename}">
+			<manifest>
+		    	<attribute name="Main-Class" value="net.mtrop.tame.console.TAMEConsoleClientMain"/>
+            </manifest>
+			<zipfileset refid="fileset.client.min" />
+		</jar>
+	</target>
+
 	<target name="jar.all" depends="jar.tame, jar.tame.compiler.one, jar.tame.console.client.one" description="Make all JARs.">
 	</target>
 
-	<target name="exe.compiler" depends="jar.tame.compiler.one, clean.exe, init.exe">
+	<target name="exe.compiler" depends="jar.tame.compiler.one.min, clean.exe, init.exe">
 		<delete file="${exe.dir}/${exe.compiler.filename}" />
 		<launch4j 
 			configFile="./launch4j/TAMECompiler.xml" 
-			jar="${jar.dir}/${jar.compiler.one.filename}"
+			jar="${jar.dir}/${jar.compiler.one.min.filename}"
 			outfile="${exe.dir}/${exe.compiler.filename}"
 			fileVersion="${exe.compiler.version}" 
 			txtFileVersion="${exe.compiler.version}" 
@@ -173,11 +219,11 @@
 		/>
 	</target>
 	
-	<target name="exe.console.client" depends="jar.tame.console.client.one, init.exe">
+	<target name="exe.console.client" depends="jar.tame.console.client.one.min, clean.exe, init.exe">
 		<delete file="${exe.dir}/${exe.console.client.filename}" />
 		<launch4j 
 			configFile="./launch4j/TAMEConsoleClient.xml" 
-			jar="${jar.dir}/${jar.console.client.one.filename}"
+			jar="${jar.dir}/${jar.console.client.one.min.filename}"
 			outfile="${exe.dir}/${exe.console.client.filename}"
 			fileVersion="${exe.console.client.version}" 
 			txtFileVersion="${exe.console.client.version}" 

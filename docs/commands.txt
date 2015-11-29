@@ -19,6 +19,7 @@ WORLD:		A valid world or "world" (current world). Actually, there is only
 ROOM:		A valid room or "room" (current room).
 PLAYER:		A valid player or "player" (current player).
 OBJECT:		A valid object.
+CONTAINER:	A valid container.
 
 ...............................................................................
 ................................   RESPONSE  ..................................
@@ -202,25 +203,6 @@ WHILE(VALUE) { ... }
 
 ...............................................................................
 
-UNTIL(VALUE) { ... }
-
-	VALUE: A literal or variable or expression, numeric or string.
-	
-	UNTIL is a code block, and cannot be used in expressions.
-
-	Executes the encapsulated block of commands if VALUE evaluates to FALSE,
-	which is a non-string, non-zero number. This is usually an evaluative 
-	expression of some kind, like x == 10 or the like. If the expression is
-	TRUE, the block is not executed.
-	
-	After the block is finished, the value/expression is evaluated again, and
-	Re-executes the block if it is still FALSE. Logically, this command is
-	the opposite of WHILE.
-	
-	An UNTIL block can be escaped using a BREAK command.
-
-...............................................................................
-
 BREAK
 
 	If a BREAK command is executed, execution of the current loopable block of
@@ -275,11 +257,11 @@ QUIT
 	
 ...............................................................................
 
-ENQUEUEACTION(ACTION)
+QUEUEACTION(ACTION)
 
 	Enqueues an action to be processed later after an action completes.
 	
-	ENQUEUEACTION returns no values after execution, so it cannot be used in 
+	QUEUEACTION returns no values after execution, so it cannot be used in 
 	expressions.
 
 	ACTION can be any action, but problems may occur if it is not a GENERAL
@@ -287,11 +269,11 @@ ENQUEUEACTION(ACTION)
 
 ...............................................................................
 
-ENQUEUEACTIONSTRING(ACTION, VALUE)
+QUEUEACTIONSTRING(ACTION, VALUE)
 
 	Enqueues an action to be processed later after an action completes.
 	
-	ENQUEUEACTIONSTRING returns no values after execution, so it cannot be used 
+	QUEUEACTIONSTRING returns no values after execution, so it cannot be used 
 	in expressions.
 
 	ACTION can be any action, but problems may occur if it is not a GENERAL,
@@ -302,11 +284,11 @@ ENQUEUEACTIONSTRING(ACTION, VALUE)
 
 ...............................................................................
 
-ENQUEUEACTIONOBJECT(ACTION, OBJECT)
+QUEUEACTIONOBJECT(ACTION, OBJECT)
 
 	Enqueues an action to be processed later after an action completes.
 	
-	ENQUEUEACTIONOBJECT returns no values after execution, so it cannot be used 
+	QUEUEACTIONOBJECT returns no values after execution, so it cannot be used 
 	in expressions.
 
 	ACTION can be any action, but problems may occur if it is not a GENERAL,
@@ -318,11 +300,11 @@ ENQUEUEACTIONOBJECT(ACTION, OBJECT)
 
 ...............................................................................
 
-ENQUEUEACTIONOBJECT2(ACTION, OBJECT1, OBJECT2)
+QUEUEACTIONOBJECT2(ACTION, OBJECT1, OBJECT2)
 
 	Enqueues an action to be processed later after an action completes.
 	
-	ENQUEUEACTIONOBJECT2 returns no values after execution, so it cannot be 
+	QUEUEACTIONOBJECT2 returns no values after execution, so it cannot be 
 	used in expressions.
 
 	ACTION can be any action, but problems may occur if it is not a GENERAL,

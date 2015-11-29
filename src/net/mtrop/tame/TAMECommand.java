@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Matt Tropiano
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser Public License v2.1
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ *
+ * Contributors:
+ *     Matt Tropiano - initial API and implementation
+ *******************************************************************************/
 package net.mtrop.tame;
 
 import java.text.SimpleDateFormat;
@@ -360,30 +370,25 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
-			// call init block.
 			Block init = command.getInitBlock();
 			if (init == null)
 				throw new ModuleExecutionException("Init block for FOR does NOT EXIST!");
-			init.call(request, response);
+			Block success = command.getSuccessBlock();
+			if (success == null)
+				throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
+			Block step = command.getStepBlock();
+			if (step == null)
+				throw new ModuleExecutionException("Step block for FOR does NOT EXIST!");
 
-			while (callConditional(request, response, command))
+			for (init.call(request, response); callConditional(request, response, command); step.call(request, response))
 			{
 				try {
-					Block success = command.getSuccessBlock();
-					if (success == null)
-						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
 					success.call(request, response);
 				} catch (BreakInterrupt interrupt) {
 					break;
 				} catch (ContinueInterrupt interrupt) {
 					continue;
 				}
-				
-				// call step block.
-				Block step = command.getStepBlock();
-				if (step == null)
-					throw new ModuleExecutionException("Step block for FOR does NOT EXIST!");
-				step.call(request, response);
 			}
 		}
 
@@ -749,7 +754,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Gets the length of a string.
+	 * Replaces a part of a string with another.
 	 * First POP is the string to replace with. 
 	 * Second POP is the replacement sequence. 
 	 * Third POP is the string to do replacing in. 
@@ -1159,7 +1164,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POPs nothing.
 	 * Returns float.
 	 */
-	E (/*Return: */ ArgumentType.VALUE)
+	EULER (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1205,6 +1210,26 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in COS call.");
 
 			request.pushValue(Value.create(Math.cos(number.asDouble())));
+		}
+		
+	},
+	
+	/**
+	 * Returns tangent of a number. Degrees are in radians.
+	 * POP is the number.
+	 * Returns float.
+	 */
+	TAN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value number = request.popValue();
+			
+			if (!number.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in TAN call.");
+
+			request.pushValue(Value.create(Math.tan(number.asDouble())));
 		}
 		
 	},
@@ -1264,7 +1289,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Third POP is the value.
 	 * Returns float.
 	 */
-	CLAMP (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	CLAMP (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1312,7 +1337,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				if (value == 0)
 					request.pushValue(Value.create(0));
 				else
-					request.pushValue(Value.create(random.nextLong() % value));
+					request.pushValue(Value.create(Math.abs(random.nextLong()) % value));
 			}
 			else
 			{
@@ -1398,7 +1423,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			long first = valueFirst.asLong();
 			long second = valueSecond.asLong();
 			
-			request.pushValue(Value.create((first - second) / 1000L));
+			request.pushValue(Value.create((second - first) / 1000L));
 		}
 		
 	},
@@ -1426,7 +1451,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			long first = valueFirst.asLong();
 			long second = valueSecond.asLong();
 			
-			request.pushValue(Value.create((first - second) / (1000L * 60L)));
+			request.pushValue(Value.create((second - first) / (1000L * 60L)));
 		}
 		
 	},
@@ -1454,7 +1479,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			long first = valueFirst.asLong();
 			long second = valueSecond.asLong();
 			
-			request.pushValue(Value.create((first - second) / (1000L * 60L * 60L)));
+			request.pushValue(Value.create((second - first) / (1000L * 60L * 60L)));
 		}
 		
 	},
@@ -1482,19 +1507,19 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			long first = valueFirst.asLong();
 			long second = valueSecond.asLong();
 			
-			request.pushValue(Value.create((first - second) / (1000L * 60L * 60L * 24L)));
+			request.pushValue(Value.create((second - first) / (1000L * 60L * 60L * 24L)));
 		}
 		
 	},
 	
 	/**
-	 * Formats a date as a string. 
+	 * Formats a date/time as a string. 
 	 * Assumes inputs are integers and millisecond time.
 	 * First POP is formatting string.
 	 * Second POP is date value.
 	 * Returns string.
 	 */
-	FORMATDATE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	FORMATTIME (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
@@ -1511,66 +1536,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String format = valueSecond.asString();
 			
 			request.pushValue(Value.create((new SimpleDateFormat(format)).format(new Date(date))));
-		}
-		
-	},
-	
-	/**
-	 * Calls the onPlayerBrowse() blocks on objects in a player.
-	 * POP is player. 
-	 * Returns nothing.
-	 */
-	BROWSEPLAYER (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value playerValue = request.popValue();
-			
-			if (playerValue.getType() != ValueType.PLAYER)
-				throw new UnexpectedValueTypeException("Expected player type in BROWSEPLAYER call.");
-
-			TAMELogic.doPlayerBrowse(request, response, request.getModuleContext().resolvePlayer(playerValue.asString()));
-		}
-		
-	},
-	
-	/**
-	 * Calls the onRoomBrowse() blocks on objects in a room.
-	 * POP is room. 
-	 * Returns nothing.
-	 */
-	BROWSEROOM (/*Return: */ null, /*Args: */ ArgumentType.ROOM)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value roomValue = request.popValue();
-			
-			if (roomValue.getType() != ValueType.ROOM)
-				throw new UnexpectedValueTypeException("Expected room type in BROWSEROOM call.");
-
-			TAMELogic.doRoomBrowse(request, response, request.getModuleContext().resolveRoom(roomValue.asString()));
-		}
-		
-	},
-	
-	/**
-	 * Calls the onRoomBrowse() blocks on objects in a container.
-	 * POP is container. 
-	 * Returns nothing.
-	 */
-	BROWSECONTAINER (/*Return: */ null, /*Args: */ ArgumentType.CONTAINER)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value containerValue = request.popValue();
-			
-			if (containerValue.getType() != ValueType.CONTAINER)
-				throw new UnexpectedValueTypeException("Expected container type in BROWSECONTAINER call.");
-
-			TAMELogic.doContainerBrowse(request, response, request.getModuleContext().resolveContainer(containerValue.asString()));
 		}
 		
 	},
@@ -1980,6 +1945,66 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			
 			request.pushValue(Value.create(TAMELogic.checkObjectAccessibility(request, response, player, object)));
+		}
+		
+	},
+	
+	/**
+	 * Calls the onPlayerBrowse() blocks on objects in a player.
+	 * POP is player. 
+	 * Returns nothing.
+	 */
+	BROWSEPLAYER (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value playerValue = request.popValue();
+			
+			if (playerValue.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in BROWSEPLAYER call.");
+
+			TAMELogic.doPlayerBrowse(request, response, request.getModuleContext().resolvePlayer(playerValue.asString()));
+		}
+		
+	},
+	
+	/**
+	 * Calls the onRoomBrowse() blocks on objects in a room.
+	 * POP is room. 
+	 * Returns nothing.
+	 */
+	BROWSEROOM (/*Return: */ null, /*Args: */ ArgumentType.ROOM)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value roomValue = request.popValue();
+			
+			if (roomValue.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in BROWSEROOM call.");
+
+			TAMELogic.doRoomBrowse(request, response, request.getModuleContext().resolveRoom(roomValue.asString()));
+		}
+		
+	},
+	
+	/**
+	 * Calls the onRoomBrowse() blocks on objects in a container.
+	 * POP is container. 
+	 * Returns nothing.
+	 */
+	BROWSECONTAINER (/*Return: */ null, /*Args: */ ArgumentType.CONTAINER)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value containerValue = request.popValue();
+			
+			if (containerValue.getType() != ValueType.CONTAINER)
+				throw new UnexpectedValueTypeException("Expected container type in BROWSECONTAINER call.");
+
+			TAMELogic.doContainerBrowse(request, response, request.getModuleContext().resolveContainer(containerValue.asString()));
 		}
 		
 	},
