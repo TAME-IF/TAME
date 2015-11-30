@@ -20,6 +20,7 @@ import java.io.StringReader;
 import java.util.Arrays;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.Reflect;
 import com.blackrook.commons.linkedlist.Stack;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
@@ -76,17 +77,14 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_INFINITY = 				3;
 		static final int TYPE_NAN = 					4;
 
-		static final int TYPE_WHILE =					9;
-		static final int TYPE_FOR =						10;
-		static final int TYPE_IF =						11;
-		static final int TYPE_ELSE =					12;
-		static final int TYPE_QUIT =					13;
-		static final int TYPE_END =						14;
-		static final int TYPE_BREAK =					15;
-		static final int TYPE_CONTINUE =				16;
-		static final int TYPE_COMMAND_INTERNAL = 		17;
-		static final int TYPE_COMMAND_STATEMENT = 		18;
-		static final int TYPE_COMMAND_EXPRESSION = 		19;
+		static final int TYPE_WHILE =					10;
+		static final int TYPE_FOR =						11;
+		static final int TYPE_IF =						12;
+		static final int TYPE_ELSE =					13;
+		static final int TYPE_QUIT =					14;
+		static final int TYPE_END =						15;
+		static final int TYPE_BREAK =					16;
+		static final int TYPE_CONTINUE =				17;
 
 		static final int TYPE_DELIM_LPAREN =			20;
 		static final int TYPE_DELIM_RPAREN =			21;
@@ -250,20 +248,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("onincompleteaction", TYPE_ONINCOMPLETEACTION);
 			addCaseInsensitiveKeyword("onbadaction", TYPE_ONBADACTION);
 			addCaseInsensitiveKeyword("afterrequest", TYPE_AFTERREQUEST);
-			
-			for (TAMECommand command : TAMECommand.values())
-			{
-				String name = command.name();
-				if (command.isInternal())
-				{
-					if(!command.isLanguage())
-						addCaseInsensitiveKeyword(name, TYPE_COMMAND_INTERNAL);
-				}
-				else if (command.getReturnType() != null)
-					addCaseInsensitiveKeyword(name, TYPE_COMMAND_EXPRESSION);
-				else
-					addCaseInsensitiveKeyword(name, TYPE_COMMAND_STATEMENT);
-			}
 			
 		}
 		
@@ -2281,10 +2265,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * Parses a statement. Emits commands to the current block.
 		 * [Statement] := 
 		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
-		 * 		[VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
+		 * 		[IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		[COMMANDEXPRESSION]
-		 * 		[COMMANDSTATEMENT]
-		 * 		[COMMANDBLOCK]
 		 *		[e]
 		 */
 		public boolean parseStatement()
@@ -2300,7 +2282,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					// must have a dot if an element type.
 					if (!matchType(TSKernel.TYPE_DELIM_DOT))
 					{
-						addErrorMessage("Statement error - expected '.' to dereference a variable.");
+						addErrorMessage("Statement error - expected '.' to dereference an element.");
 						return false;
 					}
 					
@@ -2323,21 +2305,55 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 					
 					emit(Command.create(TAMECommand.POPELEMENTVALUE, identToken, variable));
+					return true;
 				}
 				else if (identToken.isVariable())
 				{
+					String identName = currentToken().getLexeme();
 					nextToken();
 					
-					if (!matchType(TSKernel.TYPE_DELIM_EQUAL))
+					// if there's a left parenthesis, check for command.
+					if (currentType(TSKernel.TYPE_DELIM_LPAREN))
+					{
+						nextToken();
+						
+						TAMECommand command = getCommand(identName);
+						if (command == null || command.isInternal())
+						{
+							addErrorMessage("Expression error - \""+identName+"\" is not a command.");
+							return false;
+						}
+						else
+						{
+							if (!parseCommandArguments(command))
+								return false;
+
+							if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+							{
+								addErrorMessage("Expression error - expected \")\".");
+								return false;
+							}
+							
+							emit(Command.create(command));
+							if(command.getReturnType() != null)
+								emit(Command.create(TAMECommand.POPVALUE));
+							
+							return true;
+						}
+					}
+					else if (matchType(TSKernel.TYPE_DELIM_EQUAL))
+					{
+						if (!parseExpression())
+							return false;
+						
+						emit(Command.create(TAMECommand.POPVALUE, identToken));
+						return true;
+					}
+					else
 					{
 						addErrorMessage("Expression error - expected assignment operator.");
 						return false;
 					}
-
-					if (!parseExpression())
-						return false;
-					
-					emit(Command.create(TAMECommand.POPVALUE, identToken));
 				}
 				else
 				{
@@ -2345,30 +2361,6 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-			}
-			else if (currentType(TSKernel.TYPE_COMMAND_INTERNAL))
-			{
-				addErrorMessage("Statement error - command \""+currentToken().getLexeme()+"\" is an internal reserved command.");
-				return false;
-			}
-			else if (currentType(TSKernel.TYPE_COMMAND_STATEMENT))
-			{
-				TAMECommand commandType = tokenToCommand();
-				nextToken();
-				
-				if (!parseCommandCall(commandType))
-					return false;
-
-			}
-			else if (currentType(TSKernel.TYPE_COMMAND_EXPRESSION))
-			{
-				TAMECommand commandType = tokenToCommand();
-				nextToken();
-				
-				if (!parseCommandCall(commandType))
-					return false;
-				
-				emit(Command.create(TAMECommand.POP));
 			}
 
 			return true;
@@ -2383,9 +2375,6 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseStatementList()
 		{
 			if (!currentType(
-					TSKernel.TYPE_COMMAND_INTERNAL, 
-					TSKernel.TYPE_COMMAND_STATEMENT, 
-					TSKernel.TYPE_COMMAND_EXPRESSION, 
 					TSKernel.TYPE_DELIM_SEMICOLON, 
 					Lexer.TYPE_IDENTIFIER,
 					TSKernel.TYPE_WORLD,
@@ -2443,28 +2432,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			while (keepGoing)
 			{
-				if (currentType(TSKernel.TYPE_COMMAND_EXPRESSION))
-				{
-					TAMECommand commandType = tokenToCommand();
-					nextToken();
-					
-					if (!parseCommandCall(commandType))
-						return false;
-					
-					expressionValueCounter[0] += 1;
-					lastWasValue = true;
-				}
-				else if (currentType(TSKernel.TYPE_COMMAND_STATEMENT))
-				{
-					addErrorMessage("Expression error - command \""+currentToken().getLexeme()+"\" has no return.");
-					return false;
-				}
-				else if (currentType(TSKernel.TYPE_COMMAND_INTERNAL))
-				{
-					addErrorMessage("Expression error - command \""+currentToken().getLexeme()+"\" is an internal reserved command.");
-					return false;
-				}
-				else if (currentType(Lexer.TYPE_IDENTIFIER, TSKernel.TYPE_WORLD, TSKernel.TYPE_PLAYER, TSKernel.TYPE_ROOM))
+				if (currentType(Lexer.TYPE_IDENTIFIER, TSKernel.TYPE_WORLD, TSKernel.TYPE_PLAYER, TSKernel.TYPE_ROOM))
 				{
 					if (lastWasValue)
 					{
@@ -2481,7 +2449,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						// must have a dot if an element type.
 						if (!matchType(TSKernel.TYPE_DELIM_DOT))
 						{
-							addErrorMessage("Expression error - expected '.' to dereference a variable.");
+							addErrorMessage("Expression error - expected '.' to dereference an element.");
 							return false;
 						}
 						
@@ -2493,20 +2461,55 @@ public final class TAMEScriptReader implements TAMEConstants
 						
 						emit(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, Value.createVariable(currentToken().getLexeme())));
 					}
-					else if (identToken.isVariable())
+					else if (identToken.isVariable()) // or command...
 					{
-						emit(Command.create(TAMECommand.PUSHVALUE, identToken));
+						String identName = currentToken().getLexeme();
+						nextToken();
+						
+						// if there's a left parenthesis, check for command.
+						if (currentType(TSKernel.TYPE_DELIM_LPAREN))
+						{
+							nextToken();
+							TAMECommand command = getCommand(identName);
+							if (command == null || command.isInternal())
+							{
+								addErrorMessage("Expression error - \""+identName+"\" is not a command.");
+								return false;
+							}
+							else if (command.getReturnType() == null)
+							{
+								addErrorMessage("Expression error - command \""+identName+"\" has no return type.");
+								return false;
+							}
+							else
+							{
+								if (!parseCommandArguments(command))
+									return false;
+
+								if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+								{
+									addErrorMessage("Expression error - expected \")\".");
+									return false;
+								}
+								
+								emit(Command.create(command));
+								expressionValueCounter[0] += 1;
+								lastWasValue = true;
+							}
+						}
+						else
+						{
+							emit(Command.create(TAMECommand.PUSHVALUE, identToken));
+							expressionValueCounter[0] += 1;
+							lastWasValue = true;
+						}
 					}
 					else
 					{
 						addErrorMessage("Expression error - expected variable or element identifier.");
 						return false;
 					}
-					
-					nextToken();
-					
-					expressionValueCounter[0] += 1;
-					lastWasValue = true;
+										
 				}
 				else if (matchType(TSKernel.TYPE_DELIM_LPAREN))
 				{
@@ -2682,39 +2685,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
-			return true;
-		}
-
-		/**
-		 * Parses the argument section of a command.
-		 * @param commandType 
-		 * @return
-		 */
-		public boolean parseCommandCall(TAMECommand commandType) 
-		{
-			// clause - no argument list at all.
-			if (commandType.getArgumentTypes() == null)
-			{
-				emit(Command.create(commandType));
-				return true;
-			}
-
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expression error - expected '(' after command \""+commandType.name()+".\"");
-				return false;
-			}
-			
-			if (!parseCommandArguments(commandType))
-				return false;
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expression error - expected ')' after command arguments.");
-				return false;
-			}
-			
-			emit(Command.create(commandType));
 			return true;
 		}
 
@@ -3098,12 +3068,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				throw new TAMEScriptParseException("Internal error - unexpected token type.");
 		}
 
-		// Token to command.
-		private TAMECommand tokenToCommand()
-		{
-			return TAMECommand.valueOf(currentToken().getLexeme().toUpperCase());
-		}
-		
 		// Checks if an identifier is a variable.
 		private boolean isVariable()
 		{
@@ -3165,6 +3129,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		private boolean isContainer()
 		{
 			return currentModule.getContainerByIdentity(currentToken().getLexeme()) != null;
+		}
+
+		// Returns the command associated with a name, if any.
+		private TAMECommand getCommand(String name)
+		{
+			return Reflect.getEnumInstance(name.toUpperCase(), TAMECommand.class);
 		}
 		
 		// Return true if token type is a valid block on a world.

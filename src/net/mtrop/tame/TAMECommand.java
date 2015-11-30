@@ -45,6 +45,7 @@ import net.mtrop.tame.lang.ValueType;
 /**
  * The set of commands.
  * Values in arguments are popped in reverse order on call, if arguments are taken. 
+ * NOTE: THESE MUST BE DECLARED IN FULL CAPS TO ENSURE PARSING INTEGRITY!
  * @author Matthew Tropiano
  */
 public enum TAMECommand implements CommandType, TAMEConstants
@@ -1164,7 +1165,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POPs nothing.
 	 * Returns float.
 	 */
-	EULER (/*Return: */ ArgumentType.VALUE)
+	E (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt

@@ -39,13 +39,13 @@ ADDCUE(VALUE1, VALUE2)
 	
 ...............................................................................
 
-PRINT(VALUE)
+TEXT(VALUE)
 
 	VALUE: The message to print.
 	
 	Appends a "text" cue to the response. 
 
-	PRINT returns no values after execution, so it cannot be used in 
+	TEXT returns no values after execution, so it cannot be used in 
 	expressions.
 	
 	Equivalent to:
@@ -53,14 +53,14 @@ PRINT(VALUE)
 	
 ...............................................................................
 
-PRINTLN(VALUE)
+TEXTLN(VALUE)
 
 	VALUE: The message to print.
 	
 	Appends a "text" cue to the response with a newline character appended to 
 	the end. 
 
-	PRINTLN returns no values after execution, so it cannot be used in 
+	TEXTLN returns no values after execution, so it cannot be used in 
 	expressions.
 	
 	Equivalent to:
@@ -265,7 +265,7 @@ QUEUEACTION(ACTION)
 	expressions.
 
 	ACTION can be any action, but problems may occur if it is not a GENERAL
-	action. ENQUEUEACTION does not interrupt the current flow of execution.
+	action. QUEUEACTION does not interrupt the current flow of execution.
 
 ...............................................................................
 
@@ -277,7 +277,7 @@ QUEUEACTIONSTRING(ACTION, VALUE)
 	in expressions.
 
 	ACTION can be any action, but problems may occur if it is not a GENERAL,
-	OPEN, or MODAL action. ENQUEUEACTIONSTRING does not interrupt the current 
+	OPEN, or MODAL action. QUEUEACTIONSTRING does not interrupt the current 
 	flow of execution.
 	
 	VALUE must be the target that normally accompanies an OPEN or MODAL action. 
@@ -292,7 +292,7 @@ QUEUEACTIONOBJECT(ACTION, OBJECT)
 	in expressions.
 
 	ACTION can be any action, but problems may occur if it is not a GENERAL,
-	TRANSITIVE, or DITRANSITIVE action. ENQUEUEACTIONOBJECT does not interrupt 
+	TRANSITIVE, or DITRANSITIVE action. QUEUEACTIONOBJECT does not interrupt 
 	the current flow of execution.
 	
 	OBJECT must be the target object that would normally accompany a TRANSITIVE
@@ -308,7 +308,7 @@ QUEUEACTIONOBJECT2(ACTION, OBJECT1, OBJECT2)
 	used in expressions.
 
 	ACTION can be any action, but problems may occur if it is not a GENERAL,
-	TRANSITIVE, or DITRANSITIVE action. ENQUEUEACTIONOBJECT2 does not interrupt 
+	TRANSITIVE, or DITRANSITIVE action. QUEUEACTIONOBJECT2 does not interrupt 
 	the current flow of execution.
 	
 	OBJECT(1/2) must be the target objects that normally accompany a 
@@ -323,6 +323,14 @@ OBJECTSINWORLDCOUNT()
 	Returns the amount of objects owned by the world as an integer value.
 	
 	NOTE: An object with no owner is NOT owned by the world!
+
+...............................................................................
+
+OBJECTSINCONTAINERCOUNT(PLAYER)
+
+	Returns the amount of objects owned by a container as an integer value.
+	
+	CONTAINER can be any Container object.
 
 ...............................................................................
 
@@ -359,14 +367,34 @@ ADDOBJECTNAME(OBJECT, VALUE)
 	
 ...............................................................................
 
-ADDOBJECTTOPLAYER(OBJECT, PLAYER)
+GIVECONTAINEROBJECT(CONTAINER, OBJECT)
+
+	Sets the ownership of an OBJECT to a CONTAINER.
+	
+	CONTAINER can be any Container object.
+
+	OBJECT is any Object.
+	
+	Objects in a Container can not be accessed, but they can be browsed.
+	
+	If the OBJECT had a previous owner, it is removed from the previous owner.
+	
+	This command influences the return value of 
+	OBJECTSINCONTAINERCOUNT(CONTAINER) and CONTAINERHASOBJECT(CONTAINER, OBJECT). 
+
+	GIVECONTAINEROBJECT returns no values after execution, so it cannot be 
+	used in expressions.
+	
+...............................................................................
+
+GIVEPLAYEROBJECT(PLAYER, OBJECT)
 
 	Sets the ownership of an OBJECT to a PLAYER.
 	
-	OBJECT is any Object.
-
 	PLAYER can be any Player object, including "player", which is the currently
 	focused player.
+
+	OBJECT is any Object.
 	
 	Objects in a Player can be accessed if the current player contains the 
 	desired Object.
@@ -376,19 +404,19 @@ ADDOBJECTTOPLAYER(OBJECT, PLAYER)
 	This command influences the return value of OBJECTSINPLAYERCOUNT(PLAYER) 
 	and PLAYERHASOBJECT(PLAYER, OBJECT). 
 
-	ADDOBJECTTOPLAYER returns no values after execution, so it cannot be used in 
+	GIVEPLAYEROBJECT returns no values after execution, so it cannot be used in 
 	expressions.
 	
 ...............................................................................
 
-ADDOBJECTTOROOM(OBJECT, ROOM)
+GIVEROOMOBJECT(ROOM, OBJECT)
 
 	Sets the ownership of an OBJECT to a ROOM.
 	
-	OBJECT is any Object.
-
 	ROOM can be any Room object, including "room", which is the currently
 	focused room.
+
+	OBJECT is any Object.
 	
 	Objects in a Room can be accessed if the current player is in the same
 	room containing the desired Object.
@@ -398,12 +426,12 @@ ADDOBJECTTOROOM(OBJECT, ROOM)
 	This command influences the return value of OBJECTSINROOMCOUNT(ROOM) 
 	and ROOMHASOBJECT(ROOM, OBJECT).
 
-	ADDOBJECTTOROOM returns no values after execution, so it cannot be used in 
+	GIVEROOMOBJECT returns no values after execution, so it cannot be used in 
 	expressions.
 	
 ...............................................................................
 
-ADDOBJECTTOWORLD(OBJECT)
+GIVEWORLDOBJECT(OBJECT)
 
 	Sets the ownership of an OBJECT to the world.
 	
@@ -416,7 +444,7 @@ ADDOBJECTTOWORLD(OBJECT)
 	This command influences the return value of OBJECTSINWORLDCOUNT() 
 	and WORLDHASOBJECT(OBJECT).
 
-	ADDOBJECTTOWORLD returns no values after execution, so it cannot be used in 
+	GIVEWORLDOBJECT returns no values after execution, so it cannot be used in 
 	expressions.
 	
 ...............................................................................
@@ -441,11 +469,23 @@ REMOVEOBJECT(OBJECT)
 	
 ...............................................................................
 
+CONTAINERHASOBJECT(CONTAINER, OBJECT)
+
+	Checks if a CONTAINER is the owner of an OBJECT. 
+	
+	Returns true if so, false if not.
+
+	CONTAINER can be any Container object.
+	
+	OBJECT is any Object.
+
+...............................................................................
+
 PLAYERHASOBJECT(PLAYER, OBJECT)
 
 	Checks if a PLAYER is the owner of an OBJECT. 
 	
-	Returns 1 if so, 0 if not.
+	Returns true if so, false if not.
 
 	PLAYER can be any Player object, including "player", which is the currently
 	focused player.
@@ -458,7 +498,7 @@ ROOMHASOBJECT(ROOM, OBJECT)
 
 	Checks if a ROOM is the owner of an OBJECT. 
 	
-	Returns 1 if so, 0 if not.
+	Returns true if so, false if not.
 
 	ROOM can be any Room object, including "room", which is the currently
 	focused room.
@@ -471,7 +511,7 @@ WORLDHASOBJECT(OBJECT)
 
 	Checks if the world is the owner of an OBJECT. 
 	
-	Returns 1 if so, 0 if not.
+	Returns true if so, false if not.
 
 	OBJECT is any Object.
 
@@ -483,9 +523,21 @@ OBJECTHASNOOWNER(OBJECT)
 
 	Checks if an object has no owner. 
 	
-	Returns 1 if so, 0 if not.
+	Returns true if so, false if not.
 	
 	OBJECT is any Object.
+
+...............................................................................
+
+BROWSECONTAINER(CONTAINER)
+
+	Executes the onContainerBrowse() command blocks on all objects owned by a
+	particular Container. The order is not guaranteed.
+	
+	CONTAINER can be any Container object.
+	
+	BROWSECONTAINER returns no values after execution, so it cannot be used in 
+	expressions.
 
 ...............................................................................
 
@@ -539,13 +591,9 @@ CURRENTROOMIS(ROOM)
 
 ...............................................................................
 
-FOCUSONPLAYER(PLAYER)
+SETPLAYER(PLAYER)
 
 	Switches focus from one Player to PLAYER. 
-	
-	The onUnfocus() command block is called on the previous Player if there was 
-	a previously focused Player, the current Player is switched to PLAYER, then 
-	the onFocus() block is called on the newly focused Player.
 	
 	If PLAYER is the current Player, this does nothing.
 
@@ -553,27 +601,21 @@ FOCUSONPLAYER(PLAYER)
 	focused player.	
 	
 	Note: Since Players hold the current Room state, the current room may
-	change, but this does NOT mean the room loses focus!
+	change due to this!
 
 ...............................................................................
 
-FOCUSONROOM(ROOM)
+SETROOM(ROOM)
 
 	Switches focus from one Room to ROOM. 
 	
-	The onUnfocus() command block is called on the previous Room if there was 
-	a previously focused Room, the current Room is switched to ROOM, then 
-	the onFocus() block is called on the newly focused Room.
-
 	If ROOM is the current Room, this does nothing.
 
 	ROOM can be any Room object, including "room", which is the currently
 	focused room.
 	
 	This function will discard a Room stack being built/manipulated by 
-	PUSHROOM(ROOM) and POPROOM(). If there are rooms on the stack upon a call
-	to FOCUSONROOM(), the previous rooms before the current room will NOT
-	have onUnfocus() called on them.
+	PUSHROOM(ROOM) and POPROOM().
 
 ...............................................................................
 
@@ -582,11 +624,7 @@ PUSHROOM(ROOM)
 	Switches focus from one Room to ROOM, keeping the previous room on the
 	room stack. Returning to the previous room requires the use of POPROOM().
 	
-	The current Room is switched to ROOM, then the onFocus() block is called on 
-	the newly focused Room. The onUnfocus() block is NOT called on the previous
-	room, the idea being that the player has not exactly left it.
-
-	If ROOM is the current Room, this does nothing.
+	The current Room is switched to ROOM.
 
 	ROOM can be any Room object, including "room", which is the currently
 	focused room.
@@ -598,24 +636,15 @@ POPROOM()
 	Switches focus from the current room to the previous one on the room stack,
 	created	by PUSHROOM(ROOM).
 	
-	The onUnfocus() command block is called on the topmost room on the stack
-	(the current room), then the current Room is switched to the previous room on
-	the stack. The onFocus() block is NOT called on the now-current room, the 
-	idea being that the player has not exactly left it in the first place.
-
 	Calling this without any other rooms on the stack results in an ERROR.
 
 ...............................................................................
 
 SWAPROOM()
 
-	Switches focus from the current room to ROOM, preserving the other rooms
+	Switches focus from the current room to ROOM, preserving the previous rooms
 	on the stack created by PUSHROOM(ROOM).
 	
-	The onUnfocus() command block is called on the previous Room at the top of
-	the stack, the topmost Room is switched to ROOM, then the onFocus() block 
-	is called on the newly focused Room.
-
 	This is equivalent to calling:
 	POPROOM();
 	PUSHROOM(ROOM);
@@ -626,7 +655,26 @@ SWAPROOM()
 ................................   CASTING   ..................................
 ...............................................................................
 
-TOINT(VALUE)
+ASBOOLEAN(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns VALUE as a boolean-typed value. Generally, if the value is nonzero
+	or a non-empty string or is Infinity, it is "true."
+	
+	Note that type promotion is automatic in expressions.
+	
+	Examples:
+	ASBOOLEAN(0) returns false
+	ASBOOLEAN(5) returns true
+	ASBOOLEAN(5.2) returns true
+	ASBOOLEAN(0.0) returns false
+	ASBOOLEAN("") returns false
+	ASBOOLEAN("words") returns true
+
+...............................................................................
+
+ASINT(VALUE)
 
 	VALUE is any expression that results in a value being returned.
 	
@@ -638,37 +686,37 @@ TOINT(VALUE)
 	Note that type promotion is automatic in expressions.
 	
 	Examples:
-	TOINT(5) returns 5
-	TOINT(5.2) returns 5
-	TOINT("5") returns 5
-	TOINT("-10") returns -10
-	TOINT("5.2") returns 5
-	TOINT("words") returns 0
+	ASINT(5) returns 5
+	ASINT(5.2) returns 5
+	ASINT("5") returns 5
+	ASINT("-10") returns -10
+	ASINT("5.2") returns 5
+	ASINT("words") returns 0
 
 ...............................................................................
 
-TOFLOAT(VALUE)
+ASFLOAT(VALUE)
 
 	VALUE is any expression that results in a value being returned.
 	
 	Returns VALUE as an floating-point-typed value. If the value is an integer,
 	it is promoted to floating-point. If VALUE cannot be parsed as a 
 	floating-point number (such as a string that contains special characters), 
-	this returns 0.0.
+	this returns NaN (not a number).
 	
 	Note that type promotion is automatic in expressions.
 
 	Examples:
-	TOFLOAT(5) returns 5.0
-	TOFLOAT(5.2) returns 5.2
-	TOFLOAT("5") returns 5.0
-	TOFLOAT("-10") returns -10.0
-	TOFLOAT("5.2") returns 5.2
-	TOFLOAT("words") returns 0.0
+	ASFLOAT(5) returns 5.0
+	ASFLOAT(5.2) returns 5.2
+	ASFLOAT("5") returns 5.0
+	ASFLOAT("-10") returns -10.0
+	ASFLOAT("5.2") returns 5.2
+	ASFLOAT("words") returns NaN
 
 ...............................................................................
 
-TOSTRING(VALUE)
+ASSTRING(VALUE)
 
 	VALUE is any expression that results in a value being returned.
 	
@@ -677,12 +725,12 @@ TOSTRING(VALUE)
 	Note that type promotion is automatic in expressions.
 
 	Examples:
-	TOSTRING(5) returns "5"
-	TOSTRING(5.2) returns "5.2"
-	TOSTRING("5") returns "5"
-	TOSTRING("-10") returns "-10"
-	TOSTRING("5.2") returns "5.2"
-	TOSTRING("words") returns "words"
+	ASSTRING(5) returns "5"
+	ASSTRING(5.2) returns "5.2"
+	ASSTRING("5") returns "5"
+	ASSTRING("-10") returns "-10"
+	ASSTRING("5.2") returns "5.2"
+	ASSTRING("words") returns "words"
 
 ...............................................................................
 ..................................   MATH   ...................................
@@ -737,13 +785,13 @@ FIX(VALUE1, VALUE2)
 	Returns a floating-point-typed value that is the result of rounding VALUE 
 	to the nearest amount of decimal places specified by VALUE2.
 	
-	FIX(VALUE1, 0) is equivalent to TOFLOAT(ROUND(VALUE1)).
+	FIX(VALUE1, 0) is equivalent to ASFLOAT(ROUND(VALUE1)).
 	
 	Examples:
 	FIX(5.4, 0) returns 5.0
 	FIX(5.25, 1) returns 5.3
 	FIX(5.5, 3) returns 5.5
-	FIX(-5.2, 0) returns -5
+	FIX(-5.2, 0) returns -5.0
 
 ...............................................................................
 
@@ -761,6 +809,15 @@ COS(VALUE)
 	VALUE is any expression that results in a value being returned.
 	
 	Returns a floating-point-typed value that is equivalent to the COSINE of
+	VALUE. Assumes VALUE is in radians.
+	
+...............................................................................
+
+TAN(VALUE)
+
+	VALUE is any expression that results in a value being returned.
+	
+	Returns a floating-point-typed value that is equivalent to the TANGENT of
 	VALUE. Assumes VALUE is in radians.
 	
 ...............................................................................
@@ -784,7 +841,7 @@ RANDOM(VALUE)
 
 FRANDOM()
 
-	Returns a random floating-point-typed value between 0 and 1.
+	Returns a random floating-point-typed value between 0.0 and 1.0.
 
 ...............................................................................
 
@@ -799,6 +856,11 @@ PI()
 
 	Returns 3.141592653589793, or whatever this implementation of TAME 
 	defines the mathematical constant PI as.
+
+E()
+
+	Returns 2.718281828459045, or whatever this implementation of TAME 
+	defines the mathematical constant E as.
 
 ...............................................................................
 ................................   STRINGS   ..................................
@@ -818,7 +880,7 @@ FORMATDATE(VALUE, VALUE2)
 
 ...............................................................................
 
-CONTAINSPATTERN(VALUE, VALUE2)
+STRCONTAINSPATTERN(VALUE, VALUE2)
 
 	Checks for the existence of a regular-expression pattern in a string-typed
 	value.
@@ -830,7 +892,7 @@ CONTAINSPATTERN(VALUE, VALUE2)
 
 ...............................................................................
 
-CONTAINSSTRING(VALUE, VALUE2)
+STRCONTAINS(VALUE, VALUE2)
 
 	Checks for the existence of a substring pattern in a string-typed value.
 
@@ -841,7 +903,7 @@ CONTAINSSTRING(VALUE, VALUE2)
 
 ...............................................................................
 
-CONTAINSTOKEN(VALUE, VALUE2)
+STRCONTAINSTOKEN(VALUE, VALUE2)
 
 	Checks for the existence of a token pattern in a string-typed value.
 	A "token" is this case is a string that is a whole word or whitespace-
@@ -853,8 +915,8 @@ CONTAINSTOKEN(VALUE, VALUE2)
 	VALUE2 is the token.
 
 	For example:
-	CONTAINSTOKEN("I ate the apples", "apples") returns 1.
-	CONTAINSTOKEN("I ate the apples", "apple") returns 0.
+	STRCONTAINSTOKEN("I ate the apples", "apples") returns 1.
+	STRCONTAINSTOKEN("I ate the apples", "apple") returns 0.
 
 
 ===============================================================================
@@ -923,13 +985,6 @@ Examples:
 	+(-54) -> 54
 	+4.7 -> 4.7
 
-When used with a string, this converts it to uppercase.
-
-Examples:
-	+"books" -> "BOOKS"
-	+"Robert" -> "ROBERT"
-	+"CRAZY" -> "CRAZY"
-
 ...............................................................................
 
 NEGATE
@@ -942,13 +997,6 @@ Examples:
 	-8.9 -> -8.9
 	-(-5) -> 5
 
-When used with a string, this converts it to lowercase.
-
-Examples:
-	-"books" -> "books"
-	-"Robert" -> "robert"
-	-"CRAZY" -> "crazy"
-
 ...............................................................................
 
 LOGICAL NOT
@@ -956,14 +1004,14 @@ LOGICAL NOT
 
 Performs a logical "not" operation on a value. Nonzero values and strings that
 are not empty are considered "true" and Zero values and empty strings are 
-"false," for the sake of boolean arithmetic. Always returns an Integer value.
+"false," for the sake of boolean arithmetic. Always returns a boolean value.
 
 Examples:
-	!4 -> 0
-	!0 -> 1
-	!9.345 -> 0
-	!"stuff" -> 0
-	!"" -> 1
+	!4 -> false
+	!0 -> true
+	!9.345 -> false
+	!"stuff" -> false
+	!"" -> true
 
 ...............................................................................
 
@@ -977,14 +1025,6 @@ for NOT-ing.
 Examples:
 	~4 -> -5
 	~-6 -> 5
-
-When used with a string, this returns the length of the string. Always returns 
-an Integer value.
-
-Examples:
-	~"books" -> 5
-	~"" -> 0
-	~"John Jacob Jingleheimer Schmidt" -> 31
 
 ...............................................................................
 .............................. BINARY OPERATORS ...............................
@@ -1011,19 +1051,14 @@ Examples:
 SUBTRACT
 	-
 
-Performs a subtraction of the second operand from the first. If one of the
-operands is a string, both operands are treated as strings, and the first
-occurrance of the second operand is removed from the first operand.
+Performs a subtraction of the second operand from the first. 
 
 Examples:
 	3 - 2 -> 1
 	5 - 9 -> -4
 	4.5 - 2.6 -> 1.9
 	5 - 0.5 -> 4.5
-	"together" - "gether" -> "to"
-	"Ice9" - 9 -> "Ice"
-	4.07 - "4.0" -> "7"
-	"Togo" - "o" -> "Tgo"
+	4.07 - "4.0" -> 0.07
 
 ...............................................................................
 
@@ -1038,41 +1073,20 @@ Examples:
 	0.5 * 0.5 -> 0.25
 	-3 * 0.5 -> -1.5
 
-With strings, it is slightly different - if one of the operands is a string,
-the string is concatenated to itself for the amount of times that the numeric
-operand describes.
-
-Examples:
-	"apple" * 2 -> "appleapple"
-	"banana" * 2.5 -> "bananabananaban"
-	3 * "tomato" -> "tomatotomatotomato"
-
-If BOTH are strings, the strings are interwoven with each other.
-
-Examples:
-	"apple" * "banana" -> "abpapnlaena"
-
 ...............................................................................
 
 DIVIDE
 	/
 
 Performs division using two operands. The first operand is divided by the 
-second. If two numbers, and the second operand is 0, this throws an error. If 
-either are strings, both operands are treated as strings, and this 
-returns an Integer value of how many times the second operand appears in the 
-first.
+second. If two numbers, and the second operand is 0, this returns Infinity. 
 
 Examples:
 	5 / 2 -> 2
 	5 / 2.0 -> 2.5
 	10.0 / 0.5 -> 20.0
-	"apple" / "p" -> 2
-	"banana" / "na" -> 2
-	"banana" / 5 -> 0
-	"49'er" / 4 -> 1
 	0 / 4 -> 0
-	4 / 0 -> ERROR
+	4 / 0 -> Infinity
 
 ...............................................................................
 
@@ -1080,21 +1094,14 @@ MODULAR DIVIDE
 	%
 
 Performs modular division (modulo) using two operands. The first operand is
-divided by the second, and the remainder is returned. If either operand is
-a string, both operands are treated as strings, and this returns the leftover
-string from removing all instances of the second operand from the first. 
-If two numbers, and the second operand is 0, this throws an error.
+divided by the second, and the remainder is returned. 
 
 Examples:
 	5 % 2 -> 1
 	5 % 2.0 -> 1.0
 	10.0 % 3.5 -> 3.0
-	"apple" % "p" -> "ale"
-	"banana" % "na" -> "ba"
-	"banana" % 5 -> "banana"
-	"49'er" % 4 -> "9'er"
 	0 % 4 -> 0
-	4 % 0 -> ERROR
+	4 % 0 -> Infinity
 
 ...............................................................................
 
@@ -1159,33 +1166,3 @@ fatal -		CONTENT contains a FATAL error message. The server will send
 quit -		Tells the client to cease sending requests and enter the QUIT
 			state. The server context of the module is considered void. 
 
-[IMAGE CLIENT] (contains [ALL VERSIONS] plus the following)
-
-image - 	CONTENT contains an abstract path into the "assets" portion of the
-			Module for displaying of an image. The data found at that entry is
-			to be interpreted as an image type. Client must accept PNG, JPEG, 
-			BMP, or GIF (both animated and non-animated) file types. SVG and 
-			other formats are considered non-standard to the spec.
-			
-			Under the web client, this can be any image-like object or one that
-			can be embedded into the page.
-
-[MULTIMEDIA CLIENT] (contains [IMAGE CLIENT] plus the following)
-
-sound - 	CONTENT contains an abstract path into the "assets" portion of the
-			Module for playing of a sound clip. The data found at that entry 
-			is to be interpreted as a audio container type. Client must accept 
-			WAV, MP3, or OGG (all Xiph codecs) file types. Other formats are 
-			considered non-standard to the spec.
-			
-			The path may have additional parameters like coordinates separated
-			by a semicolon. These coordinates describe panning and fade for the
-			clip.
-			
-			sounds/laugh.wav;0,0
-
-music -		CONTENT contains an abstract path into the "assets" portion of the
-			Module for playing of a music stream. The data found at that entry 
-			is to be interpreted as a audio container type. Client must accept 
-			WAV, MP3, or OGG (all Xiph codecs) file types. Other formats are 
-			considered non-standard to the spec.
