@@ -113,7 +113,7 @@ world
 
 		textln(sqrt(4)); 
 		textln(pi()); 
-		textln(euler()); 
+		textln(e()); 
 		textln(sin(1)); 
 		textln(cos(1)); 
 		textln(tan(1)); 

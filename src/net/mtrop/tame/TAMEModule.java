@@ -57,6 +57,9 @@ public class TAMEModule implements Saveable
 
 	/** Maps action common names to action objects (not saved). */
 	private CaseInsensitiveHashMap<TAction> actionNameTable;
+
+	/** Data digest (generated if read by script). */
+	private byte[] digest;
 	
 	/**
 	 * Creates a new module.
@@ -71,8 +74,8 @@ public class TAMEModule implements Saveable
 		this.rooms = new HashMap<String, TRoom>(10);
 		this.objects = new HashMap<String, TObject>(20);
 		this.containers = new HashMap<String, TContainer>(5);
-
 		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
+		this.digest = null;
 	}
 
 	/**
@@ -109,6 +112,16 @@ public class TAMEModule implements Saveable
 	public TAMEModuleHeader getHeader()
 	{
 		return header;
+	}
+	
+	/**
+	 * Gets the module digest. 
+	 * @return the digest or null if not calculated.
+	 * @see #calculateDigest()
+	 */
+	public byte[] getDigest()
+	{
+		return digest;
 	}
 	
 	/**
@@ -259,6 +272,27 @@ public class TAMEModule implements Saveable
 		return containers;
 	}
 
+	/**
+	 * Calculates this module's digest - only necessary if read 
+	 * from a script but never saved. Must be calculated to save
+	 * a module state.
+	 * @throws ModuleException if it cannot be calculated.
+	 */
+	public byte[] calculateDigest()
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(32768);
+		try {
+			writeImmutableData(bos);
+		} catch (IOException e) {
+			throw new ModuleException("Could not calculate digest for module.");
+		} finally {
+			Common.close(bos);
+		}
+
+		byte[] data = bos.toByteArray();
+		return (this.digest = Common.sha1(data));
+	}
+	
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
@@ -324,6 +358,7 @@ public class TAMEModule implements Saveable
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(data);
 		readImmutableData(bis);
+		this.digest = readDigest;
 		bis.close();
 	}
 

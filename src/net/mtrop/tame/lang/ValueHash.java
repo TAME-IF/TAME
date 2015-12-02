@@ -66,7 +66,7 @@ public class ValueHash extends CaseInsensitiveHashMap<Value> implements Saveable
 		sw.writeInt(size());
 		for (ObjectPair<String, Value> hp : this)
 		{
-			sw.writeString(hp.getKey());
+			sw.writeString(hp.getKey(), "UTF-8");
 			hp.getValue().writeBytes(out);
 		}
 	}
@@ -78,7 +78,7 @@ public class ValueHash extends CaseInsensitiveHashMap<Value> implements Saveable
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		int x = sr.readInt();
 		for (int i = 0; i < x; i++)
-			put(sr.readString(), Value.create(in));
+			put(sr.readString("UTF-8"), Value.create(in));
 	}
 
 	@Override

@@ -543,7 +543,11 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		sw.writeBytes("TSAV".getBytes("ASCII"));
 		// write version
 		sw.writeByte((byte)0x01);
-
+		
+		byte[] digest;
+		if ((digest = module.getDigest()) == null)
+			digest = module.calculateDigest();
+		sw.writeBytes(digest);
 		sw.writeBoolean(currentPlayer != null);
 		if (currentPlayer != null)
 			sw.writeString(currentPlayer.getIdentity(), "UTF-8");
@@ -595,6 +599,13 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		if (sr.readByte() != 0x01)
 			throw new ModuleException("Module save state does not have a recognized version.");
 
+		byte[] digest = sr.readBytes(20);
+		byte[] moduleDigest = module.getDigest();
+		if ((moduleDigest = module.getDigest()) == null)
+			moduleDigest = module.calculateDigest();
+		if (!Arrays.equals(digest, moduleDigest))
+			throw new ModuleStateException("Module and state digests do not match. Save state may not be for this module.");
+		
 		// has current player.
 		if (sr.readBoolean())
 		{

@@ -69,7 +69,7 @@ public final class TAMECompilerMain
 					if (arg.startsWith("-"))
 					{
 						state = STATE_SWITCHES;
-						i++;
+						i--;
 						continue;
 					}
 					else
@@ -198,7 +198,7 @@ public final class TAMECompilerMain
 		try {
 			module = TAMEScriptReader.read(infile, options);
 		} catch (TAMEScriptParseException e) {
-			System.out.println(e.getMessage());
+			System.out.println("ERROR: "+e.getMessage());
 			return;
 		} catch (IOException e) {
 			System.out.println("ERROR: Could not read input file: "+infile.getPath());

@@ -25,7 +25,10 @@ import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.TAMEModuleContext;
 import net.mtrop.tame.TAMEResponse;
 import net.mtrop.tame.TAMEResponseReader;
+import net.mtrop.tame.exception.ModuleException;
+import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.factory.DefaultReaderOptions;
+import net.mtrop.tame.factory.TAMEScriptParseException;
 import net.mtrop.tame.factory.TAMEScriptReader;
 import net.mtrop.tame.struct.Cue;
 
@@ -164,6 +167,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		try {
 			in = new FileInputStream(file);
 			out = TAMEScriptReader.read(file, opts);
+		} catch (TAMEScriptParseException e) {
+			System.out.println("ERROR: "+e.getMessage());
+			return null;
 		} catch (SecurityException e) {
 			System.out.println("ERROR: Could not read from "+file.getPath()+". Access denied.");
 			return null;
@@ -213,6 +219,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		try {
 			out = new FileOutputStream(file);
 			context.writeBytes(out);
+		} catch (ModuleException e) {
+			System.out.println("ERROR: Could not write "+file.getPath()+". " + e.getMessage());
+			return false;
 		} catch (SecurityException e) {
 			System.out.println("ERROR: Could not write "+file.getPath()+". Access denied.");
 			return false;
@@ -239,6 +248,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		try {
 			in = new FileInputStream(file);
 			context.readBytes(in);
+		} catch (ModuleStateException e) {
+			System.out.println("ERROR: Could not read from "+file.getPath()+". " + e.getMessage());
+			return false;
 		} catch (SecurityException e) {
 			System.out.println("ERROR: Could not read from "+file.getPath()+". Access denied.");
 			return false;
