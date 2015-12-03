@@ -8,10 +8,12 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  *******************************************************************************/
-package net.mtrop.tame.element;
+package net.mtrop.tame.element.type;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import net.mtrop.tame.element.TElement;
 
 /**
  * Container that just holds objects. It cannot be actioned on.

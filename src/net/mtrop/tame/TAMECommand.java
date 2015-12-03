@@ -18,15 +18,15 @@ import java.util.regex.PatternSyntaxException;
 
 import com.blackrook.commons.math.RMath;
 
-import net.mtrop.tame.element.TAction;
-import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
-import net.mtrop.tame.element.TObject;
-import net.mtrop.tame.element.TPlayer;
-import net.mtrop.tame.element.TRoom;
-import net.mtrop.tame.element.TWorld;
-import net.mtrop.tame.element.context.TElementContext;
-import net.mtrop.tame.element.context.TObjectContext;
+import net.mtrop.tame.element.type.TAction;
+import net.mtrop.tame.element.type.TContainer;
+import net.mtrop.tame.element.type.TObject;
+import net.mtrop.tame.element.type.TPlayer;
+import net.mtrop.tame.element.type.TRoom;
+import net.mtrop.tame.element.type.TWorld;
+import net.mtrop.tame.element.type.context.TElementContext;
+import net.mtrop.tame.element.type.context.TObjectContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.UnexpectedValueTypeException;
 import net.mtrop.tame.interrupt.BreakInterrupt;

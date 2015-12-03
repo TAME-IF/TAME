@@ -10,7 +10,7 @@
  *******************************************************************************/
 package net.mtrop.tame;
 
-import net.mtrop.tame.element.context.TElementContext;
+import net.mtrop.tame.element.type.context.TElementContext;
 import net.mtrop.tame.exception.ArithmeticStackStateException;
 import net.mtrop.tame.lang.Value;
 

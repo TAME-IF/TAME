@@ -8,12 +8,13 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  *******************************************************************************/
-package net.mtrop.tame.element;
+package net.mtrop.tame.element.type;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import net.mtrop.tame.element.TActionableElement;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionTable;
 import net.mtrop.tame.struct.ActionWithTable;

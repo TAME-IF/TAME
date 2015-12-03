@@ -8,7 +8,7 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  *******************************************************************************/
-package net.mtrop.tame.element.context;
+package net.mtrop.tame.element.type.context;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,7 +19,7 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.TAMEModule;
-import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.type.TObject;
 
 /**
  * Object context.

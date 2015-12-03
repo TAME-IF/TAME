@@ -8,7 +8,7 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  *******************************************************************************/
-package net.mtrop.tame.element.context;
+package net.mtrop.tame.element.type.context;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

@@ -13,8 +13,8 @@ package net.mtrop.tame;
 import com.blackrook.commons.CommonTokenizer;
 import com.blackrook.commons.linkedlist.Queue;
 
-import net.mtrop.tame.element.TAction;
-import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.type.TAction;
+import net.mtrop.tame.element.type.TObject;
 
 /**
  * Context used when some input is getting parsed/interpreted.

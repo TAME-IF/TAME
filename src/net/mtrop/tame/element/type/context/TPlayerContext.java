@@ -8,20 +8,20 @@
  * Contributors:
  *     Matt Tropiano - initial API and implementation
  *******************************************************************************/
-package net.mtrop.tame.element.context;
+package net.mtrop.tame.element.type.context;
 
-import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.type.TPlayer;
 
 /**
- * Room context.
+ * Player context.
  * @author Matthew Tropiano
  */
-public class TRoomContext extends TElementContext<TRoom>
+public class TPlayerContext extends TElementContext<TPlayer>
 {
 	/**
 	 * Creates a player context. 
 	 */
-	public TRoomContext(TRoom ref)
+	public TPlayerContext(TPlayer ref)
 	{
 		super(ref);
 	}
