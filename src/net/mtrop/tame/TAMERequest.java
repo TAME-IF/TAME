@@ -130,7 +130,7 @@ public class TAMERequest
 	
 	/**
 	 * Pushes an element context value onto the context stack.
-	 * @param value the value to push.
+	 * @param context the context to push.
 	 */
 	public void pushContext(TElementContext<?> context)
 	{

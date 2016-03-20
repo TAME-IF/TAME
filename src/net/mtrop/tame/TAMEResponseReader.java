@@ -39,8 +39,7 @@ public abstract class TAMEResponseReader
 	
 	/**
 	 * Handles a cue.
-	 * @param cueName the name of the cue.
-	 * @param content the cue content.
+	 * @param cue the cue to handle.
 	 * @return true if reading should continue, false to halt it.
 	 */
 	public abstract boolean handleCue(Cue cue);

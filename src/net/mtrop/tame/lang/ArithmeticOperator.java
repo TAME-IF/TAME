@@ -303,7 +303,7 @@ public enum ArithmeticOperator
 	 * @return the resultant value.
 	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
-	public Value doOperation(Value value1)
+	public Value doOperation(Value value)
 	{
 		throw new ArithmeticException("Not a unary operator.");
 	}

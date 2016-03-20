@@ -43,8 +43,11 @@
 	<property name="project.classpath" value="${common.lib}${S}${common.io.lib}${S}${common.lang.lib}" />
 	<property name="project.javadoc.packages" value="
 		net.mtrop.tame,
+		net.mtrop.tame.compiler,
+		net.mtrop.tame.console,
 		net.mtrop.tame.element,
-		net.mtrop.tame.element.context,
+		net.mtrop.tame.element.type,
+		net.mtrop.tame.element.type.context,
 		net.mtrop.tame.exception,
 		net.mtrop.tame.factory,
 		net.mtrop.tame.interrupt,

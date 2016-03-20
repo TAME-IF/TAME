@@ -126,7 +126,6 @@ public class Command implements CallableType, Saveable
 	 * @param conditionalBlock the conditional block.
 	 * @param stepBlock the step block.
 	 * @param successBlock the success block.
-	 * @param failureBlock the failure block.
 	 */
 	public static Command create(TAMECommand command, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock)
 	{

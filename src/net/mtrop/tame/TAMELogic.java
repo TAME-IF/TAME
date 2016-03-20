@@ -333,7 +333,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param player the player that entered the room.
-	 * @param room the player to push a room context onto.
+	 * @param nextRoom the player to push a room context onto.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
 	public static void doRoomPush(TAMERequest request, TAMEResponse response, TPlayer player, TRoom nextRoom) throws TAMEInterrupt
@@ -420,7 +420,7 @@ public final class TAMELogic implements TAMEConstants
 	 * Attempts to perform a container browse.
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param object the object to browse.
+	 * @param container the container to browse.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
 	public static void doContainerBrowse(TAMERequest request, TAMEResponse response, TContainer container) throws TAMEInterrupt 
