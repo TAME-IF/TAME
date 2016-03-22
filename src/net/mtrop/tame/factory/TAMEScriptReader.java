@@ -24,7 +24,6 @@ import com.blackrook.commons.Reflect;
 import com.blackrook.commons.linkedlist.Stack;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
-import com.blackrook.lang.Lexer;
 import com.blackrook.lang.Parser;
 
 import net.mtrop.tame.TAMECommand;
@@ -451,12 +450,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseModuleAttributeList()
 		{
-			if (currentType(Lexer.TYPE_IDENTIFIER))
+			if (currentType(TSKernel.TYPE_IDENTIFIER))
 			{
 				String attribute = currentToken().getLexeme();
 				nextToken();
 
-				if (currentType(Lexer.TYPE_STRING | Lexer.TYPE_NUMBER))
+				if (currentType(TSKernel.TYPE_STRING | TSKernel.TYPE_NUMBER))
 				{
 					addErrorMessage("Expected literal value.");
 					return false;
@@ -488,7 +487,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseContainer()
 		{
 			// container identity.
-			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
 			{
 				addErrorMessage("Expected container identity.");
 				return false;
@@ -565,7 +564,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseObject()
 		{
 			// object identity.
-			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
 			{
 				addErrorMessage("Expected object identity.");
 				return false;
@@ -705,7 +704,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parseRoom()
 		{
 			// room identity.
-			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
 			{
 				addErrorMessage("Expected room identity.");
 				return false;
@@ -815,7 +814,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		public boolean parsePlayer()
 		{
 			// player identity.
-			if (!currentType(Lexer.TYPE_IDENTIFIER))
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
 			{
 				addErrorMessage("Expected player identity.");
 				return false;
@@ -1250,7 +1249,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_NAMED))
 			{
-				if (!currentType(Lexer.TYPE_STRING))
+				if (!currentType(TSKernel.TYPE_STRING))
 				{
 					addErrorMessage("Expected action name (must be string).");
 					return false;
@@ -1275,7 +1274,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_DELIM_COMMA))
 			{
-				if (!currentType(Lexer.TYPE_STRING))
+				if (!currentType(TSKernel.TYPE_STRING))
 				{
 					addErrorMessage("Expected action name (must be string).");
 					return false;
@@ -1300,7 +1299,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(expectedKeywordType))
 			{
-				if (!currentType(Lexer.TYPE_STRING))
+				if (!currentType(TSKernel.TYPE_STRING))
 				{
 					addErrorMessage("Expected name (must be string).");
 					return false;
@@ -1325,7 +1324,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_DELIM_COMMA))
 			{
-				if (!currentType(Lexer.TYPE_STRING))
+				if (!currentType(TSKernel.TYPE_STRING))
 				{
 					addErrorMessage("Expected name (must be string).");
 					return false;
@@ -1419,7 +1418,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_NAMED))
 			{
-				if (!currentType(Lexer.TYPE_STRING))
+				if (!currentType(TSKernel.TYPE_STRING))
 				{
 					addErrorMessage("Expected object name (must be string).");
 					return false;
@@ -1444,7 +1443,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_DELIM_COMMA))
 			{
-				if (!currentType(Lexer.TYPE_STRING))
+				if (!currentType(TSKernel.TYPE_STRING))
 				{
 					addErrorMessage("Expected object name (must be string).");
 					return false;
@@ -1578,7 +1577,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
-			if (!currentType(Lexer.TYPE_STRING))
+			if (!currentType(TSKernel.TYPE_STRING))
 			{
 				addErrorMessage("Expected valid modal type for action \"" + actionId + "\".");
 				return false;
@@ -2272,7 +2271,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		public boolean parseStatement()
 		{
-			if (currentType(Lexer.TYPE_IDENTIFIER) || isElement())
+			if (currentType(TSKernel.TYPE_IDENTIFIER) || isElement())
 			{
 				Value identToken = tokenToValue();
 
@@ -2377,7 +2376,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (!currentType(
 					TSKernel.TYPE_DELIM_SEMICOLON, 
-					Lexer.TYPE_IDENTIFIER,
+					TSKernel.TYPE_IDENTIFIER,
 					TSKernel.TYPE_WORLD,
 					TSKernel.TYPE_PLAYER,
 					TSKernel.TYPE_ROOM,
@@ -2433,7 +2432,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			while (keepGoing)
 			{
-				if (currentType(Lexer.TYPE_IDENTIFIER, TSKernel.TYPE_WORLD, TSKernel.TYPE_PLAYER, TSKernel.TYPE_ROOM))
+				if (currentType(TSKernel.TYPE_IDENTIFIER, TSKernel.TYPE_WORLD, TSKernel.TYPE_PLAYER, TSKernel.TYPE_ROOM))
 				{
 					if (lastWasValue)
 					{
@@ -3043,9 +3042,9 @@ public final class TAMEScriptReader implements TAMEConstants
 				return Value.createContainer(currentToken().getLexeme());
 			else if (isAction())
 				return Value.createAction(currentToken().getLexeme());
-			else if (currentType(Lexer.TYPE_STRING))
+			else if (currentType(TSKernel.TYPE_STRING))
 				return Value.create(currentToken().getLexeme());
-			else if (currentType(Lexer.TYPE_NUMBER))
+			else if (currentType(TSKernel.TYPE_NUMBER))
 			{
 				String lexeme = currentToken().getLexeme();
 				if (lexeme.startsWith("0X") || lexeme.startsWith("0x"))
@@ -3055,7 +3054,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				else
 					return Value.create(Long.parseLong(lexeme));
 			}
-			else if (currentType(Lexer.TYPE_IDENTIFIER))
+			else if (currentType(TSKernel.TYPE_IDENTIFIER))
 				return Value.createVariable(currentToken().getLexeme());
 			else if (currentType(TSKernel.TYPE_TRUE))
 				return Value.create(true);
@@ -3232,8 +3231,8 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			switch (currentToken().getType())
 			{
-				case Lexer.TYPE_STRING:
-				case Lexer.TYPE_NUMBER:
+				case TSKernel.TYPE_STRING:
+				case TSKernel.TYPE_NUMBER:
 				case TSKernel.TYPE_TRUE:
 				case TSKernel.TYPE_FALSE:
 				case TSKernel.TYPE_INFINITY:
