@@ -160,6 +160,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		private TSKernel()
 		{
 			addStringDelimiter('"', '"');
+			setDecimalSeparator('.');
 			
 			addCommentStartDelimiter("/*", TYPE_COMMENT);
 			addCommentLineDelimiter("//", TYPE_COMMENT);
