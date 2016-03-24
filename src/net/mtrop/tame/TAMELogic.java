@@ -239,8 +239,8 @@ public final class TAMELogic implements TAMEConstants
 	
 	/**
 	 * Performs an arithmetic function on the stack.
-	 * @param request
-	 * @param functionType
+	 * @param request the request context.
+	 * @param functionType the function type.
 	 */
 	public static void doArithmeticStackFunction(TAMERequest request, int functionType)
 	{
@@ -859,6 +859,7 @@ public final class TAMELogic implements TAMEConstants
 	 * Initializes a newly-created context by executing each initialization block on each object.
 	 * @param request the request object containing the module context.
 	 * @param response the response object.
+	 * @throws TAMEInterrupt if an interrupt is thrown.
 	 */
 	public static void initializeContext(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{

@@ -105,6 +105,8 @@ public class TAMEModule implements Saveable
 	
 	/**
 	 * Returns the module header.
+	 * The module header contains a lot of header information about the module.
+	 * @return the header.
 	 */
 	public TAMEModuleHeader getHeader()
 	{
@@ -123,6 +125,7 @@ public class TAMEModule implements Saveable
 	
 	/**
 	 * Gets the module's world.
+	 * @return the world.
 	 */
 	public TWorld getWorld() 
 	{
@@ -131,6 +134,7 @@ public class TAMEModule implements Saveable
 
 	/**
 	 * Sets the module's world.
+	 * @param world the world to set.
 	 */
 	public void setWorld(TWorld world) 
 	{
@@ -199,7 +203,7 @@ public class TAMEModule implements Saveable
 	/**
 	 * Retrieves an Object by identity.
 	 * @param identity the Object's identity.
-	 * @returnb the corresponding Object, or null if not found.
+	 * @return the corresponding Object, or null if not found.
 	 */
 	public TObject getObjectByIdentity(String identity)
 	{

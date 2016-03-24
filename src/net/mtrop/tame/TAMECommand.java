@@ -2426,7 +2426,14 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	{
 		return argumentTypes;
 	}
-	
+
+	/**
+	 * Performs the command.
+	 * @param request the TAMERequest context.
+	 * @param response the TAMEResponse object.
+	 * @param command the command origin.
+	 * @throws TAMEInterrupt if an interrupt occurs. 
+	 */
 	protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 	{
 		throw new RuntimeException("UNIMPLEMENTED COMMAND");
@@ -2437,7 +2444,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param command the command object.
-	 * @throws TAMEInterrupt 
+	 * @throws TAMEInterrupt if an interrupt occurs. 
 	 */
 	public final void call(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 	{

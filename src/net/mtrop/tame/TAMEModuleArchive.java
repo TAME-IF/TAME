@@ -62,7 +62,8 @@ public class TAMEModuleArchive extends ZipFile
 	/**
 	 * Checks if the key matches.
 	 * @param key the key to check.
-	 * @return
+	 * @return true if matched, false if not.
+	 * @throws IOException if the archive cannot be read.
 	 */
 	public boolean checkDebugKey(String key) throws IOException
 	{

@@ -70,6 +70,10 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	/** Ownership map for players. */
 	private TOwnershipMap ownershipMap;
 
+	/**
+	 * Creates a new module context.
+	 * @param module the module to create the context for.
+	 */
 	public TAMEModuleContext(TAMEModule module)
 	{
 		this.module = module;
@@ -98,7 +102,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
-	 * Returns the module.
+	 * Gets the encapsulated module.
+	 * @return the module.
 	 */
 	public TAMEModule getModule()
 	{
@@ -106,7 +111,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 	
 	/**
-	 * Gets the context random.
+	 * Gets the context random number generator.
+	 * @return the current random generator.
 	 */
 	public Random getRandom()
 	{
@@ -116,6 +122,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	/**
 	 * Reflection method - get available action names according to current context
 	 * and filtered by a prefix.
+	 * @return the valid action names that can be.
 	 */
 	public String[] getAvailableActionNames()
 	{

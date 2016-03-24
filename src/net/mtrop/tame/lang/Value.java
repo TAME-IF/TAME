@@ -22,7 +22,6 @@ import com.blackrook.io.SuperWriter;
 
 /**
  * All values in the interpreter are of this type, which stores a type.
- * FIXME: All value math should conform to ECMAScript standards.
  * @author Matthew Tropiano
  */
 public class Value implements Comparable<Value>, Saveable

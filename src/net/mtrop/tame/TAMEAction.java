@@ -126,7 +126,8 @@ public class TAMEAction
 	}
 
 	/**
-	 * Returns true if this was the action interpreted from the initial request. 
+	 * Checks if this was the action interpreted from the initial request.
+	 * @return true if so, false if not. 
 	 */
 	public boolean isInitial()
 	{
@@ -135,6 +136,7 @@ public class TAMEAction
 	
 	/**
 	 * Gets the action to call.
+	 * @return the returned action.
 	 */
 	public TAction getAction()
 	{
@@ -143,6 +145,7 @@ public class TAMEAction
 
 	/**
 	 * Gets the open target.
+	 * @return the open target, if any.
 	 */
 	public String getTarget()
 	{
@@ -151,6 +154,7 @@ public class TAMEAction
 
 	/**
 	 * Gets the first object.
+	 * @return the first object, if any.
 	 */
 	public TObject getObject1()
 	{
@@ -159,6 +163,7 @@ public class TAMEAction
 
 	/**
 	 * Gets the second object.
+	 * @return the second object, if any.
 	 */
 	public TObject getObject2()
 	{
