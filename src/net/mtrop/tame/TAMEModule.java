@@ -79,6 +79,7 @@ public class TAMEModule implements Saveable
 	 * Reads a module from binary content.
 	 * @param in the input stream to read from.
 	 * @return a deserialized module.
+	 * @throws IOException if the stream can't be read.
 	 */
 	public static TAMEModule create(InputStream in) throws IOException
 	{
@@ -91,6 +92,7 @@ public class TAMEModule implements Saveable
 	 * Reads a module header and only the header from a module stream.
 	 * @param in the input stream to read from.
 	 * @return a module header.
+	 * @throws IOException if the stream can't be read.
 	 */
 	public static TAMEModuleHeader readModuleHeader(InputStream in) throws IOException
 	{
@@ -277,6 +279,7 @@ public class TAMEModule implements Saveable
 	 * Calculates this module's digest - only necessary if read 
 	 * from a script but never saved. Must be calculated to save
 	 * a module state.
+	 * @return the calculated digest.
 	 * @throws ModuleException if it cannot be calculated.
 	 */
 	public byte[] calculateDigest()

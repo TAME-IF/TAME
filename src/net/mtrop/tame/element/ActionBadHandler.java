@@ -18,16 +18,19 @@ public interface ActionBadHandler
 {
 	/** 
 	 * Get this element's bad action table. 
+	 * @return the action table that handles specific bad actions.
 	 */
 	public ActionTable getBadActionTable();
 
 	/** 
 	 * Gets this element's "onBadAction" block. 
+	 * @return the block that handles non-specific bad actions.
 	 */
 	public Block getBadActionBlock();
 
 	/** 
 	 * Sets this element's "onBadAction" block. 
+	 * @param block the block that handles non-specific bad actions.
 	 */
 	public void setBadActionBlock(Block block);	
 

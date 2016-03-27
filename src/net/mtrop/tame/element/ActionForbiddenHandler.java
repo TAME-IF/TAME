@@ -20,12 +20,14 @@ public interface ActionForbiddenHandler
 {
 
 	/** 
-	 * Get this element's action forbid table for specific actions. 
+	 * Get this element's action forbid table for specific actions.
+	 * @return the block that handles specific forbidden actions. 
 	 */
 	public ActionTable getActionForbiddenTable();
 
 	/** 
 	 * Get this element's default "onActionForbid" block. 
+	 * @return the block that handles non-specific forbidden actions. 
 	 */
 	public Block getActionForbiddenBlock();
 

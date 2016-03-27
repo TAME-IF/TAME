@@ -18,17 +18,20 @@ public interface ActionFailedHandler
 {
 
 	/** 
-	 * Get this element's action failure table. 
+	 * Get this element's action failure table.
+ 	 * @return the block that handles specific action failures.
 	 */
 	public ActionTable getActionFailedTable();
 
 	/** 
 	 * Get this element's default "onFailedAction" block. 
+	 * @return the block that handles non-specific action failures.
 	 */
 	public Block getActionFailedBlock();
 
 	/** 
 	 * Set this element's default "onFailedAction" block. 
+	 * @param block the block that handles non-specific action failures.
 	 */
 	public void setActionFailedBlock(Block block);
 
