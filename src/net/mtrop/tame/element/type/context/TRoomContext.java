@@ -16,11 +16,12 @@ import net.mtrop.tame.element.type.TRoom;
 public class TRoomContext extends TElementContext<TRoom>
 {
 	/**
-	 * Creates a player context. 
+	 * Creates a room context. 
+	 * @param room the room reference.
 	 */
-	public TRoomContext(TRoom ref)
+	public TRoomContext(TRoom room)
 	{
-		super(ref);
+		super(room);
 	}
 
 }

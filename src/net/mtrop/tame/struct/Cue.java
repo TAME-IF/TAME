@@ -23,6 +23,8 @@ public class Cue
 	
 	/** 
 	 * Creates a new message cue. 
+	 * @param type the cue type.
+	 * @param content the content in the cue.
 	 */
 	private Cue(String type, String content)
 	{
@@ -33,6 +35,7 @@ public class Cue
 	/**
 	 * Creates a new cue with no content.
 	 * @param type the cue type.
+	 * @return the created cue.
 	 */
 	public static Cue create(String type)
 	{
@@ -43,6 +46,7 @@ public class Cue
 	 * Creates a new cue.
 	 * @param type the cue type.
 	 * @param content the content.
+	 * @return the created cue.
 	 */
 	public static Cue create(String type, boolean content)
 	{
@@ -53,6 +57,7 @@ public class Cue
 	 * Creates a new cue.
 	 * @param type the cue type.
 	 * @param content the content.
+	 * @return the created cue.
 	 */
 	public static Cue create(String type, long content)
 	{
@@ -63,6 +68,7 @@ public class Cue
 	 * Creates a new cue.
 	 * @param type the cue type.
 	 * @param content the content.
+	 * @return the created cue.
 	 */
 	public static Cue create(String type, double content)
 	{
@@ -73,13 +79,17 @@ public class Cue
 	 * Creates a new cue.
 	 * @param type the cue type.
 	 * @param content the content.
+	 * @return the created cue.
 	 */
 	public static Cue create(String type, String content)
 	{
 		return new Cue(type, content);
 	}
 	
-	/** Returns this message cue's type. */
+	/** 
+	 * Gets this message cue's type.
+	 * @return the cue type. 
+	 */
 	public String getType()
 	{
 		return type;
@@ -87,6 +97,7 @@ public class Cue
 	
 	/**
 	 * Checks if a cue is a specific type.
+	 * @param type the cue type.
 	 * @return true if match, false otherwise.
 	 */
 	public boolean isType(String type)
@@ -94,7 +105,10 @@ public class Cue
 		return getType().equals(type);
 	}
 	
-	/** Returns this message cue's content. */
+	/** 
+	 * Gets this message cue's content.
+	 * @return the cue content. 
+	 */
 	public String getContent()
 	{
 		return content;

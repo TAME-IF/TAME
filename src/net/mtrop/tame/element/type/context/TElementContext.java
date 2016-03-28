@@ -20,33 +20,40 @@ import net.mtrop.tame.lang.Value;
 import net.mtrop.tame.lang.ValueHash;
 
 /**
- * Holds contextual information for a TAMEElement
+ * Holds contextual information for a {@link TElement}.
  * @author Matthew Tropiano
  */
 public abstract class TElementContext<T extends TElement> implements StateSaveable
 {
 	/** Reference to source element. */
-	protected T elementRef;
+	protected T element;
 	/** Variable bank. */
 	protected ValueHash variables;
 
-	
-	protected TElementContext(T ref)
+	/**
+	 * Creates an element context.
+	 * @param element the element reference.
+	 */
+	protected TElementContext(T element)
 	{
-		elementRef = ref;
+		this.element = element;
 		variables = new ValueHash();
 	}
 
 	/**
 	 * Gets the element associated with this context.
+	 * @return the element that this holds state for.
 	 */
 	public T getElement()
 	{
-		return elementRef;
+		return element;
 	}
 
 	/**
 	 * Reads in a bunch of bytes that represent the current context state.
+	 * The context is changed after the call.
+	 * @param in the input stream to read from.
+	 * @throws IOException if a read error occurs.
 	 */
 	protected void read(InputStream in) throws IOException
 	{
@@ -55,6 +62,8 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 
 	/**
 	 * Writes a bunch of bytes that represent the current context state.
+	 * @param out the output stream to write from.
+	 * @throws IOException if a write error occurs.
 	 */
 	protected void write(OutputStream out) throws IOException
 	{
@@ -74,6 +83,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	/**
 	 * Gets a variable's value on this context.
 	 * @param variableName the variable name.
+	 * @return the corresponding value, or a value that represents "false" if no value.
 	 */
 	public Value getValue(String variableName)
 	{
@@ -85,6 +95,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	/**
 	 * Tests if a variable's value exists on this context.
 	 * @param variableName the variable's name.
+	 * @return true if so, false if not.
 	 */
 	public boolean containsVariable(String variableName)
 	{
@@ -94,7 +105,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	@Override
 	public String toString()
 	{
-		return "Context:" + elementRef;
+		return "Context:" + element;
 	}
 	
 	@Override

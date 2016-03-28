@@ -36,20 +36,18 @@ public abstract class TElement implements Saveable
 	/** Procedure block map. */
 	private ActionTable procedureBlock;
 
+	/**
+	 * Prepares a new element.
+	 */
 	protected TElement()
 	{
 		this.initBlock = null;
 		this.procedureBlock = new ActionTable();
 	}
 	
-	protected TElement(String identity)
-	{
-		this();
-		setIdentity(identity);
-	}
-	
 	/** 
-	 * Gets the identity (primary identifier name). 
+	 * Gets the identity (primary identifier name).
+	 * @return this element's identity. 
 	 */
 	public String getIdentity()
 	{
@@ -58,6 +56,7 @@ public abstract class TElement implements Saveable
 	
 	/** 
 	 * Sets the identity (primary identifier name). 
+	 * @param identity the identity to set.
 	 */
 	protected void setIdentity(String identity)
 	{
@@ -67,7 +66,8 @@ public abstract class TElement implements Saveable
 	}
 	
 	/** 
-	 * Get this element's initialization block. 
+	 * Get this element's initialization block.
+	 * @return the block to call on initialization. 
 	 */
 	public Block getInitBlock()
 	{
@@ -76,10 +76,11 @@ public abstract class TElement implements Saveable
 	
 	/** 
 	 * Set this element's initialization block. 
+	 * @param block the block to call on initialization. 
 	 */
-	public void setInitBlock(Block eab)
+	public void setInitBlock(Block block)
 	{
-		initBlock = eab;
+		initBlock = block;
 	}
 
 	/**
@@ -119,10 +120,12 @@ public abstract class TElement implements Saveable
 	
 	/**
 	 * Compares elements. Uses identity.
+	 * @param element the other element.
+	 * @return true if equal, false if not.
 	 */
-	public boolean equals(TElement object)
+	public boolean equals(TElement element)
 	{
-		return getClass().equals(object.getClass()) && identity.equals(object.identity);
+		return getClass().equals(element.getClass()) && identity.equals(element.identity);
 	}
 	
 	@Override

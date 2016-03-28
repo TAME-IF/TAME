@@ -42,6 +42,8 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Creates a boolean value, typed as integer.
+	 * @param value the boolean value.
+	 * @return the new value.
 	 */
 	public static Value create(boolean value)
 	{
@@ -52,6 +54,8 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates an integer value.
+	 * @param value the integer value.
+	 * @return the new value.
 	 */
 	public static Value create(int value)
 	{
@@ -61,7 +65,9 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
-	 * Creates an integer value.
+	 * Creates a long integer value.
+	 * @param value the long value.
+	 * @return the new value.
 	 */
 	public static Value create(long value)
 	{
@@ -72,6 +78,8 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates a value typed as float.
+	 * @param value the float value.
+	 * @return the new value.
 	 */
 	public static Value create(float value)
 	{
@@ -82,6 +90,8 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates a value typed as float.
+	 * @param value the double value.
+	 * @return the new value.
 	 */
 	public static Value create(double value)
 	{
@@ -92,6 +102,8 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates a value typed as string.
+	 * @param value the string value.
+	 * @return the new value.
 	 */
 	public static Value create(String value)
 	{
@@ -102,56 +114,67 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates an object value.
+	 * @param identity the object identity.
+	 * @return the new value.
 	 */
-	public static Value createObject(String value)
+	public static Value createObject(String identity)
 	{
 		Value out = new Value();
-		out.set(ValueType.OBJECT, value);
+		out.set(ValueType.OBJECT, identity);
 		return out;
 	}
 
 	/**
 	 * Creates a container value.
+	 * @param identity the container identity.
+	 * @return the new value.
 	 */
-	public static Value createContainer(String value)
+	public static Value createContainer(String identity)
 	{
 		Value out = new Value();
-		out.set(ValueType.CONTAINER, value);
+		out.set(ValueType.CONTAINER, identity);
 		return out;
 	}
 
 	/**
 	 * Creates a room value.
+	 * @param identity the room identity.
+	 * @return the new value.
 	 */
-	public static Value createRoom(String value)
+	public static Value createRoom(String identity)
 	{
 		Value out = new Value();
-		out.set(ValueType.ROOM, value);
+		out.set(ValueType.ROOM, identity);
 		return out;
 	}
 
 	/**
 	 * Creates a player value.
+	 * @param identity the player identity.
+	 * @return the new value.
 	 */
-	public static Value createPlayer(String value)
+	public static Value createPlayer(String identity)
 	{
 		Value out = new Value();
-		out.set(ValueType.PLAYER, value);
+		out.set(ValueType.PLAYER, identity);
 		return out;
 	}
 
 	/**
 	 * Creates a action value.
+	 * @param identity the action identity.
+	 * @return the new value.
 	 */
-	public static Value createAction(String value)
+	public static Value createAction(String identity)
 	{
 		Value out = new Value();
-		out.set(ValueType.ACTION, value);
+		out.set(ValueType.ACTION, identity);
 		return out;
 	}
 
 	/**
-	 * Creates world.
+	 * Creates a world value.
+	 * @return the new value that represents the world.
 	 */
 	public static Value createWorld()
 	{
@@ -161,7 +184,9 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
-	 * Creates variable value.
+	 * Creates a variable reference value.
+	 * @param name the variable name.
+	 * @return the new value that represents a variable reference.
 	 */
 	public static Value createVariable(String name)
 	{
@@ -172,33 +197,35 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates a copy of a value.
+	 * @param inputValue the input value.
+	 * @return the new value that is a copy of the input value.
 	 */
-	public static Value create(Value v)
+	public static Value create(Value inputValue)
 	{
-		switch (v.type)
+		switch (inputValue.type)
 		{
 			case BOOLEAN:
-				return create((Boolean)v.value);
+				return create((Boolean)inputValue.value);
 			case INTEGER:
-				return create((Long)v.value);
+				return create((Long)inputValue.value);
 			case FLOAT:
-				return create((Double)v.value);
+				return create((Double)inputValue.value);
 			case STRING:
-				return create((String)v.value);
+				return create((String)inputValue.value);
 			case OBJECT:
-				return createObject((String)v.value);
+				return createObject((String)inputValue.value);
 			case PLAYER:
-				return createPlayer((String)v.value);
+				return createPlayer((String)inputValue.value);
 			case CONTAINER:
-				return createContainer((String)v.value);
+				return createContainer((String)inputValue.value);
 			case ROOM:
-				return createRoom((String)v.value);
+				return createRoom((String)inputValue.value);
 			case WORLD:
 				return createWorld();
 			case ACTION:
-				return createAction((String)v.value);
+				return createAction((String)inputValue.value);
 			case VARIABLE:
-				return createVariable((String)v.value);
+				return createVariable((String)inputValue.value);
 			default:
 				throw new ModuleExecutionException("Unknown variable type.");
 		}
@@ -219,8 +246,8 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Sets the value type and value.
-	 * @param type
-	 * @param value
+	 * @param type the value type.
+	 * @param value the underlying object value.
 	 */
 	private void set(ValueType type, Object value)
 	{
@@ -235,30 +262,32 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
-	 * Returns if two values are equal, value-wise.
+	 * Returns if this value is equal to another, value-wise.
 	 * If they are literals, they are compared by their string values.
+	 * @param otherValue the other value.
 	 * @return true if so, false if not.
 	 */
-	public boolean equalsIgnoreType(Value v)
+	public boolean equalsIgnoreType(Value otherValue)
 	{
-		if (isLiteral() && v.isLiteral())
+		if (isLiteral() && otherValue.isLiteral())
 		{
-			if (isString() && v.isString())
-				return value.equals(v.value);
+			if (isString() && otherValue.isString())
+				return value.equals(otherValue.value);
 			else
-				return asDouble() == v.asDouble();
+				return asDouble() == otherValue.asDouble();
 		}
 		else
-			return equals(v); 
+			return equals(otherValue); 
 	}
 
 	/**
-	 * Returns if two values are PERFECTLY EQUAL, type strict.
+	 * Returns if this value is equal to another: PERFECTLY EQUAL, type strict.
+	 * @param otherValue the other value.
 	 * @return true if so, false if not.
 	 */
-	public boolean equals(Value v)
+	public boolean equals(Value otherValue)
 	{
-		return type == v.type && value.equals(value);
+		return type == otherValue.type && value.equals(value);
 	}
 	
 	@Override
@@ -839,6 +868,13 @@ public class Value implements Comparable<Value>, Saveable
 		}
 	}
 	
+	/**
+	 * Returns the result of one value raised to a certain power. 
+	 * @param value1 the first operand.
+	 * @param value2 the second operand.
+	 * @return the resultant value.
+	 * @throws ArithmeticException an arithmetic exception, if any (or divide by zero).
+	 */
 	public static Value power(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))

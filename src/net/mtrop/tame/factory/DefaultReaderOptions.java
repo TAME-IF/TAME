@@ -22,6 +22,9 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 	private boolean verbose;
 	private PrintStream verboseOut;
 
+	/**
+	 * Creates a set of reader options.
+	 */
 	public DefaultReaderOptions()
 	{
 		this.defines = NO_DEFINES;
@@ -48,6 +51,7 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 	/**
 	 * Gets if this reader optimizes finished blocks.
 	 * Default is true.
+	 * @param optimizing true if optimizing, false if not.
 	 */
 	public void setOptimizing(boolean optimizing)
 	{
@@ -64,6 +68,7 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 	 * Gets if this prints what it is emitting or constructing.
 	 * Only good for debugging.
 	 * Default is false.
+	 * @param verbose true if verbose, false if not.
 	 */
 	public void setVerbose(boolean verbose)
 	{
@@ -79,6 +84,7 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 	/**
 	 * Sets the output stream to print verbose messages to.
 	 * By default, this is {@link System#out}.
+	 * @param verboseOut the print stream to print to.
 	 */
 	public void setVerboseOut(PrintStream verboseOut) 
 	{
@@ -90,4 +96,5 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 	{
 		return verboseOut;
 	}
+	
 }

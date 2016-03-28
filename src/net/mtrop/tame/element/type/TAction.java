@@ -26,6 +26,9 @@ import com.blackrook.io.SuperWriter;
  */
 public class TAction implements Comparable<TAction>, Saveable
 {
+	/**
+	 * The action type.
+	 */
 	public static enum Type
 	{
 		/** Has no targets. */
@@ -44,7 +47,8 @@ public class TAction implements Comparable<TAction>, Saveable
 	private String identity;
 
 	/** 
-	 * Action type. GENERAL, TRANSITIVE, DITRANSITIVE, MODAL, OPEN.
+	 * Action type.
+	 * @see Type
 	 */
 	private Type type;
 	
@@ -68,6 +72,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	
 	/**
 	 * Makes a blank action.
+	 * @param identity this action's identity.
 	 */
 	public TAction(String identity)
 	{
@@ -77,6 +82,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	
 	/** 
 	 * Gets the identity (primary identifier name).
+	 * @return this action's unique identity.
 	 */
 	public String getIdentity()
 	{
@@ -85,6 +91,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	
 	/**
 	 * Sets this action's identity.
+	 * @param identity the unique identity.
 	 */
 	private void setIdentity(String identity)
 	{
@@ -95,6 +102,7 @@ public class TAction implements Comparable<TAction>, Saveable
 
 	/**
 	 * Gets the action type.
+	 * @return the action type.
 	 */
 	public Type getType()
 	{
@@ -103,14 +111,16 @@ public class TAction implements Comparable<TAction>, Saveable
 
 	/**
 	 * Sets the action type.
+	 * @param type the action type.
 	 */
-	public void setType(Type value)
+	public void setType(Type type)
 	{
-		type = value;
+		this.type = type;
 	}
 
 	/**
 	 * Gets the names of this action.
+	 * @return the case-insensitive hash containing the names.
 	 */
 	public CaseInsensitiveHash getNames()
 	{
@@ -119,6 +129,7 @@ public class TAction implements Comparable<TAction>, Saveable
 
 	/**
 	 * Gets this action's extra strings.
+	 * @return the case-insensitive hash containing the names.
 	 */
 	public CaseInsensitiveHash getExtraStrings()
 	{
@@ -149,10 +160,12 @@ public class TAction implements Comparable<TAction>, Saveable
 	/**
 	 * Compares actions.
 	 * Uses identity.
+	 * @param action the other action.
+	 * @return true if equal, false if not.
 	 */
-	public boolean equals(TAction object)
+	public boolean equals(TAction action)
 	{
-		return identity.equals(object.identity);
+		return identity.equals(action.identity);
 	}
 
 	@Override

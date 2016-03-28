@@ -19,16 +19,19 @@ public interface ActionIncompleteHandler
 {
 	/** 
 	 * Get this element's action incomplete table for specific actions. 
+	 * @return the table that handles specific incomplete actions. 
 	 */
 	public ActionTable getActionIncompleteTable();
 
 	/** 
 	 * Gets this element's "onIncompleteAction" block. 
+	 * @return the block that handles non-specific incomplete actions. 
 	 */
 	public Block getActionIncompleteBlock();
 
 	/** 
 	 * Sets this element's "onIncompleteAction" block. 
+	 * @param block the block that handles non-specific incomplete actions. 
 	 */
 	public void setActionIncompleteBlock(Block block);	
 

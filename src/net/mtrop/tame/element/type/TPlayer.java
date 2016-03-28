@@ -113,7 +113,7 @@ public class TPlayer extends TActionableElement
 	}
 
 	@Override
-	public void addPermittedAction(TAction action)
+	public void addPermissionAction(TAction action)
 	{
 		permittedActionList.put(action.getIdentity());
 	}

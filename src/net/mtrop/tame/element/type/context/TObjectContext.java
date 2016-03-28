@@ -24,20 +24,23 @@ import net.mtrop.tame.element.type.TObject;
  */
 public class TObjectContext extends TElementContext<TObject>
 {
-	/** Element's names. */
+	/** Object's names. */
 	protected CaseInsensitiveHash currentObjectNames;
 	
 	/**
 	 * Creates an object context. 
+	 * @param object the object reference.
 	 */
-	public TObjectContext(TObject ref)
+	public TObjectContext(TObject object)
 	{
-		super(ref);
+		super(object);
 		currentObjectNames = new CaseInsensitiveHash(2);
 	}
 
 	/** 
-	 * Adds a name.
+	 * Adds a name to this object.
+	 * This name is the one referred to in requests.
+	 * @param name the name to add.
 	 */
 	public void addName(String name) 
 	{
@@ -46,6 +49,8 @@ public class TObjectContext extends TElementContext<TObject>
 
 	/** 
 	 * Removes a name. 
+	 * This name is the one referred to in requests.
+	 * @param name the name to remove.
 	 */
 	public void removeName(String name) 
 	{
@@ -53,7 +58,10 @@ public class TObjectContext extends TElementContext<TObject>
 	}
 
 	/**
-	 * Returns true if this contains a particular name.
+	 * Checks if this contains a particular name.
+	 * This name is the one referred to in requests.
+	 * @param name the name to add.
+	 * @return true if so, false if not.
 	 */
 	public boolean containsName(String name)
 	{

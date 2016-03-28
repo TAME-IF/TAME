@@ -22,7 +22,7 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
 /**
- * Holds actionIdentity -> Block mappings for general action calls.
+ * Holds action identity to Block mappings for general action calls.
  * @author Matthew Tropiano
  */
 public class ActionTable implements Saveable
@@ -50,6 +50,8 @@ public class ActionTable implements Saveable
 	
 	/**
 	 * Checks if a command block by action exists.
+	 * @param actionIdentity the action's identity.
+	 * @return true if exists, false if not.
 	 */
 	public boolean contains(String actionIdentity)
 	{
@@ -58,6 +60,8 @@ public class ActionTable implements Saveable
 
 	/**
 	 * Gets command block by action.
+	 * @param actionIdentity the action's identity.
+	 * @return the corresponding block or null if no block.
 	 */
 	public Block get(String actionIdentity)
 	{
@@ -66,6 +70,8 @@ public class ActionTable implements Saveable
 
 	/**
 	 * Sets/replaces command block by action.
+	 * @param actionIdentity the action's identity.
+	 * @param commandBlock the block to associate.
 	 */
 	public void add(String actionIdentity, Block commandBlock)
 	{

@@ -21,6 +21,7 @@ public interface CallableType
 	 * Executes something that can change the request and response.
 	 * @param request the request object.
 	 * @param response the response object.
+	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
 	public void call(TAMERequest request, TAMEResponse response) throws TAMEInterrupt;
 	

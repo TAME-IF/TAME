@@ -62,7 +62,8 @@ public class TWorld extends TActionableElement
 	 */
 	public TWorld()
 	{
-		super(TAMEConstants.IDENTITY_CURRENT_WORLD);
+		super();
+		setIdentity(TAMEConstants.IDENTITY_CURRENT_WORLD);
 		
 		this.actionFailedTable = new ActionTable();
 		this.modalActionTable = new ActionModeTable();
@@ -170,6 +171,7 @@ public class TWorld extends TActionableElement
 
 	/**
 	 * Gets the block executed after each user request.
+	 * @return the block to call after each request. 
 	 */
 	public Block getAfterRequestBlock() 
 	{
@@ -178,10 +180,11 @@ public class TWorld extends TActionableElement
 	
 	/**
 	 * Sets the block executed after each user request.
+	 * @param block the block to call after each request. 
 	 */
-	public void setAfterRequestBlock(Block afterRequestBlock) 
+	public void setAfterRequestBlock(Block block) 
 	{
-		this.afterRequestBlock = afterRequestBlock;
+		this.afterRequestBlock = block;
 	}
 	
 	/**

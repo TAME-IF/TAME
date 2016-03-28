@@ -1355,7 +1355,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				element.addPermittedAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
+				element.addPermissionAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
 				nextToken();
 				
 				return parseActionPermissionClauseList(element);
@@ -1371,7 +1371,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				element.addPermittedAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
+				element.addPermissionAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
 				nextToken();
 				
 				return parseActionPermissionClauseList(element);
@@ -1396,7 +1396,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				element.addPermittedAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
+				element.addPermissionAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
 				nextToken();
 				
 				return parseActionPermissionClauseList(element);
@@ -3340,7 +3340,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
 	 * @throws SecurityException if a read error happens due to OS permissioning.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if file is null. 
 	 */
 	public static TAMEModule read(File file) throws IOException
 	{
@@ -3358,7 +3358,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if file is null. 
 	 */
 	public static TAMEModule read(String text) throws IOException
 	{
@@ -3403,7 +3403,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
 	 * @throws SecurityException if a read error happens due to OS permissioning.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if file is null. 
 	 */
 	public static TAMEModule read(File file, TAMEScriptIncluder includer) throws IOException
 	{
@@ -3422,7 +3422,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if text is null. 
 	 */
 	public static TAMEModule read(String text, TAMEScriptIncluder includer) throws IOException
 	{
@@ -3454,7 +3454,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
 	 * @throws SecurityException if a read error happens due to OS permissioning.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if file is null. 
 	 */
 	public static TAMEModule read(String streamName, Reader reader, TAMEScriptIncluder includer) throws IOException
 	{
@@ -3469,7 +3469,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
 	 * @throws SecurityException if a read error happens due to OS permissioning.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if file is null. 
 	 */
 	public static TAMEModule read(File file, TAMEScriptReaderOptions options) throws IOException
 	{
@@ -3484,9 +3484,10 @@ public final class TAMEScriptReader implements TAMEConstants
 	/**
 	 * Reads TAMEModule objects from a String of text into a new module.
 	 * @param text the String to read from.
+	 * @param options the reader options for compiling.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws IOException if the stream can't be read.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if file is null. 
 	 */
 	public static TAMEModule read(String text, TAMEScriptReaderOptions options) throws IOException
 	{
@@ -3497,6 +3498,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * Reads TAMEModule objects into a new module.
 	 * @param streamName the name of the stream.
 	 * @param in the stream to read from.
+	 * @param options the reader options for compiling.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
@@ -3512,11 +3514,12 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * Reads TAMEModule objects into a new module from a reader stream.
 	 * @param streamName the name of the stream.
 	 * @param reader the reader to read from.
+	 * @param options the reader options for compiling.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
 	 * @throws SecurityException if a read error happens due to OS permissioning.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if reader is null. 
 	 */
 	public static TAMEModule read(String streamName, Reader reader, TAMEScriptReaderOptions options) throws IOException
 	{
@@ -3526,12 +3529,13 @@ public final class TAMEScriptReader implements TAMEConstants
 	/**
 	 * Reads TAMEModule objects into a new module from a starting text file.
 	 * @param file	the file to read from.
+	 * @param options the reader options for compiling.
 	 * @param includer the includer to use to resolve "included" paths.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
 	 * @throws SecurityException if a read error happens due to OS permissioning.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if file is null. 
 	 */
 	public static TAMEModule read(File file, TAMEScriptReaderOptions options, TAMEScriptIncluder includer) throws IOException
 	{
@@ -3546,10 +3550,11 @@ public final class TAMEScriptReader implements TAMEConstants
 	/**
 	 * Reads TAMEModule objects from a String of text into a new module.
 	 * @param text the String to read from.
+	 * @param options the reader options for compiling.
 	 * @param includer the includer to use to resolve "included" paths.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws IOException if the stream can't be read.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if file is null. 
 	 */
 	public static TAMEModule read(String text, TAMEScriptReaderOptions options, TAMEScriptIncluder includer) throws IOException
 	{
@@ -3560,6 +3565,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * Reads TAMEModule objects into a new module.
 	 * @param streamName the name of the stream.
 	 * @param in the stream to read from.
+	 * @param options the reader options for compiling.
 	 * @param includer the includer to use to resolve "included" paths.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
@@ -3576,12 +3582,13 @@ public final class TAMEScriptReader implements TAMEConstants
 	 * Reads TAMEModule objects into a new module from a reader stream.
 	 * @param streamName the name of the stream.
 	 * @param reader the reader to read from.
+	 * @param options the reader options for compiling.
 	 * @param includer the includer to use to resolve "included" paths.
 	 * @return A new TAMEModule that contains all the read object hierarchy.
 	 * @throws TAMEScriptParseException if one or more parse errors happen.
 	 * @throws IOException if the stream can't be read.
 	 * @throws SecurityException if a read error happens due to OS permissioning.
-	 * @throws NullPointerException if f is null. 
+	 * @throws NullPointerException if reader is null. 
 	 */
 	public static TAMEModule read(String streamName, Reader reader, TAMEScriptReaderOptions options, TAMEScriptIncluder includer) throws IOException
 	{

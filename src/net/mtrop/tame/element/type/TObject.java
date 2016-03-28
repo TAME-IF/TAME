@@ -56,7 +56,7 @@ public class TObject extends TActionableElement
 	
 	/**
 	 * Creates an empty object.
-	 * @param identity its main identity.
+	 * @param identity the unique identity.
 	 */
 	public TObject(String identity) 
 	{
@@ -66,6 +66,7 @@ public class TObject extends TActionableElement
 
 	/**
 	 * Gets the initial names on this object.
+	 * @return the case-insensitive hash containing the names.
 	 */
 	public CaseInsensitiveHash getNames()
 	{
@@ -74,6 +75,7 @@ public class TObject extends TActionableElement
 	
 	/** 
 	 * Gets the "action with table." 
+	 * @return the table that handles "object-with" specific actions. 
 	 */
 	public ActionWithTable getActionWithTable()
 	{
@@ -82,6 +84,7 @@ public class TObject extends TActionableElement
 	
 	/**
 	 * Gets the block to call if used with another object not handled by "action with."
+	 * @return the table that handles "object-with-other" specific actions. 
 	 */
 	public ActionTable getActionWithOtherTable() 
 	{
@@ -90,6 +93,7 @@ public class TObject extends TActionableElement
 	
 	/** 
 	 * Get the "browsing in possession of a room" action block.
+	 * @return the block to call on room browse. 
 	 */
 	public Block getRoomBrowseBlock()
 	{
@@ -98,6 +102,7 @@ public class TObject extends TActionableElement
 	
 	/** 
 	 * Set the "browsing in possession of a room" action block.
+	 * @param block the block to call on room browse. 
 	 */
 	public void setRoomBrowseBlock(Block block)
 	{
@@ -106,6 +111,7 @@ public class TObject extends TActionableElement
 	
 	/** 
 	 * Get the "browsing in possession of a player" action block. 
+	 * @return the block to call on player browse. 
 	 */
 	public Block getPlayerBrowseBlock()
 	{
@@ -114,6 +120,7 @@ public class TObject extends TActionableElement
 	
 	/** 
 	 * Set the "browsing in possession of a player" action block. 
+	 * @param block the block to call on player browse. 
 	 */
 	public void setPlayerBrowseBlock(Block block)
 	{
@@ -122,6 +129,7 @@ public class TObject extends TActionableElement
 	
 	/** 
 	 * Get the "browsing in possession of a container" action block. 
+	 * @return the block to call on container browse. 
 	 */
 	public Block getContainerBrowseBlock()
 	{
@@ -130,6 +138,7 @@ public class TObject extends TActionableElement
 	
 	/** 
 	 * Set the "browsing in possession of a container" action block. 
+	 * @param block the block to call on container browse. 
 	 */
 	public void setContainerBrowseBlock(Block block)
 	{

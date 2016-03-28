@@ -17,6 +17,7 @@ public interface ActionModalHandler
 {
 	/** 
 	 * Gets the modal action table. 
+	 * @return the table that handles specific modal actions. 
 	 */
 	public ActionModeTable getModalActionTable();
 
