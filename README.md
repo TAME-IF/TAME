@@ -1,16 +1,16 @@
 # TAME (Text Adventure Module Engine)
 
-Copyright (c) 2015 Matt Tropiano. All rights reserved.  
+Copyright (c) 2016 Matt Tropiano. All rights reserved.  
 
 ### Required Libraries
 
 Black Rook Commons 2.21.0+  
 [https://github.com/BlackRookSoftware/Common](https://github.com/BlackRookSoftware/Common)
 
-Black Rook Common I/O 2.3.0+  
+Black Rook Common I/O 2.5.0+  
 [https://github.com/BlackRookSoftware/CommonIO](https://github.com/BlackRookSoftware/CommonIO)
 
-Black Rook Common Lang 2.6.0+  
+Black Rook Common Lang 2.8.0+  
 [https://github.com/BlackRookSoftware/CommonLang](https://github.com/BlackRookSoftware/CommonLang)
 
 ### Introduction

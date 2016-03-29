@@ -32,6 +32,7 @@ com/blackrook/io/SuperReader$*.class
 com/blackrook/io/SuperWriter.class
 com/blackrook/io/SuperWriter$*.class
 com/blackrook/lang/CommonLexer.class
+com/blackrook/lang/CommonLexer$*.class
 com/blackrook/lang/CommonLexerKernel.class
 com/blackrook/lang/Lexer.class
 com/blackrook/lang/Lexer$*.class

@@ -1,2 +1,1 @@
-- Object inheritance (save order is important).
 - Action type fallback.

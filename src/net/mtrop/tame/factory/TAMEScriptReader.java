@@ -342,6 +342,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					throw new TAMEScriptParseException(sb.toString());
 				}
 			}
+			else if (currentModule.getWorld() == null)
+			{
+				throw new TAMEScriptParseException("No world declared!");
+			}
 			
 			return currentModule;
 		}
@@ -481,7 +485,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[IDENTIFIER] ";"
 		 * 		[IDENTIFIER] "{" [ObjectBody] "}"
 		 */
-		public boolean parseContainer()
+		private boolean parseContainer()
 		{
 			// container identity.
 			if (!currentType(TSKernel.TYPE_IDENTIFIER))
@@ -558,7 +562,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[IDENTIFIER] ";"
 		 * 		[IDENTIFIER] "{" [ObjectBody] "}"
 		 */
-		public boolean parseObject()
+		private boolean parseObject()
 		{
 			// object identity.
 			if (!currentType(TSKernel.TYPE_IDENTIFIER))
@@ -698,7 +702,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[IDENTIFIER] ";"
 		 * 		[IDENTIFIER] "{" [RoomBody] "}"
 		 */
-		public boolean parseRoom()
+		private boolean parseRoom()
 		{
 			// room identity.
 			if (!currentType(TSKernel.TYPE_IDENTIFIER))
@@ -808,7 +812,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[IDENTIFIER] ";"
 		 * 		[IDENTIFIER] "{" [PlayerBody] "}"
 		 */
-		public boolean parsePlayer()
+		private boolean parsePlayer()
 		{
 			// player identity.
 			if (!currentType(TSKernel.TYPE_IDENTIFIER))
@@ -968,7 +972,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		";"
 		 * 		"{" [WorldBody] "}"
 		 */
-		public boolean parseWorld()
+		private boolean parseWorld()
 		{
 			// prototype?
 			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
@@ -1116,7 +1120,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[TRANSITIVE] [IDENTIFIER] [ActionNames] ";"
 		 * 		[DITRANSITIVE] [IDENTIFIER] [ActionNames] [ActionAdditionalNames] ";"
 		 */
-		public boolean parseAction()
+		private boolean parseAction()
 		{
 			if (currentType(TSKernel.TYPE_GENERAL))
 			{
