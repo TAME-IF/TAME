@@ -118,8 +118,6 @@
         	nonavbar="false" 
         	notree="false"
     		>
-        	<arg value="-Xmaxwarns"/>
-        	<arg value="1000"/>
             <link href="http://blackrooksoftware.com/docs/common/"/>
             <link href="http://blackrooksoftware.com/docs/commonio/"/>
             <link href="http://blackrooksoftware.com/docs/commonlang/"/>
