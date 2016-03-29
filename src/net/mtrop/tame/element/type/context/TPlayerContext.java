@@ -17,10 +17,11 @@ public class TPlayerContext extends TElementContext<TPlayer>
 {
 	/**
 	 * Creates a player context. 
+	 * @param player the player reference.
 	 */
-	public TPlayerContext(TPlayer ref)
+	public TPlayerContext(TPlayer player)
 	{
-		super(ref);
+		super(player);
 	}
 
 }

@@ -54,6 +54,9 @@ public class ActionModeTable implements Saveable
 	
 	/**
 	 * Checks if a command block by action exists.
+	 * @param actionIdentity the action's identity.
+	 * @param mode the action mode.
+	 * @return true if exists, false if not.
 	 */
 	public boolean contains(String actionIdentity, String mode)
 	{
@@ -61,7 +64,10 @@ public class ActionModeTable implements Saveable
 	}
 
 	/**
-	 * Gets command block by actionIdentity.
+	 * Gets a command block by action identity.
+	 * @param actionIdentity the action's identity.
+	 * @param mode the action mode.
+	 * @return the corresponding block or null if no block.
 	 */
 	public Block get(String actionIdentity, String mode)
 	{
@@ -75,6 +81,9 @@ public class ActionModeTable implements Saveable
 
 	/**
 	 * Sets/replaces command block by action.
+	 * @param actionIdentity the action's identity.
+	 * @param mode the action mode.
+	 * @param commandBlock the block to associate.
 	 */
 	public void add(String actionIdentity, String mode, Block commandBlock)
 	{

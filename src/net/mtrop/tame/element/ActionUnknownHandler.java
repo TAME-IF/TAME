@@ -18,11 +18,13 @@ public interface ActionUnknownHandler
 
 	/** 
 	 * Gets this element's "onUnknownAction" block. 
+	 * @return the block that handles unknown actions. 
 	 */
 	public Block getUnknownActionBlock();
 
 	/** 
 	 * Sets this element's "onUnknownAction" block. 
+	 * @param block the block that handles unknown actions. 
 	 */
 	public void setUnknownActionBlock(Block block);	
 

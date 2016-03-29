@@ -17,17 +17,20 @@ import net.mtrop.tame.struct.ActionTable;
 public interface ActionAmbiguousHandler
 {
 	/**
-	 * Gets the ambiguous action table for specific action handlings.
+	 * Gets the ambiguous action table for specific action handling.
+	 * @return the action table that handles ambiguous actions.
 	 */
 	public ActionTable getAmbiguousActionTable();
 
 	/** 
-	 * Get this player's default "onAmbiguousAction" block. 
+	 * Gets the default "onAmbiguousAction" block. 
+	 * @return the block that handles non-specific ambiguous actions.
 	 */
 	public Block getAmbiguousActionBlock();
 
 	/** 
-	 * Set this player's default "onAmbiguousAction" block. 
+	 * Sets the default "onAmbiguousAction" block.
+	 * @param block the block to use for handling non-specific ambiguous actions. 
 	 */
 	public void setAmbiguousActionBlock(Block block);
 

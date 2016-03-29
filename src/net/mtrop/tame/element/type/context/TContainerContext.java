@@ -10,17 +10,18 @@ package net.mtrop.tame.element.type.context;
 import net.mtrop.tame.element.type.TContainer;
 
 /**
- * Player context.
+ * Container context.
  * @author Matthew Tropiano
  */
 public class TContainerContext extends TElementContext<TContainer>
 {
 	/**
 	 * Creates a container context. 
+	 * @param container the container reference.
 	 */
-	public TContainerContext(TContainer ref)
+	public TContainerContext(TContainer container)
 	{
-		super(ref);
+		super(container);
 	}
 
 }

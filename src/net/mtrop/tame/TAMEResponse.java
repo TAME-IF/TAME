@@ -10,6 +10,8 @@ package net.mtrop.tame;
 import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
 import net.mtrop.tame.struct.Cue;
 
+import java.util.Formatter;
+
 import com.blackrook.commons.linkedlist.Queue;
 
 /**
@@ -40,6 +42,7 @@ public class TAMEResponse implements TAMEConstants
 
 	/**
 	 * Returns the cues on this response. 
+	 * @return the queue of cues on the response.
 	 */
 	public Queue<Cue> getCues()
 	{
@@ -51,6 +54,8 @@ public class TAMEResponse implements TAMEConstants
 	 * sound cues to changes in scenery, or additional instructions from
 	 * the virtual machine to a client. The client is required to obey certain
 	 * cues, and can safely ignore the rest.
+	 * @param type the cue type name.
+	 * @param content the cue content.
 	 */
 	public void addCue(String type, long content)
 	{
@@ -62,6 +67,8 @@ public class TAMEResponse implements TAMEConstants
 	 * sound cues to changes in scenery, or additional instructions from
 	 * the virtual machine to a client. The client is required to obey certain
 	 * cues, and can safely ignore the rest.
+	 * @param type the cue type name.
+	 * @param content the cue content.
 	 */
 	public void addCue(String type, double content)
 	{
@@ -73,6 +80,8 @@ public class TAMEResponse implements TAMEConstants
 	 * sound cues to changes in scenery, or additional instructions from
 	 * the virtual machine to a client. The client is required to obey certain
 	 * cues, and can safely ignore the rest.
+	 * @param type the cue type name.
+	 * @param content the cue content.
 	 */
 	public void addCue(String type, boolean content)
 	{
@@ -84,6 +93,8 @@ public class TAMEResponse implements TAMEConstants
 	 * sound cues to changes in scenery, or additional instructions from
 	 * the virtual machine to a client. The client is required to obey certain
 	 * cues, and can safely ignore the rest.
+	 * @param type the cue type name.
+	 * @param content the cue content.
 	 */
 	public void addCue(String type, String content)
 	{
@@ -91,10 +102,11 @@ public class TAMEResponse implements TAMEConstants
 	}
 
 	/**
-	 * Adds a response cue to this response object. It can range from
+	 * Adds a response cue to this response object with no content. It can range from
 	 * sound cues to changes in scenery, or additional instructions from
 	 * the virtual machine to a client. The client is required to obey certain
 	 * cues, and can safely ignore the rest.
+	 * @param type the cue type name.
 	 */
 	public void addCue(String type)
 	{
@@ -106,7 +118,7 @@ public class TAMEResponse implements TAMEConstants
 	 * Also checks against the runaway threshold.
 	 * After this object is received by the client, this means nothing.
 	 */
-	public void incrementAndCheckCommandsExecuted() throws RunawayRequestInterrupt
+	void incrementAndCheckCommandsExecuted() throws RunawayRequestInterrupt
 	{
 		commandsExecuted++;
 		if (commandsExecuted >= RUNAWAY_THRESHOLD)
@@ -114,7 +126,7 @@ public class TAMEResponse implements TAMEConstants
 	}
 	
 	/**
-	 * Returns the amount of commands executed because of the input.
+	 * @return the amount of commands executed because of the input.
 	 */
 	public int getCommandsExecuted()
 	{
@@ -122,7 +134,11 @@ public class TAMEResponse implements TAMEConstants
 	}
 	
 	/**
-	 * Adds a trace cue, but only if trace is set.
+	 * Adds a trace cue, but only if trace is set on the request.
+	 * @param request the request to examine for the trace flag.
+	 * @param format the formatter string.
+	 * @param args the formatter arguments.
+	 * @see Formatter
 	 */
 	public void trace(TAMERequest request, String format, Object ... args)
 	{

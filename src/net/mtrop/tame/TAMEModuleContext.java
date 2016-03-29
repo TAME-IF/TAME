@@ -120,6 +120,66 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 	
 	/**
+	 * Get the player context list.
+	 * @return the context map.
+	 */
+	HashMap<String, TPlayerContext> getPlayerContextList()
+	{
+		return playerContextHash;
+	}
+
+	/**
+	 * Get the room context list.
+	 * @return the context map.
+	 */
+	HashMap<String, TRoomContext> getRoomContextList()
+	{
+		return roomContextHash;
+	}
+
+	/**
+	 * Get the object context list.
+	 * @return the context map.
+	 */
+	HashMap<String, TObjectContext> getObjectContextList()
+	{
+		return objectContextHash;
+	}
+
+	/**
+	 * Get the container context list.
+	 * @return the context map.
+	 */
+	HashMap<String, TContainerContext> getContainerContextList()
+	{
+		return containerContextHash;
+	}
+
+	/**
+	 * Gets the ownership map.
+	 * @return the ownership map object.
+	 */
+	TOwnershipMap getOwnershipMap()
+	{
+		return ownershipMap;
+	}
+
+	/**
+	 * Sets the initial object lookup names.
+	 * Should only be called on first initialize.
+	 */
+	void setInitialObjectNames()
+	{
+		for (ObjectPair<String, TObjectContext> element : objectContextHash)
+		{
+			TObjectContext context = element.getValue();
+			TObject object = context.getElement();
+			for (String name : object.getNames())
+				context.addName(name);
+		}
+	}
+
+	/**
 	 * Reflection method - get available action names according to current context
 	 * and filtered by a prefix.
 	 * @return the valid action names that can be.
@@ -154,22 +214,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
-	 * Sets the initial object lookup names.
-	 * Should only be called on first initialize.
-	 */
-	public void setInitialObjectNames()
-	{
-		for (ObjectPair<String, TObjectContext> element : objectContextHash)
-		{
-			TObjectContext context = element.getValue();
-			TObject object = context.getElement();
-			for (String name : object.getNames())
-				context.addName(name);
-		}
-	}
-	
-	/**
-	 * Returns the world context.
+	 * Gets this module's world context.
+	 * @return the world context.
 	 */
 	public TWorldContext getWorldContext()
 	{
@@ -178,6 +224,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	
 	/**
 	 * Gets a player context by player.
+	 * @param player the player to use for the lookup.
+	 * @return the matching context.
 	 */
 	public TPlayerContext getPlayerContext(TPlayer player)
 	{
@@ -186,6 +234,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/**
 	 * Gets a room context by room.
+	 * @param room the room to use for the lookup.
+	 * @return the matching context.
 	 */
 	public TRoomContext getRoomContext(TRoom room)
 	{
@@ -194,6 +244,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/**
 	 * Gets an object context by object.
+	 * @param object the object to use for the lookup.
+	 * @return the matching context.
 	 */
 	public TObjectContext getObjectContext(TObject object)
 	{
@@ -202,6 +254,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/**
 	 * Gets an container context by container.
+	 * @param container the container to use for the lookup.
+	 * @return the matching context.
 	 */
 	public TContainerContext getContainerContext(TContainer container)
 	{
@@ -210,78 +264,47 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/**
 	 * Gets a player context by player name.
+	 * @param identity the identity to use for the lookup.
+	 * @return the matching context.
 	 */
-	public TPlayerContext getPlayerContextByIdentity(String name)
+	public TPlayerContext getPlayerContextByIdentity(String identity)
 	{
-		return playerContextHash.get(name);
+		return playerContextHash.get(identity);
 	}
 
 	/**
 	 * Gets a room context by room name.
+	 * @param identity the identity to use for the lookup.
+	 * @return the matching context.
 	 */
-	public TRoomContext getRoomContextByIdentity(String name)
+	public TRoomContext getRoomContextByIdentity(String identity)
 	{
-		return roomContextHash.get(name);
+		return roomContextHash.get(identity);
 	}
 
 	/**
 	 * Gets an object context by object name.
+	 * @param identity the identity to use for the lookup.
+	 * @return the matching context.
 	 */
-	public TObjectContext getObjectContextByIdentity(String name)
+	public TObjectContext getObjectContextByIdentity(String identity)
 	{
-		return objectContextHash.get(name);
+		return objectContextHash.get(identity);
 	}
 
 	/**
 	 * Gets a container context by object name.
+	 * @param identity the identity to use for the lookup.
+	 * @return the matching context.
 	 */
-	public TContainerContext getContainerContextByIdentity(String name)
+	public TContainerContext getContainerContextByIdentity(String identity)
 	{
-		return containerContextHash.get(name);
-	}
-
-	/**
-	 * Get the player context list.
-	 */
-	public HashMap<String, TPlayerContext> getPlayerContextList()
-	{
-		return playerContextHash;
-	}
-
-	/**
-	 * Get the room context list.
-	 */
-	public HashMap<String, TRoomContext> getRoomContextList()
-	{
-		return roomContextHash;
-	}
-
-	/**
-	 * Get the object context list.
-	 */
-	public HashMap<String, TObjectContext> getObjectContextList()
-	{
-		return objectContextHash;
-	}
-
-	/**
-	 * Get the container context list.
-	 */
-	public HashMap<String, TContainerContext> getContainerContextList()
-	{
-		return containerContextHash;
-	}
-
-	/**
-	 * Gets the ownership map.
-	 */
-	public TOwnershipMap getOwnershipMap()
-	{
-		return ownershipMap;
+		return containerContextHash.get(identity);
 	}
 
 	/**
 	 * Sets the current player.
+	 * @param player the player to set as current player.
 	 */
 	public void setCurrentPlayer(TPlayer player)
 	{
@@ -290,7 +313,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/**
 	 * Gets the current player by the current player id.
-	 * @return	the current player, or null if the id is bad or not set.
+	 * @return the current player, or null if not set.
 	 */
 	public TPlayer getCurrentPlayer()
 	{
@@ -299,7 +322,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/**
 	 * Gets the current room by the current room id.
-	 * @return	the current room, or null if the id is bad or not set.
+	 * @return the current room, or null if not set or current player is not set.
 	 */
 	public TRoom getCurrentRoom()
 	{
@@ -308,7 +331,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/**
 	 * Gets the current player context by the current player id.
-	 * @return	the current player context, or null if the id is bad or not set.
+	 * @return the current player context, or null if not set.
 	 */
 	public TPlayerContext getCurrentPlayerContext()
 	{
@@ -317,7 +340,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/**
 	 * Gets the current room context by the current room id.
-	 * @return	the current room context, or null if the id is bad or not set.
+	 * @return the current room context, or null if not set.
 	 */
 	public TRoomContext getCurrentRoomContext()
 	{
@@ -426,7 +449,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * Resolves a room.
 	 * @param roomIdentity the roomIdentity.
 	 * @return the context resolved.
-	 * @throws ErrorInterrupt if no current room when requested.
+	 * @throws ErrorInterrupt if no current room, if it is requested.
 	 * @throws ModuleExecutionException if the non-current room identity cannot be found.
 	 */
 	public TRoom resolveRoom(String roomIdentity) throws ErrorInterrupt
@@ -440,7 +463,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * @return the context resolved.
 	 * @throws ModuleExecutionException if object not found.
 	 */
-	public TObjectContext resolveObjectContext(String objectIdentity) throws ErrorInterrupt
+	public TObjectContext resolveObjectContext(String objectIdentity)
 	{
 		TObjectContext context = getObjectContextByIdentity(objectIdentity);
 		if (context == null)
@@ -454,7 +477,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * @return the context resolved.
 	 * @throws ModuleExecutionException if object not found.
 	 */
-	public TObject resolveObject(String objectIdentity) throws ErrorInterrupt
+	public TObject resolveObject(String objectIdentity)
 	{
 		return resolveObjectContext(objectIdentity).getElement();
 	}
@@ -465,7 +488,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * @return the context resolved.
 	 * @throws ModuleExecutionException if container not found.
 	 */
-	public TContainerContext resolveContainerContext(String containerIdentity) throws ErrorInterrupt
+	public TContainerContext resolveContainerContext(String containerIdentity)
 	{
 		TContainerContext context = getContainerContextByIdentity(containerIdentity);
 		if (context == null)
@@ -479,7 +502,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * @return the context resolved.
 	 * @throws ModuleExecutionException if object not found.
 	 */
-	public TContainer resolveContainer(String containerIdentity) throws ErrorInterrupt
+	public TContainer resolveContainer(String containerIdentity)
 	{
 		return resolveContainerContext(containerIdentity).getElement();
 	}
@@ -499,7 +522,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * @param playerIdentity a player identity.
 	 * @param variableName the variable name.
 	 * @return the value resolved.
-	 * @throws ErrorInterrupt 
+	 * @throws ErrorInterrupt if no current player, if it is requested.
 	 */
 	public Value resolvePlayerVariableValue(String playerIdentity, String variableName) throws ErrorInterrupt
 	{
@@ -511,6 +534,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * @param roomIdentity a room identity.
 	 * @param variableName the variable name.
 	 * @return the value resolved.
+	 * @throws ErrorInterrupt if no current room, if it is requested.
 	 */
 	public Value resolveRoomVariableValue(String roomIdentity, String variableName) throws ErrorInterrupt
 	{
@@ -523,7 +547,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * @param variableName the variable name.
 	 * @return the value resolved.
 	 */
-	public Value resolveObjectVariableValue(String objectIdentity, String variableName) throws ErrorInterrupt
+	public Value resolveObjectVariableValue(String objectIdentity, String variableName)
 	{
 		return resolveObjectContext(objectIdentity).getValue(variableName);
 	}
@@ -534,7 +558,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * @param variableName the variable name.
 	 * @return the value resolved.
 	 */
-	public Value resolveContainerVariableValue(String containerIdentity, String variableName) throws ErrorInterrupt
+	public Value resolveContainerVariableValue(String containerIdentity, String variableName)
 	{
 		return resolveContainerContext(containerIdentity).getValue(variableName);
 	}

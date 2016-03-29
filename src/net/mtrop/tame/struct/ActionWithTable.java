@@ -52,7 +52,10 @@ public class ActionWithTable implements Saveable
 	}
 	
 	/**
-	 * Checks if a command block by action exists.
+	 * Checks if a command block by action and object exists.
+	 * @param actionIdentity the action's identity.
+	 * @param objectIdentity the object's identity.
+	 * @return true if exists, false if not.
 	 */
 	public boolean contains(String actionIdentity, String objectIdentity)
 	{
@@ -60,7 +63,10 @@ public class ActionWithTable implements Saveable
 	}
 
 	/**
-	 * Gets command block by action.
+	 * Gets command block by action and object.
+	 * @param actionIdentity the action's identity.
+	 * @param objectIdentity the object's identity.
+	 * @return the corresponding block or null if no block.
 	 */
 	public Block get(String actionIdentity, String objectIdentity)
 	{
@@ -73,7 +79,10 @@ public class ActionWithTable implements Saveable
 	}
 
 	/**
-	 * Sets/replaces command block by action.
+	 * Sets/replaces command block by action and object.
+	 * @param actionIdentity the action's identity.
+	 * @param objectIdentity the object's identity.
+	 * @param commandBlock the block to associate.
 	 */
 	public void add(String actionIdentity, String objectIdentity, Block commandBlock)
 	{

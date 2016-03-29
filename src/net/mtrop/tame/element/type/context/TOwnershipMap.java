@@ -197,7 +197,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	
 	/**
 	 * Pops a room off of a player's room stack.
+	 * The room is removed.
 	 * @param player the player to change.
+	 * @return the topmost removed room. 
 	 */
 	public TRoom popRoomFromPlayer(TPlayer player)
 	{
@@ -223,8 +225,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	/**
-	 * Returns if a world possesses an object.
+	 * Checks if a world possesses an object.
 	 * @param world the world to use.
+	 * @param object the object in question.
 	 * @return true if so, false if not.
 	 */
 	public boolean checkWorldHasObject(TWorld world, TObject object)
@@ -235,8 +238,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	/**
-	 * Returns if a room possesses an object.
+	 * Checks if a room possesses an object.
 	 * @param room the room to use.
+	 * @param object the object in question.
 	 * @return true if so, false if not.
 	 */
 	public boolean checkRoomHasObject(TRoom room, TObject object)
@@ -247,8 +251,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	/**
-	 * Returns if a container possesses an object.
+	 * Checks if a container possesses an object.
 	 * @param container the container to use.
+	 * @param object the object in question.
 	 * @return true if so, false if not.
 	 */
 	public boolean checkContainerHasObject(TContainer container, TObject object)
@@ -259,8 +264,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	/**
-	 * Returns if a player possesses an object.
+	 * Checks if a player possesses an object.
 	 * @param player the player to use.
+	 * @param object the object in question.
 	 * @return true if so, false if not.
 	 */
 	public boolean checkPlayerHasObject(TPlayer player, TObject object)
@@ -271,8 +277,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	/**
-	 * Returns if an object has no owner.
-	 * @param object the object to use.
+	 * Checks if an object has no owner.
+	 * @param object the object in question.
 	 * @return true if so, false if not.
 	 */
 	public boolean checkObjectHasNoOwner(TObject object)
@@ -295,6 +301,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	/**
 	 * Gets the list of objects owned by a world.
+	 * @param world the world in question.
+	 * @return the list of all objects owned by the world.
 	 */
 	public List<TObject> getObjectsOwnedByWorld(TWorld world)
 	{
@@ -303,6 +311,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	/**
 	 * Gets the list of objects owned by a room.
+	 * @param room the room in question.
+	 * @return the list of all objects owned by the room.
 	 */
 	public List<TObject> getObjectsOwnedByRoom(TRoom room)
 	{
@@ -311,6 +321,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	/**
 	 * Gets the list of objects owned by a player.
+	 * @param player the player in question.
+	 * @return the list of all objects owned by the player.
 	 */
 	public List<TObject> getObjectsOwnedByPlayer(TPlayer player)
 	{
@@ -319,6 +331,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	/**
 	 * Gets the list of objects owned by a container.
+	 * @param container the container in question.
+	 * @return the list of all objects owned by the container.
 	 */
 	public List<TObject> getObjectsOwnedByContainer(TContainer container)
 	{
@@ -327,6 +341,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	/**
 	 * Gets the count of objects owned by a world.
+	 * @param world the world in question.
+	 * @return the amount of objects owned by the world.
 	 */
 	public int getObjectsOwnedByWorldCount(TWorld world)
 	{
@@ -335,6 +351,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	/**
 	 * Gets the count of objects owned by a room.
+	 * @param room the room in question.
+	 * @return the amount of objects owned by the room.
 	 */
 	public int getObjectsOwnedByRoomCount(TRoom room)
 	{
@@ -343,6 +361,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	/**
 	 * Gets the count of objects owned by a player.
+	 * @param player the player in question.
+	 * @return the amount of objects owned by the player.
 	 */
 	public int getObjectsOwnedByPlayerCount(TPlayer player)
 	{
@@ -351,6 +371,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	/**
 	 * Gets the count of objects owned by a container.
+	 * @param container the container in question.
+	 * @return the amount of objects owned by the container.
 	 */
 	public int getObjectsOwnedByContainerCount(TContainer container)
 	{

@@ -23,6 +23,7 @@ public interface TAMEScriptIncluder
 	 * @param streamName the current name of the stream. This includer may use this to procure a relative path.
 	 * @param path the stream path.
 	 * @return an open {@link InputStream} for the requested resource, or null if not found.
+	 * @throws IOException if the included resource cannot be read or the stream cannot be opened.
 	 */
 	public InputStream getIncludeResource(String streamName, String path) throws IOException;
 		

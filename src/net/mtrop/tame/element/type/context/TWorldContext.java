@@ -16,7 +16,8 @@ import net.mtrop.tame.element.type.TWorld;
 public class TWorldContext extends TElementContext<TWorld>
 {
 	/**
-	 * Creates a blank WorldContext.
+	 * Creates a world context.
+	 * @param world the world reference.
 	 */
 	public TWorldContext(TWorld world)
 	{

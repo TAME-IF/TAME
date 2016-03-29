@@ -40,7 +40,7 @@ public class TRoom extends TActionableElement implements ActionForbiddenHandler,
 	/** List of actions that are either restricted or excluded. */
 	protected Hash<String> permittedActionList;
 
-	/** Table used for modal actions. (actionName, mode) -> block. */
+	/** Table used for modal actions. (actionName, mode) to block. */
 	protected ActionModeTable modalActionTable;
 	
 	/** Blocks executed on action disallow. */
@@ -84,7 +84,7 @@ public class TRoom extends TActionableElement implements ActionForbiddenHandler,
 	}
 
 	@Override
-	public void addPermittedAction(TAction action)
+	public void addPermissionAction(TAction action)
 	{
 		permittedActionList.put(action.getIdentity());
 	}
@@ -98,17 +98,13 @@ public class TRoom extends TActionableElement implements ActionForbiddenHandler,
 			return permittedActionList.contains(action.getIdentity());
 	}
 	
-	/** 
-	 * Gets the modal action table. 
-	 */
+	@Override
 	public ActionModeTable getModalActionTable()
 	{
 		return modalActionTable;
 	}
-	
-	/**
-	 * Gets the action forbidden table for specific actions. 
-	 */
+
+	@Override
 	public ActionTable getActionForbiddenTable()
 	{
 		return actionForbidTable;

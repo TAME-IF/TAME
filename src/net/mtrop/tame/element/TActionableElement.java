@@ -22,20 +22,18 @@ public abstract class TActionableElement extends TElement
 	/** Table of associated actions. */
 	private ActionTable actionTable;
 
+	/**
+	 * Prepares an actionable element.
+	 */
 	protected TActionableElement()
 	{
 		super();
 		this.actionTable = new ActionTable();
 	}
 	
-	protected TActionableElement(String identity)
-	{
-		this();
-		super.setIdentity(identity);
-	}
-	
 	/**
 	 * Gets the action table for "onAction" calls (general).
+	 * @return the table that handles specific general actions. 
 	 */
 	public ActionTable getActionTable()
 	{

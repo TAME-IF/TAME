@@ -54,8 +54,9 @@ public class TAMERequest
 	/**
 	 * Sets the request's input message.
 	 * This gets interpreted by the TAME virtual machine.
+	 * @param inputMessage the input message that was interpreted.
 	 */
-	public void setInputMessage(String inputMessage)
+	void setInputMessage(String inputMessage)
 	{
 		this.inputMessage = inputMessage;
 	}
@@ -63,6 +64,7 @@ public class TAMERequest
 	/**
 	 * Gets the request's input message.
 	 * This gets interpreted by the TAME virtual machine.
+	 * @return the message used in the request.
 	 */
 	public String getInputMessage()
 	{
@@ -71,6 +73,7 @@ public class TAMERequest
 
 	/**
 	 * Is this a tracing request?
+	 * @return true if so, false if not.
 	 */
 	public boolean isTracing()
 	{
@@ -79,6 +82,7 @@ public class TAMERequest
 
 	/**
 	 * Sets if trace is enabled.
+	 * @param trace true if so, false if not.
 	 */
 	public void setTracing(boolean trace)
 	{
@@ -87,6 +91,7 @@ public class TAMERequest
 	
 	/**
 	 * Adds an action item to the queue to be processed later.
+	 * @param item the action item to add.
 	 */
 	public void addActionItem(TAMEAction item)
 	{
@@ -94,15 +99,8 @@ public class TAMERequest
 	}
 
 	/**
-	 * Dequeues an action item from the queue to be processed later.
-	 */
-	public TAMEAction getActionItem()
-	{
-		return actionQueue.dequeue();
-	}
-
-	/**
 	 * Checks if this still has action items to process.
+	 * @return true if so, false if not.
 	 */
 	public boolean hasActionItems()
 	{
@@ -110,7 +108,8 @@ public class TAMERequest
 	}
 
 	/**
-	 * Gets the module context that this affects. 
+	 * Gets the module context that this affects.
+	 * @return the module context. 
 	 */
 	public TAMEModuleContext getModuleContext()
 	{
@@ -118,34 +117,46 @@ public class TAMERequest
 	}
 	
 	/**
-	 * Sets the module to be affected. 
+	 * Dequeues an action item from the queue to be processed later.
+	 * @return the next action item to process.
 	 */
-	public void setModuleContext(TAMEModuleContext module)
+	TAMEAction nextActionItem()
 	{
-		this.moduleContext = module;
+		return actionQueue.dequeue();
+	}
+
+	/**
+	 * Sets the module to be affected in this request.
+	 * @param moduleContext the module context.
+	 */
+	void setModuleContext(TAMEModuleContext moduleContext)
+	{
+		this.moduleContext = moduleContext;
 	}
 	
 	/**
 	 * Pushes an element context value onto the context stack.
 	 * @param context the context to push.
 	 */
-	public void pushContext(TElementContext<?> context)
+	void pushContext(TElementContext<?> context)
 	{
 		contextStack.push(context);
 	}
 	
 	/**
-	 * Pops an element context value off of the context stack.
+	 * Removes an element context value off of the context stack and returns it.
+	 * @return the element context on the stack or null if none in the stack.
 	 */
-	public TElementContext<?> popContext()
+	TElementContext<?> popContext()
 	{
 		return contextStack.pop();
 	}
 
 	/**
-	 * Returns the top of the context stack.
+	 * Looks at the top of the element context stack.
+	 * @return the top of the context stack, or null if the stack is empty.
 	 */
-	public TElementContext<?> peekContext()
+	TElementContext<?> peekContext()
 	{
 		return contextStack.peek();
 	}
@@ -154,16 +165,17 @@ public class TAMERequest
 	 * Pushes a value onto the arithmetic stack.
 	 * @param value the value to push.
 	 */
-	public void pushValue(Value value)
+	void pushValue(Value value)
 	{
 		valueStack.push(value);
 	}
 	
 	/**
-	 * Pops a value off the arithmetic stack.
+	 * Removes the topmost value off the arithmetic stack.
+	 * @return the value popped off the stack or null if the stack is empty.
 	 * @throws ArithmeticStackStateException if the stack is empty.
 	 */
-	public Value popValue()
+	Value popValue()
 	{
 		if (valueStack.isEmpty())
 			throw new ArithmeticStackStateException("Attempt to pop an empty arithmetic stack.");
@@ -175,7 +187,7 @@ public class TAMERequest
 	 * Should be called after a full request is made.
 	 * @throws ArithmeticStackStateException if the stack is NOT empty.
 	 */
-	public void checkStackClear()
+	void checkStackClear()
 	{
 		if (!valueStack.isEmpty())
 			throw new ArithmeticStackStateException("Arithmetic stack is not empty.");
@@ -186,7 +198,7 @@ public class TAMERequest
 	 * @param variableName the variable name.
 	 * @return the value resolved.
 	 */
-	public Value resolveVariableValue(String variableName)
+	Value resolveVariableValue(String variableName)
 	{
 		return peekContext().getValue(variableName);
 	}

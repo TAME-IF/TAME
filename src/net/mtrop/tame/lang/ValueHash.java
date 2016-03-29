@@ -36,6 +36,7 @@ public class ValueHash extends CaseInsensitiveHashMap<Value> implements Saveable
 	
 	/**
 	 * Copies values from one value hash to this one.
+	 * @param hash the source hash to copy values from.
 	 */
 	public void copyFrom(ValueHash hash)
 	{

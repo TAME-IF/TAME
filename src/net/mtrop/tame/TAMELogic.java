@@ -120,6 +120,7 @@ public final class TAMELogic implements TAMEConstants
 	/**
 	 * Interprets the input on the request.
 	 * @param request the request.
+	 * @return a new interpreter context using the input.
 	 */
 	public static TAMEInterpreterContext interpret(TAMERequest request)
 	{
@@ -888,7 +889,7 @@ public final class TAMELogic implements TAMEConstants
 		boolean initial = true;
 		while (request.hasActionItems())
 		{
-			TAMEAction tameAction = request.getActionItem();
+			TAMEAction tameAction = request.nextActionItem();
 			TAction action = tameAction.getAction();
 			
 			try {

@@ -66,6 +66,7 @@ public class Command implements CallableType, Saveable
 	/**
 	 * Creates a command.
 	 * @param command the command.
+	 * @return the new command.
 	 */
 	public static Command create(TAMECommand command)
 	{
@@ -76,6 +77,7 @@ public class Command implements CallableType, Saveable
 	 * Creates a command with an operand.
 	 * @param command the command.
 	 * @param operand0 the first operand.
+	 * @return the new command.
 	 */
 	public static Command create(TAMECommand command, Value operand0)
 	{
@@ -87,6 +89,7 @@ public class Command implements CallableType, Saveable
 	 * @param command the command.
 	 * @param operand0 the first operand.
 	 * @param operand1 the second operand.
+	 * @return the new command.
 	 */
 	public static Command create(TAMECommand command, Value operand0, Value operand1)
 	{
@@ -98,6 +101,7 @@ public class Command implements CallableType, Saveable
 	 * @param command the command.
 	 * @param conditionalBlock the conditional block.
 	 * @param successBlock the success block.
+	 * @return the new command.
 	 */
 	public static Command create(TAMECommand command, Block conditionalBlock, Block successBlock)
 	{
@@ -110,6 +114,7 @@ public class Command implements CallableType, Saveable
 	 * @param conditionalBlock the conditional block.
 	 * @param successBlock the success block.
 	 * @param failureBlock the failure block.
+	 * @return the new command.
 	 */
 	public static Command create(TAMECommand command, Block conditionalBlock, Block successBlock, Block failureBlock)
 	{
@@ -123,6 +128,7 @@ public class Command implements CallableType, Saveable
 	 * @param conditionalBlock the conditional block.
 	 * @param stepBlock the step block.
 	 * @param successBlock the success block.
+	 * @return the new command.
 	 */
 	public static Command create(TAMECommand command, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock)
 	{
@@ -135,36 +141,64 @@ public class Command implements CallableType, Saveable
 		operation.call(request, response, this);
 	}
 
+	/**
+	 * Gets the first operand, if any.
+	 * @return the operand, or null if no operand.
+	 */
 	public Value getOperand0()
 	{
 		return operand0;
 	}
 	
+	/**
+	 * Gets the second operand, if any.
+	 * @return the operand, or null if no operand.
+	 */
 	public Value getOperand1()
 	{
 		return operand1;
 	}
 	
+	/**
+	 * Gets the initializer block, if any.
+	 * @return the block, or null if no block.
+	 */
 	public Block getInitBlock() 
 	{
 		return initBlock;
 	}
 	
+	/**
+	 * Gets the conditional assessment block, if any.
+	 * @return the block, or null if no block.
+	 */
 	public Block getConditionalBlock()
 	{
 		return conditionalBlock;
 	}
 
+	/**
+	 * Gets the stepping control block, if any.
+	 * @return the block, or null if no block.
+	 */
 	public Block getStepBlock() 
 	{
 		return stepBlock;
 	}
 	
+	/**
+	 * Gets the success control block, if any.
+	 * @return the block, or null if no block.
+	 */
 	public Block getSuccessBlock()
 	{
 		return successBlock;
 	}
 
+	/**
+	 * Gets the failure control block, if any.
+	 * @return the block, or null if no block.
+	 */
 	public Block getFailureBlock()
 	{
 		return failureBlock;
