@@ -28,6 +28,7 @@ import net.mtrop.tame.factory.DefaultReaderOptions;
 import net.mtrop.tame.factory.TAMEScriptParseException;
 import net.mtrop.tame.factory.TAMEScriptReader;
 import net.mtrop.tame.struct.Cue;
+import net.mtrop.tame.struct.FormatParser;
 
 /**
  * A console client implementation.
@@ -38,7 +39,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	
 	private static void printHelp(PrintStream out)
 	{
-		out.println("TAME Console Client by Matt Tropiano (C) 2015");
+		out.println("TAME Console Client by Matt Tropiano (C) 2016");
 		out.println("Usage: tame [module] <gameload> (-debug)");
 		out.println("[module]:");
 		out.println("    [binaryfile]");
@@ -325,6 +326,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	 */
 	static class CueHandler extends TAMEResponseReader
 	{
+		ConsoleFormatter formatter;
 		StringBuilder textBuffer;
 		Context context;
 
@@ -333,12 +335,13 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			super(response);
 			this.context = context;
 			this.textBuffer = new StringBuilder();
+			this.formatter = new ConsoleFormatter(textBuffer);
 		}
 
 		@Override
 		public boolean handleCue(Cue cue) 
 		{
-			if (!cue.getType().equals(CUE_TEXT) && textBuffer.length() > 0)
+			if (!cue.getType().equals(CUE_TEXT) && !cue.getType().equals(CUE_TEXTFORMATTED) && textBuffer.length() > 0)
 			{
 				context.out.println(textBuffer.toString());
 				textBuffer.delete(0, textBuffer.length());
@@ -363,6 +366,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				case CUE_TEXT:
 					textBuffer.append(cue.getContent());
 					return true;
+				case CUE_TEXTFORMATTED:
+					formatter.parse(cue.getContent());
+					return true;
 				case CUE_PAUSE:
 					context.paused = true;
 					return false;
@@ -384,6 +390,38 @@ public class TAMEConsoleClientMain implements TAMEConstants
 					return false;
 			}
 		}		
+	}
+	
+	/**
+	 * Format handler.
+	 */
+	static class ConsoleFormatter extends FormatParser
+	{
+		StringBuilder textBuffer;
+		
+		public ConsoleFormatter(StringBuilder textBuffer) 
+		{
+			this.textBuffer = textBuffer;
+		}
+		
+		@Override
+		public void startTag(String tagName) 
+		{
+			// Nothing.
+		}
+		
+		@Override
+		public void sendText(String text) 
+		{
+			textBuffer.append(text);
+		}
+		
+		@Override
+		public void endTag(String tagName) 
+		{
+			// Nothing.
+		}
+		
 	}
 	
 }

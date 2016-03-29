@@ -1,0 +1,16 @@
+module
+{
+	title "text test";
+}
+
+world
+{
+	init()
+	{
+		text("hi");
+		textf("[m]hi[/]");
+		textln("hi");
+		textfln("[m]hi[/]fsdfsdf");
+		quit;
+	}
+}
