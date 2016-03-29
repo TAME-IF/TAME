@@ -273,7 +273,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * If block.
+	 * [INTERNAL] If block.
 	 * Has a conditional block that is called and then the success 
 	 * block if POP is true, or if false and the fail block exists, call the fail block. 
 	 * Returns nothing. 
@@ -314,7 +314,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * WHILE block.
+	 * [INTERNAL] WHILE block.
 	 * Has a conditional block that is called and then the success block if POP is true. 
 	 * Returns nothing. 
 	 */
@@ -358,7 +358,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}, 
 	
 	/**
-	 * FOR block.
+	 * [INTERNAL] FOR block.
 	 * Has an init block called once, a conditional block that is called and then the success block if POP is true,
 	 * and another block for the next step. 
 	 * Returns nothing. 
@@ -410,7 +410,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}, 
 	
 	/**
-	 * Adds a throws a break interrupt.
+	 * Throws a BREAK interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	BREAK ()
@@ -425,7 +425,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a throws a continue interrupt.
+	 * Throws a CONTINUE interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	CONTINUE ()
@@ -440,7 +440,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a QUIT cue to the response and throws a quit interrupt.
+	 * Adds a QUIT cue to the response and throws a QUIT interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	QUIT ()
@@ -456,7 +456,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a throws an end interrupt.
+	 * Throws an END interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	END ()
@@ -483,7 +483,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in PRINT call.");
+				throw new UnexpectedValueTypeException("Expected literal type in TEXT call.");
 
 			response.addCue(CUE_TEXT, value.asString());
 		}
@@ -503,9 +503,49 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in PRINTLN call.");
+				throw new UnexpectedValueTypeException("Expected literal type in TEXTLN call.");
 
 			response.addCue(CUE_TEXT, value.asString() + '\n');
+		}
+		
+	},
+	
+	/**
+	 * Adds a TEXTFORMATTED cue to the response.
+	 * POP is the value to print. 
+	 * Returns nothing. 
+	 */
+	TEXTF (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in TEXTF call.");
+
+			response.addCue(CUE_TEXTFORMATTED, value.asString());
+		}
+		
+	},
+	
+	/**
+	 * Adds a TEXTFORMATTED cue to the response with a newline appended to it.
+	 * POP is the value to print. 
+	 * Returns nothing. 
+	 */
+	TEXTFLN (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in TEXTFLN call.");
+
+			response.addCue(CUE_TEXTFORMATTED, value.asString() + '\n');
 		}
 		
 	},
@@ -950,11 +990,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value3.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in SUBSTRING call.");
+				throw new UnexpectedValueTypeException("Expected literal type in SUBSTR call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in SUBSTRING call.");
+				throw new UnexpectedValueTypeException("Expected literal type in SUBSTR call.");
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in SUBSTRING call.");
+				throw new UnexpectedValueTypeException("Expected literal type in SUBSTR call.");
 
 			int endIndex = (int)value3.asLong();
 			int startIndex = (int)value2.asLong();
@@ -978,7 +1018,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in LOWERCASE call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRLOWER call.");
 
 			request.pushValue(Value.create(value.asString().toLowerCase()));
 		}
@@ -998,7 +1038,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in UPPERCASE call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRUPPER call.");
 
 			request.pushValue(Value.create(value.asString().toUpperCase()));
 		}
@@ -1020,9 +1060,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in CHARACTER call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRCHAR call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in CHARACTER call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRCHAR call.");
 
 			int index = (int)value2.asLong();
 			String str = value1.asString();
@@ -1498,9 +1538,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value valueFirst = request.popValue();
 			
 			if (!valueSecond.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in HOURS call.");
+				throw new UnexpectedValueTypeException("Expected literal type in DAYS call.");
 			if (!valueFirst.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in HOURS call.");
+				throw new UnexpectedValueTypeException("Expected literal type in DAYS call.");
 
 			long first = valueFirst.asLong();
 			long second = valueSecond.asLong();
@@ -1614,7 +1654,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds an object to a player.
+	 * Adds an object to a room.
 	 * First POP is object.
 	 * Second POP is room. 
 	 * Returns nothing.
@@ -1988,7 +2028,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Calls the onRoomBrowse() blocks on objects in a container.
+	 * Calls the onContainerBrowse() blocks on objects in a container.
 	 * POP is container. 
 	 * Returns nothing.
 	 */
@@ -2020,7 +2060,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value varPlayer = request.popValue();
 			
 			if (varPlayer.getType() != ValueType.PLAYER)
-				throw new UnexpectedValueTypeException("Expected player type in FOCUSONPLAYER call.");
+				throw new UnexpectedValueTypeException("Expected player type in SETPLAYER call.");
 
 			TPlayer nextPlayer = request.getModuleContext().resolvePlayer(varPlayer.asString());
 			TAMELogic.doPlayerSwitch(request, response, nextPlayer);
@@ -2041,7 +2081,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value varRoom = request.popValue();
 			
 			if (varRoom.getType() != ValueType.ROOM)
-				throw new UnexpectedValueTypeException("Expected room type in FOCUSONROOM call.");
+				throw new UnexpectedValueTypeException("Expected room type in SETROOM call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TRoom nextRoom = moduleContext.resolveRoom(varRoom.asString());

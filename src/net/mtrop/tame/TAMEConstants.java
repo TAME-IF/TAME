@@ -21,6 +21,8 @@ public interface TAMEConstants
 	public static final String CUE_LOAD = "LOAD";
 	/** Text cue. */
 	public static final String CUE_TEXT = "TEXT";
+	/** Formatted Text cue. */
+	public static final String CUE_TEXTFORMATTED = "TEXTFORMATTED";
 	/** Wait cue. */
 	public static final String CUE_WAIT = "WAIT";
 	/** Pause cue. */
