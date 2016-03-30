@@ -59,6 +59,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		boolean debug = false;
 		boolean load = false;
 		boolean defines = false;
+		boolean nooptimize = false;
 		boolean verbose = false;
 		String path = null;
 		String binpath = null;
@@ -71,22 +72,43 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				help = true;
 			else if (arg.equalsIgnoreCase("-s"))
 				script = true;
+			else if (arg.equalsIgnoreCase("--script"))
+				script = true;
+			else if (arg.equalsIgnoreCase("-n"))
+				nooptimize = true;
+			else if (arg.equalsIgnoreCase("--no-optimize"))
+				nooptimize = true;
 			else if (arg.equalsIgnoreCase("-v"))
+				verbose = true;
+			else if (arg.equalsIgnoreCase("--verbose"))
 				verbose = true;
 			else if (arg.equalsIgnoreCase("-l"))
 				load = true;
+			else if (arg.equalsIgnoreCase("--load-game"))
+				load = true;
 			else if (arg.equalsIgnoreCase("-debug"))
 				debug = true;
-			else if (script && arg.equalsIgnoreCase("-d"))
-				defines = true;
 			else if (script)
-				path = arg;
+			{
+				if (arg.equalsIgnoreCase("-d"))
+					defines = true;
+				else if (arg.equalsIgnoreCase("--defines"))
+					defines = true;
+				else
+					path = arg;
+				script = false;
+			}
 			else if (defines)
 				defineList.add(arg);
 			else if (load)
+			{
 				loadpath = arg;
+				load = false;
+			}
 			else
+			{
 				binpath = arg;
+			}
 		}
 		
 		if (args.length == 0 || help)
@@ -97,15 +119,12 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		
 		if (script)
 		{
-			if (Common.isEmpty(path))
-			{
-				System.out.println("ERROR: No module script file specified!");
-				System.exit(1);
-			}
-			else
-			{
-				module = parseScript(path, verbose, true, defineList); 
-			}
+			System.out.println("ERROR: No module script file specified!");
+			System.exit(1);
+		}
+		else if (!Common.isEmpty(path))
+		{
+			module = parseScript(path, verbose, true, defineList); 
 		}
 		else
 		{
@@ -130,7 +149,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		
 		Context context = new Context(module, moduleContext, System.out, System.err, debug);
 		
-		if (load)
+		if (loadpath != null)
 		{
 			if (!loadGame(moduleContext, loadpath))
 				return;

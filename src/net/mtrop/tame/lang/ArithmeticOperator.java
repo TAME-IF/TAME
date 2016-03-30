@@ -257,6 +257,9 @@ public enum ArithmeticOperator
 	},
 	;
 	
+	/** Array of arithmetic operators to avoid memory allocations. */
+	public static final ArithmeticOperator[] VALUES = values();
+	
 	private int precedence;
 	private boolean binary;
 	private boolean rightAssociative;

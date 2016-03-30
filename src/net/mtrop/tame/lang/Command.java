@@ -142,6 +142,15 @@ public class Command implements CallableType, Saveable
 	}
 
 	/**
+	 * Gets the operation on this command.
+	 * @return the command's operation.
+	 */
+	public TAMECommand getOperation()
+	{
+		return operation;
+	}
+	
+	/**
 	 * Gets the first operand, if any.
 	 * @return the operand, or null if no operand.
 	 */

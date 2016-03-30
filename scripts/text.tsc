@@ -7,10 +7,11 @@ world
 {
 	init()
 	{
-		text("hi");
-		textf("[m]hi[/]");
-		textln("hi");
-		textfln("[m]hi[/]fsdfsdf");
+		w = 5 + 4 - 7 * 9 / 3 % 7.6;
+	
+		x = 7 * 8;
+		y = "hello" - 4;
+		text(--------8 * 3);
 		quit;
 	}
 }

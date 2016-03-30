@@ -22,6 +22,7 @@ import com.blackrook.io.SuperWriter;
 
 /**
  * All values in the interpreter are of this type, which stores a type.
+ * TODO: Verify to ECMAScript standard.
  * @author Matthew Tropiano
  */
 public class Value implements Comparable<Value>, Saveable
@@ -816,12 +817,12 @@ public class Value implements Comparable<Value>, Saveable
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be divided: " + value1 + ", " + value2);
 
-		if (value1.isInteger() || value2.isInteger())
+		if (value1.isInteger() && value2.isInteger())
 		{
 			long v1 = value1.asLong();
 			long v2 = value2.asLong();
 			if (v2 == 0L)
-				return create(Double.POSITIVE_INFINITY);
+				return create(Double.POSITIVE_INFINITY * v1);
 			else
 				return create(v1 / v2);
 		}
@@ -830,7 +831,7 @@ public class Value implements Comparable<Value>, Saveable
 			double v1 = value1.asDouble();
 			double v2 = value2.asDouble();
 			if (v2 == 0.0)
-				return create(Double.POSITIVE_INFINITY);
+				return create(Double.POSITIVE_INFINITY * v1);
 			else
 				return create(v1 / v2);
 		}
@@ -848,7 +849,7 @@ public class Value implements Comparable<Value>, Saveable
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be modulo divided: " + value1 + ", " + value2);
 
-		if (value1.isInteger() || value2.isInteger())
+		if (value1.isInteger() && value2.isInteger())
 		{
 			long v1 = value1.asLong();
 			long v2 = value2.asLong();

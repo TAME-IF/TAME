@@ -9,7 +9,7 @@ world
 	{
 		e = e();
 		textln(e);
-		
+		quit;
 	}
 }
 

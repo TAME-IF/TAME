@@ -2169,7 +2169,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		"{" [StatementList] "}"
 		 * 		[Statement]
 		 */
-		public boolean parseBlock()
+		private boolean parseBlock()
 		{
 			currentBlock.push(new Block());
 			
@@ -2228,7 +2228,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * [BlockStatement] :=
 		 * 		[Statement]
 		 */
-		public boolean parseBlockStatement()
+		private boolean parseBlockStatement()
 		{
 			currentBlock.push(new Block());
 			
@@ -2248,7 +2248,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * [BlockExpression] :=
 		 * 		[Expression]
 		 */
-		public boolean parseBlockExpression()
+		private boolean parseBlockExpression()
 		{
 			currentBlock.push(new Block());
 			
@@ -2270,7 +2270,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[COMMANDEXPRESSION]
 		 *		[e]
 		 */
-		public boolean parseStatement()
+		private boolean parseStatement()
 		{
 			if (currentType(TSKernel.TYPE_IDENTIFIER) || isElement())
 			{
@@ -2373,7 +2373,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 *		[Statement] [StatementList]
 		 * 		[e]
 		 */
-		public boolean parseStatementList()
+		private boolean parseStatementList()
 		{
 			if (!currentType(
 					TSKernel.TYPE_DELIM_SEMICOLON, 
@@ -2419,9 +2419,313 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		/**
+		 * Parses a control block.
+		 * [ControlBlock] :=
+		 * 		[IF] "(" [EXPRESSION] ")" [BLOCK] [ELSE] [BLOCK]
+		 * 		[WHILE] "(" [EXPRESSION] ")" [BLOCK]
+		 * 		[FOR] "(" [STATEMENT] ";" [EXPRESSION] ";" [STATEMENT] ")" [BLOCK]
+		 */
+		private boolean parseControl() 
+		{
+			if (currentType(TSKernel.TYPE_IF))
+			{
+				nextToken();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				{
+					addErrorMessage("Expected '(' after \"if\".");
+					return false;
+				}
+		
+				Block conditionalBlock = null;
+				Block successBlock = null;
+				Block failureBlock = null;
+				
+				if (!parseBlockExpression())
+					return false;
+				conditionalBlock = currentBlock.pop();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected ')' after conditional expression.");
+					return false;
+				}
+		
+				if (!parseBlock())
+					return false;
+				successBlock = currentBlock.pop();
+				
+				if (currentType(TSKernel.TYPE_ELSE))
+				{
+					nextToken();
+		
+					if (!parseBlock())
+						return false;
+					failureBlock = currentBlock.pop();
+				}
+		
+				emit(Command.create(TAMECommand.IF, conditionalBlock, successBlock, failureBlock));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_WHILE))
+			{
+				nextToken();
+		
+				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				{
+					addErrorMessage("Expected '(' after \"while\".");
+					return false;
+				}
+		
+				Block conditionalBlock = null;
+				Block successBlock = null;
+				
+				if (!parseBlockExpression())
+					return false;
+				conditionalBlock = currentBlock.pop();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected ')' after conditional expression.");
+					return false;
+				}
+		
+				controlBlock++;
+		
+				if (!parseBlock())
+					return false;
+				successBlock = currentBlock.pop();
+		
+				emit(Command.create(TAMECommand.WHILE, conditionalBlock, successBlock));
+				controlBlock--;
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_FOR))
+			{
+				nextToken();
+		
+				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				{
+					addErrorMessage("Expected '(' after \"for\".");
+					return false;
+				}
+		
+				Block initBlock = null;
+				Block conditionalBlock = null;
+				Block stepBlock = null;
+				Block successBlock = null;
+				
+				if (!parseBlockStatement())
+					return false;
+				initBlock = currentBlock.pop();
+		
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected ';' after inital statement in \"for\".");
+					return false;
+				}
+		
+				if (!parseBlockExpression())
+					return false;
+				conditionalBlock = currentBlock.pop();
+				
+				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				{
+					addErrorMessage("Expected ';' after conditional statement in \"for\".");
+					return false;
+				}
+		
+				if (!parseBlockStatement())
+					return false;
+				stepBlock = currentBlock.pop();
+		
+				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				{
+					addErrorMessage("Expected ')' after stepping statement in \"for\".");
+					return false;
+				}
+		
+				controlBlock++;
+		
+				if (!parseBlock())
+					return false;
+				successBlock = currentBlock.pop();
+		
+				emit(Command.create(TAMECommand.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
+				controlBlock--;
+				return true;
+			}
+			else
+			{
+				addErrorMessage("INTERNAL ERROR!! CONTROL BLOCK: You should not see this!");
+				return false;
+			}	
+		}
+
+		/**
+		 * Parses a control block.
+		 * [ControlCommand] :=
+		 * 		[QUIT]
+		 * 		[BREAK]
+		 * 		[CONTINUE]
+		 * 		[END]
+		 * 		[Statement]
+		 */
+		private boolean parseExecutableStatement() 
+		{
+			if (currentType(TSKernel.TYPE_QUIT))
+			{
+				nextToken();
+				emit(Command.create(TAMECommand.QUIT));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_END))
+			{
+				nextToken();
+				emit(Command.create(TAMECommand.END));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_CONTINUE))
+			{
+				if (controlBlock == 0)
+				{
+					addErrorMessage("Command \"continue\" used without \"for\" or \"while\".");
+					return false;
+				}
+				
+				nextToken();
+				emit(Command.create(TAMECommand.CONTINUE));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_BREAK))
+			{
+				if (controlBlock == 0)
+				{
+					addErrorMessage("Command \"break\" used without \"for\" or \"while\".");
+					return false;
+				}
+				
+				nextToken();
+				emit(Command.create(TAMECommand.BREAK));
+				return true;
+			}
+			else if (!parseStatement())
+				return false;
+			
+			return true;
+		}
+
+		/**
+		 * Parses command arguments.
+		 */
+		private boolean parseCommandArguments(TAMECommand commandType) 
+		{
+			ArgumentType[] argTypes = commandType.getArgumentTypes();
+			for (int i = 0; i < argTypes.length; i++) 
+			{
+				switch (argTypes[i])
+				{
+					default:
+					case VALUE:
+					{
+						// value - read expression.
+						if (!parseExpression())
+							return false;
+						break;
+					}
+					case ACTION:
+					{
+						if (!isAction())
+						{
+							addErrorMessage("Command requires an ACTION. \""+currentToken().getLexeme()+"\" is not an action type.");
+							return false;
+						}
+						
+						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case OBJECT:
+					{
+						if (!isObject())
+						{
+							addErrorMessage("Command requires an OBJECT. \""+currentToken().getLexeme()+"\" is not an object type.");
+							return false;
+						}
+						
+						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case PLAYER:
+					{
+						if (!isPlayer())
+						{
+							addErrorMessage("Command requires an PLAYER. \""+currentToken().getLexeme()+"\" is not an player type.");
+							return false;
+						}
+						
+						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case ROOM:
+					{
+						if (!isRoom())
+						{
+							addErrorMessage("Command requires an ROOM. \""+currentToken().getLexeme()+"\" is not an room type.");
+							return false;
+						}
+						
+						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case CONTAINER:
+					{
+						if (!isContainer())
+						{
+							addErrorMessage("Command requires an CONTAINER. \""+currentToken().getLexeme()+"\" is not an container type.");
+							return false;
+						}
+						
+						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case ELEMENT:
+					{
+						if (!isElement())
+						{
+							addErrorMessage("Command requires an ELEMENT. \""+currentToken().getLexeme()+"\" is not an element type.");
+							return false;
+						}
+						
+						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					
+				} // switch
+				
+				if (i < argTypes.length - 1)
+				{
+					if (!matchType(TSKernel.TYPE_DELIM_COMMA))
+					{
+						addErrorMessage("Expected ',' after command argument. More arguments remain.");
+						return false;
+					}
+				}
+				
+			} // for
+			
+			return true;
+		}
+
+		/**
 		 * Parses an infix expression.
 		 */
-		public boolean parseExpression()
+		private boolean parseExpression()
 		{
 			// make stacks.
 			Stack<ArithmeticOperator> expressionOperators = new Stack<>();
@@ -2689,310 +2993,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			return true;
 		}
 
-		/**
-		 * Parses a control block.
-		 * [ControlBlock] :=
-		 * 		[IF] "(" [EXPRESSION] ")" [BLOCK] [ELSE] [BLOCK]
-		 * 		[WHILE] "(" [EXPRESSION] ")" [BLOCK]
-		 * 		[FOR] "(" [STATEMENT] ";" [EXPRESSION] ";" [STATEMENT] ")" [BLOCK]
-		 */
-		private boolean parseControl() 
-		{
-			if (currentType(TSKernel.TYPE_IF))
-			{
-				nextToken();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-				{
-					addErrorMessage("Expected '(' after \"if\".");
-					return false;
-				}
-
-				Block conditionalBlock = null;
-				Block successBlock = null;
-				Block failureBlock = null;
-				
-				if (!parseBlockExpression())
-					return false;
-				conditionalBlock = currentBlock.pop();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expected ')' after conditional expression.");
-					return false;
-				}
-
-				if (!parseBlock())
-					return false;
-				successBlock = currentBlock.pop();
-				
-				if (currentType(TSKernel.TYPE_ELSE))
-				{
-					nextToken();
-
-					if (!parseBlock())
-						return false;
-					failureBlock = currentBlock.pop();
-				}
-
-				emit(Command.create(TAMECommand.IF, conditionalBlock, successBlock, failureBlock));
-				return true;
-			}
-			else if (currentType(TSKernel.TYPE_WHILE))
-			{
-				nextToken();
-
-				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-				{
-					addErrorMessage("Expected '(' after \"while\".");
-					return false;
-				}
-
-				Block conditionalBlock = null;
-				Block successBlock = null;
-				
-				if (!parseBlockExpression())
-					return false;
-				conditionalBlock = currentBlock.pop();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expected ')' after conditional expression.");
-					return false;
-				}
-
-				controlBlock++;
-
-				if (!parseBlock())
-					return false;
-				successBlock = currentBlock.pop();
-
-				emit(Command.create(TAMECommand.WHILE, conditionalBlock, successBlock));
-				controlBlock--;
-				return true;
-			}
-			else if (currentType(TSKernel.TYPE_FOR))
-			{
-				nextToken();
-
-				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-				{
-					addErrorMessage("Expected '(' after \"for\".");
-					return false;
-				}
-
-				Block initBlock = null;
-				Block conditionalBlock = null;
-				Block stepBlock = null;
-				Block successBlock = null;
-				
-				if (!parseBlockStatement())
-					return false;
-				initBlock = currentBlock.pop();
-
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Expected ';' after inital statement in \"for\".");
-					return false;
-				}
-
-				if (!parseBlockExpression())
-					return false;
-				conditionalBlock = currentBlock.pop();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				{
-					addErrorMessage("Expected ';' after conditional statement in \"for\".");
-					return false;
-				}
-
-				if (!parseBlockStatement())
-					return false;
-				stepBlock = currentBlock.pop();
-
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expected ')' after stepping statement in \"for\".");
-					return false;
-				}
-
-				controlBlock++;
-
-				if (!parseBlock())
-					return false;
-				successBlock = currentBlock.pop();
-
-				emit(Command.create(TAMECommand.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
-				controlBlock--;
-				return true;
-			}
-			else
-			{
-				addErrorMessage("INTERNAL ERROR!! CONTROL BLOCK: You should not see this!");
-				return false;
-			}	
-		}
-		
-		/**
-		 * Parses a control block.
-		 * [ControlCommand] :=
-		 * 		[QUIT]
-		 * 		[BREAK]
-		 * 		[CONTINUE]
-		 * 		[END]
-		 * 		[Statement]
-		 */
-		private boolean parseExecutableStatement() 
-		{
-			if (currentType(TSKernel.TYPE_QUIT))
-			{
-				nextToken();
-				emit(Command.create(TAMECommand.QUIT));
-				return true;
-			}
-			else if (currentType(TSKernel.TYPE_END))
-			{
-				nextToken();
-				emit(Command.create(TAMECommand.END));
-				return true;
-			}
-			else if (currentType(TSKernel.TYPE_CONTINUE))
-			{
-				if (controlBlock == 0)
-				{
-					addErrorMessage("Command \"continue\" used without \"for\" or \"while\".");
-					return false;
-				}
-				
-				nextToken();
-				emit(Command.create(TAMECommand.CONTINUE));
-				return true;
-			}
-			else if (currentType(TSKernel.TYPE_BREAK))
-			{
-				if (controlBlock == 0)
-				{
-					addErrorMessage("Command \"break\" used without \"for\" or \"while\".");
-					return false;
-				}
-				
-				nextToken();
-				emit(Command.create(TAMECommand.BREAK));
-				return true;
-			}
-			else if (!parseStatement())
-				return false;
-			
-			return true;
-		}
-
-		/**
-		 * Parses command arguments.
-		 */
-		private boolean parseCommandArguments(TAMECommand commandType) 
-		{
-			ArgumentType[] argTypes = commandType.getArgumentTypes();
-			for (int i = 0; i < argTypes.length; i++) 
-			{
-				switch (argTypes[i])
-				{
-					default:
-					case VALUE:
-					{
-						// value - read expression.
-						if (!parseExpression())
-							return false;
-						break;
-					}
-					case ACTION:
-					{
-						if (!isAction())
-						{
-							addErrorMessage("Command requires an ACTION. \""+currentToken().getLexeme()+"\" is not an action type.");
-							return false;
-						}
-						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
-						break;
-					}
-					case OBJECT:
-					{
-						if (!isObject())
-						{
-							addErrorMessage("Command requires an OBJECT. \""+currentToken().getLexeme()+"\" is not an object type.");
-							return false;
-						}
-						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
-						break;
-					}
-					case PLAYER:
-					{
-						if (!isPlayer())
-						{
-							addErrorMessage("Command requires an PLAYER. \""+currentToken().getLexeme()+"\" is not an player type.");
-							return false;
-						}
-						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
-						break;
-					}
-					case ROOM:
-					{
-						if (!isRoom())
-						{
-							addErrorMessage("Command requires an ROOM. \""+currentToken().getLexeme()+"\" is not an room type.");
-							return false;
-						}
-						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
-						break;
-					}
-					case CONTAINER:
-					{
-						if (!isContainer())
-						{
-							addErrorMessage("Command requires an CONTAINER. \""+currentToken().getLexeme()+"\" is not an container type.");
-							return false;
-						}
-						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
-						break;
-					}
-					case ELEMENT:
-					{
-						if (!isElement())
-						{
-							addErrorMessage("Command requires an ELEMENT. \""+currentToken().getLexeme()+"\" is not an element type.");
-							return false;
-						}
-						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
-						break;
-					}
-					
-				} // switch
-				
-				if (i < argTypes.length - 1)
-				{
-					if (!matchType(TSKernel.TYPE_DELIM_COMMA))
-					{
-						addErrorMessage("Expected ',' after command argument. More arguments remain.");
-						return false;
-					}
-				}
-				
-			} // for
-			
-			return true;
-		}
-		
 		// Operator reduce.
 		private boolean operatorReduce(Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter, ArithmeticOperator operator) 
 		{
@@ -3092,46 +3092,44 @@ public final class TAMEScriptReader implements TAMEConstants
 			;
 		}
 		
-		// Checks if an identifier is an action.
-		private boolean isAction()
-		{
-			return currentModule.getActionByIdentity(currentToken().getLexeme()) != null;
-		}
-		
 		// Checks if an identifier is a world.
 		private boolean isWorld()
 		{
-			return currentToken().getLexeme().equals(IDENTITY_CURRENT_WORLD);
+			return currentToken().getType() == TSKernel.TYPE_WORLD;
 		}
 		
 		// Checks if an identifier is a player.
 		private boolean isPlayer()
 		{
-			String identifier = currentToken().getLexeme();
-			return identifier.equals(IDENTITY_CURRENT_PLAYER)
-				|| currentModule.getPlayerByIdentity(identifier) != null;
+			return (currentToken().getType() == TSKernel.TYPE_PLAYER)
+				|| (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getPlayerByIdentity(currentToken().getLexeme()) != null);
 		}
 		
 		// Checks if an identifier is a room.
 		private boolean isRoom()
 		{
-			String identifier = currentToken().getLexeme();
-			return identifier.equals(IDENTITY_CURRENT_ROOM)
-				|| currentModule.getRoomByIdentity(identifier) != null;
+			return (currentToken().getType() == TSKernel.TYPE_ROOM)
+				|| (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getRoomByIdentity(currentToken().getLexeme()) != null);
 		}
 		
 		// Checks if an identifier is an object.
 		private boolean isObject()
 		{
-			return currentModule.getObjectByIdentity(currentToken().getLexeme()) != null;
+			return (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getObjectByIdentity(currentToken().getLexeme()) != null);
 		}
 		
 		// Checks if an identifier is a container.
 		private boolean isContainer()
 		{
-			return currentModule.getContainerByIdentity(currentToken().getLexeme()) != null;
+			return (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getContainerByIdentity(currentToken().getLexeme()) != null);
 		}
 
+		// Checks if an identifier is an action.
+		private boolean isAction()
+		{
+			return (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getActionByIdentity(currentToken().getLexeme()) != null);
+		}
+		
 		// Returns the command associated with a name, if any.
 		private TAMECommand getCommand(String name)
 		{
@@ -3305,9 +3303,101 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (!options.isOptimizing())
 				return block;
+			
+			boolean optimizeDone = false;
+			Stack<Command> optimizeStack = new Stack<>();
+			
+			for (Command command : block)
+			{
+				if (command.getOperation() == TAMECommand.ARITHMETICFUNC)
+				{
+					ArithmeticOperator operator =  ArithmeticOperator.VALUES[(int)command.getOperand0().asLong()];
+					
+					// binary operator
+					if (operator.isBinary())
+					{
+						Command c2 = optimizeStack.pop();
+						Command c1 = optimizeStack.pop();
+
+						if (c1.getOperation() == TAMECommand.PUSHVALUE && c2.getOperation() == TAMECommand.PUSHVALUE)
+						{
+							Value v2 = c2.getOperand0();
+							Value v1 = c1.getOperand0();
+
+							// if not literals, push back onto reduce stack
+							if (!v1.isLiteral() || !v2.isLiteral())
+							{
+								optimizeStack.push(c1);
+								optimizeStack.push(c2);
+								optimizeStack.push(command);
+							}
+							// else reduce and push reduced value.
+							else
+							{
+								Value result = operator.doOperation(v1, v2);
+								optimizeStack.push(Command.create(TAMECommand.PUSHVALUE, result));
+								optimizeDone = true;
+							}
+							
+						}
+						else
+						{
+							optimizeStack.push(c1);
+							optimizeStack.push(c2);
+							optimizeStack.push(command);
+						}
 						
-			// TODO: Write this.
-			return block;
+					}
+					// unary operator
+					else
+					{
+						Command c1 = optimizeStack.pop();
+						
+						if (c1.getOperation() == TAMECommand.PUSHVALUE)
+						{
+							Value v1 = c1.getOperand0();
+
+							// if not literals, push back onto reduce stack
+							if (!v1.isLiteral())
+							{
+								optimizeStack.push(c1);
+								optimizeStack.push(command);
+							}
+							// else reduce and push reduced value.
+							else
+							{
+								Value result = operator.doOperation(v1);
+								optimizeStack.push(Command.create(TAMECommand.PUSHVALUE, result));
+								optimizeDone = true;
+							}
+							
+						}
+						else
+						{
+							optimizeStack.push(c1);
+							optimizeStack.push(command);
+						}
+						
+					}
+				}
+				else
+				{
+					optimizeStack.push(command);
+				}
+				
+			}
+			
+			if (!optimizeDone)
+				return block;
+			
+			Block outBlock = new Block();
+			Stack<Command> reverseStack = new Stack<>();
+			while (!optimizeStack.isEmpty())
+				reverseStack.push(optimizeStack.pop());
+			while (!reverseStack.isEmpty())
+				outBlock.add(reverseStack.pop());
+			
+			return outBlock;
 		}
 		
 		/**

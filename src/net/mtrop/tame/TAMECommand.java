@@ -784,7 +784,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGLENGTH call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRLEN call.");
 
 			request.pushValue(Value.create(value.asString().length()));
 		}
@@ -808,11 +808,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value3.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGREPLACE call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACE call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGREPLACE call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACE call.");
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGREPLACE call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACE call.");
 
 			String replacement = value3.asString();
 			String pattern = value2.asString();
@@ -838,9 +838,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGINDEX call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRINDEX call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGINDEX call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRINDEX call.");
 
 			String sequence = value2.asString();
 			String str = value1.asString();
@@ -865,9 +865,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGLASTINDEX call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRLASTINDEX call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGLASTINDEX call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRLASTINDEX call.");
 
 			String sequence = value2.asString();
 			String str = value1.asString();
@@ -892,9 +892,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGCONTAINS call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINS call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGCONTAINS call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINS call.");
 
 			String sequence = value2.asString();
 			String str = value1.asString();
@@ -905,7 +905,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Returns if a character sequence matching a regular expression exists in a given string. True if so.
+	 * Returns if a character sequence matching a regular expression exists in a given string. True if so.\
 	 * First POP is what to search for (RegEx). 
 	 * Second POP is the string. 
 	 * Returns boolean.
@@ -919,9 +919,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGCONTAINSPATTERN call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINSPATTERN call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGCONTAINSPATTERN call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINSPATTERN call.");
 
 			String pattern = value2.asString();
 			String str = value1.asString();
@@ -930,7 +930,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			try {
 				p = Pattern.compile(pattern);
 			} catch (PatternSyntaxException e) {
-				throw new ErrorInterrupt("Expected valid expression in STRINGCONTAINSPATTERN call.");
+				throw new ErrorInterrupt("Expected valid expression in STRCONTAINSPATTERN call.");
 			}
 			
 			request.pushValue(Value.create(p.matcher(str).find()));
@@ -954,9 +954,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGCONTAINSTOKEN call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINSTOKEN call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRINGCONTAINSTOKEN call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINSTOKEN call.");
 
 			String pattern = value2.asString();
 			String str = value1.asString();
@@ -965,7 +965,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			try {
 				p = Pattern.compile(pattern);
 			} catch (PatternSyntaxException e) {
-				throw new ErrorInterrupt("Expected valid expression in STRINGCONTAINSPATTERN call.");
+				throw new ErrorInterrupt("Expected valid expression in STRCONTAINSTOKEN call.");
 			}
 			
 			request.pushValue(Value.create(p.matcher(str).find()));

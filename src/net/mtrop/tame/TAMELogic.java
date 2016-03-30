@@ -248,7 +248,7 @@ public final class TAMELogic implements TAMEConstants
 		if (functionType < 0 || functionType >= ArithmeticOperator.values().length)
 			throw new UnexpectedValueException("Expected arithmetic function type, got illegal value %d.", functionType);
 
-		ArithmeticOperator operator =  ArithmeticOperator.values()[functionType];
+		ArithmeticOperator operator =  ArithmeticOperator.VALUES[functionType];
 		
 		if (operator.isBinary())
 		{

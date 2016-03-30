@@ -114,8 +114,8 @@ world
 		textln(sqrt(4)); 
 		textln(pi()); 
 		textln(e()); 
-		textln(sin(1)); 
-		textln(cos(1)); 
+		textln(sin(pi()/2)); 
+		textln(cos(pi()/2)); 
 		textln(tan(1)); 
 		textln(min(4, 8)); 
 		textln(max(4, 8)); 
