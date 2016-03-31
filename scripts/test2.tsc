@@ -1,5 +1,8 @@
-module.title = "Test Module";
-module.author = "Matt Tropiano";
+module
+{
+	title = "Test Module";
+	author = "Matt Tropiano";
+}
 
 action general ah_intro;
 

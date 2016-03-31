@@ -884,7 +884,10 @@ public class Value implements Comparable<Value>, Saveable
 		double v1 = value1.asDouble();
 		double v2 = value2.asDouble();
 		double p = Math.pow(v1, v2);
-		return create((value1.isInteger() && value2.isInteger()) ? (long)p : p);
+		if (value1.isInteger() && value2.isInteger())
+			return create((long)p);
+		else
+			return create(p);
 	}
 	
 	/**

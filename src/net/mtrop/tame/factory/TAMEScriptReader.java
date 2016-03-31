@@ -314,7 +314,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
-		 * Reads objects into the target module.
+		 * Reads objects into a module.
 		 */
 		TAMEModule readModule()
 		{
@@ -346,6 +346,12 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				throw new TAMEScriptParseException("No world declared!");
 			}
+			
+			verbosef("Action count: %d", currentModule.getActionCount());
+			verbosef("Player count: %d", currentModule.getPlayerCount());
+			verbosef("Container count: %d", currentModule.getContainerCount());
+			verbosef("Room count: %d", currentModule.getRoomCount());
+			verbosef("Object count: %d", currentModule.getObjectCount());
 			
 			return currentModule;
 		}
@@ -456,6 +462,12 @@ public final class TAMEScriptReader implements TAMEConstants
 				String attribute = currentToken().getLexeme();
 				nextToken();
 
+				if (!matchType(TSKernel.TYPE_DELIM_EQUAL))
+				{
+					addErrorMessage("Expected \"=\" after attribute name.");
+					return false;
+				}
+
 				if (currentType(TSKernel.TYPE_STRING | TSKernel.TYPE_NUMBER))
 				{
 					addErrorMessage("Expected literal value.");
@@ -466,6 +478,8 @@ public final class TAMEScriptReader implements TAMEConstants
 				nextToken();
 
 				currentModule.getHeader().addAttribute(attribute, value);
+
+				verbosef("Added module attribute %s, value \"%s\".", attribute, value);
 				
 				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
 				{
@@ -496,14 +510,6 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			String identity = currentToken().getLexeme();
 			nextToken();
-			
-			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-			{
-				TContainer element = new TContainer(identity);
-				currentModule.addContainer(element);
-				return true;
-			}
 
 			TContainer container;
 			if ((container = currentModule.getContainerByIdentity(identity)) == null)
@@ -511,7 +517,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				container = new TContainer(identity);
 				currentModule.addContainer(container);
 			}
-									
+
+			verbosef("Read container %s...", identity);
+			
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				return true;
+
 			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
 			{
 				addErrorMessage("Expected \"{\" for container body start or \";\" (prototyping).");
@@ -574,13 +586,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			String identity = currentToken().getLexeme();
 			nextToken();
 			
-			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-			{
-				TObject element = new TObject(identity);
-				currentModule.addObject(element);
-				return true;
-			}
+			verbosef("Read object %s...", identity);
 
 			TObject object;
 			if ((object = currentModule.getObjectByIdentity(identity)) == null)
@@ -589,6 +595,10 @@ public final class TAMEScriptReader implements TAMEConstants
 				currentModule.addObject(object);
 			}
 									
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				return true;
+
 			if (!parseObjectNames(object))
 				return false;
 			
@@ -714,13 +724,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			String identity = currentToken().getLexeme();
 			nextToken();
 			
-			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-			{
-				TRoom element = new TRoom(identity);
-				currentModule.addRoom(element);
-				return true;
-			}
+			verbosef("Read room %s...", identity);
 
 			TRoom room;
 			if ((room = currentModule.getRoomByIdentity(identity)) == null)
@@ -728,7 +732,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				room = new TRoom(identity);
 				currentModule.addRoom(room);
 			}
-						
+															
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				return true;
+
 			if (!parseActionPermissionClause(room))
 				return false;
 			
@@ -824,13 +832,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			String identity = currentToken().getLexeme();
 			nextToken();
 			
-			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-			{
-				TPlayer element = new TPlayer(identity);
-				currentModule.addPlayer(element);
-				return true;
-			}
+			verbosef("Read player %s...", identity);
 
 			TPlayer player;
 			if ((player = currentModule.getPlayerByIdentity(identity)) == null)
@@ -838,7 +840,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				player = new TPlayer(identity);
 				currentModule.addPlayer(player);
 			}
-			
+																		
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				return true;
+
 			if (!parseActionPermissionClause(player))
 				return false;
 			
@@ -974,12 +980,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseWorld()
 		{
-			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-			{
-				currentModule.setWorld(new TWorld());
-				return true;
-			}
+			verbose("Read world...");
 
 			TWorld world;
 			if ((world = currentModule.getWorld()) == null)
@@ -988,6 +989,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				currentModule.setWorld(world);
 			}
 						
+			// prototype?
+			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			{
+				currentModule.setWorld(new TWorld());
+				return true;
+			}
+
 			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
 			{
 				addErrorMessage("Expected \"{\" for world body start or \";\" (prototyping).");
@@ -1133,7 +1141,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 
-				TAction action = new TAction(currentToken().getLexeme());
+				String identity = currentToken().getLexeme();
+				verbosef("Read general action %s...", identity);
+
+				TAction action = new TAction(identity);
 				action.setType(actionType);
 				nextToken();
 				
@@ -1154,7 +1165,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 
-				TAction action = new TAction(currentToken().getLexeme());
+				String identity = currentToken().getLexeme();
+				verbosef("Read open action %s...", identity);
+
+				TAction action = new TAction(identity);
 				action.setType(actionType);
 				nextToken();
 
@@ -1175,7 +1189,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 
-				TAction action = new TAction(currentToken().getLexeme());
+				String identity = currentToken().getLexeme();
+				verbosef("Read modal action %s...", identity);
+
+				TAction action = new TAction(identity);
 				action.setType(actionType);
 				nextToken();
 
@@ -1199,7 +1216,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 
-				TAction action = new TAction(currentToken().getLexeme());
+				String identity = currentToken().getLexeme();
+				verbosef("Read transitive action %s...", identity);
+
+				TAction action = new TAction(identity);
 				action.setType(actionType);
 				nextToken();
 
@@ -1220,7 +1240,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 
-				TAction action = new TAction(currentToken().getLexeme());
+				String identity = currentToken().getLexeme();
+				verbosef("Read ditransitive action %s...", identity);
+
+				TAction action = new TAction(identity);
 				action.setType(actionType);
 				nextToken();
 

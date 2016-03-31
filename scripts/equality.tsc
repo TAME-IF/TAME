@@ -1,6 +1,6 @@
 module
 {
-	title "Equality Test";
+	title = "Equality Test";
 }
 
 

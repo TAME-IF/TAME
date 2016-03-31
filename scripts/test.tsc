@@ -1,6 +1,6 @@
 module
 {
-	title "Test Everything";
+	title = "Test Everything";
 }
 
 action general a_quit named "quit";

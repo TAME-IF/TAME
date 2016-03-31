@@ -1,6 +1,6 @@
 module
 {
-	title "Function Variable Test Thing";
+	title = "Function Variable Test Thing";
 }
 
 world

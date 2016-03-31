@@ -129,6 +129,17 @@ public final class ValueTest {
 		print(vf9, v2, Value.modulo(vf9, v2), "%");
 		print(v9, vf2, Value.modulo(v9, vf2), "%");
 		print(vf9, vf2, Value.modulo(vf9, vf2), "%");
+
+		out.println("POW-------------------");
+		print(v2, v3, Value.power(v2, v3), "**");
+		print(vf2, vf3, Value.power(vf2, vf3), "**");
+		print(vf2, v3, Value.power(vf2, v3), "**");
+		print(v2, vf3, Value.power(v2, vf3), "**");
+		print(vf2, v3, Value.power(vf2, v3), "**");
+		print(v9, v2, Value.power(v9, v2), "**");
+		print(vf9, v2, Value.power(vf9, v2), "**");
+		print(v9, vf2, Value.power(v9, vf2), "**");
+		print(vf9, vf2, Value.power(vf9, vf2), "**");
 	}
 	
 	private static void print(Value v1, Value v2, Value out, String s)

@@ -1,6 +1,6 @@
 module
 {
-	title "text test";
+	title = "text test";
 }
 
 world

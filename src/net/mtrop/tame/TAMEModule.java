@@ -250,6 +250,51 @@ public class TAMEModule implements Saveable
 		return players.get(identity);
 	}
 
+	/**
+	 * Gets how many players are in this module.
+	 * @return the number of players.
+	 */
+	public int getPlayerCount()
+	{
+		return players.size();
+	}
+
+	/**
+	 * Gets how many actions are in this module.
+	 * @return the number of actions.
+	 */
+	public int getActionCount()
+	{
+		return actions.size();
+	}
+
+	/**
+	 * Gets how many rooms are in this module.
+	 * @return the number of rooms.
+	 */
+	public int getRoomCount()
+	{
+		return rooms.size();
+	}
+
+	/**
+	 * Gets how many objects are in this module.
+	 * @return the number of objects.
+	 */
+	public int getObjectCount()
+	{
+		return objects.size();
+	}
+
+	/**
+	 * Gets how many containers are in this module.
+	 * @return the number of containers.
+	 */
+	public int getContainerCount()
+	{
+		return containers.size();
+	}
+
 	HashMap<String, TPlayer> getPlayerList()
 	{
 		return players;

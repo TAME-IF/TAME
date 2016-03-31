@@ -1,6 +1,6 @@
 module
 {
-	title "Cue Test";
+	title = "Cue Test";
 }
 
 action general a_quit named "quit";
