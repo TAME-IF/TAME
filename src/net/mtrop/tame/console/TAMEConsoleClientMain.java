@@ -40,12 +40,23 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	private static void printHelp(PrintStream out)
 	{
 		out.println("TAME Console Client by Matt Tropiano (C) 2016");
-		out.println("Usage: tame [module] <gameload> (-debug)");
+		out.println("Usage: tame [help | module] <switches> <gameload> (-debug)");
+		out.println("[help]:");
+		out.println("    -h");
+		out.println("    --help");
+		out.println("    /?");
 		out.println("[module]:");
 		out.println("    [binaryfile]");
-		out.println("    -s [scriptfile] (-v) (-d [defines])");
+		out.println("    -s [scriptfile]");
+		out.println("    --script [scriptfile]");
+		out.println("<switches>:");
+		out.println("    -v");
+		out.println("    --verbose");
+		out.println("    -d  [tokens ...]");
+		out.println("    --defines [tokens ...]");
 		out.println("<gameload>:");
 		out.println("    -l [statefile]");
+		out.println("    --load-game [statefile]");
 	}
 
 	// Entry point.
@@ -124,7 +135,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		}
 		else if (!Common.isEmpty(path))
 		{
-			module = parseScript(path, verbose, true, defineList); 
+			module = parseScript(path, verbose, !nooptimize, defineList); 
 		}
 		else
 		{
