@@ -56,7 +56,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	private CaseInsensitiveHash names;
 	
 	/** 
-	 * Addtional strings. 
+	 * Additional strings. 
 	 * For DITRANSITIVE, this is the object separator conjunctions.
 	 * For MODAL, these are the valid targets.
 	 */
@@ -135,7 +135,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	{
 		return extraStrings;
 	}
-	
+
 	@Override
 	public int compareTo(TAction action)
 	{
