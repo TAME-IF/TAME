@@ -626,48 +626,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a SAVE cue to the response.
-	 * This does no state-saving. The cue is supposed to be read on response and the client needs to save. 
-	 * POP is the save name. 
-	 * Returns nothing. 
-	 */
-	SAVE (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in SAVE call.");
-
-			response.addCue(CUE_SAVE, value.asString());
-		}
-		
-	},
-	
-	/**
-	 * Adds a LOAD cue to the response.
-	 * This does no state-loading. The cue is supposed to be read on response and the client needs to load. 
-	 * POP is the load name. 
-	 * Returns nothing. 
-	 */
-	LOAD (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in LOAD call.");
-
-			response.addCue(CUE_LOAD, value.asString());
-		}
-		
-	},
-	
-	/**
 	 * Adds a cue to the response.
 	 * First POP is the value to print. 
 	 * Second POP is the cue name. 

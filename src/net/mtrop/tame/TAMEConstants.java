@@ -15,10 +15,6 @@ public interface TAMEConstants
 {
 	/** Quit cue. */
 	public static final String CUE_QUIT = "QUIT";
-	/** Save cue. */
-	public static final String CUE_SAVE = "SAVE";
-	/** Load cue. */
-	public static final String CUE_LOAD = "LOAD";
 	/** Text cue. */
 	public static final String CUE_TEXT = "TEXT";
 	/** Formatted Text cue. */

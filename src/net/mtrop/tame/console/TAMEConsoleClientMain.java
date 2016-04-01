@@ -343,7 +343,15 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			{
 				out.print("> ");
 				if ((line = Common.getLine()) != null)
-					processResponse(TAMELogic.handleRequest(context, line, tracer), this);
+				{
+					line = line.replaceAll("\\s+", " ").trim();
+					if (line.toLowerCase().startsWith("save "))
+						saveGame(context, line.substring(5)+".sav");
+					else if (line.toLowerCase().startsWith("load "))
+						loadGame(context, line.substring(5)+".sav");
+					else
+						processResponse(TAMELogic.handleRequest(context, line, tracer), this);
+				}
 				else
 					good = false;
 			}
@@ -384,12 +392,6 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				case CUE_QUIT:
 					context.quit = true;
 					return false;
-				case CUE_SAVE:
-					saveGame(context.context, cue.getContent()+".sav");
-					return true;
-				case CUE_LOAD:
-					loadGame(context.context, cue.getContent()+".sav");
-					return true;
 				case CUE_WAIT:
 					Common.sleep(Common.parseLong(cue.getContent()));
 					return true;
