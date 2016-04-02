@@ -68,13 +68,44 @@ TEXTLN(VALUE)
 	
 ...............................................................................
 
+TEXTF(VALUE)
+
+	VALUE: The message to print.
+	
+	Appends a "textformatted" cue to the response. 
+
+	TEXT returns no values after execution, so it cannot be used in 
+	expressions.
+	
+	Equivalent to:
+	ADDCUE("textformatted", VALUE);
+	
+...............................................................................
+
+TEXTFLN(VALUE)
+
+	VALUE: The message to print.
+	
+	Appends a "textformatted" cue to the response with a newline character appended to 
+	the end. 
+
+	TEXTLN returns no values after execution, so it cannot be used in 
+	expressions.
+	
+	Equivalent to:
+	ADDCUE("textformatted", VALUE+"\n");
+	
+...............................................................................
+
 WAIT(VALUE)
 	
 	VALUE: The time in milliseconds to wait. If string, this is parsed as an 
 	integer.
 	
 	Appends a "wait" cue to the response, which tells the client to wait a 
-	given amount of milliseconds.
+	given amount of milliseconds before continuing processing. Even though
+	this cue is understood by all clients, a client medium may not allow this 
+	to happen as intended due to limitations in implementation.
 	
 	WAIT returns no values after execution, so it cannot be used in 
 	expressions.
@@ -87,7 +118,9 @@ WAIT(VALUE)
 PAUSE()
 	
 	Appends a "pause" cue to the response, which tells the client to wait for 
-	user confirmation before continuing.
+	user confirmation before continuing. Even though this cue is understood by 
+	all clients, a client medium may not allow this to happen as intended due to 
+	limitations in implementation.
 	
 	PAUSE returns no values after execution, so it cannot be used in 
 	expressions.
@@ -122,36 +155,6 @@ INFO(VALUE)
 
 	Equivalent to:
 	ADDCUE("info", VALUE);
-	
-...............................................................................
-
-SAVE(VALUE)
-	
-	VALUE: A literal or variable or expression, numeric or string.
-	
-	Appends a "save" cue to the response, which tells the client to save the 
-	state. A load call with the same value/name can loads this state.
-	
-	SAVE returns no values after execution, so it cannot be used in 
-	expressions.
-
-	Equivalent to:
-	ADDCUE("save", VALUE);
-	
-...............................................................................
-
-LOAD(VALUE)
-	
-	VALUE: A literal or variable or expression, numeric or string.
-	
-	Appends a "load" cue to the response, which tells the client to load the 
-	from the state saved with the same name/value.
-	
-	LOAD returns no values after execution, so it cannot be used in 
-	expressions.
-
-	Equivalent to:
-	ADDCUE("load", VALUE);
 	
 ...............................................................................
 ................................   CONTROL   ..................................
@@ -1125,6 +1128,9 @@ be understood regardless of letter case.
 
 text - 		CONTENT is output at the client. Used for narration and 
 			messages.
+textformatted - 
+			CONTENT is output at the client, with formatting to change output 
+			appearance. Used for narration and messages.
 pause -		CONTENT is ignored. Client will wait for a response from the 
 			user before proceeding to the next cue to process.
 wait - 		CONTENT is an integer value. Client should pause for CONTENT 
@@ -1132,16 +1138,6 @@ wait - 		CONTENT is an integer value. Client should pause for CONTENT
 			If CONTENT is a string, a base-10 integer value should be 
 			parsed from it. if it is a double, it should be cast to an
 			integer.
-save -		CONTENT is name of a save game state. The client must save the
-			current game state so that it may restore it later, should it
-			receive a "load" cue for the same CONTENT. There is no 
-			mandatorily-defined medium saving the state, be it database, 
-			file, or whatever, so long as it can be restored later with 
-			"load". The client must report an error if this is not 
-			possible. 
-load -		CONTENT is name of a saved game state. The client must restore
-			the state of the game once saved using CONTENT. The client must
-			report an error if this is not possible. 
 trace -		CONTENT is the TRACE message. If the server is executing in a 
 			debugging mode, TRACE cues may be output. The client should
 			report these somehow, for debugging purposes.
