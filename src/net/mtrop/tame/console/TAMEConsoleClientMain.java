@@ -337,6 +337,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		
 		void gameLoop()
 		{
+			final String COMMAND_SAVE = "!save ";
+			final String COMMAND_LOAD = "!load ";
+			
 			boolean good = true;
 			String line;
 			while (good && !quit)
@@ -345,10 +348,10 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				if ((line = Common.getLine()) != null)
 				{
 					line = line.replaceAll("\\s+", " ").trim();
-					if (line.toLowerCase().startsWith("save "))
-						saveGame(context, line.substring(5)+".sav");
-					else if (line.toLowerCase().startsWith("load "))
-						loadGame(context, line.substring(5)+".sav");
+					if (line.toLowerCase().startsWith(COMMAND_SAVE))
+						saveGame(context, line.substring(COMMAND_SAVE.length())+".sav");
+					else if (line.toLowerCase().startsWith(COMMAND_LOAD))
+						loadGame(context, line.substring(COMMAND_LOAD.length())+".sav");
 					else
 						processResponse(TAMELogic.handleRequest(context, line, tracer), this);
 				}
