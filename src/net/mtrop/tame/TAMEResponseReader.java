@@ -42,6 +42,14 @@ public abstract class TAMEResponseReader
 	public abstract boolean handleCue(Cue cue);
 	
 	/**
+	 * Called when the reader stops reading cues.
+	 */
+	protected void handleStop()
+	{
+		// Do nothing.
+	}
+	
+	/**
 	 * Gets if this has more cues to read from the response.
 	 * @return true if so, false if not.
 	 */
@@ -54,6 +62,7 @@ public abstract class TAMEResponseReader
 	 * Reads the response cues, caliing the {@link #handleCue(Cue)} method for
 	 * each cue in the response. This stops when {@link #handleCue(Cue)} returns false,
 	 * or when there are no more cues to read.
+	 * After this stops reading for whatever reason, this calls {@link #handleStop()}.
 	 * @return true if there's more to read and this should be called again, false if not.
 	 */
 	public boolean read()
@@ -63,8 +72,9 @@ public abstract class TAMEResponseReader
 		
 		while (iterator.hasNext() && handleCue(iterator.next())) ;
 		
+		handleStop();
+		
 		return iterator.hasNext();
 	}
-	
 	
 }

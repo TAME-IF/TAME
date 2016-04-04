@@ -304,10 +304,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				context.paused = false;
 			}
 		}
-		
+
 		if (currentHandler.textBuffer.length() > 0)
 			context.out.println(currentHandler.textBuffer.toString());
-
 	}
 	
 	/**
@@ -424,7 +423,8 @@ public class TAMEConsoleClientMain implements TAMEConstants
 					context.quit = true;
 					return false;
 			}
-		}		
+		}
+		
 	}
 	
 	/**
