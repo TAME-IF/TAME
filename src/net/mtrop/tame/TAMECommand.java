@@ -434,6 +434,30 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}, 
 	
 	/**
+	 * Adds a cue to the response.
+	 * First POP is the value to print. 
+	 * Second POP is the cue name. 
+	 * Returns nothing. 
+	 */
+	ADDCUE (/*Return: */ null, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			Value cue = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
+			if (!cue.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
+	
+			response.addCue(cue.asString(), value.asString());
+		}
+		
+	}, 
+	
+	/**
 	 * Throws a BREAK interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
@@ -645,30 +669,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in INFO call.");
 
 			response.addCue(CUE_INFO, value.asString());
-		}
-		
-	},
-	
-	/**
-	 * Adds a cue to the response.
-	 * First POP is the value to print. 
-	 * Second POP is the cue name. 
-	 * Returns nothing. 
-	 */
-	ADDCUE (/*Return: */ null, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value value = request.popValue();
-			Value cue = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
-			if (!cue.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
-
-			response.addCue(cue.asString(), value.asString());
 		}
 		
 	},
