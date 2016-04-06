@@ -223,15 +223,15 @@ public class Command implements CallableType, Saveable
 		if (operand1 != null)
 			sb.append(' ').append(operand1);
 		if (initBlock != null)
-			sb.append(" INIT{").append(initBlock).append('}');
+			sb.append(" [INIT]");
 		if (conditionalBlock != null)
-			sb.append(" CONDITIONAL{").append(conditionalBlock).append('}');
+			sb.append(" [CONDITIONAL]");
 		if (stepBlock != null)
-			sb.append(" STEP{").append(stepBlock).append('}');
+			sb.append(" [STEP]");
 		if (successBlock != null)
-			sb.append(" SUCCESS{").append(successBlock).append('}');
+			sb.append(" [SUCCESS]");
 		if (failureBlock != null)
-			sb.append(" FAILURE{").append(failureBlock).append('}');
+			sb.append(" [FAILURE]");
 		return sb.toString();
 	}
 

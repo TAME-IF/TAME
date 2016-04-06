@@ -287,6 +287,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for IF does NOT EXIST!");
+			
+			response.trace(request, "Calling IF conditional...");
 			conditional.call(request, response);
 			
 			// get remaining expression value.
@@ -297,6 +299,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	
 			if (value.asBoolean())
 			{
+				response.trace(request, "Result %s evaluates true.", value);
+				response.trace(request, "Calling IF success block...");
 				Block success = command.getSuccessBlock();
 				if (success == null)
 					throw new ModuleExecutionException("Success block for IF does NOT EXIST!");
@@ -304,9 +308,13 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			}
 			else
 			{
+				response.trace(request, "Result %s evaluates false.", value);
 				Block failure = command.getFailureBlock();
 				if (failure != null)
+				{
+					response.trace(request, "Calling IF failure block...");
 					failure.call(request, response);
+				}
 			}
 			
 		}
@@ -326,6 +334,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			while (callConditional(request, response, command))
 			{
 				try {
+					response.trace(request, "Calling WHILE success block...");
 					Block success = command.getSuccessBlock();
 					if (success == null)
 						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
@@ -340,6 +349,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		
 		private boolean callConditional(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
+			response.trace(request, "Calling WHILE conditional...");
+
 			// block should contain arithmetic commands and a last push.
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
@@ -352,7 +363,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (!value.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type after WHILE conditional block execution.");
 	
-			return value.asBoolean(); 
+			boolean out = value.asBoolean();
+			response.trace(request, "Result %s evaluates %b.", value, out);
+			return out; 
 		}
 		
 	}, 
@@ -373,14 +386,21 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new ModuleExecutionException("Init block for FOR does NOT EXIST!");
 			Block success = command.getSuccessBlock();
 			if (success == null)
-				throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
+				throw new ModuleExecutionException("Success block for FOR does NOT EXIST!");
 			Block step = command.getStepBlock();
 			if (step == null)
 				throw new ModuleExecutionException("Step block for FOR does NOT EXIST!");
 
-			for (init.call(request, response); callConditional(request, response, command); step.call(request, response))
+			response.trace(request, "Calling FOR init block...");
+			for (
+				init.call(request, response); 
+				callConditional(request, response, command); 
+				response.trace(request, "Calling FOR stepping block..."), 
+				step.call(request, response)
+			)
 			{
 				try {
+					response.trace(request, "Calling FOR success block...");
 					success.call(request, response);
 				} catch (BreakInterrupt interrupt) {
 					break;
@@ -392,6 +412,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 		private boolean callConditional(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
 		{
+			response.trace(request, "Calling FOR conditional...");
+			
 			// block should contain arithmetic commands and a last push.
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
@@ -404,7 +426,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (!value.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type after WHILE conditional block execution.");
 	
-			return value.asBoolean(); 
+			boolean out = value.asBoolean();
+			response.trace(request, "Result %s evaluates %b.", value, out);
+			return out; 
 		}
 		
 	}, 
