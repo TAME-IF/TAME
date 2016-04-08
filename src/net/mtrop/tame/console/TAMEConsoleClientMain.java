@@ -39,7 +39,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	
 	private static void printHelp(PrintStream out)
 	{
-		out.println("TAME Console Client by Matt Tropiano (C) 2016");
+		out.println("TAME Console Client v"+TAMELogic.getVersion()+" by Matt Tropiano (C) 2016");
 		out.println("Usage: tame [help | module] <switches> <gameload> (-debug)");
 		out.println("[help]:");
 		out.println("    -h");

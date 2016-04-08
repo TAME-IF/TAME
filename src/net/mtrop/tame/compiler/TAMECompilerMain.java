@@ -15,6 +15,7 @@ import java.io.PrintStream;
 import com.blackrook.commons.Common;
 import com.blackrook.commons.list.List;
 
+import net.mtrop.tame.TAMELogic;
 import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.factory.TAMEScriptParseException;
 import net.mtrop.tame.factory.TAMEScriptReader;
@@ -26,9 +27,6 @@ import net.mtrop.tame.factory.TAMEScriptReaderOptions;
  */
 public final class TAMECompilerMain 
 {
-	/** Default out file. */
-	private static final String VERSION = "1.0";
-
 	/** Default out file. */
 	private static final String DEFAULT_OUTFILE = "module.out";
 	/** Switch - don't optimize. */
@@ -140,7 +138,7 @@ public final class TAMECompilerMain
 	{
 		PrintStream out = System.out;
 		
-		out.println("TAME Compiler v"+VERSION+" by Matt Tropiano");
+		out.println("TAME Compiler v"+TAMELogic.getVersion()+" by Matt Tropiano");
 		out.println("tamec [infile] [switches]");
 		out.println("[switches]:");
 		out.println("    -o [outfile]           Sets the output file.");

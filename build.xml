@@ -21,10 +21,6 @@
 	<property file="build.properties" />
 	<property file="versions.properties" />
 	
-	<!-- Versions -->
-	<property name="exe.compiler.version" value="1.0.0.0" />
-	<property name="exe.console.client.version" value="1.0.0.0" />
-	
 	<!-- Dependencies -->
 	<property name="dev.base" value=".." />
 	<property name="S" value="${path.separator}" />
@@ -57,11 +53,21 @@
 	
 	<import file="build-import.xml" />
 
-	<property name="jar.tame.filename" value="${jar.filename}" />
-	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${exe.compiler.version}.jar" />
-	<property name="jar.console.client.one.filename" value="${project.archive}-client-${exe.console.client.version}.jar" />	
-	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${exe.compiler.version}-min.jar" />
-	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${exe.console.client.version}-min.jar" />	
+	<!-- Folders and File Names -->
+	<property name="resource.dir" value="resources" />
+	<property name="replace.dir" value="${build.dir}/replace" />
+
+	<!-- Replace Tokens -->
+	<property name="replace.version.key" value="$REPLACE_KEY_BUILD_VERSION$" />
+
+	<!-- Versions -->
+	<property name="exe.version" value="0.0.0.0" />
+	
+	<property name="jar.tame.filename" value="${project.archive}-${build.version}" />
+	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${tame.version}.jar" />
+	<property name="jar.console.client.one.filename" value="${project.archive}-client-${tame.version}.jar" />	
+	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${tame.version}-min.jar" />
+	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${tame.version}-min.jar" />	
 
 	<property name="exe.dir" value="${build.dir}/win32" />
 	<property name="exe.compiler.filename" value="tamec.exe" />
@@ -89,12 +95,20 @@
 		classpath="${launch4j.lib.jar}${S}${launch4j.xstream.lib.jar}"
 	/>
 	
-	<target name="init.exe" depends="clean.exe" description="Initializes the EXE folders.">
-		<mkdir dir="${exe.dir}" />
+	<target name="clean.replace" description="Cleans up the replace builds.">
+		<delete dir="${replace.dir}" includeemptydirs="true" casesensitive="false" /> 
+	</target>
+
+	<target name="init.replace" depends="clean.replace" description="Initializes the replace folders.">
+		<mkdir dir="${replace.dir}" />
 	</target>
 
 	<target name="clean.exe" description="Cleans up the exe builds.">
 		<delete dir="${exe.dir}" includeemptydirs="true" casesensitive="false" /> 
+	</target>
+
+	<target name="init.exe" depends="clean.exe" description="Initializes the EXE folders.">
+		<mkdir dir="${exe.dir}" />
 	</target>
 
 	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.exe"  description="Cleans up everything.">
@@ -125,6 +139,14 @@
         </javadoc>
     </target>	
 
+	<target name="replace.version" depends="init.replace" description="Generates the version resource."> 
+		<delete file="${replace.dir}/TAMEVersion.txt" />
+		<copy overwrite="true" todir="${replace.dir}">
+			<file name="${resource.dir}/TAMEVersion.txt" />
+		</copy>
+		<replace file="${replace.dir}/TAMEVersion.txt" value="${tame.version}" token="${replace.version.key}" />
+	</target>
+
 	<target name="jar.tame" depends="compile" description="Jars up TAME classes. Nothing executable.">
 		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" /> 
 		<jar destfile="${jar.dir}/${jar.tame.filename}">
@@ -133,6 +155,10 @@
 			    <exclude name="**/compiler/" />
 			    <exclude name="**/test/" />
 			</fileset>
+		</jar>
+		<jar destfile="${jar.dir}/${jar.tame.filename}" update="true">
+			<zipfileset dir="${replace.dir}" prefix="net/mtrop/tame">
+			</zipfileset>
 		</jar>
 	</target>
 	
@@ -150,14 +176,12 @@
 		<jar destfile="${jar.dir}/${jar.compiler.one.filename}" update="true">
 			<fileset dir="${common.lib}" >
 			</fileset>
-		</jar>
-		<jar destfile="${jar.dir}/${jar.compiler.one.filename}" update="true">
 			<fileset dir="${common.io.lib}" >
 			</fileset>
-		</jar>
-		<jar destfile="${jar.dir}/${jar.compiler.one.filename}" update="true">
 			<fileset dir="${common.lang.lib}" >
 			</fileset>
+			<zipfileset dir="${replace.dir}" prefix="net/mtrop/tame">
+			</zipfileset>
 		</jar>
 	</target>
 
@@ -175,14 +199,12 @@
 		<jar destfile="${jar.dir}/${jar.console.client.one.filename}" update="true">
 			<fileset dir="${common.lib}" >
 			</fileset>
-		</jar>
-		<jar destfile="${jar.dir}/${jar.console.client.one.filename}" update="true">
 			<fileset dir="${common.io.lib}" >
 			</fileset>
-		</jar>
-		<jar destfile="${jar.dir}/${jar.console.client.one.filename}" update="true">
 			<fileset dir="${common.lang.lib}" >
 			</fileset>
+			<zipfileset dir="${replace.dir}" prefix="net/mtrop/tame">
+			</zipfileset>
 		</jar>
 	</target>
 
@@ -215,10 +237,10 @@
 			configFile="./launch4j/TAMECompiler.xml" 
 			jar="${jar.dir}/${jar.compiler.one.min.filename}"
 			outfile="${exe.dir}/${exe.compiler.filename}"
-			fileVersion="${exe.compiler.version}" 
-			txtFileVersion="${exe.compiler.version}" 
-			productVersion="${exe.compiler.version}" 
-			txtProductVersion="${exe.compiler.version}"
+			fileVersion="${tame.version}" 
+			txtFileVersion="${tame.version}" 
+			productVersion="${tame.version}" 
+			txtProductVersion="${tame.version}"
 		/>
 	</target>
 	
@@ -228,10 +250,10 @@
 			configFile="./launch4j/TAMEConsoleClient.xml" 
 			jar="${jar.dir}/${jar.console.client.one.min.filename}"
 			outfile="${exe.dir}/${exe.console.client.filename}"
-			fileVersion="${exe.console.client.version}" 
-			txtFileVersion="${exe.console.client.version}" 
-			productVersion="${exe.console.client.version}" 
-			txtProductVersion="${exe.console.client.version}"
+			fileVersion="${tame.version}" 
+			txtFileVersion="${tame.version}" 
+			productVersion="${tame.version}" 
+			txtProductVersion="${tame.version}"
 		/>
 	</target>
 	

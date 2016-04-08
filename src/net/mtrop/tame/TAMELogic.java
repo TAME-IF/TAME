@@ -7,7 +7,11 @@
  ******************************************************************************/
 package net.mtrop.tame;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
+
+import com.blackrook.commons.Common;
 
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.type.TAction;
@@ -37,6 +41,32 @@ import net.mtrop.tame.lang.Value;
  */
 public final class TAMELogic implements TAMEConstants
 {
+	/** Version number. */
+	private static String VERSION = null;
+	
+	/**
+	 * Gets the embedded version string.
+	 * @return the version string or "SNAPSHOT"
+	 */
+	public static String getVersion()
+	{
+		if (VERSION != null)
+			return VERSION;
+		
+		InputStream in = null;
+		try {
+			in = Common.openResource("net/mtrop/tame/TAMEVersion.txt");
+			if (in != null)
+				VERSION = Common.getTextualContents(in, "UTF-8").trim();
+		} catch (IOException e) {
+			/* Do nothing. */
+		} finally {
+			Common.close(in);
+		}
+		
+		return VERSION != null ? VERSION : "SNAPSHOT";
+	}
+	
 	/**
 	 * Handles context initialization, returning the response from it.
 	 * @param moduleContext the module context.

@@ -26,6 +26,9 @@ release
 
 The build script also contains multiple properties of note, including:
 
+tame.version
+	The version written to the EXEs and compiled JARs. Must be x.y.z.w
+	Default: "0.0.0.0"
 build.version.number
 	Version number of the build.
 	Default: Current time formatted as "yyyy.MM.dd.HHmmssSSS".
