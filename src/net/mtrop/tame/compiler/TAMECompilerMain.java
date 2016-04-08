@@ -140,6 +140,8 @@ public final class TAMECompilerMain
 		
 		out.println("TAME Compiler v"+TAMELogic.getVersion()+" by Matt Tropiano");
 		out.println("tamec [infile] [switches]");
+		out.println("[infile]: The input file.");
+		out.println();
 		out.println("[switches]:");
 		out.println("    -o [outfile]           Sets the output file.");
 		out.println("    --outfile [outfile]");

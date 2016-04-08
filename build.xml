@@ -56,6 +56,7 @@
 	<!-- Folders and File Names -->
 	<property name="resource.dir" value="resources" />
 	<property name="replace.dir" value="${build.dir}/replace" />
+	<property name="zip.exe.filename" value="${project.archive}-exe-${build.version}.zip" />
 
 	<!-- Replace Tokens -->
 	<property name="replace.version.key" value="$REPLACE_KEY_BUILD_VERSION$" />
@@ -64,10 +65,10 @@
 	<property name="exe.version" value="0.0.0.0" />
 	
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}" />
-	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${tame.version}.jar" />
-	<property name="jar.console.client.one.filename" value="${project.archive}-client-${tame.version}.jar" />	
-	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${tame.version}-min.jar" />
-	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${tame.version}-min.jar" />	
+	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${build.version}.jar" />
+	<property name="jar.console.client.one.filename" value="${project.archive}-client-${build.version}.jar" />	
+	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${build.version}-min.jar" />
+	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${build.version}-min.jar" />	
 
 	<property name="exe.dir" value="${build.dir}/win32" />
 	<property name="exe.compiler.filename" value="tamec.exe" />
@@ -144,10 +145,10 @@
 		<copy overwrite="true" todir="${replace.dir}">
 			<file name="${resource.dir}/TAMEVersion.txt" />
 		</copy>
-		<replace file="${replace.dir}/TAMEVersion.txt" value="${tame.version}" token="${replace.version.key}" />
+		<replace file="${replace.dir}/TAMEVersion.txt" value="${build.version.number}" token="${replace.version.key}" />
 	</target>
 
-	<target name="jar.tame" depends="compile" description="Jars up TAME classes. Nothing executable.">
+	<target name="jar.tame" depends="compile, replace.version" description="Jars up TAME classes. Nothing executable.">
 		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" /> 
 		<jar destfile="${jar.dir}/${jar.tame.filename}">
 			<fileset dir="${bin.dir}" >
@@ -162,7 +163,7 @@
 		</jar>
 	</target>
 	
-	<target name="jar.tame.compiler.one" depends="compile" description="Jars up all classes needed to run the compiler in one standalone JAR.">
+	<target name="jar.tame.compiler.one" depends="compile, replace.version" description="Jars up all classes needed to run the compiler in one standalone JAR.">
 		<delete file="${jar.dir}/${jar.compiler.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.compiler.one.filename}">
 			<manifest>
@@ -185,7 +186,7 @@
 		</jar>
 	</target>
 
-	<target name="jar.tame.console.client.one" depends="compile" description="Jars up all classes needed to run the console client in one standalone JAR.">
+	<target name="jar.tame.console.client.one" depends="compile, replace.version" description="Jars up all classes needed to run the console client in one standalone JAR.">
 		<delete file="${jar.dir}/${jar.console.client.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.console.client.one.filename}">
 			<manifest>
@@ -228,7 +229,7 @@
 		</jar>
 	</target>
 
-	<target name="jar.all" depends="jar.tame, jar.tame.compiler.one, jar.tame.console.client.one" description="Make all JARs.">
+	<target name="jar" depends="jar.tame, jar.tame.compiler.one, jar.tame.console.client.one" description="Make all JARs.">
 	</target>
 
 	<target name="exe.compiler" depends="jar.tame.compiler.one.min, clean.exe, init.exe">
@@ -237,10 +238,10 @@
 			configFile="./launch4j/TAMECompiler.xml" 
 			jar="${jar.dir}/${jar.compiler.one.min.filename}"
 			outfile="${exe.dir}/${exe.compiler.filename}"
-			fileVersion="${tame.version}" 
-			txtFileVersion="${tame.version}" 
-			productVersion="${tame.version}" 
-			txtProductVersion="${tame.version}"
+			fileVersion="${exe.version}" 
+			txtFileVersion="${exe.version}" 
+			productVersion="${exe.version}" 
+			txtProductVersion="${exe.version}"
 		/>
 	</target>
 	
@@ -250,14 +251,25 @@
 			configFile="./launch4j/TAMEConsoleClient.xml" 
 			jar="${jar.dir}/${jar.console.client.one.min.filename}"
 			outfile="${exe.dir}/${exe.console.client.filename}"
-			fileVersion="${tame.version}" 
-			txtFileVersion="${tame.version}" 
-			productVersion="${tame.version}" 
-			txtProductVersion="${tame.version}"
+			fileVersion="${exe.version}" 
+			txtFileVersion="${exe.version}" 
+			productVersion="${exe.version}" 
+			txtProductVersion="${exe.version}"
 		/>
 	</target>
 	
 	<target name="exe" depends="exe.compiler, exe.console.client" description="Make all EXEs.">
+	</target>
+	
+	<target name="zip.exe" depends="exe">
+		<delete file="${zip.dir}/${zip.exe.filename}" />
+		<zip basedir="${exe.dir}" destfile="${zip.dir}/${zip.exe.filename}"></zip>
+		<zip destfile="${zip.dir}/${zip.exe.filename}" update="true">
+			<fileset refid="fileset.documents" />
+		</zip>
+	</target>
+	
+	<target name="zip" depends="zip.jar, zip.docs, zip.src, zip.exe" description="Creates all archives.">
 	</target>
 
 	<target name="release" depends="zip, exe">
