@@ -17,6 +17,16 @@ public final class CommandDump
 			
 			out.println(command.name() + " Returns: " + command.getReturnType() + " Arguments: " + Arrays.toString(command.getArgumentTypes()));
 		}
+
+		out.println("---------------------------");
+		
+		for (TAMECommand command : TAMECommand.values())
+		{
+			if (command.isInternal() || command.isLanguage())
+				continue;
+			
+			out.print(command.name() + " ");
+		}
 	}
 
 }
