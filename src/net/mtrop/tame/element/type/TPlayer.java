@@ -19,6 +19,7 @@ import net.mtrop.tame.element.ActionForbiddenHandler;
 import net.mtrop.tame.element.ActionIncompleteHandler;
 import net.mtrop.tame.element.ActionModalHandler;
 import net.mtrop.tame.element.ActionUnknownHandler;
+import net.mtrop.tame.element.Inheritable;
 import net.mtrop.tame.element.TActionableElement;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionModeTable;
@@ -35,8 +36,11 @@ import com.blackrook.io.SuperWriter;
  */
 public class TPlayer extends TActionableElement 
 	implements ActionForbiddenHandler, ActionFailedHandler, ActionModalHandler, 
-	ActionUnknownHandler, ActionAmbiguousHandler, ActionIncompleteHandler, ActionBadHandler
+	ActionUnknownHandler, ActionAmbiguousHandler, ActionIncompleteHandler, ActionBadHandler, Inheritable<TPlayer>
 {
+	/** The parent player. */
+	private TPlayer parent;
+	
 	/** Set function for action list. */
 	protected PermissionType permissionType;
 	/** List of actions that are either restricted or excluded. */
@@ -71,7 +75,8 @@ public class TPlayer extends TActionableElement
 	private TPlayer()
 	{
 		super();
-		
+		this.parent = null;
+
 		this.permissionType = PermissionType.EXCLUDE;
 		this.permittedActionList = new Hash<String>(2);
 		
@@ -98,6 +103,18 @@ public class TPlayer extends TActionableElement
 	{
 		this();
 		setIdentity(identity);
+	}
+	
+	@Override
+	public void setParent(TPlayer parent)
+	{
+		this.parent = parent;
+	}
+	
+	@Override
+	public TPlayer getParent()
+	{
+		return parent;
 	}
 	
 	@Override

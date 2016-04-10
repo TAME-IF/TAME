@@ -608,6 +608,9 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
+			if (!parseObjectParent(object))
+				return false;
+
 			if (!parseObjectBody(object))
 				return false;
 			
@@ -617,6 +620,30 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
+			return true;
+		}
+		
+		/**
+		 * Parses the object parent clause.
+		 * [ObjectParent] :=
+		 * 		":" [OBJECT]
+		 * 		[e]
+		 */
+		private boolean parseObjectParent(TObject object)
+		{
+			if (matchType(TSKernel.TYPE_DELIM_COLON))
+			{
+				if (!isObject())
+				{
+					addErrorMessage("Expected object type after \":\".");
+					return false;
+				}
+				
+				String identity = currentToken().getLexeme();
+				nextToken();
+				object.setParent(currentModule.getObjectByIdentity(identity));
+			}
+			
 			return true;
 		}
 		
@@ -746,6 +773,9 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
+			if (!parseRoomParent(room))
+				return false;
+
 			if (!parseRoomBody(room))
 				return false;
 			
@@ -755,6 +785,30 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
+			return true;
+		}
+		
+		/**
+		 * Parses the room parent clause.
+		 * [RoomParent] :=
+		 * 		":" [ROOM]
+		 * 		[e]
+		 */
+		private boolean parseRoomParent(TRoom room)
+		{
+			if (matchType(TSKernel.TYPE_DELIM_COLON))
+			{
+				if (!isRoom())
+				{
+					addErrorMessage("Expected room type after \":\".");
+					return false;
+				}
+				
+				String identity = currentToken().getLexeme();
+				nextToken();
+				room.setParent(currentModule.getRoomByIdentity(identity));
+			}
+			
 			return true;
 		}
 		
@@ -854,6 +908,9 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
+			if (!parsePlayerParent(player))
+				return false;
+
 			if (!parsePlayerBody(player))
 				return false;
 			
@@ -863,6 +920,30 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
+			return true;
+		}
+		
+		/**
+		 * Parses the player parent clause.
+		 * [PlayerParent] :=
+		 * 		":" [PLAYER]
+		 * 		[e]
+		 */
+		private boolean parsePlayerParent(TPlayer player)
+		{
+			if (matchType(TSKernel.TYPE_DELIM_COLON))
+			{
+				if (!isPlayer())
+				{
+					addErrorMessage("Expected player type after \":\".");
+					return false;
+				}
+				
+				String identity = currentToken().getLexeme();
+				nextToken();
+				player.setParent(currentModule.getPlayerByIdentity(identity));
+			}
+			
 			return true;
 		}
 		

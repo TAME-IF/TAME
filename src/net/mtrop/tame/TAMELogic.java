@@ -273,12 +273,13 @@ public final class TAMELogic implements TAMEConstants
 	 * @param request the request context.
 	 * @param functionType the function type.
 	 */
-	public static void doArithmeticStackFunction(TAMERequest request, int functionType)
+	public static void doArithmeticStackFunction(TAMERequest request, TAMEResponse response, int functionType)
 	{
 		if (functionType < 0 || functionType >= ArithmeticOperator.values().length)
 			throw new UnexpectedValueException("Expected arithmetic function type, got illegal value %d.", functionType);
 
 		ArithmeticOperator operator =  ArithmeticOperator.VALUES[functionType];
+		response.trace(request, "Function is %s", operator.name());
 		
 		if (operator.isBinary())
 		{
@@ -325,14 +326,21 @@ public final class TAMELogic implements TAMEConstants
 		
 		for (TObject object : ownership.getObjectsOwnedByPlayer(player))
 		{
-			response.trace(request, "Check %s for browse block.", object);
-	
 			TObjectContext objectContext = moduleContext.getObjectContext(object);
 	
-			Block block = object.getPlayerBrowseBlock();
+			// find via inheritance.
+			Block block = null;
+			TObject validAncestor = object;
+			while (validAncestor != null && block == null)
+			{
+				response.trace(request, "Check %s for browse block.", validAncestor);
+				block = validAncestor.getPlayerBrowseBlock();
+				if (block == null)
+					validAncestor = validAncestor.getParent();
+			}
 			if (block != null)
 			{
-				response.trace(request, "Calling room browse block on %s.", object);
+				response.trace(request, "Calling player browse block on %s.", validAncestor);
 				TAMELogic.callBlock(request, response, objectContext, block);
 			}
 			
@@ -429,14 +437,21 @@ public final class TAMELogic implements TAMEConstants
 		
 		for (TObject object : ownership.getObjectsOwnedByRoom(room))
 		{
-			response.trace(request, "Check %s for browse block.", object);
-	
 			TObjectContext objectContext = moduleContext.getObjectContext(object);
 	
-			Block block = object.getRoomBrowseBlock();
+			// find via inheritance.
+			Block block = null;
+			TObject validAncestor = object;
+			while (validAncestor != null && block == null)
+			{
+				response.trace(request, "Check %s for browse block.", validAncestor);
+				block = validAncestor.getRoomBrowseBlock();
+				if (block == null)
+					validAncestor = validAncestor.getParent();
+			}
 			if (block != null)
 			{
-				response.trace(request, "Calling room browse block on %s.", object);
+				response.trace(request, "Calling room browse block on %s.", validAncestor);
 				TAMELogic.callBlock(request, response, objectContext, block);
 			}
 			
@@ -464,10 +479,19 @@ public final class TAMELogic implements TAMEConstants
 	
 			TObjectContext objectContext = moduleContext.getObjectContext(object);
 	
-			Block block = object.getContainerBrowseBlock();
+			// find via inheritance.
+			Block block = null;
+			TObject validAncestor = object;
+			while (validAncestor != null && block == null)
+			{
+				response.trace(request, "Check %s for browse block.", validAncestor);
+				block = validAncestor.getContainerBrowseBlock();
+				if (block == null)
+					validAncestor = validAncestor.getParent();
+			}
 			if (block != null)
 			{
-				response.trace(request, "Calling container browse block on %s.", object);
+				response.trace(request, "Calling container browse block on %s.", validAncestor);
 				TAMELogic.callBlock(request, response, objectContext, block);
 			}
 			
@@ -518,9 +542,18 @@ public final class TAMELogic implements TAMEConstants
 		{
 			TPlayer currentPlayer = currentPlayerContext.getElement();
 			response.trace(request, "For current player %s...", currentPlayer);
-			
+
 			// get block on player.
-			if ((blockToCall = currentPlayer.getUnknownActionBlock()) != null)
+			// find via inheritance.
+			TPlayer validAncestor = currentPlayer;
+			while (validAncestor != null && blockToCall == null)
+			{
+				response.trace(request, "Check %s for unknown action block.", validAncestor);
+				blockToCall = validAncestor.getUnknownActionBlock();
+				if (blockToCall == null)
+					validAncestor = validAncestor.getParent();
+			}
+			if (blockToCall != null)
 			{
 				response.trace(request, "Found unknown action block on player.");
 				callBlock(request, response, currentPlayerContext, blockToCall);
@@ -601,6 +634,7 @@ public final class TAMELogic implements TAMEConstants
 				}
 
 				// get general action on room.
+				// TODO: Do inheritance search.
 				if ((blockToCall = currentRoom.getActionTable().get(action.getIdentity())) != null)
 				{
 					response.trace(request, "Found general action block on room.");
@@ -617,6 +651,7 @@ public final class TAMELogic implements TAMEConstants
 			}
 			
 			// get general action on player.
+			// TODO: Do inheritance search.
 			if ((blockToCall = currentPlayer.getActionTable().get(action.getIdentity())) != null)
 			{
 				response.trace(request, "Found general action block on player.");
@@ -703,6 +738,7 @@ public final class TAMELogic implements TAMEConstants
 				}
 
 				// get modal action on room.
+				// TODO: Do inheritance search.
 				if ((blockToCall = currentRoom.getModalActionTable().get(action.getIdentity(), mode)) != null)
 				{
 					response.trace(request, "Found modal action block on room.");
@@ -714,6 +750,7 @@ public final class TAMELogic implements TAMEConstants
 			}
 			
 			// get modal action on player.
+			// TODO: Do inheritance search.
 			if ((blockToCall = currentPlayer.getModalActionTable().get(action.getIdentity(), mode)) != null)
 			{
 				response.trace(request, "Found modal action block on player.");
@@ -760,6 +797,7 @@ public final class TAMELogic implements TAMEConstants
 			return;
 
 		// call action on object.
+		// TODO: Do inheritance search.
 		if ((blockToCall = object.getActionTable().get(action.getIdentity())) != null)
 		{
 			response.trace(request, "Found action block on object.");
@@ -795,6 +833,8 @@ public final class TAMELogic implements TAMEConstants
 
 		boolean success = false;
 		
+		// TODO: Do inheritance search. (Maybe?)
+
 		// call action on each object. one or both need to succeed for no failure.
 		if ((blockToCall = object1.getActionWithTable().get(action.getIdentity(), object2.getIdentity())) != null)
 		{
@@ -812,6 +852,7 @@ public final class TAMELogic implements TAMEConstants
 		// attempt action with other on both objects.
 		if (!success)
 		{
+			// TODO: Do inheritance search. (Maybe?)
 			if ((blockToCall = object1.getActionWithOtherTable().get(action.getIdentity())) != null)
 			{
 				response.trace(request, "Found action with other block on object %s.", object1);

@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import net.mtrop.tame.lang.PermissionType;
 import net.mtrop.tame.element.ActionForbiddenHandler;
 import net.mtrop.tame.element.ActionModalHandler;
+import net.mtrop.tame.element.Inheritable;
 import net.mtrop.tame.element.TActionableElement;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionModeTable;
@@ -25,40 +26,41 @@ import com.blackrook.io.SuperWriter;
 
 /**
  * Environmental instance of every adventure game.
- * 
  * Adventure games have rooms. It is where the game takes place and players interact with
- * things. Objects and people (who are also considered "objects") can be found here.
+ * things. Objects can be contained in this.
  * Players can travel from room to room freely, provided that the world allows them to.
- * 
  * @author Matthew Tropiano
- *
  */
-public class TRoom extends TActionableElement implements ActionForbiddenHandler, ActionModalHandler
+public class TRoom extends TActionableElement implements ActionForbiddenHandler, ActionModalHandler, Inheritable<TRoom>
 {
+	/** The parent room. */
+	private TRoom parent;
+	
 	/** Set function for action list. */
-	protected PermissionType permissionType;
+	private PermissionType permissionType;
 	/** List of actions that are either restricted or excluded. */
-	protected Hash<String> permittedActionList;
+	private Hash<String> permittedActionList;
 
 	/** Table used for modal actions. (actionName, mode) to block. */
-	protected ActionModeTable modalActionTable;
+	private ActionModeTable modalActionTable;
 	
 	/** Blocks executed on action disallow. */
-	protected ActionTable actionForbidTable;
+	private ActionTable actionForbidTable;
 	/** Code block ran upon default action disallow. */
-	protected Block actionForbidBlock;
+	private Block actionForbidBlock;
 
 	private TRoom()
 	{
 		super();
+		this.parent = null;
 		
-		permissionType = PermissionType.EXCLUDE;
-		permittedActionList = new Hash<String>(2);
+		this.permissionType = PermissionType.EXCLUDE;
+		this.permittedActionList = new Hash<String>(2);
 		
-		modalActionTable = new ActionModeTable();
-		actionForbidTable = new ActionTable();
+		this.modalActionTable = new ActionModeTable();
+		this.actionForbidTable = new ActionTable();
 		
-		actionForbidBlock = null;
+		this.actionForbidBlock = null;
 	}
 
 	/**
@@ -69,6 +71,18 @@ public class TRoom extends TActionableElement implements ActionForbiddenHandler,
 	{
 		this();
 		setIdentity(identity);
+	}
+	
+	@Override
+	public void setParent(TRoom parent)
+	{
+		this.parent = parent;
+	}
+	
+	@Override
+	public TRoom getParent()
+	{
+		return parent;
 	}
 	
 	@Override

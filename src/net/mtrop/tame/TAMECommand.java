@@ -267,7 +267,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (!functionValue.isInteger())
 				throw new UnexpectedValueTypeException("Expected integer type in ARITHMETICFUNC call.");
 
-			TAMELogic.doArithmeticStackFunction(request, (int)functionValue.asLong());
+			TAMELogic.doArithmeticStackFunction(request, response, (int)functionValue.asLong());
 		}
 
 	},

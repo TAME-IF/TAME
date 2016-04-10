@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import net.mtrop.tame.element.Inheritable;
 import net.mtrop.tame.element.TActionableElement;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.struct.ActionTable;
@@ -26,8 +27,11 @@ import com.blackrook.io.SuperWriter;
  * in the possession of players take precedence over objects in a room.
  * @author Matthew Tropiano
  */
-public class TObject extends TActionableElement
+public class TObject extends TActionableElement implements Inheritable<TObject>
 {
+	/** The parent object. */
+	private TObject parent;
+
 	/** Table used for ditransitive actions. */
 	protected ActionWithTable actionWithTable;
 	/** Table used for ditransitive with other actions. */
@@ -45,6 +49,8 @@ public class TObject extends TActionableElement
 	private TObject()
 	{
 		super();
+		this.parent = null;
+
 		this.names = new CaseInsensitiveHash(3);
 		this.actionWithTable = new ActionWithTable();
 		this.actionWithOtherTable = new ActionTable();
@@ -64,6 +70,18 @@ public class TObject extends TActionableElement
 		setIdentity(identity);
 	}
 
+	@Override
+	public void setParent(TObject parent)
+	{
+		this.parent = parent;
+	}
+	
+	@Override
+	public TObject getParent()
+	{
+		return parent;
+	}
+	
 	/**
 	 * Gets the initial names on this object.
 	 * @return the case-insensitive hash containing the names.
