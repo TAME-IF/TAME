@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.BlockEntry;
+import net.mtrop.tame.lang.BlockEntryType;
 
 /**
  * Container that just holds objects. It cannot be actioned on.
@@ -34,6 +37,28 @@ public class TContainer extends TElement
 		setIdentity(identity);
 	}
 
+	/**
+	 * Checks if this object handles a particular entry type.
+	 * @param type the entry type to check.
+	 * @return true if so, false if not.
+	 */
+	public static boolean isValidEntryType(BlockEntryType type)
+	{
+		switch (type)
+		{
+			case INIT:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	@Override
+	public Block resolveBlock(BlockEntry blockEntry)
+	{
+		return getBlock(blockEntry);
+	}
+	
 	/**
 	 * Creates this container from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.

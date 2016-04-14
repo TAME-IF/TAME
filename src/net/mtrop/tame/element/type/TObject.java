@@ -12,10 +12,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import net.mtrop.tame.element.Inheritable;
-import net.mtrop.tame.element.TActionableElement;
+import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.lang.Block;
-import net.mtrop.tame.struct.ActionTable;
-import net.mtrop.tame.struct.ActionWithTable;
+import net.mtrop.tame.lang.BlockEntry;
+import net.mtrop.tame.lang.BlockEntryType;
 
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.io.SuperReader;
@@ -27,37 +27,18 @@ import com.blackrook.io.SuperWriter;
  * in the possession of players take precedence over objects in a room.
  * @author Matthew Tropiano
  */
-public class TObject extends TActionableElement implements Inheritable<TObject>
+public class TObject extends TElement implements Inheritable<TObject>
 {
 	/** The parent object. */
 	private TObject parent;
-
-	/** Table used for ditransitive actions. */
-	protected ActionWithTable actionWithTable;
-	/** Table used for ditransitive with other actions. */
-	protected ActionTable actionWithOtherTable;
-	
 	/** Element's names. */
 	protected CaseInsensitiveHash names;
-	/** Code block ran upon browsing a room with this object in it. */
-	protected Block roomBrowseBlock;
-	/** Code block ran upon browsing a player with this object in it. */
-	protected Block playerBrowseBlock;
-	/** Code block ran upon browsing a container with this object in it. */
-	protected Block containerBrowseBlock;
 
 	private TObject()
 	{
 		super();
 		this.parent = null;
-
 		this.names = new CaseInsensitiveHash(3);
-		this.actionWithTable = new ActionWithTable();
-		this.actionWithOtherTable = new ActionTable();
-		
-		this.roomBrowseBlock = null;
-		this.playerBrowseBlock = null;
-		this.containerBrowseBlock = null;
 	}
 	
 	/**
@@ -68,6 +49,29 @@ public class TObject extends TActionableElement implements Inheritable<TObject>
 	{
 		this();
 		setIdentity(identity);
+	}
+
+	/**
+	 * Checks if this object handles a particular entry type.
+	 * @param type the entry type to check.
+	 * @return true if so, false if not.
+	 */
+	public static boolean isValidEntryType(BlockEntryType type)
+	{
+		switch (type)
+		{
+			case INIT:
+			case ROUTINE:
+			case ONACTION:
+			case ONACTIONWITH:
+			case ONACTIONWITHOTHER:
+			case ONPLAYERBROWSE:
+			case ONROOMBROWSE:
+			case ONCONTAINERBROWSE:
+				return true;
+			default:
+				return false;
+		}
 	}
 
 	@Override
@@ -90,77 +94,12 @@ public class TObject extends TActionableElement implements Inheritable<TObject>
 	{
 		return names;
 	}
-	
-	/** 
-	 * Gets the "action with table." 
-	 * @return the table that handles "object-with" specific actions. 
-	 */
-	public ActionWithTable getActionWithTable()
+
+	@Override
+	public Block resolveBlock(BlockEntry blockEntry)
 	{
-		return actionWithTable;
-	}
-	
-	/**
-	 * Gets the block to call if used with another object not handled by "action with."
-	 * @return the table that handles "object-with-other" specific actions. 
-	 */
-	public ActionTable getActionWithOtherTable() 
-	{
-		return actionWithOtherTable;
-	}
-	
-	/** 
-	 * Get the "browsing in possession of a room" action block.
-	 * @return the block to call on room browse. 
-	 */
-	public Block getRoomBrowseBlock()
-	{
-		return roomBrowseBlock;
-	}
-	
-	/** 
-	 * Set the "browsing in possession of a room" action block.
-	 * @param block the block to call on room browse. 
-	 */
-	public void setRoomBrowseBlock(Block block)
-	{
-		roomBrowseBlock = block;
-	}
-	
-	/** 
-	 * Get the "browsing in possession of a player" action block. 
-	 * @return the block to call on player browse. 
-	 */
-	public Block getPlayerBrowseBlock()
-	{
-		return playerBrowseBlock;
-	}
-	
-	/** 
-	 * Set the "browsing in possession of a player" action block. 
-	 * @param block the block to call on player browse. 
-	 */
-	public void setPlayerBrowseBlock(Block block)
-	{
-		playerBrowseBlock = block;
-	}
-	
-	/** 
-	 * Get the "browsing in possession of a container" action block. 
-	 * @return the block to call on container browse. 
-	 */
-	public Block getContainerBrowseBlock()
-	{
-		return containerBrowseBlock;
-	}
-	
-	/** 
-	 * Set the "browsing in possession of a container" action block. 
-	 * @param block the block to call on container browse. 
-	 */
-	public void setContainerBrowseBlock(Block block)
-	{
-		containerBrowseBlock = block;
+		Block out = getBlock(blockEntry);
+		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
 	}
 	
 	/**
@@ -181,24 +120,11 @@ public class TObject extends TActionableElement implements Inheritable<TObject>
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		super.writeBytes(out);
-		actionWithTable.writeBytes(out);
-		actionWithOtherTable.writeBytes(out);
 		
 		sw.writeInt(names.size());
 		for (String name : names)
 			sw.writeString(name.toLowerCase(), "UTF-8");
 			
-		sw.writeBit(roomBrowseBlock != null);
-		sw.writeBit(playerBrowseBlock != null);
-		sw.writeBit(containerBrowseBlock != null);
-		sw.flushBits();
-
-		if (roomBrowseBlock != null)
-			roomBrowseBlock.writeBytes(out);
-		if (playerBrowseBlock != null)
-			playerBrowseBlock.writeBytes(out);
-		if (containerBrowseBlock != null)
-			containerBrowseBlock.writeBytes(out);
 	}
 	
 	@Override
@@ -206,22 +132,12 @@ public class TObject extends TActionableElement implements Inheritable<TObject>
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readBytes(in);
-		actionWithTable = ActionWithTable.create(in);
-		actionWithOtherTable = ActionTable.create(in);
 		
 		names.clear();
 		int size = sr.readInt();
 		while (size-- > 0)
 			names.put(sr.readString("UTF-8"));
 
-		byte blockbits = sr.readByte();
-		
-		if ((blockbits & 0x01) != 0)
-			roomBrowseBlock = Block.create(in);
-		if ((blockbits & 0x02) != 0)
-			playerBrowseBlock = Block.create(in);
-		if ((blockbits & 0x04) != 0)
-			containerBrowseBlock = Block.create(in);
 	}
 
 }

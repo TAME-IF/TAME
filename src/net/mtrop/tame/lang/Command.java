@@ -284,7 +284,7 @@ public class Command implements CallableType, Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		this.operation = TAMECommand.values()[(int)sr.readByte()];
+		this.operation = TAMECommand.VALUES[(int)sr.readByte()];
 		
 		byte objectbits = sr.readByte();
 		

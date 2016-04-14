@@ -34,6 +34,8 @@ import net.mtrop.tame.interrupt.QuitInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.BlockEntry;
+import net.mtrop.tame.lang.BlockEntryType;
 import net.mtrop.tame.lang.Command;
 import net.mtrop.tame.lang.CommandType;
 import net.mtrop.tame.lang.Value;
@@ -83,7 +85,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			String name = procedureName.asString();
 
-			Block block = element.getProcedureBlock(name);
+			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.ROUTINE, Value.create(name)));
 			if (block == null)
 				throw new ModuleExecutionException("Attempted CALLPROCEDURE call on a procedure that does not exist on %s: %s", element, name);
 			
@@ -2391,6 +2393,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}
 
 	;
+	
+	/** Array to get around multiple allocations. */
+	public static final TAMECommand[] VALUES = values();
 	
 	private boolean language;
 	private boolean internal;

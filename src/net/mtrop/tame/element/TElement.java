@@ -18,31 +18,27 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.BlockEntry;
+import net.mtrop.tame.lang.BlockTable;
 import net.mtrop.tame.lang.Saveable;
-import net.mtrop.tame.struct.ActionTable;
 
 /**
  * Common engine element object.
  * @author Matthew Tropiano
  */
 public abstract class TElement implements Saveable
-{
+{	
 	/** Element's primary identity. */
 	private String identity;
-	
-	/** Code block ran upon world initialization. */
-	private Block initBlock;
-
-	/** Procedure block map. */
-	private ActionTable procedureBlock;
+	/** Element block map. */
+	private BlockTable blockTable;
 
 	/**
 	 * Prepares a new element.
 	 */
 	protected TElement()
 	{
-		this.initBlock = null;
-		this.procedureBlock = new ActionTable();
+		this.blockTable = new BlockTable();
 	}
 	
 	/** 
@@ -64,45 +60,35 @@ public abstract class TElement implements Saveable
 			throw new IllegalArgumentException("Identity cannot be blank.");
 		this.identity = identity;
 	}
-	
-	/** 
-	 * Get this element's initialization block.
-	 * @return the block to call on initialization. 
+		
+	/**
+	 * Adds/replaces a block and block entry to this element.
+	 * @param blockEntry the block entry to associate with a block. 
+	 * @param block the block to assign.
 	 */
-	public Block getInitBlock()
+	public void addBlock(BlockEntry blockEntry, Block block)
 	{
-		return initBlock;
+		blockTable.add(blockEntry, block);
 	}
 	
-	/** 
-	 * Set this element's initialization block. 
-	 * @param block the block to call on initialization. 
+	/**
+	 * Gets a block using a block entry on this element.
+	 * @param blockEntry the block entry to use.
+	 * @return the associated block, or null if no associated block.
 	 */
-	public void setInitBlock(Block block)
+	public Block getBlock(BlockEntry blockEntry)
 	{
-		initBlock = block;
+		return blockTable.get(blockEntry);
 	}
+	
+	/**
+	 * Resolves a block using a block entry on this element 
+	 * by going backwards through its lineage.
+	 * @param blockEntry the block entry to use.
+	 * @return an associated block, or null if no associated block.
+	 */
+	public abstract Block resolveBlock(BlockEntry blockEntry);
 
-	/**
-	 * Adds a procedure block to this element.
-	 * @param name the name of the procedure.
-	 * @param block the block to add.
-	 */
-	public void addProcedureBlock(String name, Block block)
-	{
-		procedureBlock.add(name, block);
-	}
-	
-	/**
-	 * Returns a procedure block by name.
-	 * @param name the name of the block.
-	 * @return the corresponding block or null if not found.
-	 */
-	public Block getProcedureBlock(String name)
-	{
-		return procedureBlock.get(name);
-	}
-	
 	@Override
 	public int hashCode()
 	{
@@ -139,13 +125,7 @@ public abstract class TElement implements Saveable
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeString(identity, "UTF-8");
-		procedureBlock.writeBytes(out);
-		
-		sw.writeBit(initBlock != null);
-		sw.flushBits();
-		
-		if (initBlock != null)
-			initBlock.writeBytes(out);
+		blockTable.writeBytes(out);
 	}
 	
 	@Override
@@ -153,11 +133,7 @@ public abstract class TElement implements Saveable
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		setIdentity(sr.readString("UTF-8"));
-		procedureBlock = ActionTable.create(in);
-		
-		byte blockbits = sr.readByte();
-		if ((blockbits & 0x01) != 0)
-			initBlock = Block.create(in);
+		blockTable = BlockTable.create(in);
 	}
 
 	@Override

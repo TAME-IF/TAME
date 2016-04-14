@@ -12,18 +12,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import net.mtrop.tame.lang.PermissionType;
-import net.mtrop.tame.element.ActionAmbiguousHandler;
-import net.mtrop.tame.element.ActionBadHandler;
-import net.mtrop.tame.element.ActionFailedHandler;
-import net.mtrop.tame.element.ActionForbiddenHandler;
-import net.mtrop.tame.element.ActionIncompleteHandler;
-import net.mtrop.tame.element.ActionModalHandler;
-import net.mtrop.tame.element.ActionUnknownHandler;
+import net.mtrop.tame.element.ForbiddenHandler;
 import net.mtrop.tame.element.Inheritable;
-import net.mtrop.tame.element.TActionableElement;
+import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.lang.Block;
-import net.mtrop.tame.struct.ActionModeTable;
-import net.mtrop.tame.struct.ActionTable;
+import net.mtrop.tame.lang.BlockEntry;
+import net.mtrop.tame.lang.BlockEntryType;
 
 import com.blackrook.commons.hash.Hash;
 import com.blackrook.io.SuperReader;
@@ -34,9 +28,7 @@ import com.blackrook.io.SuperWriter;
  * The viewpoint can travel to different rooms, changing view aspects.
  * @author Matthew Tropiano
  */
-public class TPlayer extends TActionableElement 
-	implements ActionForbiddenHandler, ActionFailedHandler, ActionModalHandler, 
-	ActionUnknownHandler, ActionAmbiguousHandler, ActionIncompleteHandler, ActionBadHandler, Inheritable<TPlayer>
+public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<TPlayer>
 {
 	/** The parent player. */
 	private TPlayer parent;
@@ -46,53 +38,12 @@ public class TPlayer extends TActionableElement
 	/** List of actions that are either restricted or excluded. */
 	protected Hash<String> permittedActionList;
 
-	/** Table used for modal actions. */
-	protected ActionModeTable modalActionTable;
-	/** Blocks executed on action disallow. */
-	protected ActionTable actionForbiddenTable;
-	/** Blocks executed on action failure. */
-	protected ActionTable actionFailedTable;
-	/** Blocks ran when an action is ambiguous. */
-	protected ActionTable actionAmbiguousTable;
-	/** Blocks ran when an action is incomplete. */
-	protected ActionTable actionIncompleteTable;
-	/** Blocks ran when an action is valid, but a predicate isn't. */
-	protected ActionTable badActionTable;
-	
-	/** Code block ran upon default action disallow. */
-	protected Block actionForbiddenBlock;
-	/** Code block ran upon default action fail. */
-	protected Block actionFailedBlock;
-	/** Code block ran when an action is ambiguous. */
-	protected Block actionAmbiguityBlock;
-	/** Code block ran upon incomplete action. */
-	protected Block actionIncompleteBlock;
-	/** Code block ran when an action is valid, but a predicate isn't. */
-	protected Block badActionBlock;
-	/** Code block ran upon an unknown action. */
-	protected Block unknownActionBlock;
-
 	private TPlayer()
 	{
 		super();
 		this.parent = null;
-
 		this.permissionType = PermissionType.EXCLUDE;
 		this.permittedActionList = new Hash<String>(2);
-		
-		this.modalActionTable = new ActionModeTable();
-		this.actionForbiddenTable = new ActionTable();
-		this.actionFailedTable = new ActionTable();
-		this.actionAmbiguousTable = new ActionTable();
-		this.actionIncompleteTable = new ActionTable();
-		this.badActionTable = new ActionTable();
-		
-		this.actionForbiddenBlock = null;
-		this.actionFailedBlock = null;
-		this.actionAmbiguityBlock = null;
-		this.actionIncompleteBlock = null;
-		this.badActionBlock = null;
-		this.unknownActionBlock = null;
 	}
 
 	/**
@@ -105,6 +56,31 @@ public class TPlayer extends TActionableElement
 		setIdentity(identity);
 	}
 	
+	/**
+	 * Checks if this object handles a particular entry type.
+	 * @param type the entry type to check.
+	 * @return true if so, false if not.
+	 */
+	public static boolean isValidEntryType(BlockEntryType type)
+	{
+		switch (type)
+		{
+			case INIT:
+			case ROUTINE:
+			case ONACTION:
+			case ONBADACTION:
+			case ONMODALACTION:
+			case ONFAILEDACTION:
+			case ONFORBIDDENACTION:
+			case ONINCOMPLETEACTION:
+			case ONAMBIGUOUSACTION:
+			case ONUNKNOWNACTION:
+				return true;
+			default:
+				return false;
+		}
+	}
+
 	@Override
 	public void setParent(TPlayer parent)
 	{
@@ -143,115 +119,14 @@ public class TPlayer extends TActionableElement
 		else
 			return permittedActionList.contains(action.getIdentity());
 	}
-
-	@Override
-	public ActionModeTable getModalActionTable()
-	{
-		return modalActionTable;
-	}
-
-	@Override
-	public ActionTable getActionForbiddenTable()
-	{
-		return actionForbiddenTable;
-	}
-
-	@Override
-	public ActionTable getActionFailedTable()
-	{
-		return actionFailedTable;
-	}
-
-	@Override
-	public ActionTable getAmbiguousActionTable()
-	{
-		return actionAmbiguousTable;
-	}
 	
 	@Override
-	public Block getUnknownActionBlock()
+	public Block resolveBlock(BlockEntry blockEntry)
 	{
-		return unknownActionBlock;
-	}
-
-	@Override
-	public void setUnknownActionBlock(Block block)
-	{
-		unknownActionBlock = block;
-	}
-
-	@Override
-	public Block getAmbiguousActionBlock()
-	{
-		return actionAmbiguityBlock;
+		Block out = getBlock(blockEntry);
+		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
 	}
 	
-	@Override
-	public void setAmbiguousActionBlock(Block block)
-	{
-		actionAmbiguityBlock = block;
-	}
-
-	@Override
-	public Block getActionForbiddenBlock()
-	{
-		return actionForbiddenBlock;
-	}
-	
-	@Override
-	public void setActionForbiddenBlock(Block block)
-	{
-		actionForbiddenBlock = block;
-	}
-
-	@Override
-	public Block getActionFailedBlock()
-	{
-		return actionFailedBlock;
-	}
-	
-	@Override
-	public void setActionFailedBlock(Block block)
-	{
-		actionFailedBlock = block;
-	}
-
-	@Override
-	public ActionTable getActionIncompleteTable() 
-	{
-		return actionIncompleteTable;
-	}
-
-	@Override
-	public Block getActionIncompleteBlock() 
-	{
-		return actionIncompleteBlock;
-	}
-
-	@Override
-	public void setActionIncompleteBlock(Block block) 
-	{
-		actionIncompleteBlock = block;
-	}
-
-	@Override
-	public ActionTable getBadActionTable()
-	{
-		return badActionTable;
-	}
-
-	@Override
-	public Block getBadActionBlock() 
-	{
-		return badActionBlock;
-	}
-
-	@Override
-	public void setBadActionBlock(Block block) 
-	{
-		this.badActionBlock = block;
-	}
-
 	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.
@@ -275,34 +150,6 @@ public class TPlayer extends TActionableElement
 		sw.writeInt(permittedActionList.size());
 		for (String actionIdentity : permittedActionList)
 			sw.writeString(actionIdentity, "UTF-8");
-		
-		modalActionTable.writeBytes(out);
-		actionForbiddenTable.writeBytes(out);
-		actionFailedTable.writeBytes(out);
-		actionAmbiguousTable.writeBytes(out);
-		actionIncompleteTable.writeBytes(out);
-		badActionTable.writeBytes(out);
-
-		sw.writeBit(actionForbiddenBlock != null);
-		sw.writeBit(actionFailedBlock != null);
-		sw.writeBit(actionAmbiguityBlock != null);
-		sw.writeBit(actionIncompleteBlock != null);
-		sw.writeBit(badActionBlock != null);
-		sw.writeBit(unknownActionBlock != null);
-		sw.flushBits();
-		
-		if (actionForbiddenBlock != null)
-			actionForbiddenBlock.writeBytes(out);
-		if (actionFailedBlock != null)
-			actionFailedBlock.writeBytes(out);
-		if (actionAmbiguityBlock != null)
-			actionAmbiguityBlock.writeBytes(out);
-		if (actionIncompleteBlock != null)
-			actionIncompleteBlock.writeBytes(out);
-		if (badActionBlock != null)
-			badActionBlock.writeBytes(out);
-		if (unknownActionBlock != null)
-			unknownActionBlock.writeBytes(out);
 	}
 	
 	@Override
@@ -316,28 +163,6 @@ public class TPlayer extends TActionableElement
 		int size = sr.readInt();
 		while (size-- > 0)
 			permittedActionList.put(sr.readString("UTF-8"));
-	
-		modalActionTable = ActionModeTable.create(in);
-		actionForbiddenTable = ActionTable.create(in);
-		actionFailedTable = ActionTable.create(in);
-		actionAmbiguousTable = ActionTable.create(in);
-		actionIncompleteTable = ActionTable.create(in);
-		badActionTable = ActionTable.create(in);
-		
-		byte blockbits = sr.readByte();
-		
-		if ((blockbits & 0x01) != 0)
-			actionForbiddenBlock = Block.create(in);
-		if ((blockbits & 0x02) != 0)
-			actionFailedBlock = Block.create(in);
-		if ((blockbits & 0x04) != 0)
-			actionAmbiguityBlock = Block.create(in);
-		if ((blockbits & 0x08) != 0)
-			actionIncompleteBlock = Block.create(in);
-		if ((blockbits & 0x10) != 0)
-			badActionBlock = Block.create(in);
-		if ((blockbits & 0x20) != 0)
-			unknownActionBlock = Block.create(in);
 	}
 
 }

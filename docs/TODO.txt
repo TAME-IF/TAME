@@ -1,2 +1,9 @@
 - Action type fallback.
 - "Local" variables?
+
+Add keywords:
+	archetype
+	
++TElement
+	archetype : boolean <-- not counted as "real" objects - they are the basis for other objects. (compiler guideline)
+	isArchetype() : boolean

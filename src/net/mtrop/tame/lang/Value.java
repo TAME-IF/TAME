@@ -259,7 +259,7 @@ public class Value implements Comparable<Value>, Saveable
 	@Override
 	public int hashCode()
 	{
-		return value.toString().hashCode();
+		return type.hashCode() + 31 * value.toString().hashCode();
 	}
 
 	/**

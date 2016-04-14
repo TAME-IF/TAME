@@ -32,6 +32,8 @@ import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.BlockEntry;
+import net.mtrop.tame.lang.BlockEntryType;
 import net.mtrop.tame.lang.Value;
 
 /**
@@ -321,7 +323,7 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
 		response.trace(request, "Start browse %s.", player);
 		
 		for (TObject object : ownership.getObjectsOwnedByPlayer(player))
@@ -329,18 +331,11 @@ public final class TAMELogic implements TAMEConstants
 			TObjectContext objectContext = moduleContext.getObjectContext(object);
 	
 			// find via inheritance.
-			Block block = null;
-			TObject validAncestor = object;
-			while (validAncestor != null && block == null)
-			{
-				response.trace(request, "Check %s for browse block.", validAncestor);
-				block = validAncestor.getPlayerBrowseBlock();
-				if (block == null)
-					validAncestor = validAncestor.getParent();
-			}
+			response.trace(request, "Check %s for browse block.", object);
+			Block block = object.resolveBlock(blockEntry);
 			if (block != null)
 			{
-				response.trace(request, "Calling player browse block on %s.", validAncestor);
+				response.trace(request, "Calling player browse block.");
 				TAMELogic.callBlock(request, response, objectContext, block);
 			}
 			
@@ -432,6 +427,7 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
 		
 		response.trace(request, "Start browse %s.", room);
 		
@@ -440,18 +436,11 @@ public final class TAMELogic implements TAMEConstants
 			TObjectContext objectContext = moduleContext.getObjectContext(object);
 	
 			// find via inheritance.
-			Block block = null;
-			TObject validAncestor = object;
-			while (validAncestor != null && block == null)
-			{
-				response.trace(request, "Check %s for browse block.", validAncestor);
-				block = validAncestor.getRoomBrowseBlock();
-				if (block == null)
-					validAncestor = validAncestor.getParent();
-			}
+			response.trace(request, "Check %s for browse block.", object);
+			Block block = object.resolveBlock(blockEntry);
 			if (block != null)
 			{
-				response.trace(request, "Calling room browse block on %s.", validAncestor);
+				response.trace(request, "Calling room browse block.");
 				TAMELogic.callBlock(request, response, objectContext, block);
 			}
 			
@@ -470,7 +459,8 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
+
 		response.trace(request, "Start browse %s.", container);
 		
 		for (TObject object : ownership.getObjectsOwnedByContainer(container))
@@ -480,18 +470,11 @@ public final class TAMELogic implements TAMEConstants
 			TObjectContext objectContext = moduleContext.getObjectContext(object);
 	
 			// find via inheritance.
-			Block block = null;
-			TObject validAncestor = object;
-			while (validAncestor != null && block == null)
-			{
-				response.trace(request, "Check %s for browse block.", validAncestor);
-				block = validAncestor.getContainerBrowseBlock();
-				if (block == null)
-					validAncestor = validAncestor.getParent();
-			}
+			response.trace(request, "Check %s for browse block.", object);
+			Block block = object.resolveBlock(blockEntry);
 			if (block != null)
 			{
-				response.trace(request, "Calling container browse block on %s.", validAncestor);
+				response.trace(request, "Calling container browse block.");
 				TAMELogic.callBlock(request, response, objectContext, block);
 			}
 			
@@ -514,7 +497,7 @@ public final class TAMELogic implements TAMEConstants
 		Block blockToCall = null;
 		
 		// get block on world.
-		if ((blockToCall = worldContext.getElement().getAfterRequestBlock()) != null)
+		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTERREQUEST))) != null)
 		{
 			response.trace(request, "Found after request block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -538,6 +521,8 @@ public final class TAMELogic implements TAMEConstants
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		Block blockToCall = null;
 		
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONUNKNOWNACTION);
+		
 		if (currentPlayerContext != null)
 		{
 			TPlayer currentPlayer = currentPlayerContext.getElement();
@@ -545,14 +530,7 @@ public final class TAMELogic implements TAMEConstants
 
 			// get block on player.
 			// find via inheritance.
-			TPlayer validAncestor = currentPlayer;
-			while (validAncestor != null && blockToCall == null)
-			{
-				response.trace(request, "Check %s for unknown action block.", validAncestor);
-				blockToCall = validAncestor.getUnknownActionBlock();
-				if (blockToCall == null)
-					validAncestor = validAncestor.getParent();
-			}
+			blockToCall = currentPlayer.resolveBlock(blockEntry);
 			if (blockToCall != null)
 			{
 				response.trace(request, "Found unknown action block on player.");
@@ -565,7 +543,7 @@ public final class TAMELogic implements TAMEConstants
 		TWorldContext worldContext = moduleContext.getWorldContext();
 		
 		// get block on world.
-		if ((blockToCall = worldContext.getElement().getUnknownActionBlock()) != null)
+		if ((blockToCall = worldContext.getElement().resolveBlock(blockEntry)) != null)
 		{
 			response.trace(request, "Found unknown action block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -604,6 +582,8 @@ public final class TAMELogic implements TAMEConstants
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		Block blockToCall = null;
 		
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONACTION, Value.createAction(action.getIdentity()));
+		
 		if (currentPlayerContext != null)
 		{
 			TPlayer currentPlayer = currentPlayerContext.getElement();
@@ -634,8 +614,7 @@ public final class TAMELogic implements TAMEConstants
 				}
 
 				// get general action on room.
-				// TODO: Do inheritance search.
-				if ((blockToCall = currentRoom.getActionTable().get(action.getIdentity())) != null)
+				if ((blockToCall = currentRoom.resolveBlock(blockEntry)) != null)
 				{
 					response.trace(request, "Found general action block on room.");
 					if (openTarget != null)
@@ -651,8 +630,7 @@ public final class TAMELogic implements TAMEConstants
 			}
 			
 			// get general action on player.
-			// TODO: Do inheritance search.
-			if ((blockToCall = currentPlayer.getActionTable().get(action.getIdentity())) != null)
+			if ((blockToCall = currentPlayer.resolveBlock(blockEntry)) != null)
 			{
 				response.trace(request, "Found general action block on player.");
 				if (openTarget != null)
@@ -672,7 +650,7 @@ public final class TAMELogic implements TAMEConstants
 		TWorld world = worldContext.getElement();
 		
 		// get general action on world.
-		if ((blockToCall = world.getActionTable().get(action.getIdentity())) != null)
+		if ((blockToCall = world.resolveBlock(blockEntry)) != null)
 		{
 			response.trace(request, "Found general action block on world.");
 			if (openTarget != null)
@@ -707,6 +685,8 @@ public final class TAMELogic implements TAMEConstants
 
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		Block blockToCall = null;
+
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONMODALACTION, Value.createAction(action.getIdentity()), Value.create(mode));
 		
 		if (currentPlayerContext != null)
 		{
@@ -738,8 +718,7 @@ public final class TAMELogic implements TAMEConstants
 				}
 
 				// get modal action on room.
-				// TODO: Do inheritance search.
-				if ((blockToCall = currentRoom.getModalActionTable().get(action.getIdentity(), mode)) != null)
+				if ((blockToCall = currentRoom.resolveBlock(blockEntry)) != null)
 				{
 					response.trace(request, "Found modal action block on room.");
 					callBlock(request, response, currentRoomContext, blockToCall);
@@ -750,8 +729,7 @@ public final class TAMELogic implements TAMEConstants
 			}
 			
 			// get modal action on player.
-			// TODO: Do inheritance search.
-			if ((blockToCall = currentPlayer.getModalActionTable().get(action.getIdentity(), mode)) != null)
+			if ((blockToCall = currentPlayer.resolveBlock(blockEntry)) != null)
 			{
 				response.trace(request, "Found modal action block on player.");
 				callBlock(request, response, currentPlayerContext, blockToCall);
@@ -766,7 +744,7 @@ public final class TAMELogic implements TAMEConstants
 		TWorld world = worldContext.getElement();
 		
 		// get modal action on world.
-		if ((blockToCall = world.getModalActionTable().get(action.getIdentity(), mode)) != null)
+		if ((blockToCall = world.resolveBlock(blockEntry)) != null)
 		{
 			response.trace(request, "Found modal action block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -793,12 +771,13 @@ public final class TAMELogic implements TAMEConstants
 		TObjectContext currentObjectContext = moduleContext.getObjectContext(object);
 		Block blockToCall = null;
 		
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONACTION, Value.createAction(action.getIdentity()));
+		
 		if (callCheckActionForbidden(request, response, action))
 			return;
 
 		// call action on object.
-		// TODO: Do inheritance search.
-		if ((blockToCall = object.getActionTable().get(action.getIdentity())) != null)
+		if ((blockToCall = object.resolveBlock(blockEntry)) != null)
 		{
 			response.trace(request, "Found action block on object.");
 			callBlock(request, response, currentObjectContext, blockToCall);

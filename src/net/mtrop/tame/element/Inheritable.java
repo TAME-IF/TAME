@@ -22,5 +22,5 @@ public interface Inheritable<E>
 	 * @param parent the parent object to set.
 	 */
 	public void setParent(E parent);
-	
+
 }
