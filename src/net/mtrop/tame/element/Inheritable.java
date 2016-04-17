@@ -13,7 +13,7 @@ public interface Inheritable<E>
 	 * Gets this object's parent.
 	 * The ordering is in the order they were added.
 	 * @return an iterator for this object's lineage.
-	 * @see #addParent(Object)
+	 * @see #setParent(Object)
 	 */
 	public E getParent();
 	
