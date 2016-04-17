@@ -14,10 +14,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Arrays;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.Reflect;
+import com.blackrook.commons.hash.CaseInsensitiveHashMap;
+import com.blackrook.commons.hash.HashMap;
+import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.commons.linkedlist.Stack;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
@@ -26,17 +28,18 @@ import com.blackrook.lang.Parser;
 import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
-import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.element.ForbiddenHandler;
 import net.mtrop.tame.element.type.TAction;
 import net.mtrop.tame.element.type.TContainer;
 import net.mtrop.tame.element.type.TObject;
 import net.mtrop.tame.element.type.TPlayer;
 import net.mtrop.tame.element.type.TRoom;
 import net.mtrop.tame.element.type.TWorld;
-import net.mtrop.tame.element.type.TAction.Type;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
+import net.mtrop.tame.lang.BlockEntry;
+import net.mtrop.tame.lang.BlockEntryType;
 import net.mtrop.tame.lang.Command;
 import net.mtrop.tame.lang.PermissionType;
 import net.mtrop.tame.lang.Value;
@@ -74,42 +77,42 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_BREAK =					16;
 		static final int TYPE_CONTINUE =				17;
 
-		static final int TYPE_DELIM_LPAREN =			20;
-		static final int TYPE_DELIM_RPAREN =			21;
-		static final int TYPE_DELIM_LBRACE = 			22;
-		static final int TYPE_DELIM_RBRACE = 			23;
-		static final int TYPE_DELIM_LBRACK = 			24;
-		static final int TYPE_DELIM_RBRACK = 			25;
-		static final int TYPE_DELIM_COLON = 			26;
-		static final int TYPE_DELIM_SEMICOLON = 		27;
-		static final int TYPE_DELIM_COMMA = 			28;
-		static final int TYPE_DELIM_DOT = 				29;
-		static final int TYPE_DELIM_PLUS =				30;
-		static final int TYPE_DELIM_MINUS =				41;
-		static final int TYPE_DELIM_TILDE =				42;
-		static final int TYPE_DELIM_EXCLAMATION =		43;
-		static final int TYPE_DELIM_STAR = 				44;
-		static final int TYPE_DELIM_STARSTAR = 			45;
-		static final int TYPE_DELIM_SLASH = 			46;
-		static final int TYPE_DELIM_PERCENT = 			47;
-		static final int TYPE_DELIM_AMPERSAND = 		48;
-		static final int TYPE_DELIM_AMPERSAND2 = 		49;
-		static final int TYPE_DELIM_PIPE = 				50;
-		static final int TYPE_DELIM_PIPE2 = 			51;
-		static final int TYPE_DELIM_CARAT = 			52;
-		static final int TYPE_DELIM_CARAT2 = 			53;
-		static final int TYPE_DELIM_LESS = 				54;
-		static final int TYPE_DELIM_LESS2 = 			55;
-		static final int TYPE_DELIM_LESSEQUAL = 		56;
-		static final int TYPE_DELIM_GREATER =			57;
-		static final int TYPE_DELIM_GREATER2 = 			58;
-		static final int TYPE_DELIM_GREATER3 = 			59;
-		static final int TYPE_DELIM_GREATEREQUAL = 		60;
-		static final int TYPE_DELIM_EQUAL = 			61;
-		static final int TYPE_DELIM_EQUAL2 = 			62;
-		static final int TYPE_DELIM_EQUAL3 = 			63;
-		static final int TYPE_DELIM_NOTEQUAL = 			64;
-		static final int TYPE_DELIM_NOTEQUALEQUAL =		65;
+		static final int TYPE_LPAREN =					20;
+		static final int TYPE_RPAREN =					21;
+		static final int TYPE_LBRACE = 					22;
+		static final int TYPE_RBRACE = 					23;
+		static final int TYPE_LBRACK = 					24;
+		static final int TYPE_RBRACK = 					25;
+		static final int TYPE_COLON = 					26;
+		static final int TYPE_SEMICOLON = 				27;
+		static final int TYPE_COMMA = 					28;
+		static final int TYPE_DOT = 					29;
+		static final int TYPE_PLUS =					30;
+		static final int TYPE_MINUS =					41;
+		static final int TYPE_TILDE =					42;
+		static final int TYPE_EXCLAMATION =				43;
+		static final int TYPE_STAR = 					44;
+		static final int TYPE_STARSTAR = 				45;
+		static final int TYPE_SLASH = 					46;
+		static final int TYPE_PERCENT = 				47;
+		static final int TYPE_AMPERSAND = 				48;
+		static final int TYPE_AMPERSAND2 = 				49;
+		static final int TYPE_PIPE = 					50;
+		static final int TYPE_PIPE2 = 					51;
+		static final int TYPE_CARAT = 					52;
+		static final int TYPE_CARAT2 = 					53;	
+		static final int TYPE_LESS = 					54;
+		static final int TYPE_LESS2 = 					55;
+		static final int TYPE_LESSEQUAL = 				56;
+		static final int TYPE_GREATER =					57;
+		static final int TYPE_GREATER2 = 				58;
+		static final int TYPE_GREATER3 = 				59;
+		static final int TYPE_GREATEREQUAL = 			60;
+		static final int TYPE_EQUAL = 					61;
+		static final int TYPE_EQUAL2 = 					62;
+		static final int TYPE_EQUAL3 = 					63;
+		static final int TYPE_NOTEQUAL = 				64;
+		static final int TYPE_NOTEQUALEQUAL =			65;
 
 		static final int TYPE_MODULE = 					70;
 		static final int TYPE_WORLD = 					71;
@@ -129,21 +132,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_EXCLUDES = 				85;
 		static final int TYPE_RESTRICTS = 				86;
 
-		static final int TYPE_INIT = 					90;
-		static final int TYPE_ONACTION =				91;
-		static final int TYPE_ONACTIONWITH =			92;
-		static final int TYPE_ONACTIONWITHOTHER =		93;
-		static final int TYPE_ONROOMBROWSE =			94;
-		static final int TYPE_ONPLAYERBROWSE =			95;
-		static final int TYPE_ONCONTAINERBROWSE =		96;
-		static final int TYPE_ONMODALACTION =			97;
-		static final int TYPE_ONUNKNOWNACTION =			98;
-		static final int TYPE_ONAMBIGUOUSACTION =		99;
-		static final int TYPE_ONFORBIDDENACTION =		100;
-		static final int TYPE_ONFAILEDACTION =			101;
-		static final int TYPE_ONINCOMPLETEACTION =		102;
-		static final int TYPE_ONBADACTION =				103;
-		static final int TYPE_AFTERREQUEST =			104;
+		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
 		private TSKernel()
 		{
@@ -168,42 +157,42 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("break", TYPE_BREAK);
 			addCaseInsensitiveKeyword("continue", TYPE_CONTINUE);
 
-			addDelimiter("(", TYPE_DELIM_LPAREN);
-			addDelimiter(")", TYPE_DELIM_RPAREN);
-			addDelimiter("{", TYPE_DELIM_LBRACE);
-			addDelimiter("}", TYPE_DELIM_RBRACE);
-			addDelimiter("[", TYPE_DELIM_LBRACK);
-			addDelimiter("]", TYPE_DELIM_RBRACK);
-			addDelimiter(":", TYPE_DELIM_COLON);
-			addDelimiter(";", TYPE_DELIM_SEMICOLON);
-			addDelimiter(",", TYPE_DELIM_COMMA);
-			addDelimiter(".", TYPE_DELIM_DOT);
-			addDelimiter("+", TYPE_DELIM_PLUS);
-			addDelimiter("-", TYPE_DELIM_MINUS);
-			addDelimiter("!", TYPE_DELIM_EXCLAMATION);
-			addDelimiter("~", TYPE_DELIM_TILDE);
-			addDelimiter("*", TYPE_DELIM_STAR);
-			addDelimiter("**", TYPE_DELIM_STARSTAR);
-			addDelimiter("/", TYPE_DELIM_SLASH);
-			addDelimiter("%", TYPE_DELIM_PERCENT);
-			addDelimiter("&", TYPE_DELIM_AMPERSAND);
-			addDelimiter("&&", TYPE_DELIM_AMPERSAND2);
-			addDelimiter("|", TYPE_DELIM_PIPE);
-			addDelimiter("||", TYPE_DELIM_PIPE2);
-			addDelimiter("^", TYPE_DELIM_CARAT);
-			addDelimiter("^^", TYPE_DELIM_CARAT2);
-			addDelimiter("<", TYPE_DELIM_LESS);
-			addDelimiter("<<", TYPE_DELIM_LESS2);
-			addDelimiter("<=", TYPE_DELIM_LESSEQUAL);
-			addDelimiter(">", TYPE_DELIM_GREATER);
-			addDelimiter(">>", TYPE_DELIM_GREATER2);
-			addDelimiter(">>>", TYPE_DELIM_GREATER3);
-			addDelimiter(">=", TYPE_DELIM_GREATEREQUAL);
-			addDelimiter("=", TYPE_DELIM_EQUAL);
-			addDelimiter("==", TYPE_DELIM_EQUAL2);
-			addDelimiter("===", TYPE_DELIM_EQUAL3);
-			addDelimiter("!=", TYPE_DELIM_NOTEQUAL);
-			addDelimiter("!==", TYPE_DELIM_NOTEQUALEQUAL);
+			addDelimiter("(", TYPE_LPAREN);
+			addDelimiter(")", TYPE_RPAREN);
+			addDelimiter("{", TYPE_LBRACE);
+			addDelimiter("}", TYPE_RBRACE);
+			addDelimiter("[", TYPE_LBRACK);
+			addDelimiter("]", TYPE_RBRACK);
+			addDelimiter(":", TYPE_COLON);
+			addDelimiter(";", TYPE_SEMICOLON);
+			addDelimiter(",", TYPE_COMMA);
+			addDelimiter(".", TYPE_DOT);
+			addDelimiter("+", TYPE_PLUS);
+			addDelimiter("-", TYPE_MINUS);
+			addDelimiter("!", TYPE_EXCLAMATION);
+			addDelimiter("~", TYPE_TILDE);
+			addDelimiter("*", TYPE_STAR);
+			addDelimiter("**", TYPE_STARSTAR);
+			addDelimiter("/", TYPE_SLASH);
+			addDelimiter("%", TYPE_PERCENT);
+			addDelimiter("&", TYPE_AMPERSAND);
+			addDelimiter("&&", TYPE_AMPERSAND2);
+			addDelimiter("|", TYPE_PIPE);
+			addDelimiter("||", TYPE_PIPE2);
+			addDelimiter("^", TYPE_CARAT);
+			addDelimiter("^^", TYPE_CARAT2);
+			addDelimiter("<", TYPE_LESS);
+			addDelimiter("<<", TYPE_LESS2);
+			addDelimiter("<=", TYPE_LESSEQUAL);
+			addDelimiter(">", TYPE_GREATER);
+			addDelimiter(">>", TYPE_GREATER2);
+			addDelimiter(">>>", TYPE_GREATER3);
+			addDelimiter(">=", TYPE_GREATEREQUAL);
+			addDelimiter("=", TYPE_EQUAL);
+			addDelimiter("==", TYPE_EQUAL2);
+			addDelimiter("===", TYPE_EQUAL3);
+			addDelimiter("!=", TYPE_NOTEQUAL);
+			addDelimiter("!==", TYPE_NOTEQUALEQUAL);
 			
 			addCaseInsensitiveKeyword("module", TYPE_MODULE);
 			addCaseInsensitiveKeyword("world", TYPE_WORLD);
@@ -222,22 +211,10 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("conjoins", TYPE_CONJOINS);
 			addCaseInsensitiveKeyword("excludes", TYPE_EXCLUDES);
 			addCaseInsensitiveKeyword("restricts", TYPE_RESTRICTS);
-			addCaseInsensitiveKeyword("init", TYPE_INIT);
-			addCaseInsensitiveKeyword("onaction", TYPE_ONACTION);
-			addCaseInsensitiveKeyword("onactionwith", TYPE_ONACTIONWITH);
-			addCaseInsensitiveKeyword("onactionwithother", TYPE_ONACTIONWITHOTHER);
-			addCaseInsensitiveKeyword("onroombrowse", TYPE_ONROOMBROWSE);
-			addCaseInsensitiveKeyword("onplayerbrowse", TYPE_ONPLAYERBROWSE);
-			addCaseInsensitiveKeyword("oncontainerbrowse", TYPE_ONCONTAINERBROWSE);
-			addCaseInsensitiveKeyword("onmodalaction", TYPE_ONMODALACTION);
-			addCaseInsensitiveKeyword("onunknownaction", TYPE_ONUNKNOWNACTION);
-			addCaseInsensitiveKeyword("onambiguousaction", TYPE_ONAMBIGUOUSACTION);
-			addCaseInsensitiveKeyword("onforbiddenaction", TYPE_ONFORBIDDENACTION);
-			addCaseInsensitiveKeyword("onfailedaction", TYPE_ONFAILEDACTION);
-			addCaseInsensitiveKeyword("onincompleteaction", TYPE_ONINCOMPLETEACTION);
-			addCaseInsensitiveKeyword("onbadaction", TYPE_ONBADACTION);
-			addCaseInsensitiveKeyword("afterrequest", TYPE_AFTERREQUEST);
-			
+
+			for (BlockEntryType entryType : BlockEntryType.values())
+				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
+
 		}
 		
 	}
@@ -366,7 +343,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				if (!parseAction())
 					return false;
 				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				if (!matchType(TSKernel.TYPE_SEMICOLON))
 				{
 					addErrorMessage("Expected end of action declaration \";\".");
 					return false;
@@ -425,7 +402,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseModuleAttributes()
 		{
-			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			if (!matchType(TSKernel.TYPE_LBRACE))
 			{
 				addErrorMessage("Expected \"{\" to start module attributes.");
 				return false;
@@ -434,7 +411,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			if (!parseModuleAttributeList())
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			if (!matchType(TSKernel.TYPE_RBRACE))
 			{
 				addErrorMessage("Expected \"}\" to end module attributes.");
 				return false;
@@ -454,7 +431,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				String attribute = currentToken().getLexeme();
 				nextToken();
 
-				if (!matchType(TSKernel.TYPE_DELIM_EQUAL))
+				if (!matchType(TSKernel.TYPE_EQUAL))
 				{
 					addErrorMessage("Expected \"=\" after attribute name.");
 					return false;
@@ -473,7 +450,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				verbosef("Added module attribute %s, value \"%s\".", attribute, value);
 				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				if (!matchType(TSKernel.TYPE_SEMICOLON))
 				{
 					addErrorMessage("Expected \";\" to end the attribute.");
 					return false;
@@ -484,7 +461,248 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			return true;
 		}
+
+		// Returns a parsed block entry type.
+		private BlockEntryType parseBlockEntryType(String elementTypeName)
+		{
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
+				return null;
+			
+			// if identifier, check if entry block type.
+			String lexeme = currentToken().getLexeme();
+			BlockEntryType entryType; 
+			if ((entryType = TSKernel.BLOCKENTRYTYPE_MAP.get(lexeme)) == null)
+			{
+				addErrorMessage("Expected valid "+elementTypeName+" block entry name.");
+				return null;
+			}
+			
+			nextToken();
+			return entryType;
+		}
 		
+		// Return type if token type is a valid block type on a container.
+		private BlockEntry parseBlockEntry(BlockEntryType type)
+		{
+			if (!matchType(TSKernel.TYPE_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" after block entry name.");
+				return null;
+			}
+
+			BlockEntry out;
+			if ((out = parseBlockEntryArguments(type)) == null)
+				return null;
+
+			if (out.getValues().length < type.getMinimumArgumentLength())
+			{
+				addErrorMessage("Expected ',' after entry argument. More arguments remain.");
+				return null;
+			}
+			
+			if (!matchType(TSKernel.TYPE_RPAREN))
+			{
+				addErrorMessage("Expected \")\" after block entry arguments.");
+				return null;
+			}
+			
+			return out; 
+		}
+		
+		
+		// Parses the block entry arguments into a BlockEntry.
+		private BlockEntry parseBlockEntryArguments(BlockEntryType type)
+		{
+			Queue<Value> parsedValues = new Queue<>();
+			ArgumentType[] argTypes = type.getArgumentTypes();
+			for (int i = 0; i < argTypes.length; i++) 
+			{
+				if (!currentType(TSKernel.TYPE_IDENTIFIER) && !isValidLiteralType())
+					break;
+				
+				switch (argTypes[i])
+				{
+					default:
+					case VALUE:
+					{
+						if (!isValidLiteralType())
+						{
+							addErrorMessage("Entry requires a literal value. \""+currentToken().getLexeme()+"\" is not a valid literal!");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case ACTION:
+					{
+						if (!isAction())
+						{
+							addErrorMessage("Entry requires an ACTION. \""+currentToken().getLexeme()+"\" is not an action type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case OBJECT:
+					{
+						if (!isObject())
+						{
+							addErrorMessage("Entry requires an OBJECT. \""+currentToken().getLexeme()+"\" is not an object type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case PLAYER:
+					{
+						if (!isPlayer())
+						{
+							addErrorMessage("Entry requires a PLAYER. \""+currentToken().getLexeme()+"\" is not a player type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case ROOM:
+					{
+						if (!isRoom())
+						{
+							addErrorMessage("Entry requires a ROOM. \""+currentToken().getLexeme()+"\" is not a room type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case CONTAINER:
+					{
+						if (!isContainer())
+						{
+							addErrorMessage("Entry requires a CONTAINER. \""+currentToken().getLexeme()+"\" is not a container type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case ELEMENT:
+					{
+						if (!isElement())
+						{
+							addErrorMessage("Entry requires an ELEMENT. \""+currentToken().getLexeme()+"\" is not an element type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					
+				} // switch
+				
+				if (i < argTypes.length - 1)
+				{
+					if (!matchType(TSKernel.TYPE_COMMA))
+						break;
+				}
+				
+			} // for
+			
+			Value[] values = new Value[parsedValues.size()];
+			parsedValues.toArray(values);
+			return BlockEntry.create(type, values);
+		}
+		
+		// Return type if token type is a valid block type on a container.
+		private BlockEntryType parseContainerBlockType()
+		{
+			BlockEntryType entryType = parseBlockEntryType("container");
+			if (entryType == null)
+				return null;
+				
+			if (!TContainer.isValidEntryType(entryType))
+			{
+				addErrorMessage("Entry name is not valid for a container.");
+				return null;
+			}
+			
+			return entryType;
+		}
+
+		// Return type if token type is a valid block type on an object.
+		private BlockEntryType parseObjectBlockType()
+		{
+			BlockEntryType entryType = parseBlockEntryType("object");
+			if (entryType == null)
+				return null;
+				
+			if (!TObject.isValidEntryType(entryType))
+			{
+				addErrorMessage("Entry name is not valid for an object.");
+				return null;
+			}
+			
+			return entryType;
+		}
+
+		// Return type if token type is a valid block type on a room.
+		private BlockEntryType parseRoomBlockType()
+		{
+			BlockEntryType entryType = parseBlockEntryType("room");
+			if (entryType == null)
+				return null;
+				
+			if (!TRoom.isValidEntryType(entryType))
+			{
+				addErrorMessage("Entry name is not valid for a room.");
+				return null;
+			}
+			
+			return entryType;
+		}
+
+		// Return type if token type is a valid block type on a player.
+		private BlockEntryType parsePlayerBlockType()
+		{
+			BlockEntryType entryType = parseBlockEntryType("player");
+			if (entryType == null)
+				return null;
+				
+			if (!TPlayer.isValidEntryType(entryType))
+			{
+				addErrorMessage("Entry name is not valid for a player.");
+				return null;
+			}
+			
+			return entryType;
+		}
+
+		// Return type if token type is a valid block type on a world.
+		private BlockEntryType parseWorldBlockType()
+		{
+			BlockEntryType entryType = parseBlockEntryType("world");
+			if (entryType == null)
+				return null;
+				
+			if (!TWorld.isValidEntryType(entryType))
+			{
+				addErrorMessage("Entry name is not valid for a world.");
+				return null;
+			}
+			
+			return entryType;
+		}
+
 		/**
 		 * Parses a container.
 		 * [Container] :=
@@ -513,19 +731,19 @@ public final class TAMEScriptReader implements TAMEConstants
 			verbosef("Read container %s...", identity);
 			
 			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			if (matchType(TSKernel.TYPE_SEMICOLON))
 				return true;
 
-			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			if (!matchType(TSKernel.TYPE_LBRACE))
 			{
-				addErrorMessage("Expected \"{\" for container body start or \";\" (prototyping).");
+				addErrorMessage("Expected \"{\" for container body start or \";\" (no body).");
 				return false;
 			}
 
 			if (!parseContainerBody(container))
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			if (!matchType(TSKernel.TYPE_RBRACE))
 			{
 				addErrorMessage("Expected end-of-object \"}\".");
 				return false;
@@ -542,19 +760,16 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseContainerBody(TContainer container)
 		{
-			while (isContainerBlockType())
+			BlockEntryType entryType;
+			BlockEntry entry;
+			while ((entryType = parseContainerBlockType()) != null)
 			{
-				if (currentType(TSKernel.TYPE_INIT))
-				{
-					nextToken();
-					
-					if (!parseInitBlock(container))
-						return false;
-					
-					continue;
-				}
-								
-				break;
+				if ((entry = parseBlockEntry(entryType)) == null)
+					return false;
+				if (!parseBlock())
+					return false;
+				
+				container.addBlock(entry, currentBlock.pop());
 			}
 			
 			return true;
@@ -587,26 +802,27 @@ public final class TAMEScriptReader implements TAMEConstants
 				currentModule.addObject(object);
 			}
 									
-			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				return true;
+			if (!parseObjectParent(object))
+				return false;
 
 			if (!parseObjectNames(object))
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			// no body?
+			if (matchType(TSKernel.TYPE_SEMICOLON))
+				return true;
+
+			// check for body.
+			if (!matchType(TSKernel.TYPE_LBRACE))
 			{
-				addErrorMessage("Expected \"{\" for object body start or \";\" (prototyping).");
+				addErrorMessage("Expected \"{\" for object body start or \";\" (no body).");
 				return false;
 			}
-
-			if (!parseObjectParent(object))
-				return false;
 
 			if (!parseObjectBody(object))
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			if (!matchType(TSKernel.TYPE_RBRACE))
 			{
 				addErrorMessage("Expected end-of-object \"}\".");
 				return false;
@@ -623,7 +839,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseObjectParent(TObject object)
 		{
-			if (matchType(TSKernel.TYPE_DELIM_COLON))
+			if (matchType(TSKernel.TYPE_COLON))
 			{
 				if (!isObject())
 				{
@@ -647,79 +863,16 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseObjectBody(TObject object)
 		{
-			while (isObjectBlockType())
+			BlockEntryType entryType;
+			BlockEntry entry;
+			while ((entryType = parseObjectBlockType()) != null)
 			{
-				if (currentType(TSKernel.TYPE_INIT))
-				{
-					nextToken();
-					
-					if (!parseInitBlock(object))
-						return false;
-					
-					continue;
-				}
-								
-				if (currentType(TSKernel.TYPE_ONACTION))
-				{
-					nextToken();
-					
-					if (!parseOnActionBlock(object, Type.TRANSITIVE, Type.DITRANSITIVE))
-						return false;
-					
-					continue;
-				}
+				if ((entry = parseBlockEntry(entryType)) == null)
+					return false;
+				if (!parseBlock())
+					return false;
 				
-				if (currentType(TSKernel.TYPE_ONACTIONWITH))
-				{
-					nextToken();
-					
-					if (!parseOnActionWithBlock(object))
-						return false;
-					
-					continue;
-				}
-				
-				if (currentType(TSKernel.TYPE_ONACTIONWITHOTHER))
-				{
-					nextToken();
-					
-					if (!parseOnActionWithOtherBlock(object))
-						return false;
-					
-					continue;
-				}
-				
-				if (currentType(TSKernel.TYPE_ONPLAYERBROWSE))
-				{
-					nextToken();
-					
-					if (!parsePlayerBrowseBlock(object))
-						return false;
-					
-					continue;
-				}
-				
-				if (currentType(TSKernel.TYPE_ONROOMBROWSE))
-				{
-					nextToken();
-					
-					if (!parseRoomBrowseBlock(object))
-						return false;
-					
-					continue;
-				}
-				
-				if (currentType(TSKernel.TYPE_ONCONTAINERBROWSE))
-				{
-					nextToken();
-					
-					if (!parseContainerBrowseBlock(object))
-						return false;
-					
-					continue;
-				}
-				
-				break;
+				object.addBlock(entry, currentBlock.pop());
 			}
 			
 			return true;
@@ -752,26 +905,27 @@ public final class TAMEScriptReader implements TAMEConstants
 				currentModule.addRoom(room);
 			}
 															
-			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				return true;
+			if (!parseRoomParent(room))
+				return false;
 
 			if (!parseActionPermissionClause(room))
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			// no body?
+			if (matchType(TSKernel.TYPE_SEMICOLON))
+				return true;
+
+			// check for body.
+			if (!matchType(TSKernel.TYPE_LBRACE))
 			{
-				addErrorMessage("Expected \"{\" for room body start or \";\" (prototyping).");
+				addErrorMessage("Expected \"{\" for room body start or \";\" (no body).");
 				return false;
 			}
-
-			if (!parseRoomParent(room))
-				return false;
 
 			if (!parseRoomBody(room))
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			if (!matchType(TSKernel.TYPE_RBRACE))
 			{
 				addErrorMessage("Expected end-of-room \"}\".");
 				return false;
@@ -788,7 +942,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseRoomParent(TRoom room)
 		{
-			if (matchType(TSKernel.TYPE_DELIM_COLON))
+			if (matchType(TSKernel.TYPE_COLON))
 			{
 				if (!isRoom())
 				{
@@ -812,49 +966,16 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseRoomBody(TRoom room)
 		{
-			while (isRoomBlockType())
+			BlockEntryType entryType;
+			BlockEntry entry;
+			while ((entryType = parseRoomBlockType()) != null)
 			{
-				if (currentType(TSKernel.TYPE_INIT))
-				{
-					nextToken();
-					
-					if (!parseInitBlock(room))
-						return false;
-					
-					continue;
-				}
-								
-				if (currentType(TSKernel.TYPE_ONACTION))
-				{
-					nextToken();
-					
-					if (!parseOnActionBlock(room, Type.GENERAL, Type.OPEN))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONMODALACTION))
-				{
-					nextToken();
-					
-					if (!parseOnModalActionBlock(room))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONFORBIDDENACTION))
-				{
-					nextToken();
-					
-					if (!parseOnForbiddenActionBlock(room))
-						return false;
-					
-					continue;
-				}
-					
-				break;
+				if ((entry = parseBlockEntry(entryType)) == null)
+					return false;
+				if (!parseBlock())
+					return false;
+				
+				room.addBlock(entry, currentBlock.pop());
 			}
 			
 			return true;
@@ -887,26 +1008,27 @@ public final class TAMEScriptReader implements TAMEConstants
 				currentModule.addPlayer(player);
 			}
 																		
-			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
-				return true;
+			if (!parsePlayerParent(player))
+				return false;
 
 			if (!parseActionPermissionClause(player))
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			// no body?
+			if (matchType(TSKernel.TYPE_SEMICOLON))
+				return true;
+
+			// check for body.
+			if (!matchType(TSKernel.TYPE_LBRACE))
 			{
-				addErrorMessage("Expected \"{\" for player body start or \";\" (prototyping).");
+				addErrorMessage("Expected \"{\" for player body start or \";\" (no body).");
 				return false;
 			}
-
-			if (!parsePlayerParent(player))
-				return false;
 
 			if (!parsePlayerBody(player))
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			if (!matchType(TSKernel.TYPE_RBRACE))
 			{
 				addErrorMessage("Expected end-of-player \"}\".");
 				return false;
@@ -923,7 +1045,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parsePlayerParent(TPlayer player)
 		{
-			if (matchType(TSKernel.TYPE_DELIM_COLON))
+			if (matchType(TSKernel.TYPE_COLON))
 			{
 				if (!isPlayer())
 				{
@@ -947,99 +1069,16 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parsePlayerBody(TPlayer player)
 		{
-			while (isPlayerBlockType())
+			BlockEntryType entryType;
+			BlockEntry entry;
+			while ((entryType = parsePlayerBlockType()) != null)
 			{
-				if (currentType(TSKernel.TYPE_INIT))
-				{
-					nextToken();
-					
-					if (!parseInitBlock(player))
-						return false;
-					
-					continue;
-				}
-								
-				if (currentType(TSKernel.TYPE_ONACTION))
-				{
-					nextToken();
-					
-					if (!parseOnActionBlock(player, Type.GENERAL, Type.OPEN))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONBADACTION))
-				{
-					nextToken();
-					
-					if (!parseOnBadActionBlock(player))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONMODALACTION))
-				{
-					nextToken();
-					
-					if (!parseOnModalActionBlock(player))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONFAILEDACTION))
-				{
-					nextToken();
-					
-					if (!parseOnFailedActionBlock(player))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONAMBIGUOUSACTION))
-				{
-					nextToken();
-					
-					if (!parseOnAmbiguousActionBlock(player))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONFORBIDDENACTION))
-				{
-					nextToken();
-					
-					if (!parseOnForbiddenActionBlock(player))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONINCOMPLETEACTION))
-				{
-					nextToken();
-					
-					if (!parseOnIncompleteActionBlock(player))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONUNKNOWNACTION))
-				{
-					nextToken();
-					
-					if (!parseOnUnknownActionBlock(player))
-						return false;
-					
-					continue;
-				}
-					
-				break;
+				if ((entry = parseBlockEntry(entryType)) == null)
+					return false;
+				if (!parseBlock())
+					return false;
+				
+				player.addBlock(entry, currentBlock.pop());
 			}
 			
 			return true;
@@ -1063,22 +1102,23 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 						
 			// prototype?
-			if (matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			if (matchType(TSKernel.TYPE_SEMICOLON))
 			{
 				currentModule.setWorld(new TWorld());
 				return true;
 			}
 
-			if (!matchType(TSKernel.TYPE_DELIM_LBRACE))
+			// check for body.
+			if (!matchType(TSKernel.TYPE_LBRACE))
 			{
-				addErrorMessage("Expected \"{\" for world body start or \";\" (prototyping).");
+				addErrorMessage("Expected \"{\" for world body start or \";\" (no body).");
 				return false;
 			}
 
 			if (!parseWorldBody(world))
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+			if (!matchType(TSKernel.TYPE_RBRACE))
 			{
 				addErrorMessage("Expected end-of-world \"}\".");
 				return false;
@@ -1095,99 +1135,16 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseWorldBody(TWorld world)
 		{
-			while (isWorldBlockType())
+			BlockEntryType entryType;
+			BlockEntry entry;
+			while ((entryType = parseWorldBlockType()) != null)
 			{
-				if (currentType(TSKernel.TYPE_INIT))
-				{
-					nextToken();
-					
-					if (!parseInitBlock(world))
-						return false;
-					
-					continue;
-				}
-								
-				if (currentType(TSKernel.TYPE_ONACTION))
-				{
-					nextToken();
-					
-					if (!parseOnActionBlock(world, Type.GENERAL, Type.OPEN))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONBADACTION))
-				{
-					nextToken();
-					
-					if (!parseOnBadActionBlock(world))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONMODALACTION))
-				{
-					nextToken();
-					
-					if (!parseOnModalActionBlock(world))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONFAILEDACTION))
-				{
-					nextToken();
-					
-					if (!parseOnFailedActionBlock(world))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONAMBIGUOUSACTION))
-				{
-					nextToken();
-					
-					if (!parseOnAmbiguousActionBlock(world))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONINCOMPLETEACTION))
-				{
-					nextToken();
-					
-					if (!parseOnIncompleteActionBlock(world))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_ONUNKNOWNACTION))
-				{
-					nextToken();
-					
-					if (!parseOnUnknownActionBlock(world))
-						return false;
-					
-					continue;
-				}
-					
-				if (currentType(TSKernel.TYPE_AFTERREQUEST))
-				{
-					nextToken();
-					
-					if (!parseAfterRequestBlock(world))
-						return false;
-					
-					continue;
-				}
-
-				break;
+				if ((entry = parseBlockEntry(entryType)) == null)
+					return false;
+				if (!parseBlock())
+					return false;
+				
+				world.addBlock(entry, currentBlock.pop());
 			}
 			
 			return true;
@@ -1369,7 +1326,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseActionNameList(TAction action)
 		{
-			if (matchType(TSKernel.TYPE_DELIM_COMMA))
+			if (matchType(TSKernel.TYPE_COMMA))
 			{
 				if (!currentType(TSKernel.TYPE_STRING))
 				{
@@ -1419,7 +1376,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseActionAdditionalNameList(TAction action)
 		{
-			if (matchType(TSKernel.TYPE_DELIM_COMMA))
+			if (matchType(TSKernel.TYPE_COMMA))
 			{
 				if (!currentType(TSKernel.TYPE_STRING))
 				{
@@ -1443,7 +1400,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[RESTRICTS] [ACTION] [ActionPermissionClauseList]
 		 * 		[e]
 		 */
-		private boolean parseActionPermissionClause(ActionForbiddenHandler element)
+		private boolean parseActionPermissionClause(ForbiddenHandler element)
 		{
 			if (matchType(TSKernel.TYPE_EXCLUDES))
 			{
@@ -1486,9 +1443,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		"," [ACTION] [ActionPermissionClause]
 		 * 		[e]
 		 */
-		private boolean parseActionPermissionClauseList(ActionForbiddenHandler element)
+		private boolean parseActionPermissionClauseList(ForbiddenHandler element)
 		{
-			if (matchType(TSKernel.TYPE_DELIM_COMMA))
+			if (matchType(TSKernel.TYPE_COMMA))
 			{
 				if (!isAction())
 				{
@@ -1538,7 +1495,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseObjectNameList(TObject object)
 		{
-			if (matchType(TSKernel.TYPE_DELIM_COMMA))
+			if (matchType(TSKernel.TYPE_COMMA))
 			{
 				if (!currentType(TSKernel.TYPE_STRING))
 				{
@@ -1556,709 +1513,6 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
-		 * Parses an init block declaration.
-		 * [InitBlock] :=
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseInitBlock(TElement element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after init.");
-				return false;
-			}
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			element.setInitBlock(currentBlock.pop());
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on action block declaration.
-		 * [OnActionBlock] :=
-		 * 		"(" [GENERALOROPENACTIONIDENTIFIER] ")" [Block]
-		 */
-		private boolean parseOnActionBlock(TActionableElement element, Type ... requiredActionTypes)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			if (!isAction())
-			{
-				addErrorMessage("Expected valid action identifier.");
-				return false;
-			}
-			
-			String actionId = currentToken().getLexeme();
-			TAction action = currentModule.getActionByIdentity(actionId);
-			boolean matched = false;
-			for (Type t : requiredActionTypes)
-			{
-				if (action.getType() == t)
-				{
-					matched = true;
-					break;
-				}
-			}
-			if (!matched)
-			{
-				addErrorMessage("Expected valid action type (" + Arrays.toString(requiredActionTypes) + ").");
-				return false;
-			}
-			
-			nextToken();
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			if (element.getActionTable().get(actionId) != null)
-			{
-				addErrorMessage("Action block for action \"" + actionId + "\" already declared.");
-				return false;
-			}
-			element.getActionTable().add(actionId, currentBlock.pop());
-			
-			return true;
-		}
-
-		/**
-		 * Parses an on modal action block declaration.
-		 * [OnModalActionBlock] :=
-		 * 		"(" [MODALACTIONIDENTIFIER] "," [STRING] ")" [Block]
-		 */
-		private boolean parseOnModalActionBlock(ActionModalHandler element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			if (!isAction())
-			{
-				addErrorMessage("Expected valid action identifier.");
-				return false;
-			}
-			
-			String actionId = currentToken().getLexeme();
-			TAction action = currentModule.getActionByIdentity(actionId);
-			if (action.getType() != Type.MODAL)
-			{
-				addErrorMessage("Expected modal action for modal action declaration.");
-				return false;
-			}
-			
-			nextToken();
-
-			if (!matchType(TSKernel.TYPE_DELIM_COMMA))
-			{
-				addErrorMessage("Expected \",\" after action.");
-				return false;
-			}
-
-			if (!currentType(TSKernel.TYPE_STRING))
-			{
-				addErrorMessage("Expected valid modal type for action \"" + actionId + "\".");
-				return false;
-			}
-			
-			String mode = currentToken().getLexeme();
-			if (!action.getExtraStrings().contains(mode))
-			{
-				addErrorMessage("Expected valid mode for action "+actionId+".");
-				return false;
-			}
-			
-			nextToken();
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-
-			if (element.getModalActionTable().get(actionId, mode) != null)
-			{
-				addErrorMessage("Modal action block for action \"" + actionId + "\" and \"" + mode + "\" already declared.");
-				return false;
-			}
-			element.getModalActionTable().add(actionId, mode, currentBlock.pop());
-			
-			return true;
-		}
-
-		/**
-		 * Parses an on failed action block declaration.
-		 * [OnFailedActionBlock] :=
-		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseOnFailedActionBlock(ActionFailedHandler element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			String actionId = null;
-
-			if (isAction())
-			{
-				actionId = currentToken().getLexeme();
-				nextToken();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expected \")\".");
-					return false;
-				}
-				
-			}
-			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\" or action identifier.");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			if (actionId != null)
-			{
-				if (element.getActionFailedTable().get(actionId) != null)
-				{
-					addErrorMessage("Failed action block for action \"" + actionId + "\" already declared.");
-					return false;
-				}
-				element.getActionFailedTable().add(actionId, currentBlock.pop());
-			}
-			else
-			{
-				if (element.getActionFailedBlock() != null)
-				{
-					addErrorMessage("Default failed action block already declared.");
-					return false;
-				}
-				element.setActionFailedBlock(currentBlock.pop());
-			}
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on failed action block declaration.
-		 * [OnForbiddenActionBlock] :=
-		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseOnForbiddenActionBlock(ActionForbiddenHandler element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			String actionId = null;
-
-			if (isAction())
-			{
-				actionId = currentToken().getLexeme();
-				nextToken();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expected \")\".");
-					return false;
-				}
-				
-			}
-			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\" or action identifier.");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			if (actionId != null)
-			{
-				if (element.getActionForbiddenTable().get(actionId) != null)
-				{
-					addErrorMessage("Forbidden action block for action \"" + actionId + "\" already declared.");
-					return false;
-				}
-				element.getActionForbiddenTable().add(actionId, currentBlock.pop());
-			}
-			else
-			{
-				if (element.getActionForbiddenBlock() != null)
-				{
-					addErrorMessage("Default forbidden action block already declared.");
-					return false;
-				}
-				element.setActionForbiddenBlock(currentBlock.pop());
-			}
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on ambiguous action block declaration.
-		 * [OnAmbiguousActionBlock] :=
-		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseOnAmbiguousActionBlock(ActionAmbiguousHandler element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			String actionId = null;
-
-			if (isAction())
-			{
-				actionId = currentToken().getLexeme();
-				nextToken();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expected \")\".");
-					return false;
-				}
-				
-			}
-			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\" or action identifier.");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			if (actionId != null)
-			{
-				if (element.getAmbiguousActionTable().get(actionId) != null)
-				{
-					addErrorMessage("Ambiguous action block for action \"" + actionId + "\" already declared.");
-					return false;
-				}
-				element.getAmbiguousActionTable().add(actionId, currentBlock.pop());
-			}
-			else
-			{
-				if (element.getAmbiguousActionBlock() != null)
-				{
-					addErrorMessage("Default ambiguous action block already declared.");
-					return false;
-				}
-				element.setAmbiguousActionBlock(currentBlock.pop());
-			}
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on bad action block declaration.
-		 * [OnBadActionBlock] :=
-		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseOnBadActionBlock(ActionBadHandler element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			String actionId = null;
-
-			if (isAction())
-			{
-				actionId = currentToken().getLexeme();
-				nextToken();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expected \")\".");
-					return false;
-				}
-				
-			}
-			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\" or action identifier.");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			if (actionId != null)
-			{
-				if (element.getBadActionTable().get(actionId) != null)
-				{
-					addErrorMessage("Bad action block for action \"" + actionId + "\" already declared.");
-					return false;
-				}
-				element.getBadActionTable().add(actionId, currentBlock.pop());
-			}
-			else
-			{
-				if (element.getBadActionBlock() != null)
-				{
-					addErrorMessage("Default bad action block already declared.");
-					return false;
-				}
-				element.setBadActionBlock(currentBlock.pop());
-			}
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on ambiguous action block declaration.
-		 * [OnIncompleteActionBlock] :=
-		 * 		"(" [ACTIONIDENTIFIER] ")" [Block]
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseOnIncompleteActionBlock(ActionIncompleteHandler element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			String actionId = null;
-
-			if (isAction())
-			{
-				actionId = currentToken().getLexeme();
-				nextToken();
-				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-				{
-					addErrorMessage("Expected \")\".");
-					return false;
-				}
-				
-			}
-			else if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\" or action identifier.");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			if (actionId != null)
-			{
-				if (element.getActionIncompleteTable().get(actionId) != null)
-				{
-					addErrorMessage("Incomplete action block for action \"" + actionId + "\" already declared.");
-					return false;
-				}
-				element.getActionIncompleteTable().add(actionId, currentBlock.pop());
-			}
-			else
-			{
-				if (element.getActionIncompleteBlock() != null)
-				{
-					addErrorMessage("Default incomplete action block already declared.");
-					return false;
-				}
-				element.setActionIncompleteBlock(currentBlock.pop());
-			}
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on unknown action block declaration.
-		 * [OnUnknownActionBlock] :=
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseOnUnknownActionBlock(ActionUnknownHandler element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after unknown action declaration.");
-				return false;
-			}
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			if (element.getUnknownActionBlock() != null)
-			{
-				addErrorMessage("\"Unknown Action\" block already declared.");
-				return false;
-			}
-			element.setUnknownActionBlock(currentBlock.pop());
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on unknown action block declaration.
-		 * [AfterRequestBlock] :=
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseAfterRequestBlock(TWorld element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after \"after request\" declaration.");
-				return false;
-			}
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			if (element.getAfterRequestBlock() != null)
-			{
-				addErrorMessage("\"After Request\" block already declared.");
-				return false;
-			}
-			element.setAfterRequestBlock(currentBlock.pop());
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on-action-with block declaration.
-		 * [OnActionWithBlock] :=
-		 * 		"(" [DITRANSITIVEACTIONIDENTIFIER] "," [OBJECT] ")" [Block]
-		 */
-		private boolean parseOnActionWithBlock(TObject element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			if (!isAction())
-			{
-				addErrorMessage("Expected valid action identifier.");
-				return false;
-			}
-			
-			String actionId = currentToken().getLexeme();
-			TAction action = currentModule.getActionByIdentity(actionId);
-			if (action.getType() != Type.DITRANSITIVE)
-			{
-				addErrorMessage("Expected ditransitive action for on-action-with declaration.");
-				return false;
-			}
-			
-			nextToken();
-
-			if (!matchType(TSKernel.TYPE_DELIM_COMMA))
-			{
-				addErrorMessage("Expected \",\" after action.");
-				return false;
-			}
-
-			if (!isObject())
-			{
-				addErrorMessage("Expected valid object for on-action-with declaration.");
-				return false;
-			}
-			
-			String objectId = currentToken().getLexeme();
-			nextToken();
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-
-			if (element.getActionWithTable().get(actionId, objectId) != null)
-			{
-				addErrorMessage("Action block for action \"" + actionId + "\" and object \"" + objectId + "\" already declared.");
-				return false;
-			}
-			element.getActionWithTable().add(actionId, objectId, currentBlock.pop());
-			
-			return true;
-		}
-
-		/**
-		 * Parses an on-action-with block declaration.
-		 * [OnActionWithOtherBlock] :=
-		 * 		"(" [DITRANSITIVEACTIONIDENTIFIER] ")" [Block]
-		 */
-		private boolean parseOnActionWithOtherBlock(TObject element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after action block declaration.");
-				return false;
-			}
-
-			if (!isAction())
-			{
-				addErrorMessage("Expected valid action identifier.");
-				return false;
-			}
-			
-			String actionId = currentToken().getLexeme();
-			TAction action = currentModule.getActionByIdentity(actionId);
-			if (action.getType() != Type.DITRANSITIVE)
-			{
-				addErrorMessage("Expected ditransitive action for on-action-with-other declaration.");
-				return false;
-			}
-			nextToken();
-
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-
-			if (element.getActionWithOtherTable().get(actionId) != null)
-			{
-				addErrorMessage("Action-with-other block for action \"" + actionId + "\" already declared.");
-				return false;
-			}
-			element.getActionWithOtherTable().add(actionId, currentBlock.pop());
-			
-			return true;
-		}
-
-		/**
-		 * Parses an on-room-browse block declaration.
-		 * [OnRoomBrowse] :=
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseRoomBrowseBlock(TObject element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after onRoomBrowse.");
-				return false;
-			}
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			element.setRoomBrowseBlock(currentBlock.pop());
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on-player-browse block declaration.
-		 * [OnPlayerBrowse] :=
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parsePlayerBrowseBlock(TObject element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after onPlayerBrowse.");
-				return false;
-			}
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			element.setPlayerBrowseBlock(currentBlock.pop());
-			
-			return true;
-		}
-		
-		/**
-		 * Parses an on-container-browse block declaration.
-		 * [OnContainerBrowse] :=
-		 * 		"(" ")" [Block]
-		 */
-		private boolean parseContainerBrowseBlock(TObject element)
-		{
-			if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
-			{
-				addErrorMessage("Expected \"(\" after onContainerBrowse.");
-				return false;
-			}
-			
-			if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
-			{
-				addErrorMessage("Expected \")\".");
-				return false;
-			}
-			
-			if (!parseBlock())
-				return false;
-			
-			element.setContainerBrowseBlock(currentBlock.pop());
-			
-			return true;
-		}
-		
-		/**
 		 * Parses a block.
 		 * Pushes a block onto the block stack.
 		 * [Block] :=
@@ -2269,7 +1523,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			currentBlock.push(new Block());
 			
-			if (currentType(TSKernel.TYPE_DELIM_LBRACE))
+			if (currentType(TSKernel.TYPE_LBRACE))
 			{
 				nextToken();
 				
@@ -2279,7 +1533,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				if (!matchType(TSKernel.TYPE_DELIM_RBRACE))
+				if (!matchType(TSKernel.TYPE_RBRACE))
 				{
 					currentBlock.pop();
 					addErrorMessage("Expected end of block '}'.");
@@ -2290,7 +1544,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return true;
 			}
 			
-			if (currentType(TSKernel.TYPE_DELIM_SEMICOLON))
+			if (currentType(TSKernel.TYPE_SEMICOLON))
 			{
 				nextToken();
 				return true;
@@ -2308,7 +1562,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			if (!parseExecutableStatement())
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			if (!matchType(TSKernel.TYPE_SEMICOLON))
 			{
 				addErrorMessage("Expected \";\" to terminate statement.");
 				return false;
@@ -2377,7 +1631,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					nextToken();
 
 					// must have a dot if an element type.
-					if (!matchType(TSKernel.TYPE_DELIM_DOT))
+					if (!matchType(TSKernel.TYPE_DOT))
 					{
 						addErrorMessage("Statement error - expected '.' to dereference an element.");
 						return false;
@@ -2392,7 +1646,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					Value variable = tokenToValue();
 					nextToken();
 					
-					if (!matchType(TSKernel.TYPE_DELIM_EQUAL))
+					if (!matchType(TSKernel.TYPE_EQUAL))
 					{
 						addErrorMessage("Statement error - expected assignment operator.");
 						return false;
@@ -2410,7 +1664,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					nextToken();
 					
 					// if there's a left parenthesis, check for command.
-					if (currentType(TSKernel.TYPE_DELIM_LPAREN))
+					if (currentType(TSKernel.TYPE_LPAREN))
 					{
 						nextToken();
 						
@@ -2425,7 +1679,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							if (!parseCommandArguments(command))
 								return false;
 
-							if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+							if (!matchType(TSKernel.TYPE_RPAREN))
 							{
 								addErrorMessage("Expression error - expected \")\".");
 								return false;
@@ -2438,7 +1692,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return true;
 						}
 					}
-					else if (matchType(TSKernel.TYPE_DELIM_EQUAL))
+					else if (matchType(TSKernel.TYPE_EQUAL))
 					{
 						if (!parseExpression())
 							return false;
@@ -2472,7 +1726,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		private boolean parseStatementList()
 		{
 			if (!currentType(
-					TSKernel.TYPE_DELIM_SEMICOLON, 
+					TSKernel.TYPE_SEMICOLON, 
 					TSKernel.TYPE_IDENTIFIER,
 					TSKernel.TYPE_WORLD,
 					TSKernel.TYPE_PLAYER,
@@ -2487,7 +1741,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				))
 				return true;
 			
-			if (currentType(TSKernel.TYPE_DELIM_SEMICOLON))
+			if (currentType(TSKernel.TYPE_SEMICOLON))
 			{
 				nextToken();
 				return parseStatementList();
@@ -2505,7 +1759,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			if (!parseExecutableStatement())
 				return false;
 			
-			if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+			if (!matchType(TSKernel.TYPE_SEMICOLON))
 			{
 				addErrorMessage("Expected \";\" to terminate statement.");
 				return false;
@@ -2527,7 +1781,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				nextToken();
 				
-				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				if (!matchType(TSKernel.TYPE_LPAREN))
 				{
 					addErrorMessage("Expected '(' after \"if\".");
 					return false;
@@ -2541,7 +1795,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				conditionalBlock = currentBlock.pop();
 				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				if (!matchType(TSKernel.TYPE_RPAREN))
 				{
 					addErrorMessage("Expected ')' after conditional expression.");
 					return false;
@@ -2567,7 +1821,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				nextToken();
 		
-				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				if (!matchType(TSKernel.TYPE_LPAREN))
 				{
 					addErrorMessage("Expected '(' after \"while\".");
 					return false;
@@ -2580,7 +1834,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				conditionalBlock = currentBlock.pop();
 				
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				if (!matchType(TSKernel.TYPE_RPAREN))
 				{
 					addErrorMessage("Expected ')' after conditional expression.");
 					return false;
@@ -2600,7 +1854,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				nextToken();
 		
-				if (!matchType(TSKernel.TYPE_DELIM_LPAREN))
+				if (!matchType(TSKernel.TYPE_LPAREN))
 				{
 					addErrorMessage("Expected '(' after \"for\".");
 					return false;
@@ -2615,7 +1869,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				initBlock = currentBlock.pop();
 		
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				if (!matchType(TSKernel.TYPE_SEMICOLON))
 				{
 					addErrorMessage("Expected ';' after inital statement in \"for\".");
 					return false;
@@ -2625,7 +1879,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				conditionalBlock = currentBlock.pop();
 				
-				if (!matchType(TSKernel.TYPE_DELIM_SEMICOLON))
+				if (!matchType(TSKernel.TYPE_SEMICOLON))
 				{
 					addErrorMessage("Expected ';' after conditional statement in \"for\".");
 					return false;
@@ -2635,7 +1889,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				stepBlock = currentBlock.pop();
 		
-				if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+				if (!matchType(TSKernel.TYPE_RPAREN))
 				{
 					addErrorMessage("Expected ')' after stepping statement in \"for\".");
 					return false;
@@ -2757,7 +2011,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isPlayer())
 						{
-							addErrorMessage("Command requires an PLAYER. \""+currentToken().getLexeme()+"\" is not an player type.");
+							addErrorMessage("Command requires a PLAYER. \""+currentToken().getLexeme()+"\" is not an player type.");
 							return false;
 						}
 						
@@ -2769,7 +2023,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isRoom())
 						{
-							addErrorMessage("Command requires an ROOM. \""+currentToken().getLexeme()+"\" is not an room type.");
+							addErrorMessage("Command requires a ROOM. \""+currentToken().getLexeme()+"\" is not an room type.");
 							return false;
 						}
 						
@@ -2781,7 +2035,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isContainer())
 						{
-							addErrorMessage("Command requires an CONTAINER. \""+currentToken().getLexeme()+"\" is not an container type.");
+							addErrorMessage("Command requires a CONTAINER. \""+currentToken().getLexeme()+"\" is not an container type.");
 							return false;
 						}
 						
@@ -2806,7 +2060,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				if (i < argTypes.length - 1)
 				{
-					if (!matchType(TSKernel.TYPE_DELIM_COMMA))
+					if (!matchType(TSKernel.TYPE_COMMA))
 					{
 						addErrorMessage("Expected ',' after command argument. More arguments remain.");
 						return false;
@@ -2848,7 +2102,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						nextToken();
 						
 						// must have a dot if an element type.
-						if (!matchType(TSKernel.TYPE_DELIM_DOT))
+						if (!matchType(TSKernel.TYPE_DOT))
 						{
 							addErrorMessage("Expression error - expected '.' to dereference an element.");
 							return false;
@@ -2861,6 +2115,9 @@ public final class TAMEScriptReader implements TAMEConstants
 						}
 						
 						emit(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, Value.createVariable(currentToken().getLexeme())));
+						expressionValueCounter[0] += 1; // the "push"
+						lastWasValue = true;
+						nextToken();
 					}
 					else if (identToken.isVariable()) // or command...
 					{
@@ -2868,7 +2125,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						nextToken();
 						
 						// if there's a left parenthesis, check for command.
-						if (currentType(TSKernel.TYPE_DELIM_LPAREN))
+						if (currentType(TSKernel.TYPE_LPAREN))
 						{
 							nextToken();
 							TAMECommand command = getCommand(identName);
@@ -2887,7 +2144,7 @@ public final class TAMEScriptReader implements TAMEConstants
 								if (!parseCommandArguments(command))
 									return false;
 
-								if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+								if (!matchType(TSKernel.TYPE_RPAREN))
 								{
 									addErrorMessage("Expression error - expected \")\".");
 									return false;
@@ -2912,7 +2169,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 										
 				}
-				else if (matchType(TSKernel.TYPE_DELIM_LPAREN))
+				else if (matchType(TSKernel.TYPE_LPAREN))
 				{
 					if (lastWasValue)
 					{
@@ -2925,7 +2182,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					
 					// NOTE: Expression ends in a push.
 					
-					if (!matchType(TSKernel.TYPE_DELIM_RPAREN))
+					if (!matchType(TSKernel.TYPE_RPAREN))
 					{
 						addErrorMessage("Expected ending parenthesis (')').");
 						return false;
@@ -2956,73 +2213,73 @@ public final class TAMEScriptReader implements TAMEConstants
 						
 						switch (currentToken().getType())
 						{
-							case TSKernel.TYPE_DELIM_PLUS:
+							case TSKernel.TYPE_PLUS:
 								nextOperator = ArithmeticOperator.ADD;
 								break;
-							case TSKernel.TYPE_DELIM_MINUS:
+							case TSKernel.TYPE_MINUS:
 								nextOperator = ArithmeticOperator.SUBTRACT;
 								break;
-							case TSKernel.TYPE_DELIM_STAR:
+							case TSKernel.TYPE_STAR:
 								nextOperator = ArithmeticOperator.MULTIPLY;
 								break;
-							case TSKernel.TYPE_DELIM_SLASH:
+							case TSKernel.TYPE_SLASH:
 								nextOperator = ArithmeticOperator.DIVIDE;
 								break;
-							case TSKernel.TYPE_DELIM_PERCENT:
+							case TSKernel.TYPE_PERCENT:
 								nextOperator = ArithmeticOperator.MODULO;
 								break;
-							case TSKernel.TYPE_DELIM_STARSTAR:
+							case TSKernel.TYPE_STARSTAR:
 								nextOperator = ArithmeticOperator.POWER;
 								break;
-							case TSKernel.TYPE_DELIM_AMPERSAND:
+							case TSKernel.TYPE_AMPERSAND:
 								nextOperator = ArithmeticOperator.AND;
 								break;
-							case TSKernel.TYPE_DELIM_AMPERSAND2:
+							case TSKernel.TYPE_AMPERSAND2:
 								nextOperator = ArithmeticOperator.LOGICAL_AND;
 								break;
-							case TSKernel.TYPE_DELIM_PIPE:
+							case TSKernel.TYPE_PIPE:
 								nextOperator = ArithmeticOperator.OR;
 								break;
-							case TSKernel.TYPE_DELIM_PIPE2:
+							case TSKernel.TYPE_PIPE2:
 								nextOperator = ArithmeticOperator.LOGICAL_OR;
 								break;
-							case TSKernel.TYPE_DELIM_CARAT:
+							case TSKernel.TYPE_CARAT:
 								nextOperator = ArithmeticOperator.XOR;
 								break;
-							case TSKernel.TYPE_DELIM_CARAT2:
+							case TSKernel.TYPE_CARAT2:
 								nextOperator = ArithmeticOperator.LOGICAL_XOR;
 								break;
-							case TSKernel.TYPE_DELIM_LESS:
+							case TSKernel.TYPE_LESS:
 								nextOperator = ArithmeticOperator.LESS;
 								break;
-							case TSKernel.TYPE_DELIM_LESS2:
+							case TSKernel.TYPE_LESS2:
 								nextOperator = ArithmeticOperator.LSHIFT;
 								break;
-							case TSKernel.TYPE_DELIM_LESSEQUAL:
+							case TSKernel.TYPE_LESSEQUAL:
 								nextOperator = ArithmeticOperator.LESS_OR_EQUAL;
 								break;
-							case TSKernel.TYPE_DELIM_GREATER:
+							case TSKernel.TYPE_GREATER:
 								nextOperator = ArithmeticOperator.GREATER;
 								break;
-							case TSKernel.TYPE_DELIM_GREATER2:
+							case TSKernel.TYPE_GREATER2:
 								nextOperator = ArithmeticOperator.RSHIFT;
 								break;
-							case TSKernel.TYPE_DELIM_GREATER3:
+							case TSKernel.TYPE_GREATER3:
 								nextOperator = ArithmeticOperator.RSHIFTPAD;
 								break;
-							case TSKernel.TYPE_DELIM_GREATEREQUAL:
+							case TSKernel.TYPE_GREATEREQUAL:
 								nextOperator = ArithmeticOperator.GREATER_OR_EQUAL;
 								break;
-							case TSKernel.TYPE_DELIM_EQUAL2:
+							case TSKernel.TYPE_EQUAL2:
 								nextOperator = ArithmeticOperator.EQUALS;
 								break;
-							case TSKernel.TYPE_DELIM_EQUAL3:
+							case TSKernel.TYPE_EQUAL3:
 								nextOperator = ArithmeticOperator.STRICT_EQUALS;
 								break;
-							case TSKernel.TYPE_DELIM_NOTEQUAL:
+							case TSKernel.TYPE_NOTEQUAL:
 								nextOperator = ArithmeticOperator.NOT_EQUALS;
 								break;
-							case TSKernel.TYPE_DELIM_NOTEQUALEQUAL:
+							case TSKernel.TYPE_NOTEQUALEQUAL:
 								nextOperator = ArithmeticOperator.STRICT_NOT_EQUALS;
 								break;
 							default:
@@ -3046,16 +2303,16 @@ public final class TAMEScriptReader implements TAMEConstants
 				{
 					switch (currentToken().getType())
 					{
-						case TSKernel.TYPE_DELIM_MINUS:
+						case TSKernel.TYPE_MINUS:
 							expressionOperators.push(ArithmeticOperator.NEGATE);
 							break;
-						case TSKernel.TYPE_DELIM_PLUS:
+						case TSKernel.TYPE_PLUS:
 							expressionOperators.push(ArithmeticOperator.ABSOLUTE);
 							break;
-						case TSKernel.TYPE_DELIM_TILDE:
+						case TSKernel.TYPE_TILDE:
 							expressionOperators.push(ArithmeticOperator.NOT);
 							break;
-						case TSKernel.TYPE_DELIM_EXCLAMATION:
+						case TSKernel.TYPE_EXCLAMATION:
 							expressionOperators.push(ArithmeticOperator.LOGICAL_NOT);
 							break;
 						default:
@@ -3232,92 +2489,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			return Reflect.getEnumInstance(name.toUpperCase(), TAMECommand.class);
 		}
 		
-		// Return true if token type is a valid block on a world.
-		private boolean isWorldBlockType()
-		{
-			switch (currentToken().getType())
-			{
-				case TSKernel.TYPE_INIT:
-				case TSKernel.TYPE_ONACTION:
-				case TSKernel.TYPE_ONBADACTION:
-				case TSKernel.TYPE_ONMODALACTION:
-				case TSKernel.TYPE_ONFAILEDACTION:
-				case TSKernel.TYPE_ONUNKNOWNACTION:
-				case TSKernel.TYPE_ONAMBIGUOUSACTION:
-				case TSKernel.TYPE_ONINCOMPLETEACTION:
-				case TSKernel.TYPE_AFTERREQUEST:
-					return true;
-				default:
-					return false;
-			}
-		}
-		
-		// Return true if token type is a valid block on a player.
-		private boolean isPlayerBlockType()
-		{
-			switch (currentToken().getType())
-			{
-				case TSKernel.TYPE_INIT:
-				case TSKernel.TYPE_ONACTION:
-				case TSKernel.TYPE_ONBADACTION:
-				case TSKernel.TYPE_ONMODALACTION:
-				case TSKernel.TYPE_ONFAILEDACTION:
-				case TSKernel.TYPE_ONUNKNOWNACTION:
-				case TSKernel.TYPE_ONAMBIGUOUSACTION:
-				case TSKernel.TYPE_ONINCOMPLETEACTION:
-				case TSKernel.TYPE_ONFORBIDDENACTION:
-					return true;
-				default:
-					return false;
-			}
-		}
-		
-		// Return true if token type is a valid block on a player.
-		private boolean isRoomBlockType()
-		{
-			switch (currentToken().getType())
-			{
-				case TSKernel.TYPE_INIT:
-				case TSKernel.TYPE_ONACTION:
-				case TSKernel.TYPE_ONMODALACTION:
-				case TSKernel.TYPE_ONFAILEDACTION:
-				case TSKernel.TYPE_ONFORBIDDENACTION:
-					return true;
-				default:
-					return false;
-			}
-		}
-		
-		// Return true if token type is a valid block on an object.
-		private boolean isObjectBlockType()
-		{
-			switch (currentToken().getType())
-			{
-				case TSKernel.TYPE_INIT:
-				case TSKernel.TYPE_ONACTION:
-				case TSKernel.TYPE_ONACTIONWITH:
-				case TSKernel.TYPE_ONACTIONWITHOTHER:
-				case TSKernel.TYPE_ONPLAYERBROWSE:
-				case TSKernel.TYPE_ONROOMBROWSE:
-				case TSKernel.TYPE_ONCONTAINERBROWSE:
-					return true;
-				default:
-					return false;
-			}
-		}
-		
-		// Return true if token type is a valid block on a container.
-		private boolean isContainerBlockType()
-		{
-			switch (currentToken().getType())
-			{
-				case TSKernel.TYPE_INIT:
-					return true;
-				default:
-					return false;
-			}
-		}
-		
 		// Return true if token type can be a unary operator.
 		private boolean isValidLiteralType()
 		{
@@ -3346,10 +2517,10 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			switch (currentToken().getType())
 			{
-				case TSKernel.TYPE_DELIM_MINUS:
-				case TSKernel.TYPE_DELIM_PLUS:
-				case TSKernel.TYPE_DELIM_TILDE:
-				case TSKernel.TYPE_DELIM_EXCLAMATION:
+				case TSKernel.TYPE_MINUS:
+				case TSKernel.TYPE_PLUS:
+				case TSKernel.TYPE_TILDE:
+				case TSKernel.TYPE_EXCLAMATION:
 					return true;
 				default:
 					return false;
@@ -3364,29 +2535,29 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			switch (currentToken().getType())
 			{
-				case TSKernel.TYPE_DELIM_PLUS:
-				case TSKernel.TYPE_DELIM_MINUS:
-				case TSKernel.TYPE_DELIM_STAR:
-				case TSKernel.TYPE_DELIM_SLASH:
-				case TSKernel.TYPE_DELIM_PERCENT:
-				case TSKernel.TYPE_DELIM_AMPERSAND:
-				case TSKernel.TYPE_DELIM_AMPERSAND2:
-				case TSKernel.TYPE_DELIM_PIPE:
-				case TSKernel.TYPE_DELIM_PIPE2:
-				case TSKernel.TYPE_DELIM_CARAT:
-				case TSKernel.TYPE_DELIM_CARAT2:
-				case TSKernel.TYPE_DELIM_GREATER:
-				case TSKernel.TYPE_DELIM_GREATER2:
-				case TSKernel.TYPE_DELIM_GREATER3:
-				case TSKernel.TYPE_DELIM_GREATEREQUAL:
-				case TSKernel.TYPE_DELIM_LESS:
-				case TSKernel.TYPE_DELIM_LESS2:
-				case TSKernel.TYPE_DELIM_LESSEQUAL:
-				case TSKernel.TYPE_DELIM_EQUAL:
-				case TSKernel.TYPE_DELIM_EQUAL2:
-				case TSKernel.TYPE_DELIM_EQUAL3:
-				case TSKernel.TYPE_DELIM_NOTEQUAL:
-				case TSKernel.TYPE_DELIM_NOTEQUALEQUAL:
+				case TSKernel.TYPE_PLUS:
+				case TSKernel.TYPE_MINUS:
+				case TSKernel.TYPE_STAR:
+				case TSKernel.TYPE_SLASH:
+				case TSKernel.TYPE_PERCENT:
+				case TSKernel.TYPE_AMPERSAND:
+				case TSKernel.TYPE_AMPERSAND2:
+				case TSKernel.TYPE_PIPE:
+				case TSKernel.TYPE_PIPE2:
+				case TSKernel.TYPE_CARAT:
+				case TSKernel.TYPE_CARAT2:
+				case TSKernel.TYPE_GREATER:
+				case TSKernel.TYPE_GREATER2:
+				case TSKernel.TYPE_GREATER3:
+				case TSKernel.TYPE_GREATEREQUAL:
+				case TSKernel.TYPE_LESS:
+				case TSKernel.TYPE_LESS2:
+				case TSKernel.TYPE_LESSEQUAL:
+				case TSKernel.TYPE_EQUAL:
+				case TSKernel.TYPE_EQUAL2:
+				case TSKernel.TYPE_EQUAL3:
+				case TSKernel.TYPE_NOTEQUAL:
+				case TSKernel.TYPE_NOTEQUALEQUAL:
 					return true;
 				default:
 					return false;

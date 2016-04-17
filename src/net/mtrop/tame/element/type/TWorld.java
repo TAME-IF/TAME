@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import net.mtrop.tame.TAMEConstants;
+import net.mtrop.tame.element.Inheritable;
 import net.mtrop.tame.element.TElement;
+import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -20,7 +22,7 @@ import net.mtrop.tame.lang.BlockEntryType;
  * Contains immutable World data. 
  * @author Matthew Tropiano
  */
-public class TWorld extends TElement
+public class TWorld extends TElement implements Inheritable<TWorld>
 {
 	/**
 	 * Constructs an instance of a game world.
@@ -69,6 +71,18 @@ public class TWorld extends TElement
 		}
 	}
 
+	@Override
+	public void setParent(TWorld parent)
+	{
+		throw new ModuleException("Worlds cannot have a lineage!");
+	}
+	
+	@Override
+	public TWorld getParent()
+	{
+		return null;
+	}
+	
 	@Override
 	public Block resolveBlock(BlockEntry blockEntry)
 	{

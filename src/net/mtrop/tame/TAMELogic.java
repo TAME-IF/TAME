@@ -212,24 +212,6 @@ public final class TAMELogic implements TAMEConstants
 	}
 	
 	/**
-	 * Performs the necessary tasks for calling a procedure on the same current context.
-	 * Ensures that the block is called cleanly.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param block the block to execute.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	public static void callProcedure(TAMERequest request, TAMEResponse response, Block block) throws TAMEInterrupt
-	{
-		try {
-			block.call(request, response);
-		} catch (Throwable t) {
-			throw t;
-		}
-		request.checkStackClear();
-	}
-	
-	/**
 	 * Checks if an object is accessible to a player.
 	 * @param request the request object.
 	 * @param response the response object.
@@ -551,7 +533,7 @@ public final class TAMELogic implements TAMEConstants
 		}
 
 		response.trace(request, "No unknown action block to call. Sending error.");
-		response.addCue(CUE_ERROR, "ACTION IS BAD or NOT FOUND! (make a better in-universe handler!).");
+		response.addCue(CUE_ERROR, "ACTION IS UNKNOWN! (make a better in-universe handler!).");
 	}
 
 	/**
@@ -812,35 +794,38 @@ public final class TAMELogic implements TAMEConstants
 
 		boolean success = false;
 		
-		// TODO: Do inheritance search. (Maybe?)
-
+		Value actionValue = Value.createAction(action.getIdentity());
+		BlockEntry blockEntry1 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createAction(object1.getIdentity()));
+		BlockEntry blockEntry2 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createAction(object2.getIdentity()));
+		
 		// call action on each object. one or both need to succeed for no failure.
-		if ((blockToCall = object1.getActionWithTable().get(action.getIdentity(), object2.getIdentity())) != null)
+		if ((blockToCall = object1.resolveBlock(blockEntry2)) != null)
 		{
-			response.trace(request, "Found action block on object %s with %s.", object1, object2);
+			response.trace(request, "Found action block in object %s lineage with %s.", object1, object2);
 			callBlock(request, response, currentObject1Context, blockToCall);
 			success = true;
 		}
-		if ((blockToCall = object2.getActionWithTable().get(action.getIdentity(), object1.getIdentity())) != null)
+		if ((blockToCall = object2.resolveBlock(blockEntry1)) != null)
 		{
-			response.trace(request, "Found action block on object %s with %s.", object2, object1);
+			response.trace(request, "Found action block in object %s lineage with %s.", object2, object1);
 			callBlock(request, response, currentObject2Context, blockToCall);
 			success = true;
 		}
 		
+		BlockEntry actionOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
+
 		// attempt action with other on both objects.
 		if (!success)
 		{
-			// TODO: Do inheritance search. (Maybe?)
-			if ((blockToCall = object1.getActionWithOtherTable().get(action.getIdentity())) != null)
+			if ((blockToCall = object1.resolveBlock(actionOtherEntry)) != null)
 			{
-				response.trace(request, "Found action with other block on object %s.", object1);
+				response.trace(request, "Found action with other block in object %s lineage.", object1);
 				callBlock(request, response, currentObject1Context, blockToCall);
 				success = true;
 			}
-			if ((blockToCall = object2.getActionWithOtherTable().get(action.getIdentity())) != null)
+			if ((blockToCall = object2.resolveBlock(actionOtherEntry)) != null)
 			{
-				response.trace(request, "Found action with other block on object %s.", object2);
+				response.trace(request, "Found action with other block in object %s lineage.", object2);
 				callBlock(request, response, currentObject2Context, blockToCall);
 				success = true;
 			}
@@ -1116,6 +1101,9 @@ public final class TAMELogic implements TAMEConstants
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		Block blockToCall = null;
+
+		BlockEntry actionEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION, Value.createAction(action.getIdentity()));
+		BlockEntry generalEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION);
 		
 		if (currentPlayerContext != null)
 		{
@@ -1123,17 +1111,17 @@ public final class TAMELogic implements TAMEConstants
 			response.trace(request, "For current player %s...", currentPlayer);
 			
 			// get specific block on player.
-			if ((blockToCall = currentPlayer.getAmbiguousActionTable().get(action.getIdentity())) != null)
+			if ((blockToCall = currentPlayer.resolveBlock(actionEntry)) != null)
 			{
-				response.trace(request, "Found specific ambiguous action block on player.");
+				response.trace(request, "Found specific ambiguous action block in player %s lineage for action %s.", currentPlayer.getIdentity(), action.getIdentity());
 				callBlock(request, response, currentPlayerContext, blockToCall);
 				return true;
 			}
 	
 			// get block on player.
-			if ((blockToCall = currentPlayer.getAmbiguousActionBlock()) != null)
+			if ((blockToCall = currentPlayer.resolveBlock(generalEntry)) != null)
 			{
-				response.trace(request, "Found default ambiguous action block on player.");
+				response.trace(request, "Found default ambiguous action block in player %s lineage.", currentPlayer.getIdentity());
 				callBlock(request, response, currentPlayerContext, blockToCall);
 				return true;
 			}
@@ -1143,7 +1131,7 @@ public final class TAMELogic implements TAMEConstants
 		TWorldContext worldContext = moduleContext.getWorldContext();
 		
 		// get specific block on world.
-		if ((blockToCall = worldContext.getElement().getAmbiguousActionTable().get(action.getIdentity())) != null)
+		if ((blockToCall = worldContext.getElement().resolveBlock(actionEntry)) != null)
 		{
 			response.trace(request, "Found specific ambiguous action block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -1151,7 +1139,7 @@ public final class TAMELogic implements TAMEConstants
 		}
 	
 		// get block on world.
-		if ((blockToCall = worldContext.getElement().getAmbiguousActionBlock()) != null)
+		if ((blockToCall = worldContext.getElement().resolveBlock(generalEntry)) != null)
 		{
 			response.trace(request, "Found default ambiguous action block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -1245,14 +1233,14 @@ public final class TAMELogic implements TAMEConstants
 		
 		Block blockToCall;
 		
-		if ((blockToCall = world.getBadActionTable().get(action.getIdentity())) != null)
+		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONBADACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Found specific bad action block on world.");
+			response.trace(request, "Found specific bad action block on world with action %s.", action.getIdentity());
 			callBlock(request, response, worldContext, blockToCall);
 			return true;
 		}
 	
-		if ((blockToCall = world.getBadActionBlock()) != null)
+		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONBADACTION))) != null)
 		{
 			response.trace(request, "Found default bad action block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -1278,16 +1266,16 @@ public final class TAMELogic implements TAMEConstants
 		
 		Block blockToCall;
 		
-		if ((blockToCall = player.getBadActionTable().get(action.getIdentity())) != null)
+		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONBADACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Found specific bad action block on player.");
+			response.trace(request, "Found specific bad action block in player %s lineage, action %s.", player.getIdentity(), action.getIdentity());
 			callBlock(request, response, context, blockToCall);
 			return true;
 		}
 	
-		if ((blockToCall = player.getActionIncompleteBlock()) != null)
+		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONBADACTION))) != null)
 		{
-			response.trace(request, "Found default bad action block on player.");
+			response.trace(request, "Found default bad action block on player %s.", player.getIdentity());
 			callBlock(request, response, context, blockToCall);
 			return true;
 		}
@@ -1333,14 +1321,14 @@ public final class TAMELogic implements TAMEConstants
 		
 		Block blockToCall;
 		
-		if ((blockToCall = world.getActionIncompleteTable().get(action.getIdentity())) != null)
+		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONINCOMPLETEACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Found specific action incomplete block on world.");
+			response.trace(request, "Found specific action incomplete block on world, action %s.", action.getIdentity());
 			callBlock(request, response, worldContext, blockToCall);
 			return true;
 		}
 	
-		if ((blockToCall = world.getActionIncompleteBlock()) != null)
+		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONINCOMPLETEACTION))) != null)
 		{
 			response.trace(request, "Found default action incomplete block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -1366,16 +1354,16 @@ public final class TAMELogic implements TAMEConstants
 		
 		Block blockToCall;
 		
-		if ((blockToCall = player.getActionIncompleteTable().get(action.getIdentity())) != null)
+		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONINCOMPLETEACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Found specific action incomplete block on player.");
+			response.trace(request, "Found specific action incomplete block in player %s lineage, action %s.", player.getIdentity(), action.getIdentity());
 			callBlock(request, response, context, blockToCall);
 			return true;
 		}
 	
-		if ((blockToCall = player.getActionIncompleteBlock()) != null)
+		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONINCOMPLETEACTION))) != null)
 		{
-			response.trace(request, "Found default action incomplete block on player.");
+			response.trace(request, "Found default action incomplete block in player %s lineage.", player.getIdentity());
 			callBlock(request, response, context, blockToCall);
 			return true;
 		}
@@ -1421,14 +1409,14 @@ public final class TAMELogic implements TAMEConstants
 		
 		Block blockToCall;
 		
-		if ((blockToCall = world.getActionFailedTable().get(action.getIdentity())) != null)
+		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONFAILEDACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Found specific action failure block on world.");
+			response.trace(request, "Found specific action failure block on world, action %s.", action.getIdentity());
 			callBlock(request, response, worldContext, blockToCall);
 			return true;
 		}
 
-		if ((blockToCall = world.getActionFailedBlock()) != null)
+		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONFAILEDACTION))) != null)
 		{
 			response.trace(request, "Found default action failure block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -1454,16 +1442,16 @@ public final class TAMELogic implements TAMEConstants
 		
 		Block blockToCall;
 		
-		if ((blockToCall = player.getActionFailedTable().get(action.getIdentity())) != null)
+		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFAILEDACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Found specific action failure block on player.");
+			response.trace(request, "Found specific action failure block in player %s lineage, action %s.", player.getIdentity(), action.getIdentity());
 			callBlock(request, response, context, blockToCall);
 			return true;
 		}
 
-		if ((blockToCall = player.getActionFailedBlock()) != null)
+		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFAILEDACTION))) != null)
 		{
-			response.trace(request, "Found default action failure block on player.");
+			response.trace(request, "Found default action failure block in player %s lineage.", player.getIdentity());
 			callBlock(request, response, context, blockToCall);
 			return true;
 		}
@@ -1487,14 +1475,14 @@ public final class TAMELogic implements TAMEConstants
 		// get forbid block.
 		Block forbidBlock = null;
 
-		if ((forbidBlock = player.getActionForbiddenTable().get(action.getIdentity())) != null)
+		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Got specific forbid block on player.");
+			response.trace(request, "Got specific forbid block in player %s lineage, action %s", player.getIdentity(), action.getIdentity());
 			callBlock(request, response, context, forbidBlock);
 		}
-		else if ((forbidBlock = player.getActionForbiddenBlock()) != null)
+		else if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION))) != null)
 		{
-			response.trace(request, "Got default forbid block on player.");
+			response.trace(request, "Got default forbid block in player %s lineage.", player.getIdentity());
 			callBlock(request, response, context, forbidBlock);
 		}
 		else
@@ -1518,14 +1506,14 @@ public final class TAMELogic implements TAMEConstants
 		// get forbid block.
 		Block forbidBlock = null;
 		
-		if ((forbidBlock = room.getActionForbiddenTable().get(action.getIdentity())) != null)
+		if ((forbidBlock = room.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Calling specific forbid block on room.");
+			response.trace(request, "Calling specific forbid block in room %s lineage, action %s.", room.getIdentity(), action.getIdentity());
 			callBlock(request, response, context, forbidBlock);
 		}
-		else if ((forbidBlock = room.getActionForbiddenBlock()) != null)
+		else if ((forbidBlock = room.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION))) != null)
 		{
-			response.trace(request, "Calling default forbid block on room.");
+			response.trace(request, "Calling default forbid block in room %s lineage.", room.getIdentity());
 			callBlock(request, response, context, forbidBlock);
 		}
 		else
@@ -1548,13 +1536,13 @@ public final class TAMELogic implements TAMEConstants
 	// Call init on a single context.
 	private static void callInitBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context) throws TAMEInterrupt 
 	{
-		response.trace(request, "Attempt init on %s.", context);
+		response.trace(request, "Attempt init from %s.", context);
 		TElement element = context.getElement();
 
-		Block initBlock = element.getInitBlock();
+		Block initBlock = element.resolveBlock(BlockEntry.create(BlockEntryType.INIT));
 		if (initBlock != null)
 		{
-			response.trace(request, "Calling onInit() on %s.", context);
+			response.trace(request, "Calling init block from %s.", context);
 			callBlock(request, response, context, initBlock);
 		}
 		else

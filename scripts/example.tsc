@@ -232,15 +232,6 @@ world
 		quit;
 	}
 	
-	onAction(a_save)
-	{
-		save("butt");
-	}
-	onAction(a_load)
-	{
-		load("butt");
-	}
-		
 	onAction(a_counter)
 	{
 		textln(world.counter);

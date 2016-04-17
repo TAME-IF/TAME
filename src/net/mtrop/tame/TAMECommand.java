@@ -65,36 +65,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * [INTERNAL] Calls a procedure local to the current context.
-	 * Returns nothing.
-	 */
-	CALLPROCEDURE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
-		{
-			Value procedureName = command.getOperand0();
-			if (!procedureName.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in CALLPROCEDURE call.");
-			
-			if (request.peekContext() == null)
-				throw new ModuleExecutionException("Attempted CALLPROCEDURE call without a context!");
-			
-			TElementContext<?> elementContext = request.peekContext();
-			TElement element = elementContext.getElement();
-			
-			String name = procedureName.asString();
-
-			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.ROUTINE, Value.create(name)));
-			if (block == null)
-				throw new ModuleExecutionException("Attempted CALLPROCEDURE call on a procedure that does not exist on %s: %s", element, name);
-			
-			TAMELogic.callProcedure(request, response, block);
-		}
-		
-	},
-
-	/**
 	 * [INTERNAL] Pops a value off the stack.
 	 * Returns nothing.
 	 */
@@ -435,6 +405,35 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		
 	}, 
 	
+	/**
+	 * Calls a procedure local to the current context's owner's lineage.
+	 * First POP is the procedure name/value. 
+	 * Returns nothing.
+	 */
+	CALL (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, Command command) throws TAMEInterrupt
+		{
+			Value procedureName = request.popValue();
+			if (!procedureName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CALL call.");
+			
+			if (request.peekContext() == null)
+				throw new ModuleExecutionException("Attempted CALL call without a context!");
+			
+			TElementContext<?> elementContext = request.peekContext();
+			TElement element = elementContext.getElement();
+			
+			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.ROUTINE, procedureName));
+			if (block != null)
+				TAMELogic.callBlock(request, response, elementContext, block);
+			else
+				response.addCue(CUE_ERROR, "No such routine ("+procedureName.asString()+") in lineage of element " + element.getIdentity());
+		}
+		
+	},
+
 	/**
 	 * Adds a cue to the response.
 	 * First POP is the value to print. 

@@ -10,6 +10,7 @@ package net.mtrop.tame.element.type;
 import java.io.IOException;
 import java.io.InputStream;
 
+import net.mtrop.tame.element.Inheritable;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
@@ -19,9 +20,11 @@ import net.mtrop.tame.lang.BlockEntryType;
  * Container that just holds objects. It cannot be actioned on.
  * @author Matthew Tropiano
  */
-public class TContainer extends TElement 
+public class TContainer extends TElement implements Inheritable<TContainer> 
 {
-	
+	/** The parent container. */
+	private TContainer parent;	
+
 	private TContainer()
 	{
 		super();
@@ -54,9 +57,22 @@ public class TContainer extends TElement
 	}
 
 	@Override
+	public void setParent(TContainer parent)
+	{
+		this.parent = parent;
+	}
+	
+	@Override
+	public TContainer getParent()
+	{
+		return parent;
+	}
+	
+	@Override
 	public Block resolveBlock(BlockEntry blockEntry)
 	{
-		return getBlock(blockEntry);
+		Block out = getBlock(blockEntry);
+		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
 	}
 	
 	/**
