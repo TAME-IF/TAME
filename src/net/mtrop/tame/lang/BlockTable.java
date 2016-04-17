@@ -54,7 +54,6 @@ public class BlockTable implements Saveable
 	/**
 	 * Gets a matching block for this block entry.
 	 * @param blockEntry the block entry descriptor.
-	 * @param block the block that is associated with the entry.
 	 */
 	public Block get(BlockEntry blockEntry)
 	{

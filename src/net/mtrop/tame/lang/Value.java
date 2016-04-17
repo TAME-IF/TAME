@@ -17,6 +17,7 @@ import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.exception.ModuleExecutionException;
 
+import com.blackrook.commons.Common;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -288,7 +289,7 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public boolean equals(Value otherValue)
 	{
-		return type == otherValue.type && value.equals(value);
+		return type == otherValue.type && value.equals(otherValue.value);
 	}
 	
 	@Override
@@ -636,7 +637,7 @@ public class Value implements Comparable<Value>, Saveable
 	@Override
 	public String toString()
 	{
-		return type + "[" + value + "]";
+		return type + "[" + Common.withEscChars(String.valueOf(value)) + "]";
 	}
 	
 	/**

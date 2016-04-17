@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import net.mtrop.tame.element.type.TAction;
 import net.mtrop.tame.element.type.TContainer;
@@ -27,6 +28,7 @@ import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.hash.HashMap;
+import com.blackrook.commons.list.List;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -37,7 +39,7 @@ import com.blackrook.io.SuperWriter;
 public class TAMEModule implements Saveable
 {
 	/** Module header. */
-	private TAMEModuleHeader header;
+	private Header header;
 	
 	/** The world. */
 	private TWorld world;
@@ -63,7 +65,7 @@ public class TAMEModule implements Saveable
 	 */
 	public TAMEModule()
 	{
-		this.header = new TAMEModuleHeader();
+		this.header = new Header();
 		
 		this.world = null;
 		this.actions = new HashMap<String, TAction>(20);
@@ -94,13 +96,13 @@ public class TAMEModule implements Saveable
 	 * @return a module header.
 	 * @throws IOException if the stream can't be read.
 	 */
-	public static TAMEModuleHeader readModuleHeader(InputStream in) throws IOException
+	public static Header readModuleHeader(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		if (!(new String(sr.readBytes(4), "ASCII")).equals("TAME"))
 			throw new ModuleException("Not a TAME module.");
 			
-		TAMEModuleHeader out = new TAMEModuleHeader();
+		Header out = new Header();
 		out.readBytes(in);
 		return out;
 	}
@@ -110,7 +112,7 @@ public class TAMEModule implements Saveable
 	 * The module header contains a lot of header information about the module.
 	 * @return the header.
 	 */
-	public TAMEModuleHeader getHeader()
+	public Header getHeader()
 	{
 		return header;
 	}
@@ -369,23 +371,64 @@ public class TAMEModule implements Saveable
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		
+		HashMap<String, String> playerMap = new HashMap<>();
+		HashMap<String, String> roomMap = new HashMap<>();
+		HashMap<String, String> objectMap = new HashMap<>();
+		HashMap<String, String> containerMap = new HashMap<>();
+
 		world.writeBytes(out);
 		sw.writeInt(actions.size());
 		for (ObjectPair<String, TAction> pair : actions)
 			pair.getValue().writeBytes(out);
+		
 		sw.writeInt(players.size());
 		for (ObjectPair<String, TPlayer> pair : players)
-			pair.getValue().writeBytes(out);
+		{
+			TPlayer player = pair.getValue();
+			player.writeBytes(out);
+			if (player.getParent() != null)
+				playerMap.put(player.getIdentity(), player.getParent().getIdentity());
+		}
 		sw.writeInt(rooms.size());
 		for (ObjectPair<String, TRoom> pair : rooms)
-			pair.getValue().writeBytes(out);
+		{
+			TRoom room = pair.getValue();
+			room.writeBytes(out);
+			if (room.getParent() != null)
+				roomMap.put(room.getIdentity(), room.getParent().getIdentity());
+		}
 		sw.writeInt(objects.size());
 		for (ObjectPair<String, TObject> pair : objects)
-			pair.getValue().writeBytes(out);
+		{
+			TObject object = pair.getValue();
+			object.writeBytes(out);
+			if (object.getParent() != null)
+				objectMap.put(object.getIdentity(), object.getParent().getIdentity());
+		}
 		sw.writeInt(containers.size());
 		for (ObjectPair<String, TContainer> pair : containers)
-			pair.getValue().writeBytes(out);
+		{
+			TContainer container = pair.getValue();
+			container.writeBytes(out);
+			if (container.getParent() != null)
+				containerMap.put(container.getIdentity(), container.getParent().getIdentity());
+		}
 		
+		writeStringMap(sw, playerMap);
+		writeStringMap(sw, roomMap);
+		writeStringMap(sw, objectMap);
+		writeStringMap(sw, containerMap);
+	}
+
+	// writes a string map.
+	private void writeStringMap(SuperWriter sw, HashMap<String, String> map) throws IOException
+	{
+		sw.writeInt(map.size());
+		for (ObjectPair<String, String> pair : map)
+		{
+			sw.writeString(pair.getKey(), "UTF-8");
+			sw.writeString(pair.getValue(), "UTF-8");
+		}
 	}
 
 	@Override
@@ -441,8 +484,34 @@ public class TAMEModule implements Saveable
 		while(size-- > 0)
 			addContainer(TContainer.create(in));
 		
+		HashMap<String, String> map; 
+		
+		map = readStringMap(sr);
+		for (ObjectPair<String, String> pair : map)
+			getPlayerByIdentity(pair.getKey()).setParent(getPlayerByIdentity(pair.getValue()));
+		map = readStringMap(sr);
+		for (ObjectPair<String, String> pair : map)
+			getRoomByIdentity(pair.getKey()).setParent(getRoomByIdentity(pair.getValue()));
+		map = readStringMap(sr);
+		for (ObjectPair<String, String> pair : map)
+			getObjectByIdentity(pair.getKey()).setParent(getObjectByIdentity(pair.getValue()));
+		map = readStringMap(sr);
+		for (ObjectPair<String, String> pair : map)
+			getContainerByIdentity(pair.getKey()).setParent(getContainerByIdentity(pair.getValue()));
 	}
 	
+	// reads a string map.
+	private HashMap<String, String> readStringMap(SuperReader sr) throws IOException
+	{
+		HashMap<String, String> out = new HashMap<>();
+		
+		int size = sr.readInt();
+		while(size-- > 0)
+			out.put(sr.readString("UTF-8"), sr.readString("UTF-8"));
+		
+		return out;
+	}
+
 	@Override
 	public byte[] toBytes() throws IOException
 	{
@@ -457,6 +526,103 @@ public class TAMEModule implements Saveable
 		ByteArrayInputStream bis = new ByteArrayInputStream(data);
 		readBytes(bis);
 		bis.close();
+	}
+
+	/**
+	 * TAME Module Header.
+	 * @author Matthew Tropiano
+	 */
+	public static class Header implements Saveable
+	{
+		/** Module attributes. */
+		private CaseInsensitiveHashMap<String> attributes;
+		
+		/**
+		 * Creates a new module header.
+		 */
+		public Header()
+		{
+			this.attributes = new CaseInsensitiveHashMap<String>(4);
+		}
+	
+		/**
+		 * Adds an attribute to the module. Attributes are case-insensitive.
+		 * There are a bunch of suggested ones that all clients/servers should read.
+		 * @param attribute the attribute name.
+		 * @param value the value.
+		 */
+		public void addAttribute(String attribute, String value)
+		{
+			attributes.put(attribute, value);
+		}
+		
+		/**
+		 * Gets an attribute value from the module. 
+		 * Attributes are case-insensitive.
+		 * There are a bunch of suggested ones that all clients/servers should read.
+		 * @param attribute the attribute name.
+		 * @return the corresponding value or null if not found.
+		 */
+		public String getAttribute(String attribute)
+		{
+			return attributes.get(attribute);
+		}
+		
+		/**
+		 * Gets all of this module's attributes.
+		 * @return an array of all of the attributes. Never returns null.
+		 */
+		public String[] getAllAttributes()
+		{
+			List<String> outList = new List<>();
+			Iterator<String> it = attributes.keyIterator();
+			while (it.hasNext())
+				outList.add(it.next());
+			
+			String[] out = new String[outList.size()];
+			outList.toArray(out);
+			return out;
+		}
+	
+		@Override
+		public void writeBytes(OutputStream out) throws IOException
+		{
+			SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+			
+			sw.writeInt(attributes.size());
+			for (ObjectPair<String, String> pair : attributes)
+			{
+				sw.writeString(pair.getKey(), "UTF-8");
+				sw.writeString(pair.getValue(), "UTF-8");
+			}
+		}
+		
+		@Override
+		public void readBytes(InputStream in) throws IOException
+		{
+			SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+			attributes.clear();
+			int attribCount = sr.readInt();
+			while(attribCount-- > 0)
+				attributes.put(sr.readString("UTF-8"), sr.readString("UTF-8"));		
+		}
+	
+		@Override
+		public byte[] toBytes() throws IOException
+		{
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			writeBytes(bos);
+			return bos.toByteArray();
+		}
+	
+		@Override
+		public void fromBytes(byte[] data) throws IOException 
+		{
+			ByteArrayInputStream bis = new ByteArrayInputStream(data);
+			readBytes(bis);
+			bis.close();
+		}
+	
 	}
 
 }

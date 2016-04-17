@@ -77,7 +77,7 @@ public class BlockEntry implements Saveable
 	@Override
 	public int hashCode()
 	{
-		int out = entryType.hashCode();
+		int out = entryType.ordinal();
 		for (int i = 0; i < values.length; i++)
 			out += 31 * values[i].hashCode();
 		return out;
@@ -145,6 +145,21 @@ public class BlockEntry implements Saveable
 		ByteArrayInputStream bis = new ByteArrayInputStream(data);
 		readBytes(bis);
 		bis.close();
+	}
+	
+	@Override
+	public String toString() 
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(entryType.name()).append('(');
+		for (int i = 0; i < values.length; i++)
+		{
+			sb.append(values[i].toString());
+			if (i < values.length - 1)
+				sb.append(", ");
+		}
+		sb.append(')');
+		return sb.toString();
 	}
 	
 }
