@@ -1,6 +1,5 @@
 package net.mtrop.tame.element;
 
-import net.mtrop.tame.element.type.TAction;
 import net.mtrop.tame.lang.PermissionType;
 
 /**

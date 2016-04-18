@@ -13,7 +13,7 @@ package net.mtrop.tame.lang;
  */
 public enum ArithmeticOperator
 {
-	ABSOLUTE (13, false, true)
+	ABSOLUTE ("+", 13, false, true)
 	{ 
 		@Override
 		public Value doOperation(Value value1) 
@@ -22,7 +22,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	NEGATE (13, false, true)
+	NEGATE ("-", 13, false, true)
 	{  
 		@Override
 		public Value doOperation(Value value1) 
@@ -31,7 +31,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LOGICAL_NOT (13, false, true)
+	LOGICAL_NOT ("!", 13, false, true)
 	{  
 		@Override
 		public Value doOperation(Value value1) 
@@ -40,7 +40,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	NOT (13, false, true)
+	NOT ("~", 13, false, true)
 	{  
 		@Override
 		public Value doOperation(Value value1) 
@@ -49,7 +49,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	ADD (10, true, false)
+	ADD ("+", 10, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -58,7 +58,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	SUBTRACT (10, true, false)
+	SUBTRACT ("-", 10, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -67,7 +67,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	MULTIPLY (11, true, false)
+	MULTIPLY ("*", 11, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -76,7 +76,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	DIVIDE (11, true, false)
+	DIVIDE ("/", 11, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -85,7 +85,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	MODULO (11, true, false)
+	MODULO ("%", 11, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -94,7 +94,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	POWER (12, true, true)
+	POWER ("**", 12, true, true)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -103,7 +103,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	AND (6, true, false)
+	AND ("&", 6, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -112,7 +112,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	OR (4, true, false)
+	OR ("|", 4, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -121,7 +121,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	XOR (5, true, false)
+	XOR ("^", 5, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -130,7 +130,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LSHIFT (9, true, false)
+	LSHIFT ("<<", 9, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -139,7 +139,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	RSHIFT (9, true, false)
+	RSHIFT (">>", 9, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -148,7 +148,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	RSHIFTPAD (9, true, false)
+	RSHIFTPAD (">>>", 9, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -157,7 +157,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LOGICAL_AND (3, true, false)
+	LOGICAL_AND ("&&", 3, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -166,7 +166,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LOGICAL_OR (1, true, false)
+	LOGICAL_OR ("||", 1, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -175,7 +175,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LOGICAL_XOR (2, true, false)
+	LOGICAL_XOR ("^^", 2, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -184,7 +184,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	EQUALS (7, true, false)
+	EQUALS ("==", 7, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -193,7 +193,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	NOT_EQUALS (7, true, false)
+	NOT_EQUALS ("!=", 7, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -202,7 +202,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	STRICT_EQUALS (7, true, false)
+	STRICT_EQUALS ("===", 7, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -211,7 +211,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	STRICT_NOT_EQUALS (7, true, false)
+	STRICT_NOT_EQUALS ("!==", 7, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -220,7 +220,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LESS (8, true, false)
+	LESS ("<", 8, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -229,7 +229,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LESS_OR_EQUAL (8, true, false)
+	LESS_OR_EQUAL ("<=", 8, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -238,7 +238,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	GREATER (8, true, false)
+	GREATER (">", 8, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -247,7 +247,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	GREATER_OR_EQUAL (8, true, false)
+	GREATER_OR_EQUAL (">=", 8, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -260,14 +260,26 @@ public enum ArithmeticOperator
 	/** Array of arithmetic operators to avoid memory allocations. */
 	public static final ArithmeticOperator[] VALUES = values();
 	
+	private String symbol;
 	private int precedence;
 	private boolean binary;
 	private boolean rightAssociative;
-	private ArithmeticOperator(int precedence, boolean binary, boolean rightAssociative)
+	
+	private ArithmeticOperator(String symbol, int precedence, boolean binary, boolean rightAssociative)
 	{
+		this.symbol = symbol;
 		this.precedence = precedence;
 		this.binary = binary;
 		this.rightAssociative = rightAssociative;
+	}
+	
+	/**
+	 * Operator symbol.
+	 * @return a string representation of this operator's.
+	 */
+	public String getSymbol()
+	{
+		return symbol;
 	}
 	
 	/**

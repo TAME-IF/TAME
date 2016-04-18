@@ -5,13 +5,11 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package net.mtrop.tame.element.type;
+package net.mtrop.tame.element;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import net.mtrop.tame.element.Inheritable;
-import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;

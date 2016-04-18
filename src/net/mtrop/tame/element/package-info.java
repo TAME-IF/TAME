@@ -1,4 +1,4 @@
 /**
- * Contains the abstracts for all elements.
+ * Contains the element types.
  */
 package net.mtrop.tame.element;

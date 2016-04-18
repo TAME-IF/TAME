@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package net.mtrop.tame.element.type.context;
+package net.mtrop.tame.element.context;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,12 +15,12 @@ import java.io.OutputStream;
 
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
-import net.mtrop.tame.element.type.TContainer;
-import net.mtrop.tame.element.type.TObject;
-import net.mtrop.tame.element.type.TPlayer;
-import net.mtrop.tame.element.type.TRoom;
-import net.mtrop.tame.element.type.TWorld;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.lang.StateSaveable;
 

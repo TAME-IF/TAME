@@ -7,8 +7,8 @@
  ******************************************************************************/
 package net.mtrop.tame;
 
-import net.mtrop.tame.element.type.TAction;
-import net.mtrop.tame.element.type.TObject;
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TObject;
 
 /**
  * TAME action item.

@@ -653,7 +653,7 @@ public class Value implements Comparable<Value>, Saveable
 		else if (value1.isNumeric())
 			return create(Math.abs(value1.asDouble()));
 		else
-			throw new ArithmeticException("Value is not numeric.");
+			return create(Double.NaN);
 	}
 	
 	/**
@@ -669,7 +669,7 @@ public class Value implements Comparable<Value>, Saveable
 		else if (value1.isNumeric())
 			return create(-value1.asDouble());
 		else
-			throw new ArithmeticException("Value is not numeric.");
+			return create(Double.NaN);
 	}
 	
 	/**
@@ -694,14 +694,18 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public static Value not(Value value1)
 	{
-		if (value1.isBoolean())
+		if (value1.isInfinite())
+			return create(-1);
+		else if (value1.isNaN())
+			return create(-1);
+		else if (value1.isBoolean())
 			return create(!value1.asBoolean());
-		else if (value1.isInteger())
-			return create(~value1.asLong());
 		else if (value1.isNumeric())
-			return create(Double.longBitsToDouble(~value1.asLongBits()));
+			return create(~value1.asLong());
+		else if (value1.isString())
+			return create(-1);
 		else
-			throw new ArithmeticException("Value is not numeric or a boolean.");
+			return create(Double.NaN);
 	}
 	
 	/**

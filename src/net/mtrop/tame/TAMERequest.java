@@ -7,7 +7,7 @@
  ******************************************************************************/
 package net.mtrop.tame;
 
-import net.mtrop.tame.element.type.context.TElementContext;
+import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.exception.ArithmeticStackStateException;
 import net.mtrop.tame.lang.Value;
 
@@ -191,16 +191,6 @@ public class TAMERequest
 	{
 		if (!valueStack.isEmpty())
 			throw new ArithmeticStackStateException("Arithmetic stack is not empty.");
-	}
-
-	/**
-	 * Resolves a variable from the topmost element context.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	Value resolveVariableValue(String variableName)
-	{
-		return peekContext().getValue(variableName);
 	}
 
 }

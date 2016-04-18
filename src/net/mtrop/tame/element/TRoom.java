@@ -5,16 +5,13 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package net.mtrop.tame.element.type;
+package net.mtrop.tame.element;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import net.mtrop.tame.lang.PermissionType;
-import net.mtrop.tame.element.ForbiddenHandler;
-import net.mtrop.tame.element.Inheritable;
-import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -24,21 +21,23 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
 /**
- * The viewpoint inside a world.
- * The viewpoint can travel to different rooms, changing view aspects.
+ * Environmental instance of every adventure game.
+ * Adventure games have rooms. It is where the game takes place and players interact with
+ * things. Objects can be contained in this.
+ * Players can travel from room to room freely, provided that the world allows them to.
  * @author Matthew Tropiano
  */
-public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<TPlayer>
+public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRoom>
 {
-	/** The parent player. */
-	private TPlayer parent;
+	/** The parent room. */
+	private TRoom parent;
 	
 	/** Set function for action list. */
-	protected PermissionType permissionType;
+	private PermissionType permissionType;
 	/** List of actions that are either restricted or excluded. */
-	protected Hash<String> permittedActionList;
+	private Hash<String> permittedActionList;
 
-	private TPlayer()
+	private TRoom()
 	{
 		super();
 		this.parent = null;
@@ -47,10 +46,10 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 	}
 
 	/**
-	 * Creates an empty player.
+	 * Creates an empty room.
 	 * @param identity its main identity.
 	 */
-	public TPlayer(String identity)
+	public TRoom(String identity)
 	{
 		this();
 		setIdentity(identity);
@@ -68,13 +67,8 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 			case INIT:
 			case ROUTINE:
 			case ONACTION:
-			case ONBADACTION:
 			case ONMODALACTION:
 			case ONFAILEDACTION:
-			case ONFORBIDDENACTION:
-			case ONINCOMPLETEACTION:
-			case ONAMBIGUOUSACTION:
-			case ONUNKNOWNACTION:
 				return true;
 			default:
 				return false;
@@ -82,13 +76,13 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 	}
 
 	@Override
-	public void setParent(TPlayer parent)
+	public void setParent(TRoom parent)
 	{
 		this.parent = parent;
 	}
 	
 	@Override
-	public TPlayer getParent()
+	public TRoom getParent()
 	{
 		return parent;
 	}
@@ -133,9 +127,9 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 	 * @return the read object.
 	 * @throws IOException if a read error occurs.
 	 */
-	public static TPlayer create(InputStream in) throws IOException
+	public static TRoom create(InputStream in) throws IOException
 	{
-		TPlayer out = new TPlayer();
+		TRoom out = new TRoom();
 		out.readBytes(in);
 		return out;
 	}
@@ -149,7 +143,7 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 
 		sw.writeInt(permittedActionList.size());
 		for (String actionIdentity : permittedActionList)
-			sw.writeString(actionIdentity, "UTF-8");
+			sw.writeString(actionIdentity, "UTF-8");		
 	}
 	
 	@Override

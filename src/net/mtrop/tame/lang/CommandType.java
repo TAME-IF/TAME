@@ -23,10 +23,11 @@ public interface CommandType
 	 * Also performs a runaway check.
 	 * @param request the TAME request.
 	 * @param response the TAME response.
+	 * @param blockLocal the block local variable bank.
 	 * @param statement the calling statement (get blocks from this).
 	 * @throws TAMEInterrupt if a TAMEInterrupt occurs.
 	 */
-	public void call(TAMERequest request, TAMEResponse response, Command statement) throws TAMEInterrupt;
+	public void call(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command statement) throws TAMEInterrupt;
 	
 	/**
 	 * Does this represent a linguistic construct?

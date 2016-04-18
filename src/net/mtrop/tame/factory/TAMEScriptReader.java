@@ -29,12 +29,12 @@ import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.ForbiddenHandler;
-import net.mtrop.tame.element.type.TAction;
-import net.mtrop.tame.element.type.TContainer;
-import net.mtrop.tame.element.type.TObject;
-import net.mtrop.tame.element.type.TPlayer;
-import net.mtrop.tame.element.type.TRoom;
-import net.mtrop.tame.element.type.TWorld;
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
@@ -131,6 +131,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_CONJOINS = 		84;
 		static final int TYPE_EXCLUDES = 		85;
 		static final int TYPE_RESTRICTS = 		86;
+		static final int TYPE_LOCAL = 			87;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -211,6 +212,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("conjoins", TYPE_CONJOINS);
 			addCaseInsensitiveKeyword("excludes", TYPE_EXCLUDES);
 			addCaseInsensitiveKeyword("restricts", TYPE_RESTRICTS);
+			addCaseInsensitiveKeyword("local", TYPE_LOCAL);
 
 			for (BlockEntryType entryType : BlockEntryType.values())
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
@@ -1617,6 +1619,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * [Statement] := 
 		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		[IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
+		 * 		"local" [IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		[COMMANDEXPRESSION]
 		 *		[e]
 		 */
@@ -1713,6 +1716,38 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 				
 			}
+			else if (matchType(TSKernel.TYPE_LOCAL))
+			{
+				if (!currentType(TSKernel.TYPE_IDENTIFIER))
+				{
+					addErrorMessage("Statement error - expected variable after \"local\".");
+					return false;
+				}
+				
+				Value identToken = tokenToValue();
+				nextToken();
+
+				if (identToken.isElement())
+				{
+					addErrorMessage("Expression error - expected variable.");
+					return false;
+				}
+				
+				if (matchType(TSKernel.TYPE_EQUAL))
+				{
+					if (!parseExpression())
+						return false;
+					
+					emit(Command.create(TAMECommand.POPLOCALVALUE, identToken));
+					return true;
+				}
+				else
+				{
+					addErrorMessage("Expression error - expected assignment operator.");
+					return false;
+				}
+
+			}
 
 			return true;
 		}
@@ -1728,6 +1763,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			if (!currentType(
 					TSKernel.TYPE_SEMICOLON, 
 					TSKernel.TYPE_IDENTIFIER,
+					TSKernel.TYPE_LOCAL,
 					TSKernel.TYPE_WORLD,
 					TSKernel.TYPE_PLAYER,
 					TSKernel.TYPE_ROOM,

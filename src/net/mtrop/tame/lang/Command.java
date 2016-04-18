@@ -136,9 +136,9 @@ public class Command implements CallableType, Saveable
 	}
 
 	@Override
-	public void call(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	public void call(TAMERequest request, TAMEResponse response, ValueHash blockLocal) throws TAMEInterrupt
 	{
-		operation.call(request, response, this);
+		operation.call(request, response, blockLocal, this);
 	}
 
 	/**
@@ -252,7 +252,7 @@ public class Command implements CallableType, Saveable
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeByte((byte)operation.ordinal());
+		sw.writeVariableLengthInt(operation.ordinal());
 		
 		sw.writeBit(operand0 != null);
 		sw.writeBit(operand1 != null);
@@ -284,7 +284,7 @@ public class Command implements CallableType, Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		this.operation = TAMECommand.VALUES[(int)sr.readByte()];
+		this.operation = TAMECommand.VALUES[sr.readVariableLengthInt()];
 		
 		byte objectbits = sr.readByte();
 		

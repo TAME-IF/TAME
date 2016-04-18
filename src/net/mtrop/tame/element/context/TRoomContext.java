@@ -5,23 +5,23 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package net.mtrop.tame.element.type.context;
+package net.mtrop.tame.element.context;
 
-import net.mtrop.tame.element.type.TPlayer;
+import net.mtrop.tame.element.TRoom;
 
 /**
- * Player context.
+ * Room context.
  * @author Matthew Tropiano
  */
-public class TPlayerContext extends TElementContext<TPlayer>
+public class TRoomContext extends TElementContext<TRoom>
 {
 	/**
-	 * Creates a player context. 
-	 * @param player the player reference.
+	 * Creates a room context. 
+	 * @param room the room reference.
 	 */
-	public TPlayerContext(TPlayer player)
+	public TRoomContext(TRoom room)
 	{
-		super(player);
+		super(room);
 	}
 
 }

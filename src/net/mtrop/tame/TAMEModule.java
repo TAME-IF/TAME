@@ -15,12 +15,12 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import net.mtrop.tame.element.type.TAction;
-import net.mtrop.tame.element.type.TContainer;
-import net.mtrop.tame.element.type.TObject;
-import net.mtrop.tame.element.type.TPlayer;
-import net.mtrop.tame.element.type.TRoom;
-import net.mtrop.tame.element.type.TWorld;
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Saveable;
 

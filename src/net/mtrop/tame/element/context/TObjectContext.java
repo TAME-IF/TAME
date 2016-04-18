@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package net.mtrop.tame.element.type.context;
+package net.mtrop.tame.element.context;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +16,7 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.TAMEModule;
-import net.mtrop.tame.element.type.TObject;
+import net.mtrop.tame.element.TObject;
 
 /**
  * Object context.

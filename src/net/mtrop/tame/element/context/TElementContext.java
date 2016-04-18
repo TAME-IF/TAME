@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package net.mtrop.tame.element.type.context;
+package net.mtrop.tame.element.context;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,10 +25,11 @@ import net.mtrop.tame.lang.ValueHash;
  */
 public abstract class TElementContext<T extends TElement> implements StateSaveable
 {
-	/** Reference to source element. */
-	protected T element;
 	/** Variable bank. */
 	protected ValueHash variables;
+
+	/** Reference to source element. */
+	protected T element;
 
 	/**
 	 * Creates an element context.
@@ -37,7 +38,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	protected TElementContext(T element)
 	{
 		this.element = element;
-		variables = new ValueHash();
+		this.variables = new ValueHash();
 	}
 
 	/**
@@ -71,7 +72,8 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 
 	/**
-	 * Sets a value on this context.
+	 * Sets a value on this context, first searching in local variables.
+	 * If it exists in local, it is replaced in local, else, it is persisted.
 	 * @param variableName the variable name.
 	 * @param value the variable value.
 	 */
@@ -81,27 +83,40 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 
 	/**
-	 * Gets a variable's value on this context.
+	 * Gets a variable's value on this context, first searching in local variables.
 	 * @param variableName the variable name.
 	 * @return the corresponding value, or a value that represents "false" if no value.
 	 */
 	public Value getValue(String variableName)
 	{
-		if (!containsVariable(variableName))
+		if (variables.containsKey(variableName))
+			return variables.get(variableName);
+		else
 			return Value.create(false);
-		return variables.get(variableName);
 	}
-	
+
 	/**
-	 * Tests if a variable's value exists on this context.
-	 * @param variableName the variable's name.
-	 * @return true if so, false if not.
+	 * Sets a persistent value on this context.
+	 * @param variableName the variable name.
+	 * @param value the variable value.
 	 */
-	public boolean containsVariable(String variableName)
+	public void setPersistantValue(String variableName, Value value)
 	{
-		return variables.containsKey(variableName);
+		variables.put(variableName, value);
 	}
-	
+
+	/**
+	 * Gets a persistent variable's value on this context.
+	 * @param variableName the variable name.
+	 * @return the corresponding value, or a value that represents "false" if no value.
+	 */
+	public Value getPersistantValue(String variableName)
+	{
+		if (variables.containsKey(variableName))
+			return variables.get(variableName);
+		return Value.create(false);
+	}
+
 	@Override
 	public String toString()
 	{

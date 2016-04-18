@@ -40,7 +40,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	private static void printHelp(PrintStream out)
 	{
 		out.println("TAME Console Client v"+TAMELogic.getVersion()+" by Matt Tropiano (C) 2016");
-		out.println("Usage: tame [help | module] <switches> <gameload> (-debug)");
+		out.println("Usage: tame [help | module] <switches> <gameload> (--debug)");
 		out.println("[help]:");
 		out.println("    -h");
 		out.println("    --help");
@@ -97,7 +97,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				load = true;
 			else if (arg.equalsIgnoreCase("--load-game"))
 				load = true;
-			else if (arg.equalsIgnoreCase("-debug"))
+			else if (arg.equalsIgnoreCase("--debug"))
 				debug = true;
 			else if (script)
 			{
@@ -294,19 +294,31 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	
 	static void processResponse(TAMEResponse response, Context context)
 	{
-		CueHandler currentHandler = new CueHandler(response, context);
-		while (!context.quit && currentHandler.read())
+		if (context.debug)
 		{
-			if (context.paused)
+			for (Cue cue : response.getCues())
 			{
-				System.out.print("(Continue) ");
-				Common.getLine();
-				context.paused = false;
+				if (cue.getType().equals(CUE_FATAL) || cue.getType().equals(CUE_QUIT))
+					context.quit = true;
+				context.out.println("[" + cue.getType() + "]:" + Common.withEscChars(cue.getContent()));
 			}
 		}
+		else
+		{
+			CueHandler currentHandler = new CueHandler(response, context);
+			while (!context.quit && currentHandler.read())
+			{
+				if (context.paused)
+				{
+					context.out.print("(Continue) ");
+					Common.getLine();
+					context.paused = false;
+				}
+			}
 
-		if (currentHandler.textBuffer.length() > 0)
-			context.out.println(currentHandler.textBuffer.toString());
+			if (currentHandler.textBuffer.length() > 0)
+				context.out.println(currentHandler.textBuffer.toString());
+		}
 	}
 	
 	/**
@@ -320,15 +332,15 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		PrintStream err;
 		boolean paused;
 		boolean quit;
-		boolean tracer;
+		boolean debug;
 		
-		Context(TAMEModule module, TAMEModuleContext context, PrintStream out, PrintStream err, boolean tracer)
+		Context(TAMEModule module, TAMEModuleContext context, PrintStream out, PrintStream err, boolean debug)
 		{
 			this.module = module;
 			this.context = context;
 			this.out = out;
 			this.err = err;
-			this.tracer = tracer;
+			this.debug = debug;
 
 			this.paused = false;
 			this.quit = false;
@@ -352,7 +364,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 					else if (line.toLowerCase().startsWith(COMMAND_LOAD))
 						loadGame(context, line.substring(COMMAND_LOAD.length())+".sav");
 					else
-						processResponse(TAMELogic.handleRequest(context, line, tracer), this);
+						processResponse(TAMELogic.handleRequest(context, line, debug), this);
 				}
 				else
 					good = false;
@@ -381,7 +393,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		@Override
 		public boolean handleCue(Cue cue) 
 		{
-			if (!cue.getType().equals(CUE_TEXT) && !cue.getType().equals(CUE_TEXTFORMATTED) && textBuffer.length() > 0)
+			if (!cue.getType().equals(CUE_TEXT) && !cue.getType().equals(CUE_TEXTF) && textBuffer.length() > 0)
 			{
 				context.out.println(textBuffer.toString());
 				textBuffer.delete(0, textBuffer.length());
@@ -390,6 +402,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			switch (cue.getType())
 			{
 				default:
+				case CUE_TRACE:
 					return true;
 				case CUE_QUIT:
 					context.quit = true;
@@ -400,15 +413,12 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				case CUE_TEXT:
 					textBuffer.append(cue.getContent());
 					return true;
-				case CUE_TEXTFORMATTED:
+				case CUE_TEXTF:
 					formatter.parse(cue.getContent());
 					return true;
 				case CUE_PAUSE:
 					context.paused = true;
 					return false;
-				case CUE_TRACE:
-					context.out.println("[TRACE]" + cue.getContent());
-					return true;
 				case CUE_TIP:
 					context.out.println("(TIP: " + cue.getContent() + ")");
 					return true;

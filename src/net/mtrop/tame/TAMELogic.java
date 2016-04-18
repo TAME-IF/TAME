@@ -12,29 +12,32 @@ import java.io.InputStream;
 import java.util.Iterator;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.ObjectPair;
 
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
-import net.mtrop.tame.element.type.TAction;
-import net.mtrop.tame.element.type.TContainer;
-import net.mtrop.tame.element.type.TObject;
-import net.mtrop.tame.element.type.TPlayer;
-import net.mtrop.tame.element.type.TRoom;
-import net.mtrop.tame.element.type.TWorld;
-import net.mtrop.tame.element.type.context.TElementContext;
-import net.mtrop.tame.element.type.context.TObjectContext;
-import net.mtrop.tame.element.type.context.TOwnershipMap;
-import net.mtrop.tame.element.type.context.TPlayerContext;
-import net.mtrop.tame.element.type.context.TRoomContext;
-import net.mtrop.tame.element.type.context.TWorldContext;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
+import net.mtrop.tame.element.context.TElementContext;
+import net.mtrop.tame.element.context.TObjectContext;
+import net.mtrop.tame.element.context.TOwnershipMap;
+import net.mtrop.tame.element.context.TPlayerContext;
+import net.mtrop.tame.element.context.TRoomContext;
+import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.TAMEFatalException;
 import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.interrupt.EndInterrupt;
+import net.mtrop.tame.interrupt.QuitInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
 import net.mtrop.tame.lang.Value;
+import net.mtrop.tame.lang.ValueHash;
 
 /**
  * Rules class.
@@ -88,6 +91,8 @@ public final class TAMELogic implements TAMEConstants
 		try {
 			initializeContext(request, response);
 			processActionLoop(request, response);
+		} catch (QuitInterrupt interrupt) {
+			/* Do nothing. */
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
 		} catch (TAMEInterrupt interrupt) {
@@ -194,14 +199,26 @@ public final class TAMELogic implements TAMEConstants
 	 * @param response the response object.
 	 * @param context the context that the block is owned by.
 	 * @param block the block to execute.
+	 * @param localValues the local values to set on invoke.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block) throws TAMEInterrupt
+	@SafeVarargs
+	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, ObjectPair<String, Value> ... localValues) throws TAMEInterrupt
 	{
 		response.trace(request, "Pushing %s...", context);
 		request.pushContext(context);
+
+		ValueHash blockLocal = new ValueHash();
+		
+		// set locals
+		for (ObjectPair<String, Value> local : localValues)
+		{
+			response.trace(request, "Setting local variable \"%s\" to \"%s\"", local.getKey(), local.getValue());
+			blockLocal.put(local.getKey(), local.getValue());
+		}
+		
 		try {
-			block.call(request, response);
+			block.call(request, response, blockLocal);
 		} catch (Throwable t) {
 			throw t;
 		} finally {
@@ -255,6 +272,7 @@ public final class TAMELogic implements TAMEConstants
 	/**
 	 * Performs an arithmetic function on the stack.
 	 * @param request the request context.
+	 * @param response the response object.
 	 * @param functionType the function type.
 	 */
 	public static void doArithmeticStackFunction(TAMERequest request, TAMEResponse response, int functionType)
@@ -600,11 +618,9 @@ public final class TAMELogic implements TAMEConstants
 				{
 					response.trace(request, "Found general action block on room.");
 					if (openTarget != null)
-					{
-						response.trace(request, "Setting variable \"%s\" to \"%s\"", OPEN_TARGET_VARIABLE, openTarget);
-						currentRoomContext.setValue(OPEN_TARGET_VARIABLE, Value.create(openTarget));
-					}
-					callBlock(request, response, currentRoomContext, blockToCall);
+						callBlock(request, response, currentRoomContext, blockToCall, new ObjectPair<String, Value>(OPEN_TARGET_VARIABLE, Value.create(openTarget)));
+					else
+						callBlock(request, response, currentRoomContext, blockToCall);
 					return;
 				}
 				
@@ -616,11 +632,9 @@ public final class TAMELogic implements TAMEConstants
 			{
 				response.trace(request, "Found general action block on player.");
 				if (openTarget != null)
-				{
-					response.trace(request, "Setting variable \"%s\" to \"%s\"", OPEN_TARGET_VARIABLE, openTarget);
-					currentPlayerContext.setValue(OPEN_TARGET_VARIABLE, Value.create(openTarget));
-				}
-				callBlock(request, response, currentPlayerContext, blockToCall);
+					callBlock(request, response, currentPlayerContext, blockToCall, new ObjectPair<String, Value>(OPEN_TARGET_VARIABLE, Value.create(openTarget)));
+				else
+					callBlock(request, response, currentPlayerContext, blockToCall);
 				return;
 			}
 			
@@ -636,11 +650,9 @@ public final class TAMELogic implements TAMEConstants
 		{
 			response.trace(request, "Found general action block on world.");
 			if (openTarget != null)
-			{
-				response.trace(request, "Setting variable \"%s\" to \"%s\"", OPEN_TARGET_VARIABLE, openTarget);
-				worldContext.setValue(OPEN_TARGET_VARIABLE, Value.create(openTarget));
-			}
-			callBlock(request, response, worldContext, blockToCall);
+				callBlock(request, response, worldContext, blockToCall, new ObjectPair<String, Value>(OPEN_TARGET_VARIABLE, Value.create(openTarget)));
+			else
+				callBlock(request, response, worldContext, blockToCall);
 			return;
 		}
 

@@ -21,8 +21,9 @@ public interface CallableType
 	 * Executes something that can change the request and response.
 	 * @param request the request object.
 	 * @param response the response object.
+	 * @param blockLocal the block local variable bank.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public void call(TAMERequest request, TAMEResponse response) throws TAMEInterrupt;
+	public void call(TAMERequest request, TAMEResponse response, ValueHash blockLocal) throws TAMEInterrupt;
 	
 }

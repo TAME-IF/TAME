@@ -1,5 +1,4 @@
 - Action type fallback.
-- "Local" variables?
 
 Add keywords:
 	archetype

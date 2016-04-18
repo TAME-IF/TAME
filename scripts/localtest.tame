@@ -1,0 +1,28 @@
+action general a_test;
+
+module
+{
+	title = "local variable test";
+}
+
+world
+{
+	init()
+	{
+		queueAction(a_test);
+	}
+
+	routine(0)
+	{
+		textln(y);
+	}
+	
+	onAction(a_test)
+	{
+		local y = 5;
+		call(y);
+		textln("butt " + y);
+		quit;
+	}
+	
+}

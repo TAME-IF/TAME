@@ -39,7 +39,7 @@ public class Cue
 	 */
 	public static Cue create(String type)
 	{
-		return create(type, 0);
+		return create(type, "");
 	}
 	
 	/**

@@ -22,18 +22,18 @@ import com.blackrook.commons.hash.HashMap;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
-import net.mtrop.tame.element.type.TAction;
-import net.mtrop.tame.element.type.TContainer;
-import net.mtrop.tame.element.type.TObject;
-import net.mtrop.tame.element.type.TPlayer;
-import net.mtrop.tame.element.type.TRoom;
-import net.mtrop.tame.element.type.TWorld;
-import net.mtrop.tame.element.type.context.TContainerContext;
-import net.mtrop.tame.element.type.context.TObjectContext;
-import net.mtrop.tame.element.type.context.TOwnershipMap;
-import net.mtrop.tame.element.type.context.TPlayerContext;
-import net.mtrop.tame.element.type.context.TRoomContext;
-import net.mtrop.tame.element.type.context.TWorldContext;
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
+import net.mtrop.tame.element.context.TContainerContext;
+import net.mtrop.tame.element.context.TObjectContext;
+import net.mtrop.tame.element.context.TOwnershipMap;
+import net.mtrop.tame.element.context.TPlayerContext;
+import net.mtrop.tame.element.context.TRoomContext;
+import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.ModuleStateException;
@@ -508,17 +508,17 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
-	 * Resolves a variable from the world context element.
+	 * Resolves a persistent variable from the world context element.
 	 * @param variableName the variable name.
 	 * @return the value resolved.
 	 */
 	public Value resolveWorldVariableValue(String variableName)
 	{
-		return resolveWorldContext().getValue(variableName);
+		return resolveWorldContext().getPersistantValue(variableName);
 	}
 
 	/**
-	 * Resolves a variable from a player context element.
+	 * Resolves a persistent variable from a player context element.
 	 * @param playerIdentity a player identity.
 	 * @param variableName the variable name.
 	 * @return the value resolved.
@@ -526,11 +526,11 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public Value resolvePlayerVariableValue(String playerIdentity, String variableName) throws ErrorInterrupt
 	{
-		return resolvePlayerContext(playerIdentity).getValue(variableName);
+		return resolvePlayerContext(playerIdentity).getPersistantValue(variableName);
 	}
 
 	/**
-	 * Resolves a variable from a room context element.
+	 * Resolves a persistent variable from a room context element.
 	 * @param roomIdentity a room identity.
 	 * @param variableName the variable name.
 	 * @return the value resolved.
@@ -538,29 +538,29 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public Value resolveRoomVariableValue(String roomIdentity, String variableName) throws ErrorInterrupt
 	{
-		return resolveRoomContext(roomIdentity).getValue(variableName);
+		return resolveRoomContext(roomIdentity).getPersistantValue(variableName);
 	}
 
 	/**
-	 * Resolves a variable from an object context element.
+	 * Resolves a persistent variable from an object context element.
 	 * @param objectIdentity an object identity.
 	 * @param variableName the variable name.
 	 * @return the value resolved.
 	 */
 	public Value resolveObjectVariableValue(String objectIdentity, String variableName)
 	{
-		return resolveObjectContext(objectIdentity).getValue(variableName);
+		return resolveObjectContext(objectIdentity).getPersistantValue(variableName);
 	}
 
 	/**
-	 * Resolves a variable from a container context element.
+	 * Resolves a persistent variable from a container context element.
 	 * @param containerIdentity a container identity.
 	 * @param variableName the variable name.
 	 * @return the value resolved.
 	 */
 	public Value resolveContainerVariableValue(String containerIdentity, String variableName)
 	{
-		return resolveContainerContext(containerIdentity).getValue(variableName);
+		return resolveContainerContext(containerIdentity).getPersistantValue(variableName);
 	}
 
 	@Override

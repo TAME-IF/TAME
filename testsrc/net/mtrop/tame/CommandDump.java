@@ -3,6 +3,8 @@ package net.mtrop.tame;
 import java.io.PrintStream;
 import java.util.Arrays;
 
+import net.mtrop.tame.lang.BlockEntryType;
+
 public final class CommandDump 
 {
 
@@ -25,6 +27,13 @@ public final class CommandDump
 			if (command.isInternal() || command.isLanguage())
 				continue;
 			
+			out.print(command.name() + " ");
+		}
+
+		out.println("\n---------------------------");
+		
+		for (BlockEntryType command : BlockEntryType.values())
+		{
 			out.print(command.name() + " ");
 		}
 	}

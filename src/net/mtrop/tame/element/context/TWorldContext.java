@@ -5,23 +5,23 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package net.mtrop.tame.element.type.context;
+package net.mtrop.tame.element.context;
 
-import net.mtrop.tame.element.type.TRoom;
+import net.mtrop.tame.element.TWorld;
 
 /**
- * Room context.
+ * Holds contextual information for a TElement.
  * @author Matthew Tropiano
  */
-public class TRoomContext extends TElementContext<TRoom>
+public class TWorldContext extends TElementContext<TWorld>
 {
 	/**
-	 * Creates a room context. 
-	 * @param room the room reference.
+	 * Creates a world context.
+	 * @param world the world reference.
 	 */
-	public TRoomContext(TRoom room)
+	public TWorldContext(TWorld world)
 	{
-		super(room);
+		super(world);
 	}
-
+	
 }
