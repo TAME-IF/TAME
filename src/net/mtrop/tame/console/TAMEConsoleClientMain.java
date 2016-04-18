@@ -317,7 +317,12 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			}
 
 			if (currentHandler.textBuffer.length() > 0)
-				context.out.println(currentHandler.textBuffer.toString());
+			{
+				if (Common.isWindows())
+					Common.printWrapped(context.out, currentHandler.textBuffer.toString(), 80); // windows terminal
+				else
+					context.out.println(currentHandler.textBuffer.toString());
+			}
 		}
 	}
 	
