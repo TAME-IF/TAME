@@ -136,6 +136,8 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		else if (!Common.isEmpty(path))
 		{
 			module = parseScript(path, verbose, !nooptimize, defineList); 
+			if (module == null)
+				System.exit(4);
 		}
 		else
 		{

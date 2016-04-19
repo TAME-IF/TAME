@@ -150,6 +150,27 @@ public class BlockEntry implements Saveable
 		bis.close();
 	}
 	
+	/**
+	 * Gets the string representation of this as a non-debugging-human-friendly string.
+	 * @return an output-friendly string of this entry.
+	 */
+	public String toFriendlyString() 
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(entryType.name()).append('(');
+		for (int i = 0; i < values.length; i++)
+		{
+			if (values[i].isString())
+				sb.append('"').append(values[i].asString()).append('"');
+			else
+				sb.append(values[i].asString());
+			if (i < values.length - 1)
+				sb.append(", ");
+		}
+		sb.append(')');
+		return sb.toString();
+	}
+	
 	@Override
 	public String toString() 
 	{

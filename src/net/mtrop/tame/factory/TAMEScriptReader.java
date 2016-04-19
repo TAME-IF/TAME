@@ -24,6 +24,7 @@ import com.blackrook.commons.linkedlist.Stack;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
 import com.blackrook.lang.Parser;
+import com.blackrook.lang.ParserException;
 
 import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMEConstants;
@@ -296,7 +297,13 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			// keep parsing entries.
 			boolean noError = true;
-			while (currentToken() != null && (noError = parseModuleElement())) ;
+			
+			try {
+				while (currentToken() != null && (noError = parseModuleElement())) ;
+			} catch (ParserException e) {
+				addErrorMessage(e.getMessage());
+				noError = false;
+			}
 			
 			if (!noError) // awkward, I know.
 			{
@@ -768,6 +775,13 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				if ((entry = parseBlockEntry(entryType)) == null)
 					return false;
+				
+				if (container.getBlock(entry) != null)
+				{
+					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this container.");
+					return false;
+				}
+
 				if (!parseBlock())
 					return false;
 				
@@ -871,6 +885,13 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				if ((entry = parseBlockEntry(entryType)) == null)
 					return false;
+				
+				if (object.getBlock(entry) != null)
+				{
+					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this object.");
+					return false;
+				}
+
 				if (!parseBlock())
 					return false;
 				
@@ -974,6 +995,13 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				if ((entry = parseBlockEntry(entryType)) == null)
 					return false;
+
+				if (room.getBlock(entry) != null)
+				{
+					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this room.");
+					return false;
+				}
+
 				if (!parseBlock())
 					return false;
 				
@@ -1077,6 +1105,13 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				if ((entry = parseBlockEntry(entryType)) == null)
 					return false;
+				
+				if (player.getBlock(entry) != null)
+				{
+					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this player.");
+					return false;
+				}
+				
 				if (!parseBlock())
 					return false;
 				
@@ -1143,6 +1178,13 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				if ((entry = parseBlockEntry(entryType)) == null)
 					return false;
+				
+				if (world.getBlock(entry) != null)
+				{
+					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this world.");
+					return false;
+				}
+
 				if (!parseBlock())
 					return false;
 				

@@ -16,6 +16,7 @@ import java.util.regex.PatternSyntaxException;
 import com.blackrook.commons.math.RMath;
 
 import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TAction.Type;
 import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
@@ -2299,7 +2300,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTION call.");
 
 			TAction action = request.getModuleContext().resolveAction(varAction.asString());
-			request.addActionItem(TAMEAction.create(action));
+			
+			if (action.getType() != Type.GENERAL)
+				throw new ErrorInterrupt(action.getIdentity() + " is not a general action.");
+			else
+				request.addActionItem(TAMEAction.create(action));
 		}
 
 	},
@@ -2324,9 +2329,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONSTRING call.");
 
 			TAction action = request.getModuleContext().resolveAction(varAction.asString());
-			String target = varAction.asString();
+			String target = varTarget.asString();
 			
-			request.addActionItem(TAMEAction.create(action, target));
+			if (action.getType() != Type.MODAL && action.getType() != Type.OPEN)
+				throw new ErrorInterrupt(action.getIdentity() + " is not a modal nor open action.");
+			else
+				request.addActionItem(TAMEAction.create(action, target));
 		}
 
 	},
@@ -2354,7 +2362,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAction action = moduleContext.resolveAction(varAction.asString());
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			
-			request.addActionItem(TAMEAction.create(action, object));
+			if (action.getType() != Type.TRANSITIVE && action.getType() != Type.DITRANSITIVE)
+				throw new ErrorInterrupt(action.getIdentity() + " is not a transitive nor ditransitive action.");
+			else
+				request.addActionItem(TAMEAction.create(action, object));
 		}
 
 	},
@@ -2387,7 +2398,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			TObject object2 = moduleContext.resolveObject(varObject2.asString());
 			
-			request.addActionItem(TAMEAction.create(action, object, object2));
+			if (action.getType() != Type.DITRANSITIVE)
+				throw new ErrorInterrupt(action.getIdentity() + " is not a ditransitive action.");
+			else
+				request.addActionItem(TAMEAction.create(action, object, object2));
 		}
 
 	},
