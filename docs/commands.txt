@@ -72,13 +72,13 @@ TEXTF(VALUE)
 
 	VALUE: The message to print.
 	
-	Appends a "textformatted" cue to the response. 
+	Appends a "textf" cue to the response. 
 
 	TEXT returns no values after execution, so it cannot be used in 
 	expressions.
 	
 	Equivalent to:
-	ADDCUE("textformatted", VALUE);
+	ADDCUE("textf", VALUE);
 	
 ...............................................................................
 
@@ -86,14 +86,14 @@ TEXTFLN(VALUE)
 
 	VALUE: The message to print.
 	
-	Appends a "textformatted" cue to the response with a newline character appended to 
+	Appends a "textf" cue to the response with a newline character appended to 
 	the end. 
 
 	TEXTLN returns no values after execution, so it cannot be used in 
 	expressions.
 	
 	Equivalent to:
-	ADDCUE("textformatted", VALUE+"\n");
+	ADDCUE("textf", VALUE+"\n");
 	
 ...............................................................................
 
@@ -1128,8 +1128,7 @@ be understood regardless of letter case.
 
 text - 		CONTENT is output at the client. Used for narration and 
 			messages.
-textformatted - 
-			CONTENT is output at the client, with formatting to change output 
+textf - 	CONTENT is output at the client, with formatting to change output 
 			appearance. Used for narration and messages.
 pause -		CONTENT is ignored. Client will wait for a response from the 
 			user before proceeding to the next cue to process.
