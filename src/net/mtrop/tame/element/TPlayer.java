@@ -63,7 +63,7 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 		switch (type)
 		{
 			case INIT:
-			case ROUTINE:
+			case PROCEDURE:
 			case ONACTION:
 			case ONBADACTION:
 			case ONMODALACTION:

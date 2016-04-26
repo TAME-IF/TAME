@@ -459,11 +459,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TElementContext<?> elementContext = request.peekContext();
 			TElement element = elementContext.getElement();
 			
-			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.ROUTINE, procedureName));
+			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, procedureName));
 			if (block != null)
 				TAMELogic.callBlock(request, response, elementContext, block);
 			else
-				response.addCue(CUE_ERROR, "No such routine ("+procedureName.asString()+") in lineage of element " + element);
+				response.addCue(CUE_ERROR, "No such procedure ("+procedureName.asString()+") in lineage of element " + element);
 		}
 		
 	},

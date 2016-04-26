@@ -12,7 +12,7 @@ public enum BlockEntryType
 {
 	INIT(0),
 	AFTERREQUEST(0),
-	ROUTINE(1, ArgumentType.VALUE),
+	PROCEDURE(1, ArgumentType.VALUE),
 	ONACTION(1, ArgumentType.ACTION),
 	ONACTIONWITH(2, ArgumentType.ACTION, ArgumentType.OBJECT),
 	ONACTIONWITHOTHER(1, ArgumentType.ACTION),

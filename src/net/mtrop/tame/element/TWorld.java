@@ -54,7 +54,7 @@ public class TWorld extends TElement implements Inheritable<TWorld>
 		switch (type)
 		{
 			case INIT:
-			case ROUTINE:
+			case PROCEDURE:
 			case ONACTION:
 			case ONBADACTION:
 			case ONMODALACTION:

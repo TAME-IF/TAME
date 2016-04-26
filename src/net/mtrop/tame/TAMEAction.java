@@ -41,20 +41,26 @@ public class TAMEAction
 	 * Creates a general action item to execute later.
 	 * @param action the action to call.
 	 * @return a new TAME action item.
+	 * @throws IllegalArgumentException if the action provided is not a general one.
 	 */
 	public static TAMEAction create(TAction action)
 	{
+		if (action.getType() != TAction.Type.GENERAL)
+			throw new IllegalArgumentException("Action is not a general action.");
 		return new TAMEAction(false, action, null, null, null);
 	}
 	
 	/**
-	 * Creates a model or open action item to execute later.
+	 * Creates a modal or open action item to execute later.
 	 * @param action the action to call.
 	 * @param target the open target.
 	 * @return a new TAME action item.
+	 * @throws IllegalArgumentException if the action provided is not a modal or open one.
 	 */
 	public static TAMEAction create(TAction action, String target)
 	{
+		if (action.getType() != TAction.Type.MODAL && action.getType() != TAction.Type.OPEN)
+			throw new IllegalArgumentException("Action is not a modal nor open action.");
 		return new TAMEAction(false, action, target, null, null);
 	}
 	
@@ -63,9 +69,12 @@ public class TAMEAction
 	 * @param action the action to call.
 	 * @param object the first object.
 	 * @return a new TAME action item.
+	 * @throws IllegalArgumentException if the action provided is not a transitive or ditransitive one.
 	 */
 	public static TAMEAction create(TAction action, TObject object)
 	{
+		if (action.getType() != TAction.Type.TRANSITIVE && action.getType() != TAction.Type.DITRANSITIVE)
+			throw new IllegalArgumentException("Action is not a transitive nor ditransitive action.");
 		return new TAMEAction(false, action, null, object, null);
 	}
 	
@@ -75,9 +84,12 @@ public class TAMEAction
 	 * @param object1 the first object.
 	 * @param object2 the second object.
 	 * @return a new TAME action item.
+	 * @throws IllegalArgumentException if the action provided is not a ditransitive one.
 	 */
 	public static TAMEAction create(TAction action, TObject object1, TObject object2)
 	{
+		if (action.getType() != TAction.Type.DITRANSITIVE)
+			throw new IllegalArgumentException("Action is not a ditransitive action.");
 		return new TAMEAction(false, action, null, object1, object2);
 	}
 
@@ -85,9 +97,12 @@ public class TAMEAction
 	 * Creates a general action item to execute later.
 	 * @param action the action to call.
 	 * @return a new TAME action item.
+	 * @throws IllegalArgumentException if the action provided is not a general one.
 	 */
 	public static TAMEAction createInitial(TAction action)
 	{
+		if (action.getType() != TAction.Type.GENERAL)
+			throw new IllegalArgumentException("Action is not a general action.");
 		return new TAMEAction(true, action, null, null, null);
 	}
 	
@@ -96,9 +111,12 @@ public class TAMEAction
 	 * @param action the action to call.
 	 * @param target the open target.
 	 * @return a new TAME action item.
+	 * @throws IllegalArgumentException if the action provided is not a modal or open one.
 	 */
 	public static TAMEAction createInitial(TAction action, String target)
 	{
+		if (action.getType() != TAction.Type.MODAL && action.getType() != TAction.Type.OPEN)
+			throw new IllegalArgumentException("Action is not a modal nor open action.");
 		return new TAMEAction(true, action, target, null, null);
 	}
 	
@@ -107,9 +125,12 @@ public class TAMEAction
 	 * @param action the action to call.
 	 * @param object the first object.
 	 * @return a new TAME action item.
+	 * @throws IllegalArgumentException if the action provided is not a transitive or ditransitive one.
 	 */
 	public static TAMEAction createInitial(TAction action, TObject object)
 	{
+		if (action.getType() != TAction.Type.TRANSITIVE && action.getType() != TAction.Type.DITRANSITIVE)
+			throw new IllegalArgumentException("Action is not a transitive nor ditransitive action.");
 		return new TAMEAction(true, action, null, object, null);
 	}
 	
@@ -119,9 +140,12 @@ public class TAMEAction
 	 * @param object1 the first object.
 	 * @param object2 the second object.
 	 * @return a new TAME action item.
+	 * @throws IllegalArgumentException if the action provided is not a ditransitive one.
 	 */
 	public static TAMEAction createInitial(TAction action, TObject object1, TObject object2)
 	{
+		if (action.getType() != TAction.Type.DITRANSITIVE)
+			throw new IllegalArgumentException("Action is not a ditransitive action.");
 		return new TAMEAction(true, action, null, object1, object2);
 	}
 
