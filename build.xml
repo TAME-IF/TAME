@@ -46,8 +46,7 @@
 		net.mtrop.tame.exception,
 		net.mtrop.tame.factory,
 		net.mtrop.tame.interrupt,
-		net.mtrop.tame.lang,
-		net.mtrop.tame.struct
+		net.mtrop.tame.lang
 	"/>
 	
 	<import file="build-import.xml" />

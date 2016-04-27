@@ -8,7 +8,7 @@
 package net.mtrop.tame;
 
 import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
-import net.mtrop.tame.struct.Cue;
+import net.mtrop.tame.lang.Cue;
 
 import java.util.Formatter;
 

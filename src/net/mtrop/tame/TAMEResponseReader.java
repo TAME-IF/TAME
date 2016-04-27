@@ -9,7 +9,7 @@ package net.mtrop.tame;
 
 import java.util.Iterator;
 
-import net.mtrop.tame.struct.Cue;
+import net.mtrop.tame.lang.Cue;
 
 /**
  * A response reader class that iterates through 

@@ -27,8 +27,8 @@ import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.factory.DefaultReaderOptions;
 import net.mtrop.tame.factory.TAMEScriptParseException;
 import net.mtrop.tame.factory.TAMEScriptReader;
-import net.mtrop.tame.struct.Cue;
-import net.mtrop.tame.struct.FormatParser;
+import net.mtrop.tame.lang.Cue;
+import net.mtrop.tame.lang.FormatParser;
 
 /**
  * A console client implementation.

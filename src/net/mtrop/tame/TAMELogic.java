@@ -807,8 +807,8 @@ public final class TAMELogic implements TAMEConstants
 		boolean success = false;
 		
 		Value actionValue = Value.createAction(action.getIdentity());
-		BlockEntry blockEntry1 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createAction(object1.getIdentity()));
-		BlockEntry blockEntry2 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createAction(object2.getIdentity()));
+		BlockEntry blockEntry1 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object1.getIdentity()));
+		BlockEntry blockEntry2 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object2.getIdentity()));
 		
 		// call action on each object. one or both need to succeed for no failure.
 		if ((blockToCall = object1.resolveBlock(blockEntry2)) != null)

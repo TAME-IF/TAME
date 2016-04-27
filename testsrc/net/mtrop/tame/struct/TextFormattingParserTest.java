@@ -7,6 +7,7 @@
  ******************************************************************************/
 package net.mtrop.tame.struct;
 
+import net.mtrop.tame.lang.FormatParser;
 
 public final class TextFormattingParserTest
 {
