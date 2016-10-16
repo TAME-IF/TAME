@@ -12,6 +12,7 @@ com/blackrook/commons/AbstractVector$*.class
 com/blackrook/commons/Common.class
 com/blackrook/commons/Common$*.class
 com/blackrook/commons/CommonTokenizer.class
+com/blackrook/commons/Dumpable.class
 com/blackrook/commons/ObjectPair.class
 com/blackrook/commons/Reflect.class
 com/blackrook/commons/Reflect$*.class

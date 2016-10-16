@@ -23,7 +23,6 @@ import com.blackrook.io.SuperWriter;
 
 /**
  * All values in the interpreter are of this type, which stores a type.
- * TODO: Verify to ECMAScript standard.
  * @author Matthew Tropiano
  */
 public class Value implements Comparable<Value>, Saveable
