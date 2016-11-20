@@ -31,12 +31,15 @@ public class TObject extends TElement implements Inheritable<TObject>
 	private TObject parent;
 	/** Element's names. */
 	protected CaseInsensitiveHash names;
+	/** Element's names. */
+	protected CaseInsensitiveHash tags;
 
 	private TObject()
 	{
 		super();
 		this.parent = null;
 		this.names = new CaseInsensitiveHash(3);
+		this.tags = new CaseInsensitiveHash(2);
 	}
 	
 	/**
@@ -83,14 +86,43 @@ public class TObject extends TElement implements Inheritable<TObject>
 	{
 		return parent;
 	}
+
+	/**
+	 * Adds an initial name to this object.
+	 * These names are found by the interpreter.  
+	 * @param name the name to add.
+	 */
+	public void addName(String name)
+	{
+		names.put(name);
+	}
 	
 	/**
-	 * Gets the initial names on this object.
+	 * Gets the initial names on this object as an iterable structure.
 	 * @return the case-insensitive hash containing the names.
 	 */
-	public CaseInsensitiveHash getNames()
+	public Iterable<String> getNameIterable()
 	{
 		return names;
+	}
+
+	/**
+	 * Adds an initial tag to this object.
+	 * These tags are used by some functions for doing stuff to objects.  
+	 * @param tag the tag to add.
+	 */
+	public void addTag(String tag)
+	{
+		tags.put(tag);
+	}
+	
+	/**
+	 * Gets the initial tags on this object as an iterable structure.
+	 * @return an iterable object for iteration.
+	 */
+	public Iterable<String> getTagIterable()
+	{
+		return tags;
 	}
 
 	@Override
@@ -122,7 +154,9 @@ public class TObject extends TElement implements Inheritable<TObject>
 		sw.writeInt(names.size());
 		for (String name : names)
 			sw.writeString(name.toLowerCase(), "UTF-8");
-			
+		sw.writeInt(tags.size());
+		for (String tag : tags)
+			sw.writeString(tag.toLowerCase(), "UTF-8");
 	}
 	
 	@Override
@@ -131,10 +165,17 @@ public class TObject extends TElement implements Inheritable<TObject>
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readBytes(in);
 		
+		int size;
+		
 		names.clear();
-		int size = sr.readInt();
+		size = sr.readInt();
 		while (size-- > 0)
 			names.put(sr.readString("UTF-8"));
+
+		tags.clear();
+		size = sr.readInt();
+		while (size-- > 0)
+			tags.put(sr.readString("UTF-8"));
 
 	}
 

@@ -174,8 +174,10 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		{
 			TObjectContext context = element.getValue();
 			TObject object = context.getElement();
-			for (String name : object.getNames())
+			for (String name : object.getNameIterable())
 				context.addName(name);
+			for (String tag : object.getTagIterable())
+				context.addTag(tag);
 		}
 	}
 

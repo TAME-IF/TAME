@@ -24,8 +24,10 @@ import net.mtrop.tame.element.TObject;
  */
 public class TObjectContext extends TElementContext<TObject>
 {
-	/** Object's names. */
+	/** Object's current names. */
 	protected CaseInsensitiveHash currentObjectNames;
+	/** Object's current tags. */
+	protected CaseInsensitiveHash currentObjectTags;
 	
 	/**
 	 * Creates an object context. 
@@ -35,6 +37,7 @@ public class TObjectContext extends TElementContext<TObject>
 	{
 		super(object);
 		currentObjectNames = new CaseInsensitiveHash(2);
+		currentObjectTags = new CaseInsensitiveHash(2);
 	}
 
 	/** 
@@ -60,12 +63,43 @@ public class TObjectContext extends TElementContext<TObject>
 	/**
 	 * Checks if this contains a particular name.
 	 * This name is the one referred to in requests.
-	 * @param name the name to add.
+	 * @param name the name to check.
 	 * @return true if so, false if not.
 	 */
 	public boolean containsName(String name)
 	{
 		return currentObjectNames.contains(name);
+	}
+
+	/** 
+	 * Adds a tag to this object.
+	 * This is referred to in tag operations.
+	 * @param name the name to add.
+	 */
+	public void addTag(String name) 
+	{
+		currentObjectTags.put(name);
+	}
+
+	/** 
+	 * Removes a tag. 
+	 * This is referred to in tag operations.
+	 * @param tag the tag to remove.
+	 */
+	public void removeTag(String tag) 
+	{
+		currentObjectTags.remove(tag);
+	}
+
+	/**
+	 * Checks if this contains a particular tag.
+	 * This is referred to in tag operations.
+	 * @param tag the tag to check.
+	 * @return true if so, false if not.
+	 */
+	public boolean containsTag(String tag)
+	{
+		return currentObjectTags.contains(tag);
 	}
 
 	@Override
@@ -76,6 +110,9 @@ public class TObjectContext extends TElementContext<TObject>
 		sw.writeInt(currentObjectNames.size());
 		for (String name : currentObjectNames)
 			sw.writeString(name.toLowerCase(), "UTF-8");
+		sw.writeInt(currentObjectTags.size());
+		for (String tag : currentObjectTags)
+			sw.writeString(tag.toLowerCase(), "UTF-8");
 	}
 
 	@Override
@@ -83,9 +120,13 @@ public class TObjectContext extends TElementContext<TObject>
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readStateBytes(module, in);
-		int size = sr.readInt();
+		int size;
+		size = sr.readInt();
 		while (size-- > 0)
 			addName(sr.readString("UTF-8"));
+		size = sr.readInt();
+		while (size-- > 0)
+			addTag(sr.readString("UTF-8"));
 	}
 
 }

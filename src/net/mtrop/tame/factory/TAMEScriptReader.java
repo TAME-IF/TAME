@@ -1522,7 +1522,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				object.getNames().put(currentToken().getLexeme());
+				object.addName(currentToken().getLexeme());
 				nextToken();
 				
 				return parseObjectNameList(object);
@@ -1547,7 +1547,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				object.getNames().put(currentToken().getLexeme());
+				object.addName(currentToken().getLexeme());
 				nextToken();
 				
 				return parseObjectNameList(object);
