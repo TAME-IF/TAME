@@ -102,13 +102,13 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (blockLocal.containsKey(variableName))
 				blockLocal.put(variableName, value);
 			else
-				request.peekContext().setValue(variableName, value);
+				request.peekContext().setPersistantValue(variableName, value);
 		}
 		
 	},
 	
 	/**
-	 * [INTERNAL] Pops a value into a local variable in the topmost context in the execution.
+	 * [INTERNAL] Pops a value into a local variable.
 	 * Operand0 is the variable. 
 	 * POP is the value.
 	 */
@@ -199,7 +199,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				if (blockLocal.containsKey(variableName))
 					request.pushValue(blockLocal.get(variableName));
 				else
-					request.pushValue(request.peekContext().getValue(variableName));
+					request.pushValue(request.peekContext().getPersistantValue(variableName));
 			}
 			else
 			{

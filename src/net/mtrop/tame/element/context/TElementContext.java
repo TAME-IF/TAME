@@ -72,30 +72,6 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 
 	/**
-	 * Sets a value on this context, first searching in local variables.
-	 * If it exists in local, it is replaced in local, else, it is persisted.
-	 * @param variableName the variable name.
-	 * @param value the variable value.
-	 */
-	public void setValue(String variableName, Value value)
-	{
-		variables.put(variableName, value);
-	}
-
-	/**
-	 * Gets a variable's value on this context, first searching in local variables.
-	 * @param variableName the variable name.
-	 * @return the corresponding value, or a value that represents "false" if no value.
-	 */
-	public Value getValue(String variableName)
-	{
-		if (variables.containsKey(variableName))
-			return variables.get(variableName);
-		else
-			return Value.create(false);
-	}
-
-	/**
 	 * Sets a persistent value on this context.
 	 * @param variableName the variable name.
 	 * @param value the variable value.
