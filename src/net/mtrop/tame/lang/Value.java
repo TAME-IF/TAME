@@ -616,6 +616,19 @@ public class Value implements Comparable<Value>, Saveable
 	}
 	
 	/**
+	 * Returns if this value represents an object container.
+	 * @return true if so, false if not.
+	 */
+	public boolean isObjectContainer()
+	{
+		return 
+			type == ValueType.PLAYER
+			|| type == ValueType.ROOM
+			|| type == ValueType.CONTAINER
+			|| type == ValueType.WORLD;
+	}
+	
+	/**
 	 * Returns if this value represents an action.
 	 * @return true if so, false if not.
 	 */

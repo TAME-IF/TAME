@@ -594,11 +594,11 @@ public final class TAMEScriptReader implements TAMEConstants
 						nextToken();
 						break;
 					}
-					case CONTAINER:
+					case OBJECT_CONTAINER:
 					{
 						if (!isContainer())
 						{
-							addErrorMessage("Entry requires a CONTAINER. \""+currentToken().getLexeme()+"\" is not a container type.");
+							addErrorMessage("Entry requires a CONTAINER-TYPE. \""+currentToken().getLexeme()+"\" is not a container type.");
 							return null;
 						}
 						
@@ -610,7 +610,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isElement())
 						{
-							addErrorMessage("Entry requires an ELEMENT. \""+currentToken().getLexeme()+"\" is not an element type.");
+							addErrorMessage("Entry requires an ELEMENT-TYPE. \""+currentToken().getLexeme()+"\" is not an element type.");
 							return null;
 						}
 						
@@ -2144,7 +2144,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isPlayer())
 						{
-							addErrorMessage("Command requires a PLAYER. \""+currentToken().getLexeme()+"\" is not an player type.");
+							addErrorMessage("Command requires a PLAYER. \""+currentToken().getLexeme()+"\" is not a player type.");
 							return false;
 						}
 						
@@ -2156,7 +2156,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isRoom())
 						{
-							addErrorMessage("Command requires a ROOM. \""+currentToken().getLexeme()+"\" is not an room type.");
+							addErrorMessage("Command requires a ROOM. \""+currentToken().getLexeme()+"\" is not a room type.");
 							return false;
 						}
 						
@@ -2168,7 +2168,19 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isContainer())
 						{
-							addErrorMessage("Command requires a CONTAINER. \""+currentToken().getLexeme()+"\" is not an container type.");
+							addErrorMessage("Command requires a CONTAINER. \""+currentToken().getLexeme()+"\" is not a container type.");
+							return false;
+						}
+						
+						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case OBJECT_CONTAINER:
+					{
+						if (!isObjectContainer())
+						{
+							addErrorMessage("Command requires an OBJECT-CONTAINER. \""+currentToken().getLexeme()+"\" is not an object container type.");
 							return false;
 						}
 						
@@ -2570,14 +2582,21 @@ public final class TAMEScriptReader implements TAMEConstants
 		// Checks if an identifier is an element.
 		private boolean isElement()
 		{
+			return isObject()
+				|| isObjectContainer()
+			;
+		}
+
+		// Checks if an identifier is an object container.
+		private boolean isObjectContainer()
+		{
 			return isWorld()
 				|| isPlayer()
 				|| isRoom()
-				|| isObject()
 				|| isContainer()
 			;
 		}
-		
+
 		// Checks if an identifier is a world.
 		private boolean isWorld()
 		{
@@ -2609,7 +2628,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			return (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getContainerByIdentity(currentToken().getLexeme()) != null);
 		}
-
+		
 		// Checks if an identifier is an action.
 		private boolean isAction()
 		{

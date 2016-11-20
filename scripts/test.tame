@@ -100,7 +100,7 @@ world
 		textln(strlastindex(s, "s")); 
 		textln(strcontains(s, "and") + ":" + strcontains(s, "or")); 
 		textln(strcontainspattern(s, "\\s+")); 
-		textln(strcontainstoken(s, "oranges") + ":" + strcontainstoken(s, "ranges")); 
+		textln(strcontainstoken(s, "apples") + ":" + strcontainstoken(s, "ranges")); 
 		textln(substr(s, 0, strlen(s) - 8)); 
 		textln(strlower(s)); 
 		textln(strupper(s)); 
@@ -137,27 +137,27 @@ world
 		addObjectName(o_object1, "butt");
 		textln(objecthasnoowner(o_object1));
 
-		giveworldobject(o_object1);
+		giveobject(world, o_object1);
 		textln(objecthasnoowner(o_object1));
-		textln(worldhasobject(o_object1));
-		textln(objectsinworldcount());
+		textln(hasobject(world, o_object1));
+		textln(objectcount(world));
 
-		giveroomobject(r_room1, o_object1);
-		textln(worldhasobject(o_object1));
-		textln(roomhasobject(r_room1, o_object1));
-		textln(objectsinroomcount(r_room1));
+		giveobject(r_room1, o_object1);
+		textln(hasobject(world, o_object1));
+		textln(hasobject(r_room1, o_object1));
+		textln(objectcount(r_room1));
 		browseroom(r_room1);
 
-		giveplayerobject(p_main, o_object1);
-		textln(roomhasobject(r_room1, o_object1));
-		textln(playerhasobject(p_main, o_object1));
-		textln(objectsinplayercount(p_main));
+		giveobject(p_main, o_object1);
+		textln(hasobject(r_room1, o_object1));
+		textln(hasobject(p_main, o_object1));
+		textln(objectcount(p_main));
 		browseplayer(p_main);
 
-		givecontainerobject(c_container1, o_object1);
-		textln(playerhasobject(p_main, o_object1));
-		textln(containerhasobject(c_container1, o_object1));
-		textln(objectsincontainercount(c_container1));
+		giveobject(c_container1, o_object1);
+		textln(hasobject(p_main, o_object1));
+		textln(hasobject(c_container1, o_object1));
+		textln(objectcount(c_container1));
 		browsecontainer(c_container1);
 
 		removeobject(o_object1);

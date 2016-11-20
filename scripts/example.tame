@@ -53,11 +53,11 @@ object o_1984 named "old book", "book", "the book"
 	
 	onAction(a_take)
 	{
-		if (playerHasObject(player,o_1984))
+		if (hasObject(player, o_1984))
 			textln("I already have this.");
 		else
 		{
-			givePlayerObject(player, o_1984);
+			giveObject(o_1984, player);
 			if (!exam)
 				textln("You take the book.");
 			else
@@ -114,11 +114,11 @@ object o_twilight named "shitty book", "book", "the book"
 
 	onAction(a_take)
 	{
-		if (playerHasObject(player,o_twilight))
+		if (hasObject(player, o_twilight))
 			textln("I already have this. Question is, WHY do I even have it in the first place?");
 		else
 		{
-			givePlayerObject(player, o_twilight);
+			giveObject(o_twilight, player);
 			if (!exam)
 				textln("You take the book.");
 			else
@@ -189,9 +189,9 @@ room r_room
 {
 	init()
 	{
-		giveRoomObject(r_room, o_1984);
-		giveRoomObject(r_room, o_twilight);
-		giveRoomObject(r_room, o_incinerator);
+		giveObject(o_1984, r_room);
+		giveObject(o_twilight, r_room);
+		giveObject(o_incinerator, r_room);
 	}
 
 	onAction(a_look)
