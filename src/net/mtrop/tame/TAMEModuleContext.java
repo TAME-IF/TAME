@@ -99,6 +99,15 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		
 		ownershipMap = new TOwnershipMap();
 
+		for (ObjectPair<String, TObjectContext> element : objectContextHash)
+		{
+			TObjectContext context = element.getValue();
+			TObject object = context.getElement();
+			for (String name : object.getNameIterable())
+				ownershipMap.addObjectName(object, name);
+			for (String tag : object.getTagIterable())
+				ownershipMap.addObjectTag(object, tag);
+		}
 	}
 
 	/**
@@ -162,23 +171,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	TOwnershipMap getOwnershipMap()
 	{
 		return ownershipMap;
-	}
-
-	/**
-	 * Sets the initial object lookup names.
-	 * Should only be called on first initialize.
-	 */
-	void setInitialObjectNames()
-	{
-		for (ObjectPair<String, TObjectContext> element : objectContextHash)
-		{
-			TObjectContext context = element.getValue();
-			TObject object = context.getElement();
-			for (String name : object.getNameIterable())
-				context.addName(name);
-			for (String tag : object.getTagIterable())
-				context.addTag(tag);
-		}
 	}
 
 	/**

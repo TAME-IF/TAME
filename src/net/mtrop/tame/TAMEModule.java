@@ -27,6 +27,7 @@ import net.mtrop.tame.lang.Saveable;
 import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
+import com.blackrook.commons.hash.Hash;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.list.List;
 import com.blackrook.io.SuperReader;
@@ -60,6 +61,11 @@ public class TAMEModule implements Saveable
 	/** Data digest (generated if read by script). */
 	private byte[] digest;
 	
+	
+	/** Not saved, used for checking - known identities. */
+	private Hash<String> knownIdentities; 
+	
+	
 	/**
 	 * Creates a new module.
 	 */
@@ -75,6 +81,8 @@ public class TAMEModule implements Saveable
 		this.containers = new HashMap<String, TContainer>(5);
 		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
 		this.digest = null;
+		
+		this.knownIdentities = new Hash<String>(200);
 	}
 
 	/**
@@ -151,6 +159,7 @@ public class TAMEModule implements Saveable
 	 */
 	public void addAction(TAction a)
 	{
+		identityCheck(a.getIdentity());
 		actions.put(a.getIdentity(), a);
 		for (String s : a.getNames())
 			actionNameTable.put(s, a);
@@ -182,6 +191,7 @@ public class TAMEModule implements Saveable
 	 */
 	public void addRoom(TRoom room)
 	{
+		identityCheck(room.getIdentity());
 		rooms.put(room.getIdentity(), room);
 	}
 
@@ -201,6 +211,7 @@ public class TAMEModule implements Saveable
 	 */
 	public void addObject(TObject object)
 	{
+		identityCheck(object.getIdentity());
 		objects.put(object.getIdentity(), object);
 	}
 
@@ -220,6 +231,7 @@ public class TAMEModule implements Saveable
 	 */
 	public void addContainer(TContainer container)
 	{
+		identityCheck(container.getIdentity());
 		containers.put(container.getIdentity(), container);
 	}
 
@@ -239,6 +251,7 @@ public class TAMEModule implements Saveable
 	 */
 	public void addPlayer(TPlayer player)
 	{
+		identityCheck(player.getIdentity());
 		players.put(player.getIdentity(), player);
 	}
 
@@ -252,6 +265,15 @@ public class TAMEModule implements Saveable
 		return players.get(identity);
 	}
 
+	// Check if we saw the identity before. If so, throw exception.
+	private void identityCheck(String identity)
+	{
+		if (knownIdentities.contains(identity))
+			throw new ModuleException("Identity "+identity+" has already been seen.");
+		else
+			knownIdentities.put(identity);
+	}
+	
 	/**
 	 * Gets how many players are in this module.
 	 * @return the number of players.
@@ -464,6 +486,8 @@ public class TAMEModule implements Saveable
 		rooms.clear();
 		objects.clear();
 		containers.clear();
+		
+		knownIdentities.clear();
 
 		int size;
 		

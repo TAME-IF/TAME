@@ -24,7 +24,6 @@ import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.element.context.TElementContext;
-import net.mtrop.tame.element.context.TObjectContext;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.UnexpectedValueTypeException;
 import net.mtrop.tame.interrupt.BreakInterrupt;
@@ -1596,7 +1595,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds an object name to the object.
+	 * Adds an object name to an object. Changes nothing if it has the name already.
 	 * First POP is name.
 	 * Second POP is object. 
 	 * Returns nothing.
@@ -1614,8 +1613,139 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (varObject.getType() != ValueType.OBJECT)
 				throw new UnexpectedValueTypeException("Expected object type in ADDOBJECTNAME call.");
 
-			TObjectContext objectContext = request.getModuleContext().resolveObjectContext(varObject.asString());
-			objectContext.addName(varName.asString());
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			moduleContext.getOwnershipMap().addObjectName(object, varName.asString());
+		}
+		
+	},
+	
+	/**
+	 * Removes an object name from an object. Does nothing if it doesn't have the name.
+	 * First POP is name.
+	 * Second POP is object. 
+	 * Returns nothing.
+	 */
+	REMOVEOBJECTNAME (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varName = request.popValue();
+			Value varObject = request.popValue();
+			
+			if (!varName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REMOVEOBJECTNAME call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in REMOVEOBJECTNAME call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			moduleContext.getOwnershipMap().removeObjectName(object, varName.asString());
+		}
+		
+	},
+	
+	/**
+	 * Checks if an object has a specific name.
+	 * First POP is name.
+	 * Second POP is object. 
+	 * Returns boolean.
+	 */
+	OBJECTHASNAME (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varName = request.popValue();
+			Value varObject = request.popValue();
+			
+			if (!varName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in OBJECTHASNAME call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in OBJECTHASNAME call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkObjectHasName(object, varName.asString())));
+		}
+		
+	},
+	
+	/**
+	 * Adds an object tag to an object. Changes nothing if it has the tag already.
+	 * First POP is tag.
+	 * Second POP is object. 
+	 * Returns nothing.
+	 */
+	ADDOBJECTTAG (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varName = request.popValue();
+			Value varObject = request.popValue();
+			
+			if (!varName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in ADDOBJECTTAG call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in ADDOBJECTTAG call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			moduleContext.getOwnershipMap().addObjectTag(object, varName.asString());
+		}
+		
+	},
+	
+	/**
+	 * Removes an object tag from an object. Does nothing if it doesn't have the tag.
+	 * First POP is tag.
+	 * Second POP is object. 
+	 * Returns nothing.
+	 */
+	REMOVEOBJECTTAG (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varName = request.popValue();
+			Value varObject = request.popValue();
+			
+			if (!varName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REMOVEOBJECTTAG call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in REMOVEOBJECTTAG call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			moduleContext.getOwnershipMap().removeObjectTag(object, varName.asString());
+		}
+		
+	},
+	
+	/**
+	 * Checks if an object has a specific tag.
+	 * First POP is tag.
+	 * Second POP is object. 
+	 * Returns boolean.
+	 */
+	OBJECTHASTAG (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varName = request.popValue();
+			Value varObject = request.popValue();
+			
+			if (!varName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in OBJECTHASTAG call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in OBJECTHASTAG call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkObjectHasTag(object, varName.asString())));
 		}
 		
 	},
@@ -2420,7 +2550,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			
-			// must resolve: the passed-in value could be the "current" room/player.
+			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
 			
 			if (element.getType() == ValueType.CONTAINER)
 				request.pushValue(Value.create(moduleContext.resolveContainer(element.asString()).getIdentity()));

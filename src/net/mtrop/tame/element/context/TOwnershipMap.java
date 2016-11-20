@@ -25,6 +25,7 @@ import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.lang.StateSaveable;
 
 import com.blackrook.commons.ObjectPair;
+import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.hash.HashedQueueMap;
 import com.blackrook.commons.linkedlist.Queue;
@@ -39,6 +40,8 @@ import com.blackrook.io.SuperWriter;
  */
 public class TOwnershipMap implements StateSaveable, TAMEConstants
 {
+	// These must be queues - order added should be reflected in retrieval and presentation.
+	
 	/** Ownership map - objects owned by world. */
 	protected HashedQueueMap<TWorld, TObject> objectsOwnedByWorld;
 	/** Ownership map - objects owned by room. */
@@ -49,6 +52,12 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	protected HashedQueueMap<TContainer, TObject> objectsOwnedByContainer;
 	/** Room stack. */
 	protected HashMap<TPlayer, Stack<TRoom>> playerToRoomStack;
+	
+	/** Map of object to its current names. */
+	protected HashMap<TObject, CaseInsensitiveHash> objectCurrentNames;
+	/** Map of object to its current tags. */
+	protected HashMap<TObject, CaseInsensitiveHash> objectCurrentTags;
+
 	
 	/** Reverse lookup object - not saved. */
 	protected HashMap<TObject, TElement> objectToElement;
@@ -63,6 +72,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		objectsOwnedByPlayer = new HashedQueueMap<TPlayer, TObject>(4);
 		objectsOwnedByContainer = new HashedQueueMap<TContainer, TObject>(3);
 		playerToRoomStack = new HashMap<TPlayer, Stack<TRoom>>(3);
+		objectCurrentNames = new HashMap<TObject, CaseInsensitiveHash>();
+		objectCurrentTags = new HashMap<TObject, CaseInsensitiveHash>();
 		
 		objectToElement = new HashMap<TObject, TElement>(20);
 	}
@@ -76,6 +87,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		objectsOwnedByRoom.clear();
 		objectsOwnedByPlayer.clear();
 		playerToRoomStack.clear();
+		objectCurrentNames.clear();
+		objectCurrentTags.clear();
 
 		objectToElement.clear();
 	}
@@ -379,6 +392,74 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		return getObjectsInQueueCount(objectsOwnedByContainer.get(container)); 
 	}
 
+	/** 
+	 * Adds a name to an object.
+	 * This name is the one referred to in requests.
+	 * @param object the object to use.
+	 * @param name the name to add.
+	 */
+	public void addObjectName(TObject object, String name) 
+	{
+		addStringToObjectMap(objectCurrentNames, object, name);
+	}
+
+	/** 
+	 * Removes a name from an object. 
+	 * This name is the one referred to in requests.
+	 * @param object the object to use.
+	 * @param name the name to remove.
+	 */
+	public void removeObjectName(TObject object, String name) 
+	{
+		removeStringFromObjectMap(objectCurrentNames, object, name);
+	}
+
+	/**
+	 * Checks if an object contains a particular name.
+	 * This name is the one referred to in requests.
+	 * @param name the name to check.
+	 * @param object the object to use.
+	 * @return true if so, false if not.
+	 */
+	public boolean checkObjectHasName(TObject object, String name)
+	{
+		return checkStringInObjectMap(objectCurrentNames, object, name);
+	}
+
+	/** 
+	 * Adds a tag to this object.
+	 * This is referred to in tag operations.
+	 * @param object the object to use.
+	 * @param tag the tag to add.
+	 */
+	public void addObjectTag(TObject object, String tag) 
+	{
+		addStringToObjectMap(objectCurrentTags, object, tag);
+	}
+
+	/** 
+	 * Removes a tag from an object. 
+	 * This is referred to in tag operations.
+	 * @param object the object to use.
+	 * @param tag the tag to remove.
+	 */
+	public void removeObjectTag(TObject object, String tag) 
+	{
+		removeStringFromObjectMap(objectCurrentTags, object, tag);
+	}
+
+	/**
+	 * Checks if an object contains a particular tag.
+	 * This is referred to in tag operations.
+	 * @param object the object to use.
+	 * @param tag the tag to check.
+	 * @return true if so, false if not.
+	 */
+	public boolean checkObjectHasTag(TObject object, String tag)
+	{
+		return checkStringInObjectMap(objectCurrentTags, object, tag);
+	}
+
 	private List<TObject> getObjectsInQueue(Queue<TObject> hash)
 	{
 		List<TObject> out = new List<TObject>(hash != null ? hash.size() : 1);
@@ -390,6 +471,36 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	private int getObjectsInQueueCount(Queue<TObject> hash)
 	{
 		return hash != null ? hash.size() : 0; 
+	}
+	
+	private void addStringToObjectMap(HashMap<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	{
+		CaseInsensitiveHash hash = null;
+		if ((hash = table.get(object)) == null)
+			table.put(object, hash = new CaseInsensitiveHash());
+		hash.put(str);
+	}
+	
+	private void removeStringFromObjectMap(HashMap<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	{
+		CaseInsensitiveHash hash = null;
+		if ((hash = table.get(object)) == null)
+			return;
+
+		hash.remove(str);
+
+		// clean up entry if no strings.
+		if (hash.isEmpty())
+			table.removeUsingKey(object);
+	}
+	
+	private boolean checkStringInObjectMap(HashMap<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	{
+		CaseInsensitiveHash hash = null;
+		if ((hash = table.get(object)) == null)
+			return false;
+
+		return hash.contains(str);
 	}
 	
 	@Override
@@ -413,6 +524,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 			for (TRoom room : roomList)
 				sw.writeString(room.getIdentity(), "UTF-8");
 		}
+		
+		writeStringMap(sw, objectCurrentNames);
+		writeStringMap(sw, objectCurrentTags);
 	}
 
 	// Writes a map.
@@ -428,6 +542,22 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 			sw.writeInt(objectList.size());
 			for (TObject object : objectList)
 				sw.writeString(object.getIdentity(), "UTF-8");
+		}
+	}
+	
+	// Writes a string map.
+	private void writeStringMap(SuperWriter sw, HashMap<TObject, CaseInsensitiveHash> map) throws IOException 
+	{
+		sw.writeInt(map.size());
+		for (ObjectPair<TObject, CaseInsensitiveHash> elementPair : map)
+		{
+			TObject object = elementPair.getKey();
+			CaseInsensitiveHash stringList = elementPair.getValue();
+			
+			sw.writeString(object.getIdentity(), "UTF-8");
+			sw.writeInt(stringList.size());
+			for (String str : stringList)
+				sw.writeString(str, "UTF-8");
 		}
 	}
 	
@@ -540,6 +670,28 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 			
 		}
 
+		objectCurrentNames = readStringMap(module, sr);
+		objectCurrentTags = readStringMap(module, sr);
+	}
+
+	// Reads a string map.
+	private HashMap<TObject, CaseInsensitiveHash> readStringMap(TAMEModule module, SuperReader sr) throws IOException 
+	{
+		int objsize = sr.readInt();
+		HashMap<TObject, CaseInsensitiveHash> out = new HashMap<TObject, CaseInsensitiveHash>(objsize);
+		while (objsize-- > 0)
+		{
+			String id = sr.readString("UTF-8");
+			TObject object = module.getObjectByIdentity(id);
+			if (object == null)
+				throw new ModuleStateException("Object %s cannot be found!", id);
+			
+			int size = sr.readInt();
+			while (size-- > 0)
+				addStringToObjectMap(out, object, sr.readString("UTF-8"));
+		}
+		
+		return out;
 	}
 
 	@Override

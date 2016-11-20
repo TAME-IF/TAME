@@ -15,17 +15,17 @@ public enum ArgumentType
 {
 	/** Argument accepts an action. */
 	ACTION,
-	/** Argument accepts a single value, can be anything. */
+	/** Argument accepts a single literal value, can be anything. */
 	VALUE,
-	/** Argument must accept a container. */
-	CONTAINER,
 	/** Argument must accept a player. */
 	PLAYER,
 	/** Argument must accept a room. */
 	ROOM,
 	/** Argument must accept an object. */
 	OBJECT,
-	/** Argument must accept an element (player/room/object). */
+	/** Argument must accept a container (player/room/container/world). */
+	CONTAINER,
+	/** Argument must accept an element (object/player/room/container/world). */
 	ELEMENT,
 	/** Argument must accept a variable. */
 	VARIABLE;

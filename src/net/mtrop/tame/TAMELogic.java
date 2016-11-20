@@ -872,7 +872,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
 		{
-			if (moduleContext.getObjectContext(obj).containsName(name))
+			if (ownerMap.checkObjectHasName(obj, name))
 			{
 				outputArray[arrayOffset++] = obj;
 				if (arrayOffset == outputArray.length)
@@ -882,7 +882,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
 		{
-			if (moduleContext.getObjectContext(obj).containsName(name))
+			if (ownerMap.checkObjectHasName(obj, name))
 			{
 				outputArray[arrayOffset++] = obj;
 				if (arrayOffset == outputArray.length)
@@ -892,7 +892,7 @@ public final class TAMELogic implements TAMEConstants
 	
 		for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
 		{
-			if (moduleContext.getObjectContext(obj).containsName(name))
+			if (ownerMap.checkObjectHasName(obj, name))
 			{
 				outputArray[arrayOffset++] = obj;
 				if (arrayOffset == outputArray.length)
@@ -915,7 +915,6 @@ public final class TAMELogic implements TAMEConstants
 		
 		response.trace(request, "Starting init...");
 
-		moduleContext.setInitialObjectNames();
 		callInitOnContexts(request, response, moduleContext.getContainerContextList().valueIterator());
 		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
 		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());

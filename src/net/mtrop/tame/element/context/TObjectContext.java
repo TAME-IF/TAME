@@ -7,15 +7,6 @@
  ******************************************************************************/
 package net.mtrop.tame.element.context;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import com.blackrook.commons.hash.CaseInsensitiveHash;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
-
-import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.TObject;
 
 /**
@@ -23,12 +14,7 @@ import net.mtrop.tame.element.TObject;
  * @author Matthew Tropiano
  */
 public class TObjectContext extends TElementContext<TObject>
-{
-	/** Object's current names. */
-	protected CaseInsensitiveHash currentObjectNames;
-	/** Object's current tags. */
-	protected CaseInsensitiveHash currentObjectTags;
-	
+{	
 	/**
 	 * Creates an object context. 
 	 * @param object the object reference.
@@ -36,97 +22,6 @@ public class TObjectContext extends TElementContext<TObject>
 	public TObjectContext(TObject object)
 	{
 		super(object);
-		currentObjectNames = new CaseInsensitiveHash(2);
-		currentObjectTags = new CaseInsensitiveHash(2);
-	}
-
-	/** 
-	 * Adds a name to this object.
-	 * This name is the one referred to in requests.
-	 * @param name the name to add.
-	 */
-	public void addName(String name) 
-	{
-		currentObjectNames.put(name);
-	}
-
-	/** 
-	 * Removes a name. 
-	 * This name is the one referred to in requests.
-	 * @param name the name to remove.
-	 */
-	public void removeName(String name) 
-	{
-		currentObjectNames.remove(name);
-	}
-
-	/**
-	 * Checks if this contains a particular name.
-	 * This name is the one referred to in requests.
-	 * @param name the name to check.
-	 * @return true if so, false if not.
-	 */
-	public boolean containsName(String name)
-	{
-		return currentObjectNames.contains(name);
-	}
-
-	/** 
-	 * Adds a tag to this object.
-	 * This is referred to in tag operations.
-	 * @param name the name to add.
-	 */
-	public void addTag(String name) 
-	{
-		currentObjectTags.put(name);
-	}
-
-	/** 
-	 * Removes a tag. 
-	 * This is referred to in tag operations.
-	 * @param tag the tag to remove.
-	 */
-	public void removeTag(String tag) 
-	{
-		currentObjectTags.remove(tag);
-	}
-
-	/**
-	 * Checks if this contains a particular tag.
-	 * This is referred to in tag operations.
-	 * @param tag the tag to check.
-	 * @return true if so, false if not.
-	 */
-	public boolean containsTag(String tag)
-	{
-		return currentObjectTags.contains(tag);
-	}
-
-	@Override
-	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
-	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		super.writeStateBytes(module, out);
-		sw.writeInt(currentObjectNames.size());
-		for (String name : currentObjectNames)
-			sw.writeString(name.toLowerCase(), "UTF-8");
-		sw.writeInt(currentObjectTags.size());
-		for (String tag : currentObjectTags)
-			sw.writeString(tag.toLowerCase(), "UTF-8");
-	}
-
-	@Override
-	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
-	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		super.readStateBytes(module, in);
-		int size;
-		size = sr.readInt();
-		while (size-- > 0)
-			addName(sr.readString("UTF-8"));
-		size = sr.readInt();
-		while (size-- > 0)
-			addTag(sr.readString("UTF-8"));
 	}
 
 }

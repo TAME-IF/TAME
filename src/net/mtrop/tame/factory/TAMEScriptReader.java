@@ -825,6 +825,9 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			if (!parseObjectNames(object))
 				return false;
+
+			if (!parseObjectTags(object))
+				return false;
 			
 			// no body?
 			if (matchType(TSKernel.TYPE_SEMICOLON))
@@ -1553,6 +1556,56 @@ public final class TAMEScriptReader implements TAMEConstants
 				nextToken();
 				
 				return parseObjectNameList(object);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses object tags.
+		 * [ObjectTags] := 
+		 * 		[TAGGED] [STRING] [ObjectTagList]
+		 * 		[e]
+		 */
+		private boolean parseObjectTags(TObject object)
+		{
+			if (matchType(TSKernel.TYPE_TAGGED))
+			{
+				if (!currentType(TSKernel.TYPE_STRING))
+				{
+					addErrorMessage("Expected object tag (must be string).");
+					return false;
+				}
+				
+				object.addTag(currentToken().getLexeme());
+				nextToken();
+				
+				return parseObjectTagList(object);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses object tag list.
+		 * [ObjectTagList] :=
+		 * 		"," [STRING] [ObjectTagList]
+		 * 		[e]
+		 */
+		private boolean parseObjectTagList(TObject object)
+		{
+			if (matchType(TSKernel.TYPE_COMMA))
+			{
+				if (!currentType(TSKernel.TYPE_STRING))
+				{
+					addErrorMessage("Expected object tag (must be string).");
+					return false;
+				}
+				
+				object.addTag(currentToken().getLexeme());
+				nextToken();
+				
+				return parseObjectTagList(object);
 			}
 			
 			return true;
