@@ -128,11 +128,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_DITRANSITIVE = 	80;
 		static final int TYPE_OPEN = 			81;
 		static final int TYPE_NAMED = 			82;
-		static final int TYPE_MODES = 			83;
-		static final int TYPE_CONJOINS = 		84;
-		static final int TYPE_EXCLUDES = 		85;
-		static final int TYPE_RESTRICTS = 		86;
-		static final int TYPE_LOCAL = 			87;
+		static final int TYPE_TAGGED = 			83;
+		static final int TYPE_MODES = 			84;
+		static final int TYPE_CONJOINS = 		85;
+		static final int TYPE_EXCLUDES = 		86;
+		static final int TYPE_RESTRICTS = 		87;
+		static final int TYPE_LOCAL = 			88;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -209,6 +210,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("ditransitive", TYPE_DITRANSITIVE);
 			addCaseInsensitiveKeyword("open", TYPE_OPEN);
 			addCaseInsensitiveKeyword("named", TYPE_NAMED);
+			addCaseInsensitiveKeyword("tagged", TYPE_TAGGED);
 			addCaseInsensitiveKeyword("modes", TYPE_MODES);
 			addCaseInsensitiveKeyword("conjoins", TYPE_CONJOINS);
 			addCaseInsensitiveKeyword("excludes", TYPE_EXCLUDES);
