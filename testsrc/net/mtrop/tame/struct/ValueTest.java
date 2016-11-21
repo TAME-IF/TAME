@@ -109,7 +109,7 @@ public final class ValueTest
 	
 	private static void printString(PrintStream out, Value v1)
 	{
-		out.println(v1 + " > STRING > " +v1.asString());
+		out.println(v1 + " > STRING > \"" +v1.asString()+ "\"");
 	}
 
 	private static void print(PrintStream out, ArithmeticOperator op, Value v1)
