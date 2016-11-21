@@ -160,7 +160,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		
 		moduleContext = new TAMEModuleContext(module);
 		
-		Context context = new Context(module, moduleContext, System.out, System.err, debug);
+		Context context = new Context(moduleContext, System.out, debug);
 		
 		if (loadpath != null)
 		{
@@ -242,7 +242,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		return out;
 	}
 	
-	static boolean saveGame(TAMEModuleContext context, String path)
+	private static boolean saveGame(TAMEModuleContext context, String path)
 	{
 		File file = new File(path);
 		FileOutputStream out = null;
@@ -265,7 +265,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		return true;
 	}
 	
-	static boolean loadGame(TAMEModuleContext context, String path)
+	private static boolean loadGame(TAMEModuleContext context, String path)
 	{
 		File file = new File(path);
 		if (!file.exists())
@@ -294,7 +294,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		return true;
 	}
 	
-	static void processResponse(TAMEResponse response, Context context)
+	private static void processResponse(TAMEResponse response, Context context)
 	{
 		if (context.debug)
 		{
@@ -331,22 +331,18 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	/**
 	 * Game context.
 	 */
-	static class Context
+	private static class Context
 	{
-		TAMEModule module;
 		TAMEModuleContext context;
 		PrintStream out;
-		PrintStream err;
 		boolean paused;
 		boolean quit;
 		boolean debug;
 		
-		Context(TAMEModule module, TAMEModuleContext context, PrintStream out, PrintStream err, boolean debug)
+		Context(TAMEModuleContext context, PrintStream out, boolean debug)
 		{
-			this.module = module;
 			this.context = context;
 			this.out = out;
-			this.err = err;
 			this.debug = debug;
 
 			this.paused = false;
