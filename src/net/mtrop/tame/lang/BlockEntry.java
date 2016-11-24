@@ -23,10 +23,13 @@ public class BlockEntry implements Saveable
 	/** Matching values. */
 	private Value[] values;
 	
+	private int hash;
+	
 	private BlockEntry()
 	{
 		this.entryType = null;
 		this.values = null;
+		this.hash = 0;
 	}
 	
 	private BlockEntry(BlockEntryType entryType, Value... values)
@@ -80,10 +83,14 @@ public class BlockEntry implements Saveable
 	@Override
 	public int hashCode()
 	{
-		int out = entryType.ordinal();
-		for (int i = 0; i < values.length; i++)
-			out += 31 * values[i].hashCode();
-		return out;
+		if (hash == 0)
+		{
+			int out = entryType.ordinal();
+			for (int i = 0; i < values.length; i++)
+				out += 31 * values[i].hashCode();
+			hash = out;
+		}
+		return hash;
 	}
 	
 	@Override
