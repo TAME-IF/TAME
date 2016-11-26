@@ -317,7 +317,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 * @param world the world in question.
 	 * @return the list of all objects owned by the world.
 	 */
-	public List<TObject> getObjectsOwnedByWorld(TWorld world)
+	public Iterable<TObject> getObjectsOwnedByWorld(TWorld world)
 	{
 		return getObjectsInQueue(objectsOwnedByWorld.get(world));
 	}
@@ -327,7 +327,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 * @param room the room in question.
 	 * @return the list of all objects owned by the room.
 	 */
-	public List<TObject> getObjectsOwnedByRoom(TRoom room)
+	public Iterable<TObject> getObjectsOwnedByRoom(TRoom room)
 	{
 		return getObjectsInQueue(objectsOwnedByRoom.get(room)); 
 	}
@@ -337,7 +337,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 * @param player the player in question.
 	 * @return the list of all objects owned by the player.
 	 */
-	public List<TObject> getObjectsOwnedByPlayer(TPlayer player)
+	public Iterable<TObject> getObjectsOwnedByPlayer(TPlayer player)
 	{
 		return getObjectsInQueue(objectsOwnedByPlayer.get(player)); 
 	}
@@ -347,7 +347,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 * @param container the container in question.
 	 * @return the list of all objects owned by the container.
 	 */
-	public List<TObject> getObjectsOwnedByContainer(TContainer container)
+	public Iterable<TObject> getObjectsOwnedByContainer(TContainer container)
 	{
 		return getObjectsInQueue(objectsOwnedByContainer.get(container)); 
 	}

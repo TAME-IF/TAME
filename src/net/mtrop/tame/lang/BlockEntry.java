@@ -1,6 +1,3 @@
-/*
- * 
- */
 package net.mtrop.tame.lang;
 
 import java.io.ByteArrayInputStream;

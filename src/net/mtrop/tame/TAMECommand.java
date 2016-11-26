@@ -597,7 +597,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a TEXTFORMATTED cue to the response.
+	 * Adds a TEXTF cue to the response.
 	 * POP is the value to print. 
 	 * Returns nothing. 
 	 */
@@ -617,7 +617,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a TEXTFORMATTED cue to the response with a newline appended to it.
+	 * Adds a TEXTF cue to the response with a newline appended to it.
 	 * POP is the value to print. 
 	 * Returns nothing. 
 	 */
@@ -1609,17 +1609,17 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value varName = request.popValue();
+			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
 			
-			if (!varName.isLiteral())
+			if (!nameValue.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in ADDOBJECTNAME call.");
 			if (varObject.getType() != ValueType.OBJECT)
 				throw new UnexpectedValueTypeException("Expected object type in ADDOBJECTNAME call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
-			moduleContext.getOwnershipMap().addObjectName(object, varName.asString());
+			moduleContext.getOwnershipMap().addObjectName(object, nameValue.asString());
 		}
 		
 	},
@@ -1635,17 +1635,17 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value varName = request.popValue();
+			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
 			
-			if (!varName.isLiteral())
+			if (!nameValue.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in REMOVEOBJECTNAME call.");
 			if (varObject.getType() != ValueType.OBJECT)
 				throw new UnexpectedValueTypeException("Expected object type in REMOVEOBJECTNAME call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
-			moduleContext.getOwnershipMap().removeObjectName(object, varName.asString());
+			moduleContext.getOwnershipMap().removeObjectName(object, nameValue.asString());
 		}
 		
 	},
@@ -1661,17 +1661,17 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value varName = request.popValue();
+			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
 			
-			if (!varName.isLiteral())
+			if (!nameValue.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in OBJECTHASNAME call.");
 			if (varObject.getType() != ValueType.OBJECT)
 				throw new UnexpectedValueTypeException("Expected object type in OBJECTHASNAME call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
-			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkObjectHasName(object, varName.asString())));
+			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkObjectHasName(object, nameValue.asString())));
 		}
 		
 	},
@@ -1687,17 +1687,65 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value varName = request.popValue();
+			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
 			
-			if (!varName.isLiteral())
+			if (!tagValue.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in ADDOBJECTTAG call.");
 			if (varObject.getType() != ValueType.OBJECT)
 				throw new UnexpectedValueTypeException("Expected object type in ADDOBJECTTAG call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
-			moduleContext.getOwnershipMap().addObjectTag(object, varName.asString());
+			moduleContext.getOwnershipMap().addObjectTag(object, tagValue.asString());
+		}
+		
+	},
+	
+	/**
+	 * Adds an object tag to every object in a container-type.
+	 * First POP is tag name.
+	 * Second POP is container-type.
+	 * Returns nothing.
+	 */
+	ADDOBJECTTAGTOALLIN (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value tagValue = request.popValue();
+			Value varObjectContainer = request.popValue();
+			
+			if (!tagValue.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in ADDOBJECTTAGTOALLIN call.");
+			if (!varObjectContainer.isObjectContainer())
+				throw new UnexpectedValueTypeException("Expected object-container type in ADDOBJECTTAGTOALLIN call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			
+			Iterable<TObject> objectList = null;
+			
+			switch (varObjectContainer.getType())
+			{
+				default:
+					throw new UnexpectedValueTypeException("INTERNAL ERROR IN ADDOBJECTTAGTOALLIN.");
+				case ROOM:
+					objectList = moduleContext.getOwnershipMap().getObjectsOwnedByRoom(moduleContext.resolveRoom(varObjectContainer.asString()));
+					break;
+				case PLAYER:
+					objectList = moduleContext.getOwnershipMap().getObjectsOwnedByPlayer(moduleContext.resolvePlayer(varObjectContainer.asString()));
+					break;
+				case CONTAINER:
+					objectList = moduleContext.getOwnershipMap().getObjectsOwnedByContainer(moduleContext.resolveContainer(varObjectContainer.asString()));
+					break;
+				case WORLD:
+					objectList = moduleContext.getOwnershipMap().getObjectsOwnedByWorld(moduleContext.resolveWorld());
+					break;
+			}
+			
+			for (TObject object : objectList)
+				moduleContext.getOwnershipMap().addObjectTag(object, tagValue.asString());
+			
 		}
 		
 	},
@@ -1713,17 +1761,17 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value varName = request.popValue();
+			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
 			
-			if (!varName.isLiteral())
+			if (!tagValue.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in REMOVEOBJECTTAG call.");
 			if (varObject.getType() != ValueType.OBJECT)
 				throw new UnexpectedValueTypeException("Expected object type in REMOVEOBJECTTAG call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
-			moduleContext.getOwnershipMap().removeObjectTag(object, varName.asString());
+			moduleContext.getOwnershipMap().removeObjectTag(object, tagValue.asString());
 		}
 		
 	},
@@ -1739,17 +1787,17 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value varName = request.popValue();
+			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
 			
-			if (!varName.isLiteral())
+			if (!tagValue.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in OBJECTHASTAG call.");
 			if (varObject.getType() != ValueType.OBJECT)
 				throw new UnexpectedValueTypeException("Expected object type in OBJECTHASTAG call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
-			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkObjectHasTag(object, varName.asString())));
+			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkObjectHasTag(object, tagValue.asString())));
 		}
 		
 	},
@@ -1914,7 +1962,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is object.
 	 * Returns boolean.
 	 */
-	OBJECTHASNOOWNER(/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
+	OBJECTHASNOOWNER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -2268,7 +2316,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Enqueues an general action to perform after the current one.
+	 * Enqueues an general action to perform after the current one finishes.
 	 * POP is the action.
 	 * Returns nothing.
 	 */
@@ -2293,7 +2341,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 
 	/**
-	 * Enqueues a open/modal action to perform after the current one.
+	 * Enqueues a open/modal action to perform after the current one finishes.
 	 * First POP is the modal or open target.
 	 * Second POP is the action.
 	 * Returns nothing.
@@ -2323,7 +2371,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Enqueues a transitive action to perform after the current one.
+	 * Enqueues a transitive action to perform after the current one finishes.
 	 * First POP is the object.
 	 * Second POP is the action.
 	 * Returns nothing.
@@ -2354,7 +2402,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Enqueues a ditransitive action to perform after the current one.
+	 * Enqueues a ditransitive action to perform after the current one finishes.
 	 * First POP is the second object.
 	 * Second POP is the object.
 	 * Third POP is the action.
@@ -2451,9 +2499,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		this(false, false, returnType, argumentTypes);
 	}
 
-	private TAMECommand(boolean internal, boolean block, ArgumentType returnType, ArgumentType[] argumentTypes)
+	private TAMECommand(boolean internal, boolean language, ArgumentType returnType, ArgumentType[] argumentTypes)
 	{
-		this.language = block;
+		this.language = language;
 		this.internal = internal;
 		this.returnType = returnType;
 		this.argumentTypes = argumentTypes;
