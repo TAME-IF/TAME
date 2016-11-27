@@ -32,6 +32,8 @@ public class Value implements Comparable<Value>, Saveable
 	/** Value itself. */
 	protected Object value;
 	
+	private int hash;
+	
 	/**
 	 * Creates a blank value.
 	 */
@@ -39,6 +41,7 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		type = null;
 		value = null;
+		hash = 0;
 	}
 	
 	/**
@@ -259,7 +262,9 @@ public class Value implements Comparable<Value>, Saveable
 	@Override
 	public int hashCode()
 	{
-		return type.ordinal() + 31 * String.valueOf(value).hashCode();
+		if (hash == 0)
+			hash = type.ordinal() + 31 * String.valueOf(value).hashCode();
+		return hash;
 	}
 
 	/**
@@ -496,7 +501,7 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
-	 * Returns the String value of this value.
+	 * Returns the String value of this value (not the same as toString()!!).
 	 * @return the String value of this value.
 	 */
 	public String asString()

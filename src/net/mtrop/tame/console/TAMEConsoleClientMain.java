@@ -40,7 +40,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	private static void printHelp(PrintStream out)
 	{
 		out.println("TAME Console Client v"+TAMELogic.getVersion()+" by Matt Tropiano (C) 2016");
-		out.println("Usage: tame [help | module] <switches> <gameload> (--debug)");
+		out.println("Usage: tame [help | module] <switches> <gameload> <other>");
 		out.println("[help]:");
 		out.println("    -h");
 		out.println("    --help");
@@ -50,13 +50,16 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		out.println("    -s [scriptfile]");
 		out.println("    --script [scriptfile]");
 		out.println("<switches>:");
-		out.println("    -v");
+		out.println("    -v                       Verbose script compiler output.");
 		out.println("    --verbose");
-		out.println("    -d  [tokens ...]");
+		out.println("    -d  [tokens ...]         Defines predefined preprocessor tokens.");
 		out.println("    --defines [tokens ...]");
 		out.println("<gameload>:");
-		out.println("    -l [statefile]");
+		out.println("    -l [statefile]           Loads a save state.");
 		out.println("    --load-game [statefile]");
+		out.println("<other>:");
+		out.println("    --debug                  Show only received cues and traces.");
+		out.println("    --trace                  If debug, show trace cues.");
 	}
 
 	// Entry point.
@@ -68,6 +71,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		boolean help = false;
 		boolean script = false;
 		boolean debug = false;
+		boolean trace = false;
 		boolean load = false;
 		boolean defines = false;
 		boolean nooptimize = false;
@@ -99,6 +103,8 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				load = true;
 			else if (arg.equalsIgnoreCase("--debug"))
 				debug = true;
+			else if (arg.equalsIgnoreCase("--trace"))
+				trace = true;
 			else if (script)
 			{
 				if (arg.equalsIgnoreCase("-d"))
@@ -160,7 +166,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		
 		moduleContext = new TAMEModuleContext(module);
 		
-		Context context = new Context(moduleContext, System.out, debug);
+		Context context = new Context(moduleContext, System.out, debug, trace);
 		
 		if (loadpath != null)
 		{
@@ -169,7 +175,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		}
 		else
 		{
-			processResponse(TAMELogic.handleInit(moduleContext, debug), context);
+			processResponse(TAMELogic.handleInit(moduleContext, trace), context);
 		}
 		
 		if (!context.quit)
@@ -338,12 +344,14 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		boolean paused;
 		boolean quit;
 		boolean debug;
+		boolean trace;
 		
-		Context(TAMEModuleContext context, PrintStream out, boolean debug)
+		Context(TAMEModuleContext context, PrintStream out, boolean debug, boolean trace)
 		{
 			this.context = context;
 			this.out = out;
 			this.debug = debug;
+			this.trace = trace;
 
 			this.paused = false;
 			this.quit = false;
@@ -367,7 +375,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 					else if (line.toLowerCase().startsWith(COMMAND_LOAD))
 						loadGame(context, line.substring(COMMAND_LOAD.length())+".sav");
 					else
-						processResponse(TAMELogic.handleRequest(context, line, debug), this);
+						processResponse(TAMELogic.handleRequest(context, line, trace), this);
 				}
 				else
 					good = false;

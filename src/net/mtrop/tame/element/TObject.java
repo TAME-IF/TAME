@@ -69,6 +69,7 @@ public class TObject extends TElement implements Inheritable<TObject>
 			case ONPLAYERBROWSE:
 			case ONROOMBROWSE:
 			case ONCONTAINERBROWSE:
+			case ONWORLDBROWSE:
 				return true;
 			default:
 				return false;

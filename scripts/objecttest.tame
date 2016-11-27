@@ -1,0 +1,97 @@
+module
+{
+	title = "object test";
+}
+
+object o_apple named "apple", "green apple" tagged "food", "fruit"
+{
+	onContainerBrowse()
+	{
+		textln("An apple.");
+	}
+}
+object o_banana named "banana" tagged "food", "fruit"
+{
+	onContainerBrowse()
+	{
+		textln("A banana.");
+	}
+}
+object o_cucumber named "cucumber" tagged "food", "vegetable"
+{
+	onContainerBrowse()
+	{
+		textln("A cucumber.");
+	}
+}
+object o_eggplant named "eggplant", "aubergine" tagged "food", "vegetable"
+{
+	onContainerBrowse()
+	{
+		textln("An eggplant.");
+	}
+}
+
+container c_basket;
+container c_shelf;
+container c_garbage;
+
+world
+{
+	init()
+	{
+		giveobject(c_basket, o_apple);
+		giveobject(c_basket, o_banana);
+		giveobject(c_basket, o_cucumber);
+		giveobject(c_basket, o_eggplant);
+
+		textln("In the basket, I have:");
+		browse(c_basket);
+	
+		textln("Moving fruits...");
+		moveobjectswithtag(c_basket, c_shelf, "fruit");
+
+		textln("In the basket, I have:");
+		browse(c_basket);
+		textln("On the shelf, I have:");
+		browse(c_shelf);
+	
+		textln("Moving vegetables...");
+		moveobjectswithtag(c_basket, c_garbage, "vegetable");
+		textln("In the basket, I have:");
+		browse(c_basket);
+		textln("In the garbage, I have:");
+		browse(c_garbage);
+
+		textln("Resetting...");
+
+		giveobject(c_basket, o_apple);
+		giveobject(c_basket, o_banana);
+		giveobject(c_basket, o_cucumber);
+		giveobject(c_basket, o_eggplant);
+
+		textln("In the basket, I have:");
+		browse(c_basket);
+		textln("On the shelf, I have:");
+		browse(c_shelf);
+		textln("In the garbage, I have:");
+		browse(c_garbage);
+		
+		textln("Eggplant is not a vegetable, but a fruit!");
+		removeobjecttag(o_eggplant, "vegetable");
+		addobjecttag(o_eggplant, "fruit");
+		textln("Moving vegetables...");
+		moveobjectswithtag(c_basket, c_garbage, "vegetable");
+		textln("Moving fruits...");
+		moveobjectswithtag(c_basket, c_shelf, "fruit");
+
+		textln("In the basket, I have:");
+		browse(c_basket);
+		textln("On the shelf, I have:");
+		browse(c_shelf);
+		textln("In the garbage, I have:");
+		browse(c_garbage);
+
+		quit;
+	}
+}
