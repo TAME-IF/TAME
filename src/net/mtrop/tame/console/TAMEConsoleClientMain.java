@@ -42,12 +42,13 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		out.println("TAME Console Client v"+TAMELogic.getVersion()+" by Matt Tropiano (C) 2016");
 		out.println("Usage: tame [help | module] <switches> <gameload> <other>");
 		out.println("[help]:");
-		out.println("    -h");
+		out.println("    -h                       Display help.");
 		out.println("    --help");
 		out.println("    /?");
 		out.println("[module]:");
-		out.println("    [binaryfile]");
-		out.println("    -s [scriptfile]");
+		out.println("    [binaryfile]             The compiled module to run.");
+		out.println();
+		out.println("    -s [scriptfile]          The uncompiled starting script to read.");
 		out.println("    --script [scriptfile]");
 		out.println("<switches>:");
 		out.println("    -v                       Verbose script compiler output.");
@@ -58,8 +59,8 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		out.println("    -l [statefile]           Loads a save state.");
 		out.println("    --load-game [statefile]");
 		out.println("<other>:");
-		out.println("    --debug                  Show only received cues and traces.");
-		out.println("    --trace                  If debug, show trace cues.");
+		out.println("    --debug                  Show received cues.");
+		out.println("    --trace                  If debug, also show trace cues.");
 	}
 
 	// Entry point.
