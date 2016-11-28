@@ -59,8 +59,6 @@ public final class ValueTest
 	{
 		PrintStream out = System.out;
 		
-		ArithmeticOperator[] operators = ArithmeticOperator.VALUES;
-
 		for (int i = 0; i < TEST_VALUES.length; i++)
 			printBoolean(out, TEST_VALUES[i]);
 		out.println("-------------------------------");
@@ -74,7 +72,7 @@ public final class ValueTest
 			printString(out, TEST_VALUES[i]);
 		out.println("-------------------------------");
 		
-		for (ArithmeticOperator op : operators)
+		for (ArithmeticOperator op : ArithmeticOperator.VALUES)
 		{
 			if (op.isBinary())
 			{

@@ -15,7 +15,7 @@ import java.io.OutputStream;
 
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.exception.ModuleException;
-import net.mtrop.tame.exception.ModuleExecutionException;
+import net.mtrop.tame.exception.UnexpectedValueException;
 
 import com.blackrook.commons.Common;
 import com.blackrook.io.SuperReader;
@@ -88,7 +88,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value create(float value)
 	{
 		Value out = new Value();
-		out.set(ValueType.FLOAT, new Double(value));
+		out.set(ValueType.FLOAT, (double)value);
 		return out;
 	}
 
@@ -108,6 +108,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a value typed as string.
 	 * @param value the string value.
 	 * @return the new value.
+	 * @throws UnexpectedValueException if value is null.
 	 */
 	public static Value create(String value)
 	{
@@ -120,6 +121,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates an object value.
 	 * @param identity the object identity.
 	 * @return the new value.
+	 * @throws UnexpectedValueException if identity is null.
 	 */
 	public static Value createObject(String identity)
 	{
@@ -132,6 +134,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a container value.
 	 * @param identity the container identity.
 	 * @return the new value.
+	 * @throws UnexpectedValueException if identity is null.
 	 */
 	public static Value createContainer(String identity)
 	{
@@ -144,6 +147,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a room value.
 	 * @param identity the room identity.
 	 * @return the new value.
+	 * @throws UnexpectedValueException if identity is null.
 	 */
 	public static Value createRoom(String identity)
 	{
@@ -156,6 +160,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a player value.
 	 * @param identity the player identity.
 	 * @return the new value.
+	 * @throws UnexpectedValueException if identity is null.
 	 */
 	public static Value createPlayer(String identity)
 	{
@@ -168,6 +173,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a action value.
 	 * @param identity the action identity.
 	 * @return the new value.
+	 * @throws UnexpectedValueException if identity is null.
 	 */
 	public static Value createAction(String identity)
 	{
@@ -231,7 +237,7 @@ public class Value implements Comparable<Value>, Saveable
 			case VARIABLE:
 				return createVariable((String)inputValue.value);
 			default:
-				throw new ModuleExecutionException("Unknown variable type.");
+				throw new UnexpectedValueException("Unknown value type.");
 		}
 	}
 
@@ -252,9 +258,12 @@ public class Value implements Comparable<Value>, Saveable
 	 * Sets the value type and value.
 	 * @param type the value type.
 	 * @param value the underlying object value.
+	 * @throws UnexpectedValueException if value is null.
 	 */
 	private void set(ValueType type, Object value)
 	{
+		if (value == null)
+			throw new UnexpectedValueException("Value cannot be null!");
 		this.type = type;
 		this.value = value;
 	}
@@ -434,7 +443,17 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public boolean asBoolean()
 	{
-		return isTrue();
+		if (isBoolean())
+			return (Boolean)value;
+		else if (isNumeric())
+		{
+			double d = asDouble();
+			return Double.isInfinite(d) || (!Double.isNaN(d) && d != 0.0);
+		}
+		else if (isString())
+			return ((String)value).length() != 0;
+		else
+			return true;
 	}
 	
 	/**
@@ -443,33 +462,19 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public long asLong()
 	{
+		if (isInfinite() || isNaN())
+			return 0L;
 		if (isBoolean())
 			return asBoolean() ? 1L : 0L;
 		if (isInteger())
 			return (Long)value;
 		if (isFloatingPoint())
 			return (long)(double)(Double)value;
-		if (isInfinite())
-			return 0L;
-		if (isNaN())
-			return 0L;
 		try {
 			return Long.parseLong(asString());
 		} catch (NumberFormatException e) {
 			return (long)asDouble();
 		}
-	}
-
-	/**
-	 * Returns the bitwise long value (if this is a double).
-	 * @return the long value of this value.
-	 */
-	public long asLongBits()
-	{
-		if (!isFloatingPoint())
-			return asLong();
-		else
-			return Double.doubleToLongBits(asDouble());
 	}
 
 	/**
@@ -515,17 +520,7 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public boolean isTrue()
 	{
-		if (isBoolean())
-			return (Boolean)value;
-		else if (isNumeric())
-		{
-			double d = asDouble();
-			return Double.isInfinite(d) || (!Double.isNaN(d) && d != 0.0);
-		}
-		else if (isString())
-			return ((String)value).length() != 0;
-		else
-			return true;
+		return asBoolean();
 	}
 	
 	/**
@@ -661,7 +656,6 @@ public class Value implements Comparable<Value>, Saveable
 	 * Returns the absolute value of a literal value.
 	 * @param value1 the first operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value absolute(Value value1)
 	{
@@ -693,21 +687,19 @@ public class Value implements Comparable<Value>, Saveable
 	 * Returns the "logical not" value of a literal value.
 	 * @param value1 the first operand.
 	 * @return the resultant value as a boolean value.
-	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value logicalNot(Value value1)
 	{
 		if (value1.isLiteral())
 			return create(!value1.asBoolean());
 		else
-			throw new ArithmeticException("Value is not a literal that evaluates to a boolean.");
+			return create(Double.NaN);
 	}
 	
 	/**
 	 * Returns the bitwise compliment value of a literal value.
 	 * @param value1 the first operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value not(Value value1)
 	{

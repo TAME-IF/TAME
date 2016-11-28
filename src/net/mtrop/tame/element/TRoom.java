@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import net.mtrop.tame.lang.PermissionType;
+import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -110,8 +111,10 @@ public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRo
 	{
 		if (permissionType == PermissionType.EXCLUDE)
 			return !permittedActionList.contains(action.getIdentity());
-		else
+		else if (permissionType == PermissionType.RESTRICT)
 			return permittedActionList.contains(action.getIdentity());
+		else
+			throw new ModuleException("Bad or unknown permission type found: "+permissionType);
 	}
 	
 	@Override
