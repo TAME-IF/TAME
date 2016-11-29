@@ -508,7 +508,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public Value resolveWorldVariableValue(String variableName)
 	{
-		return resolveWorldContext().getPersistantValue(variableName);
+		return resolveWorldContext().getValue(variableName);
 	}
 
 	/**
@@ -520,7 +520,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public Value resolvePlayerVariableValue(String playerIdentity, String variableName) throws ErrorInterrupt
 	{
-		return resolvePlayerContext(playerIdentity).getPersistantValue(variableName);
+		return resolvePlayerContext(playerIdentity).getValue(variableName);
 	}
 
 	/**
@@ -532,7 +532,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public Value resolveRoomVariableValue(String roomIdentity, String variableName) throws ErrorInterrupt
 	{
-		return resolveRoomContext(roomIdentity).getPersistantValue(variableName);
+		return resolveRoomContext(roomIdentity).getValue(variableName);
 	}
 
 	/**
@@ -543,7 +543,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public Value resolveObjectVariableValue(String objectIdentity, String variableName)
 	{
-		return resolveObjectContext(objectIdentity).getPersistantValue(variableName);
+		return resolveObjectContext(objectIdentity).getValue(variableName);
 	}
 
 	/**
@@ -554,7 +554,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public Value resolveContainerVariableValue(String containerIdentity, String variableName)
 	{
-		return resolveContainerContext(containerIdentity).getPersistantValue(variableName);
+		return resolveContainerContext(containerIdentity).getValue(variableName);
 	}
 
 	@Override

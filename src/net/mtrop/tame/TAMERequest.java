@@ -39,7 +39,7 @@ public class TAMERequest
 	/**
 	 * Creates a new request object.
 	 */
-	TAMERequest()
+	private TAMERequest()
 	{
 		inputMessage = null;
 		tracing = false;
@@ -51,6 +51,22 @@ public class TAMERequest
 		contextStack = new Stack<TElementContext<?>>();
 	}
 
+	/**
+	 * Creates the request object.
+	 * @param moduleContext the module context.
+	 * @param input the client input query.
+	 * @param tracing if true, this does tracing.
+	 * @return a TAMERequest a new request.
+	 */
+	static TAMERequest create(TAMEModuleContext moduleContext, String input, boolean tracing)
+	{
+		TAMERequest out = new TAMERequest();
+		out.setInputMessage(input);
+		out.setModuleContext(moduleContext);
+		out.setTracing(tracing);
+		return out;
+	}
+	
 	/**
 	 * Sets the request's input message.
 	 * This gets interpreted by the TAME virtual machine.

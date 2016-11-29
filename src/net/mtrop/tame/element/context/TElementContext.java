@@ -76,7 +76,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	 * @param variableName the variable name.
 	 * @param value the variable value.
 	 */
-	public void setPersistantValue(String variableName, Value value)
+	public void setValue(String variableName, Value value)
 	{
 		variables.put(variableName, value);
 	}
@@ -86,7 +86,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	 * @param variableName the variable name.
 	 * @return the corresponding value, or a value that represents "false" if no value.
 	 */
-	public Value getPersistantValue(String variableName)
+	public Value getValue(String variableName)
 	{
 		if (variables.containsKey(variableName))
 			return variables.get(variableName);

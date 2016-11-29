@@ -71,22 +71,6 @@ public final class TAMELogic implements TAMEConstants
 	}
 	
 	/**
-	 * Creates the request object.
-	 * @param moduleContext the module context.
-	 * @param input the client input query.
-	 * @param tracing if true, this does tracing.
-	 * @return a TAMERequest a new request.
-	 */
-	public static TAMERequest createRequest(TAMEModuleContext moduleContext, String input, boolean tracing)
-	{
-		TAMERequest out = new TAMERequest();
-		out.setInputMessage(input);
-		out.setModuleContext(moduleContext);
-		out.setTracing(tracing);
-		return out;
-	}
-
-	/**
 	 * Handles context initialization, returning the response from it.
 	 * This method must be called for newly-created contexts NOT LOADED FROM A PERSISTED CONTEXT STATE.
 	 * @param moduleContext the module context.
@@ -95,7 +79,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static TAMEResponse handleInit(TAMEModuleContext moduleContext, boolean tracing)
 	{
-		TAMERequest request = createRequest(moduleContext, "[INITIALIZE]", tracing);
+		TAMERequest request = TAMERequest.create(moduleContext, "[INITIALIZE]", tracing);
 		TAMEResponse response = new TAMEResponse();
 
 		response.setInterpretNanos(0L);
@@ -130,7 +114,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static TAMEResponse handleRequest(TAMEModuleContext moduleContext, String input, boolean tracing)
 	{
-		TAMERequest request = createRequest(moduleContext, input, tracing);
+		TAMERequest request = TAMERequest.create(moduleContext, input, tracing);
 		TAMEResponse response = new TAMEResponse();
 		
 		// time this stuff.

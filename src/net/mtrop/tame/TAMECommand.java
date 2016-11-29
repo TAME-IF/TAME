@@ -106,7 +106,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (blockLocal.containsKey(variableName))
 				blockLocal.put(variableName, value);
 			else
-				request.peekContext().setPersistantValue(variableName, value);
+				request.peekContext().setValue(variableName, value);
 		}
 		
 	},
@@ -165,19 +165,19 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				default:
 					throw new UnexpectedValueTypeException("INTERNAL ERROR IN POPELEMENTVALUE.");
 				case OBJECT:
-					request.getModuleContext().resolveObjectContext(objectName).setPersistantValue(variableName, value);
+					request.getModuleContext().resolveObjectContext(objectName).setValue(variableName, value);
 					break;
 				case ROOM:
-					request.getModuleContext().resolveRoomContext(objectName).setPersistantValue(variableName, value);
+					request.getModuleContext().resolveRoomContext(objectName).setValue(variableName, value);
 					break;
 				case PLAYER:
-					request.getModuleContext().resolvePlayerContext(objectName).setPersistantValue(variableName, value);
+					request.getModuleContext().resolvePlayerContext(objectName).setValue(variableName, value);
 					break;
 				case CONTAINER:
-					request.getModuleContext().resolveContainerContext(objectName).setPersistantValue(variableName, value);
+					request.getModuleContext().resolveContainerContext(objectName).setValue(variableName, value);
 					break;
 				case WORLD:
-					request.getModuleContext().resolveWorldContext().setPersistantValue(variableName, value);
+					request.getModuleContext().resolveWorldContext().setValue(variableName, value);
 					break;
 			}
 		}
@@ -203,7 +203,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				if (blockLocal.containsKey(variableName))
 					request.pushValue(blockLocal.get(variableName));
 				else
-					request.pushValue(request.peekContext().getPersistantValue(variableName));
+					request.pushValue(request.peekContext().getValue(variableName));
 			}
 			else
 			{
