@@ -131,9 +131,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_TAGGED = 			83;
 		static final int TYPE_MODES = 			84;
 		static final int TYPE_CONJOINS = 		85;
-		static final int TYPE_EXCLUDES = 		86;
-		static final int TYPE_RESTRICTS = 		87;
-		static final int TYPE_LOCAL = 			88;
+		static final int TYPE_FORBIDS = 		86;
+		static final int TYPE_ALLOWS = 			87;
+		static final int TYPE_RESTRICTED = 		88;
+		static final int TYPE_LOCAL = 			89;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -209,12 +210,13 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("transitive", TYPE_TRANSITIVE);
 			addCaseInsensitiveKeyword("ditransitive", TYPE_DITRANSITIVE);
 			addCaseInsensitiveKeyword("open", TYPE_OPEN);
+			addCaseInsensitiveKeyword("restricted", TYPE_RESTRICTED);
 			addCaseInsensitiveKeyword("named", TYPE_NAMED);
 			addCaseInsensitiveKeyword("tagged", TYPE_TAGGED);
 			addCaseInsensitiveKeyword("modes", TYPE_MODES);
 			addCaseInsensitiveKeyword("conjoins", TYPE_CONJOINS);
-			addCaseInsensitiveKeyword("excludes", TYPE_EXCLUDES);
-			addCaseInsensitiveKeyword("restricts", TYPE_RESTRICTS);
+			addCaseInsensitiveKeyword("forbids", TYPE_FORBIDS);
+			addCaseInsensitiveKeyword("allows", TYPE_ALLOWS);
 			addCaseInsensitiveKeyword("local", TYPE_LOCAL);
 
 			for (BlockEntryType entryType : BlockEntryType.values())
@@ -1209,6 +1211,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseAction()
 		{
+			boolean restricted = false;
+			if (matchType(TSKernel.TYPE_RESTRICTED))
+				restricted = true;
+			
 			if (currentType(TSKernel.TYPE_GENERAL))
 			{
 				TAction.Type actionType = TAction.Type.GENERAL;
@@ -1225,6 +1231,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
+				action.setRestricted(restricted);
 				nextToken();
 				
 				if (!parseActionNames(action))
@@ -1249,6 +1256,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
+				action.setRestricted(restricted);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1273,6 +1281,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
+				action.setRestricted(restricted);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1300,6 +1309,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
+				action.setRestricted(restricted);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1324,6 +1334,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
+				action.setRestricted(restricted);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1451,13 +1462,13 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseActionPermissionClause(ForbiddenHandler element)
 		{
-			if (matchType(TSKernel.TYPE_EXCLUDES))
+			if (matchType(TSKernel.TYPE_FORBIDS))
 			{
-				element.setPermissionType(PermissionType.EXCLUDE);
+				element.setPermissionType(PermissionType.FORBID);
 				
 				if (!isAction())
 				{
-					addErrorMessage("Expected action after \"excludes\".");
+					addErrorMessage("Expected action after \"forbids\".");
 					return false;
 				}
 				
@@ -1467,13 +1478,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				return parseActionPermissionClauseList(element);
 			}
 
-			if (matchType(TSKernel.TYPE_RESTRICTS))
+			if (matchType(TSKernel.TYPE_ALLOWS))
 			{
-				element.setPermissionType(PermissionType.RESTRICT);
+				element.setPermissionType(PermissionType.ALLOW);
 				
 				if (!isAction())
 				{
-					addErrorMessage("Expected action after \"restricts\".");
+					addErrorMessage("Expected action after \"allows\".");
 					return false;
 				}
 				
@@ -1498,7 +1509,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				if (!isAction())
 				{
-					addErrorMessage("Expected action after \"excludes\".");
+					addErrorMessage("Expected action after \",\".");
 					return false;
 				}
 				

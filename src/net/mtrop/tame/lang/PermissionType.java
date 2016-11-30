@@ -13,7 +13,7 @@ package net.mtrop.tame.lang;
  */
 public enum PermissionType
 {
-	EXCLUDE,
-	RESTRICT
+	FORBID,
+	ALLOW
 }
 

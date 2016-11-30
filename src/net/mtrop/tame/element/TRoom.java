@@ -42,7 +42,7 @@ public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRo
 	{
 		super();
 		this.parent = null;
-		this.permissionType = PermissionType.EXCLUDE;
+		this.permissionType = PermissionType.FORBID;
 		this.permittedActionList = new Hash<String>(2);
 	}
 
@@ -109,10 +109,12 @@ public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRo
 	@Override
 	public boolean allowsAction(TAction action)
 	{
-		if (permissionType == PermissionType.EXCLUDE)
-			return !permittedActionList.contains(action.getIdentity());
-		else if (permissionType == PermissionType.RESTRICT)
+		if (permissionType == PermissionType.ALLOW)
 			return permittedActionList.contains(action.getIdentity());
+		else if (action.isRestricted())
+			return false;
+		else if (permissionType == PermissionType.FORBID)
+			return !permittedActionList.contains(action.getIdentity());
 		else
 			throw new ModuleException("Bad or unknown permission type found: "+permissionType);
 	}

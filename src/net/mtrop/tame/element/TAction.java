@@ -55,6 +55,9 @@ public class TAction implements Comparable<TAction>, Saveable
 	/** What is the group of names of this action? */
 	private CaseInsensitiveHash names;
 	
+	/** */
+	private boolean restricted;
+	
 	/** 
 	 * Additional strings. 
 	 * For DITRANSITIVE, this is the object separator conjunctions.
@@ -73,6 +76,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	/**
 	 * Makes a blank action.
 	 * @param identity this action's identity.
+	 * @throws IllegalArgumentException if identity is blank.
 	 */
 	public TAction(String identity)
 	{
@@ -92,6 +96,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	/**
 	 * Sets this action's identity.
 	 * @param identity the unique identity.
+	 * @throws IllegalArgumentException if identity is blank.
 	 */
 	private void setIdentity(String identity)
 	{
@@ -112,12 +117,33 @@ public class TAction implements Comparable<TAction>, Saveable
 	/**
 	 * Sets the action type.
 	 * @param type the action type.
+	 * @throws IllegalArgumentException if type is null.
 	 */
 	public void setType(Type type)
 	{
+		if (type == null)
+			throw new IllegalArgumentException("Type cannot be null.");
 		this.type = type;
 	}
 
+	/**
+	 * Checks if this action is restricted - is forbidden unless specifically allowed.
+	 * @return true if restricted, false if not.
+	 */
+	public boolean isRestricted() 
+	{
+		return restricted;
+	}
+	
+	/**
+	 * Sets if this action is restricted - is forbidden unless specifically allowed.
+	 * @param restricted true if restricted, false if not.
+	 */
+	public void setRestricted(boolean restricted) 
+	{
+		this.restricted = restricted;
+	}
+	
 	/**
 	 * Gets the names of this action.
 	 * @return the case-insensitive hash containing the names.
