@@ -30,7 +30,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	 * The action type.
 	 */
 	public static enum Type
-	{
+	{	
 		/** Has no targets. */
 		GENERAL,
 		/** Has one target. */
@@ -41,6 +41,9 @@ public class TAction implements Comparable<TAction>, Saveable
 		MODAL,
 		/** Has an open target. */
 		OPEN;
+		
+		// Get around unnecessary allocations.
+		static Type[] VALUES = values();
 	}
 
 	/** Element's primary identity. */
@@ -219,6 +222,7 @@ public class TAction implements Comparable<TAction>, Saveable
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeString(identity, "UTF-8");
 		sw.writeByte((byte)type.ordinal());
+		sw.writeBoolean(restricted);
 		
 		sw.writeInt(names.size());
 		for (String s : names)
@@ -236,7 +240,8 @@ public class TAction implements Comparable<TAction>, Saveable
 		extraStrings.clear();
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		setIdentity(sr.readString("UTF-8"));
-		this.type = Type.values()[(int)sr.readByte()];
+		this.type = Type.VALUES[(int)sr.readByte()];
+		restricted = sr.readBoolean();
 		
 		int size;
 		
