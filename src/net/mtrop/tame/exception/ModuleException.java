@@ -7,6 +7,8 @@
  ******************************************************************************/
 package net.mtrop.tame.exception;
 
+import net.mtrop.tame.TAMEFatalException;
+
 /**
  * Thrown when a module state read/write exception occurs.
  * @author Matthew Tropiano

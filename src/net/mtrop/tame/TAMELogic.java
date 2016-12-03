@@ -26,10 +26,8 @@ import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
-import net.mtrop.tame.exception.TAMEFatalException;
 import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
-import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -638,6 +636,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param request the request object containing the module context.
 	 * @param response the response object.
 	 * @throws TAMEInterrupt if an interrupt is thrown.
+	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
 	private static void initializeContext(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
@@ -659,6 +658,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param request the request context.
 	 * @param response the response object.
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
+	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
 	private static void processActionLoop(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
 	{

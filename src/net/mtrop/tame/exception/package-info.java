@@ -9,6 +9,6 @@
  *     Matt Tropiano - initial API and implementation
  *******************************************************************************/
 /**
- * Contains TAME throwable interrupts.
+ * Contains TAME exceptions.
  */
 package net.mtrop.tame.exception;

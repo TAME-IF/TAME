@@ -7,6 +7,8 @@
  ******************************************************************************/
 package net.mtrop.tame.interrupt;
 
+import net.mtrop.tame.TAMEInterrupt;
+
 /**
  * Interrupt for ending a request action.
  * @author Matthew Tropiano

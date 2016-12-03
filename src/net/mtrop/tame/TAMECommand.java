@@ -34,7 +34,6 @@ import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.ContinueInterrupt;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
-import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;

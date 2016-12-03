@@ -7,6 +7,8 @@
  ******************************************************************************/
 package net.mtrop.tame.exception;
 
+import net.mtrop.tame.TAMEFatalException;
+
 /**
  * This type of interrupt is thrown too many commands are executed on
  * one request, in order to catch infinite loops. This will terminate a

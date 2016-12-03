@@ -7,6 +7,8 @@
  ******************************************************************************/
 package net.mtrop.tame.exception;
 
+import net.mtrop.tame.TAMEFatalException;
+
 /**
  * Thrown when the arithmetic stack ends up in a way that should not be.
  * @author Matthew Tropiano

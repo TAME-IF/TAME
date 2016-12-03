@@ -17,9 +17,9 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
 import net.mtrop.tame.TAMECommand;
+import net.mtrop.tame.TAMEInterrupt;
 import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
-import net.mtrop.tame.interrupt.TAMEInterrupt;
 
 /**
  * A single low-level machine operation.

@@ -7,6 +7,8 @@
  ******************************************************************************/
 package net.mtrop.tame.interrupt;
 
+import net.mtrop.tame.TAMEInterrupt;
+
 /**
  * Throwable that is thrown by a "quit" statement.
  * @author Matthew Tropiano

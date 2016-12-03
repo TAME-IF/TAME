@@ -7,6 +7,8 @@
  ******************************************************************************/
 package net.mtrop.tame.exception;
 
+import net.mtrop.tame.TAMEFatalException;
+
 /**
  * Thrown when a command reads a value that has an unexpected type.
  * @author Matthew Tropiano

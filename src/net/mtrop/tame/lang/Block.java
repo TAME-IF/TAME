@@ -14,9 +14,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import net.mtrop.tame.TAMEInterrupt;
 import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
-import net.mtrop.tame.interrupt.TAMEInterrupt;
 
 import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.io.SuperReader;

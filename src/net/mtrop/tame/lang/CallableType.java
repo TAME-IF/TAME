@@ -7,9 +7,9 @@
  ******************************************************************************/
 package net.mtrop.tame.lang;
 
+import net.mtrop.tame.TAMEInterrupt;
 import net.mtrop.tame.TAMERequest;
 import net.mtrop.tame.TAMEResponse;
-import net.mtrop.tame.interrupt.TAMEInterrupt;
 
 /**
  * An executable object called by the TAME virtual machine.
