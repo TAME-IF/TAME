@@ -3,7 +3,7 @@ module
 	title = "object test";
 }
 
-object o_apple named "apple", "green apple" tagged "food", "fruit"
+object archetype o_apple named "apple", "green apple" tagged "food", "fruit"
 {
 	onContainerBrowse()
 	{

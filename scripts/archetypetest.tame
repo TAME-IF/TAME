@@ -1,0 +1,75 @@
+module
+{
+	title = "Archetype Test";
+}
+
+action transitive a_open named "open", "o";
+action transitive a_close named "close", "c";
+action transitive a_examine named "examine", "x", "look at";
+action general a_quit named "quit";
+
+object archetype o_door
+{
+	init()
+	{
+		closed = true;
+	}
+	
+	onAction(a_examine)
+	{
+		if (closed)
+			textln("Door is closed.");
+		else
+			textln("Door is open.");
+	}
+	
+	onAction(a_open)
+	{
+		if (closed)
+		{
+			textln("Door is now open.");
+			closed = false;
+		}
+		else
+		{
+			textln("Door is already open.");
+		}
+	}
+	
+	onAction(a_close)
+	{
+		if (!closed)
+		{
+			textln("Door is now closed.");
+			closed = true;
+		}
+		else
+		{
+			textln("Door is already closed.");
+		}
+	}
+	
+}
+
+object o_reddoor : o_door named "door", "red door";
+object o_bluedoor : o_door named "door", "blue door";
+
+world
+{
+	init()
+	{
+		giveObject(world, o_reddoor);
+		giveObject(world, o_bluedoor);
+	}
+
+	onUnknownAction()
+	{
+		textln("I don't understand.");
+	}
+	
+	onAction(a_quit)
+	{
+		quit;
+	}
+}
+

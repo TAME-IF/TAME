@@ -76,6 +76,13 @@ public class TWorld extends TElement implements Inheritable<TWorld>
 	}
 	
 	@Override
+	public void setArchetype(boolean archetype) 
+	{
+		if (archetype)
+			throw new ModuleException("Worlds cannot be archetypes!");
+	}
+	
+	@Override
 	public TWorld getParent()
 	{
 		return null;

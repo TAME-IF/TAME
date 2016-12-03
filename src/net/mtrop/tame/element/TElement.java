@@ -17,6 +17,7 @@ import com.blackrook.commons.Common;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
+import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockTable;
@@ -32,6 +33,8 @@ public abstract class TElement implements Saveable
 	private String identity;
 	/** Element block map. */
 	private BlockTable blockTable;
+	/** Element is an archetype (defines behavior, is not physical). */
+	private boolean archetype;
 
 	/**
 	 * Prepares a new element.
@@ -39,6 +42,7 @@ public abstract class TElement implements Saveable
 	protected TElement()
 	{
 		this.blockTable = new BlockTable();
+		this.archetype = false;
 	}
 	
 	/** 
@@ -89,6 +93,32 @@ public abstract class TElement implements Saveable
 	 */
 	public abstract Block resolveBlock(BlockEntry blockEntry);
 
+	/**
+	 * Checks if this element is an Archetype.
+	 * Archetypes do not hold state nor have contexts - they only define code.
+	 * Archetypes can be inherited from, but can never be owned, nor own things, nor be in expressions nor commands.
+	 * @return true if so, false if not.
+	 */
+	public boolean isArchetype() 
+	{
+		return archetype;
+	}
+	
+	/**
+	 * Sets if this element is an Archetype.
+	 * Archetypes do not hold state nor have contexts - they only define code.
+	 * Archetypes can be inherited from, but can never be owned, nor own things, nor be in expressions nor commands.
+	 * @param archetype true if so, false if not.
+	 * @throws ModuleException if this element cannot be an archetype and <code>archetype</code> is <code>true</code>, or 
+	 * if you attempt to set this to <code>false</code> on an object that has this already set to <code>true</code>.
+	 */
+	public void setArchetype(boolean archetype) 
+	{
+		if (this.archetype && !archetype)
+			throw new ModuleException("You cannot set \"archetype\" to false if this is already true!");
+		this.archetype = archetype;
+	}
+	
 	@Override
 	public int hashCode()
 	{
@@ -126,6 +156,7 @@ public abstract class TElement implements Saveable
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeString(identity, "UTF-8");
 		blockTable.writeBytes(out);
+		sw.writeBoolean(archetype);
 	}
 	
 	@Override
@@ -134,6 +165,7 @@ public abstract class TElement implements Saveable
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		setIdentity(sr.readString("UTF-8"));
 		blockTable = BlockTable.create(in);
+		archetype = sr.readBoolean();
 	}
 
 	@Override

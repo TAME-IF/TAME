@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -95,6 +96,8 @@ public class TObject extends TElement implements Inheritable<TObject>
 	 */
 	public void addName(String name)
 	{
+		if (isArchetype())
+			throw new ModuleException("Object that are archetypes cannot have names.");
 		names.put(name);
 	}
 	
@@ -114,6 +117,8 @@ public class TObject extends TElement implements Inheritable<TObject>
 	 */
 	public void addTag(String tag)
 	{
+		if (isArchetype())
+			throw new ModuleException("Object that are archetypes cannot have tags.");
 		tags.put(tag);
 	}
 	

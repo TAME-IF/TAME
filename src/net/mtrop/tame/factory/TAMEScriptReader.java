@@ -135,6 +135,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_ALLOWS = 			87;
 		static final int TYPE_RESTRICTED = 		88;
 		static final int TYPE_LOCAL = 			89;
+		static final int TYPE_ARCHETYPE = 		90;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -218,6 +219,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("forbids", TYPE_FORBIDS);
 			addCaseInsensitiveKeyword("allows", TYPE_ALLOWS);
 			addCaseInsensitiveKeyword("local", TYPE_LOCAL);
+			addCaseInsensitiveKeyword("archetype", TYPE_ARCHETYPE);
 
 			for (BlockEntryType entryType : BlockEntryType.values())
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
@@ -562,9 +564,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case OBJECT:
 					{
-						if (!isObject())
+						if (!isObject(false))
 						{
-							addErrorMessage("Entry requires an OBJECT. \""+currentToken().getLexeme()+"\" is not an object type.");
+							addErrorMessage("Entry requires a non-archetype OBJECT. \""+currentToken().getLexeme()+"\" is not a viable object type.");
 							return null;
 						}
 						
@@ -574,9 +576,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case PLAYER:
 					{
-						if (!isPlayer())
+						if (!isPlayer(false))
 						{
-							addErrorMessage("Entry requires a PLAYER. \""+currentToken().getLexeme()+"\" is not a player type.");
+							addErrorMessage("Entry requires a non-archetype PLAYER. \""+currentToken().getLexeme()+"\" is not a viable player type.");
 							return null;
 						}
 						
@@ -586,9 +588,21 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case ROOM:
 					{
-						if (!isRoom())
+						if (!isRoom(false))
 						{
-							addErrorMessage("Entry requires a ROOM. \""+currentToken().getLexeme()+"\" is not a room type.");
+							addErrorMessage("Entry requires a non-archetype ROOM. \""+currentToken().getLexeme()+"\" is not a viable room type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case CONTAINER:
+					{
+						if (!isContainer(false))
+						{
+							addErrorMessage("Entry requires a non-archetype CONTAINER. \""+currentToken().getLexeme()+"\" is not a viable container type.");
 							return null;
 						}
 						
@@ -598,9 +612,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case OBJECT_CONTAINER:
 					{
-						if (!isContainer())
+						if (!isObjectContainer(false))
 						{
-							addErrorMessage("Entry requires a CONTAINER-TYPE. \""+currentToken().getLexeme()+"\" is not a container type.");
+							addErrorMessage("Entry requires a non-archetype CONTAINER-TYPE. \""+currentToken().getLexeme()+"\" is not a viable object container type.");
 							return null;
 						}
 						
@@ -610,9 +624,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case ELEMENT:
 					{
-						if (!isElement())
+						if (!isElement(false))
 						{
-							addErrorMessage("Entry requires an ELEMENT-TYPE. \""+currentToken().getLexeme()+"\" is not an element type.");
+							addErrorMessage("Entry requires a non-archetype ELEMENT-TYPE. \""+currentToken().getLexeme()+"\" is not a viable element type.");
 							return null;
 						}
 						
@@ -645,7 +659,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 			if (!TContainer.isValidEntryType(entryType))
 			{
-				addErrorMessage("Entry name is not valid for a container.");
+				addErrorMessage("Entry name \""+entryType.name()+"\"is not valid for a container.");
 				return null;
 			}
 			
@@ -661,7 +675,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 			if (!TObject.isValidEntryType(entryType))
 			{
-				addErrorMessage("Entry name is not valid for an object.");
+				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for an object.");
 				return null;
 			}
 			
@@ -677,7 +691,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 			if (!TRoom.isValidEntryType(entryType))
 			{
-				addErrorMessage("Entry name is not valid for a room.");
+				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for a room.");
 				return null;
 			}
 			
@@ -693,7 +707,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 			if (!TPlayer.isValidEntryType(entryType))
 			{
-				addErrorMessage("Entry name is not valid for a player.");
+				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for a player.");
 				return null;
 			}
 			
@@ -709,7 +723,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 			if (!TWorld.isValidEntryType(entryType))
 			{
-				addErrorMessage("Entry name is not valid for a world.");
+				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for a world.");
 				return null;
 			}
 			
@@ -803,6 +817,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseObject()
 		{
+			boolean archetype = false;
+			if (matchType(TSKernel.TYPE_ARCHETYPE))
+				archetype = true;
+			
 			// object identity.
 			if (!currentType(TSKernel.TYPE_IDENTIFIER))
 			{
@@ -819,7 +837,20 @@ public final class TAMEScriptReader implements TAMEConstants
 			if ((object = currentModule.getObjectByIdentity(identity)) == null)
 			{
 				object = new TObject(identity);
+				// archetype can only be set, never removed.
+				if (archetype)
+					object.setArchetype(true);
 				currentModule.addObject(object);
+			}
+			else if (object.isArchetype() && !archetype)
+			{
+				addErrorMessage("Object \""+identity+"\" must be re-declared as \"archetype\" in subsequent declarations!");
+				return false;
+			}
+			else if (!object.isArchetype() && archetype)
+			{
+				addErrorMessage("Object \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
+				return false;
 			}
 									
 			if (!parseObjectParent(object))
@@ -864,7 +895,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_COLON))
 			{
-				if (!isObject())
+				if (!isObject(true))
 				{
 					addErrorMessage("Expected object type after \":\".");
 					return false;
@@ -916,6 +947,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseRoom()
 		{
+			boolean archetype = false;
+			if (matchType(TSKernel.TYPE_ARCHETYPE))
+				archetype = true;
+
 			// room identity.
 			if (!currentType(TSKernel.TYPE_IDENTIFIER))
 			{
@@ -932,8 +967,22 @@ public final class TAMEScriptReader implements TAMEConstants
 			if ((room = currentModule.getRoomByIdentity(identity)) == null)
 			{
 				room = new TRoom(identity);
+				// archetype can only be set, never removed.
+				if (archetype)
+					room.setArchetype(true);
 				currentModule.addRoom(room);
 			}
+			else if (room.isArchetype() && !archetype)
+			{
+				addErrorMessage("Room \""+identity+"\" must be re-declared as \"archetype\" in subsequent declarations!");
+				return false;
+			}
+			else if (!room.isArchetype() && archetype)
+			{
+				addErrorMessage("Room \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
+				return false;
+			}
+
 															
 			if (!parseRoomParent(room))
 				return false;
@@ -974,7 +1023,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_COLON))
 			{
-				if (!isRoom())
+				if (!isRoom(true))
 				{
 					addErrorMessage("Expected room type after \":\".");
 					return false;
@@ -1026,6 +1075,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parsePlayer()
 		{
+			boolean archetype = false;
+			if (matchType(TSKernel.TYPE_ARCHETYPE))
+				archetype = true;
+
 			// player identity.
 			if (!currentType(TSKernel.TYPE_IDENTIFIER))
 			{
@@ -1042,7 +1095,20 @@ public final class TAMEScriptReader implements TAMEConstants
 			if ((player = currentModule.getPlayerByIdentity(identity)) == null)
 			{
 				player = new TPlayer(identity);
+				// archetype can only be set, never removed.
+				if (archetype)
+					player.setArchetype(true);
 				currentModule.addPlayer(player);
+			}
+			else if (player.isArchetype() && !archetype)
+			{
+				addErrorMessage("Player \""+identity+"\" must be re-declared as \"archetype\" in subsequent declarations!");
+				return false;
+			}
+			else if (!player.isArchetype() && archetype)
+			{
+				addErrorMessage("Player \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
+				return false;
 			}
 																		
 			if (!parsePlayerParent(player))
@@ -1084,7 +1150,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_COLON))
 			{
-				if (!isPlayer())
+				if (!isPlayer(true))
 				{
 					addErrorMessage("Expected player type after \":\".");
 					return false;
@@ -1532,6 +1598,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_NAMED))
 			{
+				if (object.isArchetype())
+				{
+					addErrorMessage("Object archetypes cannot have names!");
+					return false;
+				}
+				
 				if (!currentType(TSKernel.TYPE_STRING))
 				{
 					addErrorMessage("Expected object name (must be string).");
@@ -1582,6 +1654,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_TAGGED))
 			{
+				if (object.isArchetype())
+				{
+					addErrorMessage("Object archetypes cannot have tags!");
+					return false;
+				}
+
 				if (!currentType(TSKernel.TYPE_STRING))
 				{
 					addErrorMessage("Expected object tag (must be string).");
@@ -1733,7 +1811,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseStatement()
 		{
-			if (currentType(TSKernel.TYPE_IDENTIFIER) || isElement())
+			if (currentType(TSKernel.TYPE_IDENTIFIER) || isElement(false))
 			{
 				Value identToken = tokenToValue();
 
@@ -2141,9 +2219,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case OBJECT:
 					{
-						if (!isObject())
+						if (!isObject(false))
 						{
-							addErrorMessage("Command requires an OBJECT. \""+currentToken().getLexeme()+"\" is not an object type.");
+							addErrorMessage("Command requires a non-archetype OBJECT. \""+currentToken().getLexeme()+"\" is not a viable object type.");
 							return false;
 						}
 						
@@ -2153,9 +2231,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case PLAYER:
 					{
-						if (!isPlayer())
+						if (!isPlayer(false))
 						{
-							addErrorMessage("Command requires a PLAYER. \""+currentToken().getLexeme()+"\" is not a player type.");
+							addErrorMessage("Command requires a non-archetype PLAYER. \""+currentToken().getLexeme()+"\" is not a viable player type.");
 							return false;
 						}
 						
@@ -2165,9 +2243,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case ROOM:
 					{
-						if (!isRoom())
+						if (!isRoom(false))
 						{
-							addErrorMessage("Command requires a ROOM. \""+currentToken().getLexeme()+"\" is not a room type.");
+							addErrorMessage("Command requires a non-archetype ROOM. \""+currentToken().getLexeme()+"\" is not a viable room type.");
 							return false;
 						}
 						
@@ -2177,9 +2255,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case CONTAINER:
 					{
-						if (!isContainer())
+						if (!isContainer(false))
 						{
-							addErrorMessage("Command requires a CONTAINER. \""+currentToken().getLexeme()+"\" is not a container type.");
+							addErrorMessage("Command requires a non-archetype CONTAINER. \""+currentToken().getLexeme()+"\" is not a viable container type.");
 							return false;
 						}
 						
@@ -2189,9 +2267,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case OBJECT_CONTAINER:
 					{
-						if (!isObjectContainer())
+						if (!isObjectContainer(false))
 						{
-							addErrorMessage("Command requires an OBJECT-CONTAINER. \""+currentToken().getLexeme()+"\" is not an object container type.");
+							addErrorMessage("Command requires a non-archetype OBJECT-CONTAINER. \""+currentToken().getLexeme()+"\" is not an object container type.");
 							return false;
 						}
 						
@@ -2201,9 +2279,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case ELEMENT:
 					{
-						if (!isElement())
+						if (!isElement(false))
 						{
-							addErrorMessage("Command requires an ELEMENT. \""+currentToken().getLexeme()+"\" is not an element type.");
+							addErrorMessage("Command requires a non-archetype ELEMENT. \""+currentToken().getLexeme()+"\" is not an element type.");
 							return false;
 						}
 						
@@ -2542,13 +2620,13 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (isWorld())
 				return Value.createWorld();
-			else if (isPlayer())
+			else if (isPlayer(true))
 				return Value.createPlayer(currentToken().getLexeme());
-			else if (isRoom())
+			else if (isRoom(true))
 				return Value.createRoom(currentToken().getLexeme());
-			else if (isObject())
+			else if (isObject(true))
 				return Value.createObject(currentToken().getLexeme());
-			else if (isContainer())
+			else if (isContainer(true))
 				return Value.createContainer(currentToken().getLexeme());
 			else if (isAction())
 				return Value.createAction(currentToken().getLexeme());
@@ -2582,29 +2660,29 @@ public final class TAMEScriptReader implements TAMEConstants
 		private boolean isVariable()
 		{
 			return !isWorld()
-				&& !isPlayer()
-				&& !isRoom()
-				&& !isObject()
-				&& !isContainer()
+				&& !isPlayer(true)
+				&& !isRoom(true)
+				&& !isObject(true)
+				&& !isContainer(true)
 				&& !isAction()
 			;
 		}
 		
 		// Checks if an identifier is an element.
-		private boolean isElement()
+		private boolean isElement(boolean allowArchetype)
 		{
-			return isObject()
-				|| isObjectContainer()
+			return isObject(allowArchetype)
+				|| isObjectContainer(allowArchetype)
 			;
 		}
 
 		// Checks if an identifier is an object container.
-		private boolean isObjectContainer()
+		private boolean isObjectContainer(boolean allowArchetype)
 		{
 			return isWorld()
-				|| isPlayer()
-				|| isRoom()
-				|| isContainer()
+				|| isPlayer(allowArchetype)
+				|| isRoom(allowArchetype)
+				|| isContainer(allowArchetype)
 			;
 		}
 
@@ -2615,29 +2693,73 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		// Checks if an identifier is a player.
-		private boolean isPlayer()
+		// If allowArchetype, it accepts an archetype reference.
+		private boolean isPlayer(boolean allowArchetype)
 		{
-			return (currentToken().getType() == TSKernel.TYPE_PLAYER)
-				|| (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getPlayerByIdentity(currentToken().getLexeme()) != null);
+			if (currentToken().getType() == TSKernel.TYPE_PLAYER)
+				return true;
+			
+			TPlayer player;
+			if (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && (player = currentModule.getPlayerByIdentity(currentToken().getLexeme())) != null)
+			{
+				if (!allowArchetype && player.isArchetype())
+					return false;
+				else
+					return true;
+			}
+			else
+				return false;
 		}
 		
 		// Checks if an identifier is a room.
-		private boolean isRoom()
+		// If allowArchetype, it accepts an archetype reference.
+		private boolean isRoom(boolean allowArchetype)
 		{
-			return (currentToken().getType() == TSKernel.TYPE_ROOM)
-				|| (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getRoomByIdentity(currentToken().getLexeme()) != null);
+			TRoom room;
+			if (currentToken().getType() == TSKernel.TYPE_ROOM)
+				return true;
+			
+			if (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && (room = currentModule.getRoomByIdentity(currentToken().getLexeme())) != null)
+			{
+				if (!allowArchetype && room.isArchetype())
+					return false;
+				else
+					return true;
+			}
+			else
+				return false;
 		}
 		
 		// Checks if an identifier is an object.
-		private boolean isObject()
+		// If allowArchetype, it accepts an archetype reference.
+		private boolean isObject(boolean allowArchetype)
 		{
-			return (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getObjectByIdentity(currentToken().getLexeme()) != null);
+			TObject object;
+			if (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && (object = currentModule.getObjectByIdentity(currentToken().getLexeme())) != null)
+			{
+				if (!allowArchetype && object.isArchetype())
+					return false;
+				else
+					return true;
+			}
+			else
+				return false;
 		}
 		
 		// Checks if an identifier is a container.
-		private boolean isContainer()
+		// If allowArchetype, it accepts an archetype reference.
+		private boolean isContainer(boolean allowArchetype)
 		{
-			return (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getContainerByIdentity(currentToken().getLexeme()) != null);
+			TContainer container;
+			if (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && (container = currentModule.getContainerByIdentity(currentToken().getLexeme())) != null)
+			{
+				if (!allowArchetype && container.isArchetype())
+					return false;
+				else
+					return true;
+			}
+			else
+				return false;
 		}
 		
 		// Checks if an identifier is an action.

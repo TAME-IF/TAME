@@ -88,14 +88,18 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		// Build contexts.
 		
 		worldContext = new TWorldContext(module.getWorld());
-		for (ObjectPair<String, TPlayer> element : module.getPlayerList())
-			playerContextHash.put(element.getKey(), new TPlayerContext(element.getValue()));
+		for (ObjectPair<String, TPlayer> element : module.getPlayerList()) 
+			if (!element.getValue().isArchetype())
+				playerContextHash.put(element.getKey(), new TPlayerContext(element.getValue()));
 		for (ObjectPair<String, TRoom> element : module.getRoomList())
-			roomContextHash.put(element.getKey(), new TRoomContext(element.getValue()));
+			if (!element.getValue().isArchetype())
+				roomContextHash.put(element.getKey(), new TRoomContext(element.getValue()));
 		for (ObjectPair<String, TObject> element : module.getObjectList())
-			objectContextHash.put(element.getKey(), new TObjectContext(element.getValue()));
+			if (!element.getValue().isArchetype())
+				objectContextHash.put(element.getKey(), new TObjectContext(element.getValue()));
 		for (ObjectPair<String, TContainer> element : module.getContainerList())
-			containerContextHash.put(element.getKey(), new TContainerContext(element.getValue()));
+			if (!element.getValue().isArchetype())
+				containerContextHash.put(element.getKey(), new TContainerContext(element.getValue()));
 		
 		ownershipMap = new TOwnershipMap();
 
