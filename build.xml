@@ -257,6 +257,15 @@
 	</target>
 	
 	<target name="exe" depends="exe.compiler, exe.console.client" description="Make all EXEs.">
+		<condition property="exe.output.dir.set" else="false">
+			<isset property="exe.output.dir"/>
+		</condition>
+	</target>
+
+	<target name="exe.deploy" depends="exe" if="exe.output.dir.set" description="Deploys EXEs if output directory specified.">
+		<copy overwrite="true" todir="${exe.deploy.dir}">
+			<fileset dir="${exe.dir}"/>
+		</copy>
 	</target>
 	
 	<target name="zip.exe" depends="exe">
@@ -269,8 +278,8 @@
 	
 	<target name="zip" depends="zip.jar, zip.docs, zip.src, zip.exe" description="Creates all archives.">
 	</target>
-
-	<target name="release" depends="zip, exe">
+	
+	<target name="release" depends="zip, exe, exe.deploy">
 	</target>
 
 </project>

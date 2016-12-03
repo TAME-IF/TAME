@@ -940,6 +940,7 @@ public final class TAMELogic implements TAMEConstants
 
 	/**
 	 * Calls the appropriate bad action blocks if they exist.
+	 * Bad actions are actions with mismatched conjugates, unknown modal parts, or unknown object references. 
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param action the action attempted.
@@ -952,16 +953,17 @@ public final class TAMELogic implements TAMEConstants
 		TWorldContext worldContext = moduleContext.getWorldContext();
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		
-		// try incomplete on player.
+		// try bad action on player.
 		if (currentPlayerContext != null && callPlayerBadActionBlock(request, response, action, currentPlayerContext))
 			return true;
 	
-		// try incomplete on world.
+		// try bad action on world.
 		return callWorldBadActionBlock(request, response, action, worldContext);
 	}
 
 	/**
 	 * Calls the appropriate bad action block on the world if it exists.
+	 * Bad actions are actions with mismatched conjugates, unknown modal parts, or unknown object references. 
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param action the action attempted.
