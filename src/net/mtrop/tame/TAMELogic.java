@@ -29,7 +29,6 @@ import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.TAMEFatalException;
 import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
-import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
 import net.mtrop.tame.interrupt.TAMEInterrupt;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
@@ -94,8 +93,6 @@ public final class TAMELogic implements TAMEConstants
 			/* Do nothing. */
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
-		} catch (RunawayRequestInterrupt interrupt) {
-			response.addCue(CUE_FATAL, interrupt.getMessage());
 		} catch (TAMEInterrupt interrupt) {
 			response.addCue(CUE_ERROR, interrupt.getMessage());
 		}
@@ -131,6 +128,8 @@ public final class TAMELogic implements TAMEConstants
 			processActionLoop(request, response);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
+		} catch (QuitInterrupt end) {
+			// Catches quit.
 		} catch (TAMEInterrupt interrupt) {
 			response.addCue(CUE_ERROR, interrupt.getMessage());
 		}

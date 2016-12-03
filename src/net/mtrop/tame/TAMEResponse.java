@@ -7,7 +7,7 @@
  ******************************************************************************/
 package net.mtrop.tame;
 
-import net.mtrop.tame.interrupt.RunawayRequestInterrupt;
+import net.mtrop.tame.exception.RunawayRequestException;
 import net.mtrop.tame.lang.Cue;
 
 import java.util.Formatter;
@@ -118,11 +118,11 @@ public class TAMEResponse implements TAMEConstants
 	 * Also checks against the runaway threshold.
 	 * After this object is received by the client, this means nothing.
 	 */
-	void incrementAndCheckCommandsExecuted() throws RunawayRequestInterrupt
+	void incrementAndCheckCommandsExecuted() throws RunawayRequestException
 	{
 		commandsExecuted++;
 		if (commandsExecuted >= RUNAWAY_THRESHOLD)
-			throw new RunawayRequestInterrupt("Runaway request detected! Breached threshold of "+RUNAWAY_THRESHOLD+" requests.");
+			throw new RunawayRequestException("Runaway request detected! Breached threshold of "+RUNAWAY_THRESHOLD+" requests.");
 	}
 	
 	/**

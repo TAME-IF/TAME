@@ -5,7 +5,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
-package net.mtrop.tame.interrupt;
+package net.mtrop.tame.exception;
 
 /**
  * This type of interrupt is thrown too many commands are executed on
@@ -14,16 +14,16 @@ package net.mtrop.tame.interrupt;
  * But then again, maybe you should fix those infinite loops!
  * @author Matthew Tropiano
  */
-public class RunawayRequestInterrupt extends TAMEInterrupt
+public class RunawayRequestException extends TAMEFatalException
 {
 	private static final long serialVersionUID = -4340182530454717686L;
 
-	public RunawayRequestInterrupt()
+	public RunawayRequestException()
 	{
-		super("A runaway request interrupt was thrown.");
+		super("A runaway request interrupt was thrown. Too many commands processed for one request: possible infinite loop.");
 	}
 	
-	public RunawayRequestInterrupt(String message)
+	public RunawayRequestException(String message)
 	{
 		super(message);
 	}

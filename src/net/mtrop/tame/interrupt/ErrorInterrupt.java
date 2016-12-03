@@ -17,7 +17,7 @@ public class ErrorInterrupt extends TAMEInterrupt
 
 	public ErrorInterrupt()
 	{
-		super("A quit interrupt was thrown.");
+		super("An error interrupt was thrown.");
 	}
 	
 	public ErrorInterrupt(String message)
