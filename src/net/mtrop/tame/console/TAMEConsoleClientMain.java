@@ -176,7 +176,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		}
 		else
 		{
+			context.out.println();
 			processResponse(TAMELogic.handleInit(moduleContext, trace), context);
+			context.out.println();
 		}
 		
 		if (!context.quit)
@@ -370,13 +372,17 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				out.print("> ");
 				if ((line = Common.getLine()) != null)
 				{
+					out.println();
 					line = line.replaceAll("\\s+", " ").trim();
 					if (line.toLowerCase().startsWith(COMMAND_SAVE))
 						saveGame(context, line.substring(COMMAND_SAVE.length())+".sav");
 					else if (line.toLowerCase().startsWith(COMMAND_LOAD))
 						loadGame(context, line.substring(COMMAND_LOAD.length())+".sav");
 					else
+					{
 						processResponse(TAMELogic.handleRequest(context, line, trace), this);
+						out.println();
+					}
 				}
 				else
 					good = false;
