@@ -1149,7 +1149,7 @@ public class Value implements Comparable<Value>, Saveable
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
-			String v2 = value1.asString();
+			String v2 = value2.asString();
 			return create(v1.compareTo(v2) < 0);
 		}
 		else
@@ -1171,7 +1171,7 @@ public class Value implements Comparable<Value>, Saveable
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
-			String v2 = value1.asString();
+			String v2 = value2.asString();
 			return create(v1.compareTo(v2) <= 0);
 		}
 		else
@@ -1193,7 +1193,7 @@ public class Value implements Comparable<Value>, Saveable
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
-			String v2 = value1.asString();
+			String v2 = value2.asString();
 			return create(v1.compareTo(v2) > 0);
 		}
 		else
@@ -1215,7 +1215,7 @@ public class Value implements Comparable<Value>, Saveable
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
-			String v2 = value1.asString();
+			String v2 = value2.asString();
 			return create(v1.compareTo(v2) >= 0);
 		}
 		else
