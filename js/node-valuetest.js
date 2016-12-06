@@ -5,7 +5,7 @@ var TEST_VALUES = [
 	TValue.createBoolean(true),
 	TValue.createInfinity(),
 	TValue.createNegativeInfinity(),
-	TValue.createNaN(Double.NaN),
+	TValue.createNaN(),
 	TValue.createInteger(0),
 	TValue.createFloat(0.0),
 	TValue.createInteger(10),
@@ -47,13 +47,13 @@ var c = TValue.createContainer("c_asdf");
 var a = TValue.createAction("a_asdf");
 var v = TValue.createVariable("butt");
 console.log('===========================================================');
-console.log(w);
-console.log(o);
-console.log(r);
-console.log(p);
-console.log(c);
-console.log(a);
-console.log(v);
+console.log(w.toString());
+console.log(o.toString());
+console.log(r.toString());
+console.log(p.toString());
+console.log(c.toString());
+console.log(a.toString());
+console.log(v.toString());
 console.log('===========================================================');
 
 function printBoolean(v1)
