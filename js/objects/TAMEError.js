@@ -17,11 +17,13 @@ var TAMEError = function(type, message)
 	this.message = message;
 };
 
-TAMEError.Type = {
+TAMEError.Type = 
+{
 	"Module": "Module",
 	"ModuleExecution": "ModuleExecution",
 	"ModuleState": "ModuleState",
 	"Arithmetic": "Arithmetic",
+	"ArithmeticStackState": "ArithmeticStackState",
 	"RunawayRequest": "RunawayRequest",
 	"UnexpectedValue": "UnexpectedValue",
 	"UnexpectedValueType": "UnexpectedValueType"

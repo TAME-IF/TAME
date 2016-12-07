@@ -11,39 +11,41 @@
 /*****************************************************************************
  See net.mtrop.tame.TAMEResponse
  *****************************************************************************/
-var TResponse = function()
+var TValueHash = function()
 {
-    this.responseCues = [];
-    this.commandsExecuted = 0;
-    this.requestNanos = 0;
-    this.interpretNanos = 0;
+    this.table = {};
 };
 
 /**
- * Adds a cue to the response.
- * @param type the cue type name.
- * @param content the cue content.
+ * Adds a value.
+ * Names are case-insensitive (stored lowercase).
+ * @param name the name of the value.
+ * @param value the value to put in.
  */
-TResponse.prototype.addCue = function(type, content)
+TValueHash.prototype.put = function(name, value)
 {
-	this.responseCues.push({"type": type, "content": content});
+	this.table[name.toLowerCase()] = value;
 };
 
 /**
- * Adds a TRACE cue to the response, if tracing is 
- * @param type the cue type name.
- * @param content the cue content.
+ * Gets a value.
+ * Names are case-insensitive (stored lowercase).
+ * @param name the name of the value.
+ * @return the corresponding value or null if not found.
  */
-TResponse.prototype.trace = function(request, content)
+TValueHash.prototype.get = function(name)
 {
-	if (request.tracing)
-		this.addCue("TRACE", content);
+	var out = this.table[name.toLowerCase()];
+	if (out != null)
+		return out;
+	else
+		return null;
 };
 
 //##[[CONTENT-END
 
 
 //If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TResponse;
+if ((typeof module.exports) !== 'undefined') module.exports = TValueHash;
 // =========================================================================
 

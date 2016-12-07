@@ -87,21 +87,6 @@ var TCommandFunctions = TCommandFunctions || [
 
 ];
 
-/*****************************************************************************
- See net.mtrop.tame.TAMERequest
- *****************************************************************************/
-var TRequest = TRequest || function(context, inputMessage, tracing)
-{
-	this.moduleContext = context;
-    this.inputMessage = inputMessage;
-    this.tracing = tracing;
- 
-	// Stacks and Queues
-    this.actionQueue = [];
-    this.valueStack = [];
-    this.contextStack = [];
-};
-
 /****************************************************
  See net.mtrop.tame.lang.Command
  ****************************************************/
