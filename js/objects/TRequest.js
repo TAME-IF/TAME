@@ -145,7 +145,7 @@ TRequest.prototype.checkStackClear = function()
 //##[[CONTENT-END
 
 
-//If testing with NODEJS ==================================================
+// If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TRequest;
 // =========================================================================
 

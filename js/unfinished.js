@@ -87,47 +87,6 @@ var TCommandFunctions = TCommandFunctions || [
 
 ];
 
-/****************************************************
- See net.mtrop.tame.lang.Command
- ****************************************************/
-var TCommand = TCommand || function(commandfunc, operand0, operand1, ifBlock, conditionalBlock, stepBlock, successBlock, failureBlock)
-{
-	this.commandfunc = commandfunc;
-	this.operand0 = operand0;
-	this.operand1 = operand1;
-	this.ifBlock = ifBlock;
-	this.conditionalBlock = conditionalBlock;
-	this.stepBlock = stepBlock;
-	this.successBlock = successBlock;
-	this.failureBlock = failureBlock;
-}
-
-/**
- * Executes the command.
- */
-TCommand.prototype.execute = function(request, response, blockLocal)
-{
-	commandfunc(request, response, blockLocal, this);
-}
-
-/****************************************************
- See net.mtrop.tame.lang.Block
- ****************************************************/
-var TBlock = TBlock || function(commandList)
-{
-	this.commandList = commandList;
-}
-
-TBlock.prototype.execute = function(request, response, locals)
-{
-	response.trace(request, "Start block.");
-	_each(this.commandList, function(command){
-		response.trace(request, "CALL %s", command);
-		command.execute(request, response, blockLocal);
-	});
-	response.trace(request, "End block.");
-}
-
 
 /****************************************************
  Constructor for the TAME Module.

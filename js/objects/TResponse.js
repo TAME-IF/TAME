@@ -6,6 +6,10 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
 
+// REQUIREMENTS =========================================================================================
+var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('./TAMEError.js') : null);
+// ======================================================================================================
+
 //##[[CONTENT-START
 
 /*****************************************************************************
@@ -30,14 +34,25 @@ TResponse.prototype.addCue = function(type, content)
 };
 
 /**
- * Adds a TRACE cue to the response, if tracing is 
- * @param type the cue type name.
- * @param content the cue content.
+ * Adds a TRACE cue to the response, if tracing is enabled.
+ * @param request (TRequest) the request object.
+ * @param content the content to add.
  */
 TResponse.prototype.trace = function(request, content)
 {
 	if (request.tracing)
 		this.addCue("TRACE", content);
+};
+
+/**
+ * Increments and checks if command amount breaches the threshold.
+ * @throw TAMEError if a breach is detected.
+ */
+TResponse.prototype.incrementAndCheckCommandsExecuted = function()
+{
+	this.commandsExecuted++;
+	if (this.commandsExecuted >= 100000)
+		throw new TAMEError(TAMEError.Type.RunawayRequest, "Too many commands executed - possible infinite loop.");
 };
 
 //##[[CONTENT-END
