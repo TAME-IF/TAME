@@ -88,6 +88,9 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value create(float value)
 	{
 		Value out = new Value();
+		// Get rid of -0.0.
+		if (value == -0.0f)
+			value = 0.0f;
 		out.set(ValueType.FLOAT, (double)value);
 		return out;
 	}
@@ -100,6 +103,9 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value create(double value)
 	{
 		Value out = new Value();
+		// Get rid of -0.0.
+		if (value == -0.0)
+			value = 0.0;
 		out.set(ValueType.FLOAT, value);
 		return out;
 	}
@@ -297,11 +303,17 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Returns if this value is equal to another: PERFECTLY EQUAL, type strict.
+	 * Note: NaN is never equal.
 	 * @param otherValue the other value.
 	 * @return true if so, false if not.
 	 */
 	public boolean equals(Value otherValue)
 	{
+		if (isStrictlyNaN())
+			return false;
+		else if (otherValue.isStrictlyNaN())
+			return false;
+		
 		return type == otherValue.type && value.equals(otherValue.value);
 	}
 	
@@ -495,6 +507,8 @@ public class Value implements Comparable<Value>, Saveable
 				return Double.NaN;
 			if (((String)value).equalsIgnoreCase("Infinity"))
 				return Double.POSITIVE_INFINITY;
+			if (((String)value).equalsIgnoreCase("-Infinity"))
+				return Double.NEGATIVE_INFINITY;
 			try {
 				return Double.parseDouble(asString());
 			} catch (NumberFormatException e) {
@@ -530,6 +544,15 @@ public class Value implements Comparable<Value>, Saveable
 	public boolean isNaN()
 	{
 		return Double.isNaN(asDouble());
+	}
+	
+	/**
+	 * Returns if this value is strictly a floating point value that is <code>NaN</code>.
+	 * @return true if so, false if not.
+	 */
+	public boolean isStrictlyNaN()
+	{
+		return isFloatingPoint() && isNaN();
 	}
 	
 	/**
@@ -836,7 +859,12 @@ public class Value implements Comparable<Value>, Saveable
 			long v1 = value1.asLong();
 			long v2 = value2.asLong();
 			if (v2 == 0L)
-				return create(Double.POSITIVE_INFINITY * v1);
+			{
+				if (v1 != 0L)
+					return create(Double.POSITIVE_INFINITY * v1);
+				else
+					return create(Double.NaN);
+			}
 			else
 				return create(v1 / v2);
 		}
@@ -845,7 +873,12 @@ public class Value implements Comparable<Value>, Saveable
 			double v1 = value1.asDouble();
 			double v2 = value2.asDouble();
 			if (v2 == 0.0)
-				return create(Double.POSITIVE_INFINITY * v1);
+			{
+				if (v1 != 0.0)
+					return create(Double.POSITIVE_INFINITY * v1);
+				else
+					return create(Double.NaN);
+			}
 			else
 				return create(v1 / v2);
 		}
@@ -898,7 +931,10 @@ public class Value implements Comparable<Value>, Saveable
 		double v1 = value1.asDouble();
 		double v2 = value2.asDouble();
 		double p = Math.pow(v1, v2);
-		if (value1.isInteger() && value2.isInteger())
+		
+		if (v1 == 0.0 && v2 < 0.0)
+			return create(Double.POSITIVE_INFINITY);
+		else if (value1.isInteger() && value2.isInteger())
 			return create((long)p);
 		else
 			return create(p);
@@ -906,7 +942,8 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the "bitwise and" of two literals.
-	 * Strings and doubles are converted to longs.
+	 * Strings and floats are converted to longs, and the longs are converted 
+	 * to 32-bit integers, in order to keep consistency between Java and JS compilation.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -925,15 +962,16 @@ public class Value implements Comparable<Value>, Saveable
 		}
 		else
 		{
-			long v1 = value1.asLong();
-			long v2 = value2.asLong();
+			int v1 = (int)value1.asLong();
+			int v2 = (int)value2.asLong();
 			return create(v1 & v2);
 		}
 	}
 
 	/**
 	 * Returns the "bitwise or" of two literals.
-	 * Strings and doubles are converted to longs.
+	 * Strings and floats are converted to longs, and the longs are converted 
+	 * to 32-bit integers, in order to keep consistency between Java and JS compilation.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -952,15 +990,16 @@ public class Value implements Comparable<Value>, Saveable
 		}
 		else
 		{
-			long v1 = value1.asLong();
-			long v2 = value2.asLong();
+			int v1 = (int)value1.asLong();
+			int v2 = (int)value2.asLong();
 			return create(v1 | v2);
 		}
 	}
 
 	/**
 	 * Returns the "bitwise xor" of two literals.
-	 * Strings and doubles are converted to longs.
+	 * Strings and floats are converted to longs, and the longs are converted 
+	 * to 32-bit integers, in order to keep consistency between Java and JS compilation.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -978,14 +1017,16 @@ public class Value implements Comparable<Value>, Saveable
 		}
 		else
 		{
-			long v1 = value1.asLong();
-			long v2 = value2.asLong();
+			int v1 = (int)value1.asLong();
+			int v2 = (int)value2.asLong();
 			return create(v1 ^ v2);
 		}
 	}
 
 	/**
 	 * Returns the left shift of the first value shifted X units by the second.
+	 * Strings and floats are converted to longs, and the longs are converted 
+	 * to 32-bit integers, in order to keep consistency between Java and JS compilation.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -996,13 +1037,15 @@ public class Value implements Comparable<Value>, Saveable
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
 		
-		long v1 = value1.asLong();
-		long v2 = value2.asLong();
+		int v1 = (int)value1.asLong();
+		int v2 = (int)value2.asLong();
 		return create(v1 << v2);	
 	}
 
 	/**
 	 * Returns the right shift of the first value shifted X units by the second.
+	 * Strings and floats are converted to longs, and the longs are converted 
+	 * to 32-bit integers, in order to keep consistency between Java and JS compilation.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -1013,13 +1056,15 @@ public class Value implements Comparable<Value>, Saveable
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
 		
-		long v1 = value1.asLong();
-		long v2 = value2.asLong();
+		int v1 = (int)value1.asLong();
+		int v2 = (int)value2.asLong();
 		return create(v1 >> v2);	
 	}
 
 	/**
 	 * Returns the right padded shift of the first value shifted X units by the second.
+	 * Strings and floats are converted to longs, and the longs are converted 
+	 * to 32-bit integers, in order to keep consistency between Java and JS compilation.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -1030,8 +1075,8 @@ public class Value implements Comparable<Value>, Saveable
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be shifted: " + value1 + ", " + value2);
 		
-		long v1 = value1.asLong();
-		long v2 = value2.asLong();
+		int v1 = (int)value1.asLong();
+		int v2 = (int)value2.asLong();
 		return create(v1 >>> v2);	
 	}
 
@@ -1146,6 +1191,8 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+			return create(false);
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
@@ -1168,6 +1215,8 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+			return create(false);
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
@@ -1190,6 +1239,8 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+			return create(false);
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
@@ -1212,6 +1263,8 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+			return create(false);
 		else if (value1.isString() || value2.isString())
 		{
 			String v1 = value1.asString();
