@@ -80,7 +80,7 @@ TValue.areEqualIgnoreType = function(v1, v2)
  * Returns if this value is equal to another: PERFECTLY EQUAL, type strict.
  * @param v1 the first value.
  * @param v2 the second value.
- * @return -1 if v1 < v2, 0 if equal (ignore type), 1 if v1 > v2.
+ * @return true if so, false if not.
  */
 TValue.areEqual = function(v1, v2)
 {
@@ -318,7 +318,12 @@ TValue.divide = function(value1, value2)
 		var v1 = value1.asLong();
 		var v2 = value2.asLong();
 		if (v2 == 0)
-			return v1 < 0 ? TValue.createNegativeInfinity() : TValue.createInfinity();
+		{
+			if (v1 != 0)
+				return v1 < 0 ? TValue.createNegativeInfinity() : TValue.createInfinity();
+			else
+				return TValue.createNaN();
+		}
 		else
 			return TValue.createInteger(v1 / v2);
 	}
@@ -327,7 +332,12 @@ TValue.divide = function(value1, value2)
 		var v1 = value1.asDouble();
 		var v2 = value2.asDouble();
 		if (v2 == 0.0)
-			return v1 < 0 ? TValue.createNegativeInfinity() : TValue.createInfinity();
+		{
+			if (!Number.isNaN(v1) && v1 != 0.0)
+				return v1 < 0.0 ? TValue.createNegativeInfinity() : TValue.createInfinity();
+			else
+				return TValue.createNaN();
+		}
 		else
 			return TValue.createFloat(v1 / v2);
 	}
@@ -380,7 +390,9 @@ TValue.power = function(value1, value2)
 	var v1 = value1.asDouble();
 	var v2 = value2.asDouble();
 	var p = Math.pow(v1, v2);
-	if (value1.isInteger() && value2.isInteger())
+	if (v1 == 0 && v2 < 0)
+		return TValue.createInfinity();
+	else if (value1.isInteger() && value2.isInteger())
 		return TValue.createInteger(p);
 	else
 		return TValue.createFloat(p);
@@ -388,7 +400,8 @@ TValue.power = function(value1, value2)
 
 /**
  * Returns the "bitwise and" of two literals.
- * Strings and doubles are converted to longs.
+ * Strings and floats are converted to longs, and the longs are converted 
+ * to 32-bit integers, in order to keep consistency between Java and JS compilation.
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
@@ -407,6 +420,7 @@ TValue.and = function(value1, value2)
 	}
 	else
 	{
+		// 
 		var v1 = value1.asLong();
 		var v2 = value2.asLong();
 		return TValue.createInteger(v1 & v2);
@@ -415,7 +429,8 @@ TValue.and = function(value1, value2)
 
 /**
  * Returns the "bitwise or" of two literals.
- * Strings and doubles are converted to longs.
+ * Strings and floats are converted to longs, and the longs are converted 
+ * to 32-bit integers, in order to keep consistency between Java and JS compilation.
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
@@ -442,7 +457,8 @@ TValue.or = function(value1, value2)
 
 /**
  * Returns the "bitwise xor" of two literals.
- * Strings and doubles are converted to longs.
+ * Strings and floats are converted to longs, and the longs are converted 
+ * to 32-bit integers, in order to keep consistency between Java and JS compilation.
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
@@ -468,6 +484,8 @@ TValue.xor = function(value1, value2)
 
 /**
  * Returns the left shift of the first value shifted X units by the second.
+ * Strings and floats are converted to longs, and the longs are converted 
+ * to 32-bit integers, in order to keep consistency between Java and JS compilation.
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
@@ -485,6 +503,8 @@ TValue.leftShift = function(value1, value2)
 
 /**
  * Returns the right shift of the first value shifted X units by the second.
+ * Strings and floats are converted to longs, and the longs are converted 
+ * to 32-bit integers, in order to keep consistency between Java and JS compilation.
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
@@ -502,6 +522,8 @@ TValue.rightShift = function(value1, value2)
 
 /**
  * Returns the right padded shift of the first value shifted X units by the second.
+ * Strings and floats are converted to longs, and the longs are converted 
+ * to 32-bit integers, in order to keep consistency between Java and JS compilation.
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
@@ -512,9 +534,14 @@ TValue.rightShiftPadded = function(value1, value2)
 	if (!(value1.isLiteral() || value2.isLiteral()))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be shifted: " + value1 + ", " + value2);
 	
-	var v1 = value1.asLong();
-	var v2 = value2.asLong();
-	return TValue.createInteger(v1 >>> v2);	
+	if (value2.isNaN() || value2.asLong() == 0)
+		return TValue.createInteger(value1.asLong());
+	else
+	{
+		var v1 = value1.asLong();
+		var v2 = value2.asLong();
+		return TValue.createInteger(v1 >>> v2);	
+	}
 };
 
 /**
@@ -577,7 +604,7 @@ TValue.logicalXOr = function(value1, value2)
  */
 TValue.equals = function(value1, value2)
 {
-	return TValue.createBoolean(value1.equalsIgnoreType(value2));
+	return TValue.createBoolean(TValue.areEqualIgnoreType(value1, value2));
 };
 
 /**
@@ -589,7 +616,7 @@ TValue.equals = function(value1, value2)
  */
 TValue.notEquals = function(value1, value2)
 {
-	return TValue.createBoolean(!value1.equalsIgnoreType(value2));
+	return TValue.createBoolean(!TValue.areEqualIgnoreType(value1, value2));
 };
 
 /**
@@ -601,7 +628,7 @@ TValue.notEquals = function(value1, value2)
  */
 TValue.strictEquals = function(value1, value2)
 {
-	return TValue.createBoolean(value1.equals(value2));
+	return TValue.createBoolean(TValue.areEqual(value1, value2));
 };
 
 /**
@@ -613,7 +640,7 @@ TValue.strictEquals = function(value1, value2)
  */
 TValue.strictNotEquals = function(value1, value2)
 {
-	return TValue.createBoolean(!value1.equals(value2));
+	return TValue.createBoolean(!TValue.areEqual(value1, value2));
 };
 
 /**
@@ -628,6 +655,8 @@ TValue.less = function(value1, value2)
 {
 	if (!(value1.isLiteral() || value2.isLiteral()))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
+	else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+		return TValue.createBoolean(false);
 	else 
 		return TValue.createBoolean(value1.compareTo(value2) < 0);
 };
@@ -644,6 +673,8 @@ TValue.lessOrEqual = function(value1, value2)
 {
 	if (!(value1.isLiteral() || value2.isLiteral()))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
+	else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+		return TValue.createBoolean(false);
 	else 
 		return TValue.createBoolean(value1.compareTo(value2) <= 0);
 };
@@ -660,6 +691,8 @@ TValue.greater = function(value1, value2)
 {
 	if (!(value1.isLiteral() || value2.isLiteral()))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
+	else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+		return TValue.createBoolean(false);
 	else 
 		return TValue.createBoolean(value1.compareTo(value2) > 0);
 };
@@ -676,6 +709,8 @@ TValue.greaterOrEqual = function(value1, value2)
 {
 	if (!(value1.isLiteral() || value2.isLiteral()))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
+	else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+		return TValue.createBoolean(false);
 	else 
 		return TValue.createBoolean(value1.compareTo(value2) >= 0);
 };
@@ -800,12 +835,22 @@ TValue.prototype.isNaN = function()
 };
 
 /**
+ * Returns if this value is floating point and literally <code>NaN</code>.
+ * @return true if so, false if not.
+ */
+TValue.prototype.isStrictlyNaN = function()
+{
+	return this.isFloatingPoint() && this.isNaN();
+};
+
+/**
  * Returns if this value evaluates to positive or negative infinity.
  * @return true if so, false if not.
  */
 TValue.prototype.isInfinite = function()
 {
-	return !isFinite(this.asDouble());
+	var v = this.asDouble();
+	return v === Infinity || v === -Infinity;
 };
 
 /**
@@ -823,7 +868,7 @@ TValue.prototype.asLong = function()
 	else if (this.isFloatingPoint())
 		return parseInt(this.value);
 	else if (this.isString())
-		return parseInt(asString());
+		return parseInt(this.asString());
 	else
 		return 0;
 };
@@ -841,7 +886,17 @@ TValue.prototype.asDouble = function()
 	else if (this.isFloatingPoint())
 		return this.value;
 	else if (this.isString())
-		return parseFloat(this.value);
+	{
+		var vlower = this.value.toLowerCase();
+		if (vlower === "nan")
+			return NaN;
+		else if (vlower === "infinity")
+			return Infinity;
+		else if (vlower === "-infinity")
+			return -Infinity;
+		else
+			return parseFloat(this.asString());
+	}
 	else
 		return NaN;
 };
@@ -852,7 +907,10 @@ TValue.prototype.asDouble = function()
  */
 TValue.prototype.asString = function()
 {
-	return ""+this.value;
+	if (this.isFloatingPoint() && this.asDouble() % 1 == 0)
+		return this.value+".0";
+	else
+		return ""+this.value;
 };
 
 /**
@@ -863,10 +921,19 @@ TValue.prototype.asBoolean = function()
 {
 	if (this.isBoolean())
 		return this.value;
-	else if (this.isNumeric())
-		return this.isInfinite() || !this.isNaN() || this.asDouble() != 0.0;
+	else if (this.isFloatingPoint())
+	{
+		if (this.isInfinite())
+			return true;
+		else if (Number.isNaN(this.value))
+			return false;
+		else
+			return this.asDouble() != 0;
+	}
+	else if (this.isInteger())
+		return this.asLong() != 0;
 	else if (this.isString())
-		return Boolean(this.value);
+		return this.value.length !== 0;
 	else
 		return true; // all objects are true
 };
@@ -885,7 +952,7 @@ TValue.prototype.isTrue = function()
  */
 TValue.prototype.toString = function()
 {
-	return this.type + "[" + String(this.value) + "]";
+	return this.type + "[" + this.asString() + "]";
 };
 
 /**

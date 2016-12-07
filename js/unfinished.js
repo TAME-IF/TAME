@@ -73,22 +73,6 @@ var TAMEConstants = TAMEConstants || {
 };
 
 
-
-/*****************************************************************************
- See net.mtrop.tame.lang.ArithmeticFuncs
- TValue uses these exclusively.
- *****************************************************************************/
-var TArithmeticFunctions = TArithmeticFunctions || [
-	/* ABS */
-	function(tvSrc) {
-		// TODO: Finish.
-	},
-	/* NOT */
-	function(tvSrc) {
-		return new TValue(TValue.Type.BOOLEAN, !tvSrc.asBoolean());
-	},
-];
-
 /*****************************************************************************
  See net.mtrop.tame.TAMECommand
  Just doCommand() functions. No need for script metadata.

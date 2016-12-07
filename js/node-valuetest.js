@@ -1,4 +1,5 @@
 var TValue = require("./objects/TValue.js");
+var TArithmeticFunctions = require("./objects/TArithmeticFunctions.js");
 
 var TEST_VALUES = [
 	TValue.createBoolean(false),
@@ -39,23 +40,6 @@ var TEST_VALUES = [
 	TValue.createString("banana"),
 ];
 
-var w = TValue.createWorld();
-var o = TValue.createObject("o_asdf");
-var r = TValue.createRoom("r_asdf");
-var p = TValue.createPlayer("p_asdf");
-var c = TValue.createContainer("c_asdf");
-var a = TValue.createAction("a_asdf");
-var v = TValue.createVariable("butt");
-console.log('===========================================================');
-console.log(w.toString());
-console.log(o.toString());
-console.log(r.toString());
-console.log(p.toString());
-console.log(c.toString());
-console.log(a.toString());
-console.log(v.toString());
-console.log('===========================================================');
-
 function printBoolean(v1)
 {
 	console.log(v1.toString() + " > BOOLEAN > " +v1.asBoolean());
@@ -68,7 +52,8 @@ function printInteger(v1)
 
 function printFloat(v1)
 {
-	console.log(v1.toString() + " > FLOAT > " +v1.asDouble());
+	var s = v1.asDouble() % 1 == 0 ? v1.asDouble()+'.0' : v1.asDouble()+''
+	console.log(v1.toString() + " > FLOAT > " +(s));
 }
 
 function printString(v1)
@@ -76,16 +61,50 @@ function printString(v1)
 	console.log(v1.toString() + " > STRING > \"" +v1.asString()+ "\"");
 }
 
-function print(op, opSign, v1)
+function print1(op, opSign, v1)
 {
 	console.log(opSign +" "+ v1.toString() + " = " + op(v1).toString());
 }
 
-function print(op, opSign, v1, v2)
+function print2(op, opSign, v1, v2)
 {
 	console.log(v1.toString() + " " + opSign + " " + v2.toString() + " = " + op(v1, v2).toString());
 }
 
-// TODO: Finish.
+var i;
+for (i = 0; i < TEST_VALUES.length; i++)
+	printBoolean(TEST_VALUES[i]);
+console.log("-------------------------------");
+for (i = 0; i < TEST_VALUES.length; i++)
+	printInteger(TEST_VALUES[i]);
+console.log("-------------------------------");
+for (i = 0; i < TEST_VALUES.length; i++)
+	printFloat(TEST_VALUES[i]);
+console.log("-------------------------------");
+for (i = 0; i < TEST_VALUES.length; i++)
+	printString(TEST_VALUES[i]);
+console.log("-------------------------------");
 
+for (var x in TArithmeticFunctions.Type) if (TArithmeticFunctions.Type.hasOwnProperty(x))
+{
+	var afunc = TArithmeticFunctions[TArithmeticFunctions.Type[x]];
+
+	// output is inconsistently represented between Java and JS
+	if (x == 'POWER')
+		continue;
+	
+	
+	if (afunc.binary)
+	{
+		for (var i = 0; i < TEST_VALUES.length; i++)
+			for (var j = 0; j < TEST_VALUES.length; j++)
+				print2(afunc.doOperation, afunc.symbol, TEST_VALUES[i], TEST_VALUES[j]);
+	}
+	else
+	{
+		for (var i = 0; i < TEST_VALUES.length; i++)
+			print1(afunc.doOperation, afunc.symbol, TEST_VALUES[i]);
+	}
+	console.log("-------------------------------");
+}
 
