@@ -7,6 +7,8 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
+var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('./TAMEError.js') : null);
+var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefined' ? require('./TArithmeticFunctions.js') : null);
 var TValue = TValue || ((typeof require) !== 'undefined' ? require('./TValue.js') : null);
 // ======================================================================================================
 
@@ -51,6 +53,6 @@ TCommandFunctions.Type =
 //##[[CONTENT-END
 
 
-//If testing with NODEJS ==================================================
+// If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TCommandFunctions;
 // =========================================================================

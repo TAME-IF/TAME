@@ -270,6 +270,6 @@ TArithmeticFunctions.Type =
 //##[[CONTENT-END
 
 
-//If testing with NODEJS ==================================================
+// If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TArithmeticFunctions;
 // =========================================================================
