@@ -10,34 +10,31 @@
 
 var TAME = function() {
 
-//##[[CONTENT-INCLUDE ./objects/TAMEError.js
-//##[[CONTENT-INCLUDE ./objects/TValueHash.js
+//##[[CONTENT-INCLUDE ./Util.js
+//##[[CONTENT-INCLUDE ./TAMEConstants.js
+//##[[CONTENT-INCLUDE ./TAMEError.js
 //##[[CONTENT-INCLUDE ./objects/TValue.js
 //##[[CONTENT-INCLUDE ./objects/TRequest.js
 //##[[CONTENT-INCLUDE ./objects/TResponse.js
-//##[[CONTENT-INCLUDE ./objects/TArithmeticFunctions.js
-//##[[CONTENT-INCLUDE ./objects/TCommandFunctions.js
+//##[[CONTENT-INCLUDE ./objects/TBlockEntry.js
+//##[[CONTENT-INCLUDE ./logic/TLogic.js
+//##[[CONTENT-INCLUDE ./logic/TArithmeticFunctions.js
+//##[[CONTENT-INCLUDE ./logic/TCommandFunctions.js
 //##[[CONTENT-INCLUDE ./objects/TCommand.js
 //##[[CONTENT-INCLUDE ./objects/TBlock.js
-//##[[CONTENT-INCLUDE ./objects/TAMEModule.js
-//##[[CONTENT-INCLUDE ./objects/TAMEModuleContext.js
+//##[[CONTENT-INCLUDE ./objects/TModule.js
 
-	this.module = new TAMEModule(/* TODO: Add stuff. */);
+	this.module = new TModule(/* TODO: Add stuff. */);
 
-	// export: creates a new context.
-	this.newContext = function(){
-		return new TAMEContext(module);
-	};
-	
-	// export: initializes a new context.
-	this.initContext = function(context){
-		return new TAMEContext(module);
-	};
+};
 
+TAME.prototype.newContext() = function() {
+	var out = this.module.createContext();
+	return out;
 };
 
 //##[[CONTENT-END
 
 //If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TAMEError;
+if ((typeof module.exports) !== 'undefined') module.exports = TAME;
 // =========================================================================

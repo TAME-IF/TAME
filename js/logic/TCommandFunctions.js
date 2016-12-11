@@ -7,9 +7,11 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
-var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('./TAMEError.js') : null);
 var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefined' ? require('./TArithmeticFunctions.js') : null);
-var TValue = TValue || ((typeof require) !== 'undefined' ? require('./TValue.js') : null);
+var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('./TLogic.js') : null);
+
+var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
+var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/TValue.js') : null);
 // ======================================================================================================
 
 //##[[CONTENT-START
@@ -48,6 +50,7 @@ TCommandFunctions.execute = function(index, request, response, blockLocal, comma
 /* Type enumeration. */
 TCommandFunctions.Type = 
 {
+	//TODO: Finish
 };
 
 //##[[CONTENT-END

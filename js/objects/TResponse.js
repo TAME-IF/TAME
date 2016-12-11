@@ -7,7 +7,7 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
-var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('./TAMEError.js') : null);
+var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
 // ======================================================================================================
 
 //##[[CONTENT-START

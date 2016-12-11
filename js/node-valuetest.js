@@ -1,5 +1,5 @@
 var TValue = require("./objects/TValue.js");
-var TArithmeticFunctions = require("./objects/TArithmeticFunctions.js");
+var TArithmeticFunctions = require("./logic/TArithmeticFunctions.js");
 
 var TEST_VALUES = [
 	TValue.createBoolean(false),
