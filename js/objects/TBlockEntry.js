@@ -11,10 +11,43 @@
 /****************************************************
  See net.mtrop.tame.lang.BlockEntry
  ****************************************************/
-var TBlockEntry = function(type, )
+var TBlockEntry = function(type, values)
 {
-	this.commandList = commandList;
+	this.type = type;
+	this.values = values;
+	this.hash = null;
 };
+
+TBlockEntry.create = function(type, values)
+{
+	var out = new TBlockEntry(type, values);
+	out.hash = type+':';
+	for (var x in this.values) if (this.values.hasOwnProperty(x))
+		out.hash += x.toString() + ':';
+	return out;
+};
+
+/*
+TBlockEntry.Type = {
+	"INIT": "INIT",
+	"AFTERREQUEST": "AFTERREQUEST",
+	"PROCEDURE(1, ArgumentType.VALUE),
+	"ONACTION(1, ArgumentType.ACTION),
+	"ONACTIONWITH(2, ArgumentType.ACTION, ArgumentType.OBJECT),
+	"ONACTIONWITHOTHER(1, ArgumentType.ACTION),
+	"ONMODALACTION(2, ArgumentType.ACTION, ArgumentType.VALUE),
+	"ONWORLDBROWSE(0),
+	"ONROOMBROWSE(0),
+	"ONPLAYERBROWSE(0),
+	"ONCONTAINERBROWSE(0),
+	"ONAMBIGUOUSACTION(0, ArgumentType.ACTION),
+	"ONBADACTION(0, ArgumentType.ACTION),
+	"ONINCOMPLETEACTION(0, ArgumentType.ACTION),
+	"ONUNKNOWNACTION(0, ArgumentType.ACTION),
+	"ONFAILEDACTION(0, ArgumentType.ACTION),
+	"ONFORBIDDENACTION(0, ArgumentType.ACTION),
+};
+*/
 
 //TODO: Finish
 

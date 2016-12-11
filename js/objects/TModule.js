@@ -42,7 +42,7 @@ function TModule(header, tactions, tworld, tobjects, tplayers, trooms, tcontaine
  * Creates a new context for the current module.
  * The context in the JS implementation is a regular object - its functions are a part of the module.
  */
-TAMEModule.prototype.createContext = function()
+TModule.prototype.createContext = function()
 {
 	var out = 
 	{

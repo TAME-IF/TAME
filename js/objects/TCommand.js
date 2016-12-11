@@ -7,7 +7,7 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
-var TCommandFunctions = TCommandFunctions || ((typeof require) !== 'undefined' ? require('./TCommandFunctions.js') : null);
+var TCommandFunctions = TCommandFunctions || ((typeof require) !== 'undefined' ? require('../logic/TCommandFunctions.js') : null);
 // ======================================================================================================
 
 //##[[CONTENT-START
