@@ -52,17 +52,15 @@
 	<import file="build-import.xml" />
 
 	<!-- Folders and File Names -->
+	<property name="package.base.dir" value="net/mtrop/tame" />
 	<property name="resource.dir" value="resources" />
 	<property name="replace.dir" value="${build.dir}/replace" />
 	<property name="zip.exe.filename" value="${project.archive}-exe-${build.version}.zip" />
 
-	<!-- Replace Tokens -->
-	<property name="replace.version.key" value="$REPLACE_KEY_BUILD_VERSION$" />
-
 	<!-- Versions -->
 	<property name="exe.version" value="0.0.0.0" />
 	
-	<property name="jar.tame.filename" value="${project.archive}-${build.version}" />
+	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
 	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${build.version}.jar" />
 	<property name="jar.console.client.one.filename" value="${project.archive}-client-${build.version}.jar" />	
 	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${build.version}-min.jar" />
@@ -94,14 +92,6 @@
 		classpath="${launch4j.lib.jar}${S}${launch4j.xstream.lib.jar}"
 	/>
 	
-	<target name="clean.replace" description="Cleans up the replace builds.">
-		<delete dir="${replace.dir}" includeemptydirs="true" casesensitive="false" /> 
-	</target>
-
-	<target name="init.replace" depends="clean.replace" description="Initializes the replace folders.">
-		<mkdir dir="${replace.dir}" />
-	</target>
-
 	<target name="clean.exe" description="Cleans up the exe builds.">
 		<delete dir="${exe.dir}" includeemptydirs="true" casesensitive="false" /> 
 	</target>
@@ -138,15 +128,12 @@
         </javadoc>
     </target>	
 
-	<target name="replace.version" depends="init.replace" description="Generates the version resource."> 
-		<delete file="${replace.dir}/TAMEVersion.txt" />
-		<copy overwrite="true" todir="${replace.dir}">
-			<file name="${resource.dir}/TAMEVersion.txt" />
-		</copy>
-		<replace file="${replace.dir}/TAMEVersion.txt" value="${build.version.number}" token="${replace.version.key}" />
+	<target name="write.version" description="Generates the version resource.">
+		<delete file="${bin.dir}/TAMEVersion.txt" />
+		<echo message="${build.version}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
 	</target>
 
-	<target name="jar.tame" depends="compile, replace.version" description="Jars up TAME classes. Nothing executable.">
+	<target name="jar.tame" depends="compile, write.version" description="Jars up TAME classes. Nothing executable.">
 		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" /> 
 		<jar destfile="${jar.dir}/${jar.tame.filename}">
 			<fileset dir="${bin.dir}" >
@@ -154,14 +141,12 @@
 			    <exclude name="**/compiler/" />
 			    <exclude name="**/test/" />
 			</fileset>
-		</jar>
-		<jar destfile="${jar.dir}/${jar.tame.filename}" update="true">
-			<zipfileset dir="${replace.dir}" prefix="net/mtrop/tame">
+			<zipfileset dir="${resource.dir}" prefix="${package.base.dir}">
 			</zipfileset>
 		</jar>
 	</target>
 	
-	<target name="jar.tame.compiler.one" depends="compile, replace.version" description="Jars up all classes needed to run the compiler in one standalone JAR.">
+	<target name="jar.tame.compiler.one" depends="compile, write.version" description="Jars up all classes needed to run the compiler in one standalone JAR.">
 		<delete file="${jar.dir}/${jar.compiler.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.compiler.one.filename}">
 			<manifest>
@@ -179,12 +164,12 @@
 			</fileset>
 			<fileset dir="${common.lang.lib}" >
 			</fileset>
-			<zipfileset dir="${replace.dir}" prefix="net/mtrop/tame">
+			<zipfileset dir="${resource.dir}" prefix="${package.base.dir}">
 			</zipfileset>
 		</jar>
 	</target>
 
-	<target name="jar.tame.console.client.one" depends="compile, replace.version" description="Jars up all classes needed to run the console client in one standalone JAR.">
+	<target name="jar.tame.console.client.one" depends="compile, write.version" description="Jars up all classes needed to run the console client in one standalone JAR.">
 		<delete file="${jar.dir}/${jar.console.client.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.console.client.one.filename}">
 			<manifest>
@@ -202,8 +187,6 @@
 			</fileset>
 			<fileset dir="${common.lang.lib}" >
 			</fileset>
-			<zipfileset dir="${replace.dir}" prefix="net/mtrop/tame">
-			</zipfileset>
 		</jar>
 	</target>
 
@@ -227,7 +210,7 @@
 		</jar>
 	</target>
 
-	<target name="jar" depends="jar.tame, jar.tame.compiler.one, jar.tame.console.client.one" description="Make all JARs.">
+	<target name="jar" depends="init.jar, jar.tame, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min" description="Make all JARs.">
 	</target>
 
 	<target name="exe.compiler" depends="jar.tame.compiler.one.min, clean.exe, init.exe">
@@ -275,8 +258,16 @@
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
-	
-	<target name="zip" depends="zip.jar, zip.docs, zip.src, zip.exe" description="Creates all archives.">
+
+	<target name="zip.jar" depends="init.zip, jar" description="Archives the JARs.">
+		<delete file="${zip.dir}/${zip.filename}" />
+		<zip destfile="${zip.dir}/${zip.filename}">
+			<fileset dir="${jar.dir}" />
+			<fileset refid="fileset.documents" />
+		</zip>
+	</target>
+
+	<target name="zip" depends="zip.jar, zip.docs, zip.exe" description="Creates all archives.">
 	</target>
 	
 	<target name="release" depends="zip, exe, exe.deploy">

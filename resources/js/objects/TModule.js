@@ -17,7 +17,7 @@ var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAM
  Constructor for the TAME Module.
  ****************************************************/
 
-function TModule(header, tactions, tworld, tobjects, tplayers, trooms, tcontainers)
+function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers)
 {	
 	// Fields --------------------
 	this.header = theader;
@@ -29,7 +29,7 @@ function TModule(header, tactions, tworld, tobjects, tplayers, trooms, tcontaine
 	this.world = tworld;
 	this.actionNameTable = {};
 	
-	Util.each(actions, function(action){
+	Util.each(this.actions, function(action){
 		Util.each(action.names, function(name){
 			this.actionNameTable[name] = action.identity;
 		});
