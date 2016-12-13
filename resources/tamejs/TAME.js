@@ -14,9 +14,9 @@ var TModule = TModule || ((typeof require) !== 'undefined' ? require('./objects/
 
 var TAME = (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers){
 
-//##[[CONTENT-INCLUDE util/Util.js
-//##[[CONTENT-INCLUDE util/TAMEConstants.js
-//##[[CONTENT-INCLUDE util/TAMEError.js
+//##[[CONTENT-INCLUDE Util.js
+//##[[CONTENT-INCLUDE TAMEConstants.js
+//##[[CONTENT-INCLUDE TAMEError.js
 //##[[CONTENT-INCLUDE objects/TValue.js
 //##[[CONTENT-INCLUDE objects/TRequest.js
 //##[[CONTENT-INCLUDE objects/TResponse.js

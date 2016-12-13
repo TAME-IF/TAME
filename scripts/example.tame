@@ -197,7 +197,7 @@ room r_room
 	onAction(a_look)
 	{
 		textln("You look around the room.");
-		browseRoom(r_room);
+		browse(r_room);
 	}
 }
 
@@ -214,7 +214,7 @@ world
 	onAction(a_inv)
 	{
 		textln("In my inventory, I have:");
-		browsePlayer(player);
+		browse(player);
 	}
 		
 	onAction(a_test)

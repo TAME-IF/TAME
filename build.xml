@@ -141,8 +141,8 @@
 			    <exclude name="**/compiler/" />
 			    <exclude name="**/test/" />
 			</fileset>
-			<zipfileset dir="${resource.dir}" prefix="${package.base.dir}">
-			</zipfileset>
+			<fileset dir="${resource.dir}">
+			</fileset>
 		</jar>
 	</target>
 	
@@ -164,8 +164,8 @@
 			</fileset>
 			<fileset dir="${common.lang.lib}" >
 			</fileset>
-			<zipfileset dir="${resource.dir}" prefix="${package.base.dir}">
-			</zipfileset>
+			<fileset dir="${resource.dir}">
+			</fileset>
 		</jar>
 	</target>
 
