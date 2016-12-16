@@ -128,6 +128,7 @@ var TCommandFunctions =
 	/* QUEUEACTION */
 	/* QUEUEACTIONSTRING */
 	/* QUEUEACTIONOBJECT */
+	/* QUEUEACTIONOBJECT2 */
 	/* IDENTITY */
 
  	/* NOOP */
@@ -231,6 +232,7 @@ var TCommandFunctions =
 		QUEUEACTION (null, ArgumentType.ACTION)
 		QUEUEACTIONSTRING (null, ArgumentType.ACTION, ArgumentType.VALUE)
 		QUEUEACTIONOBJECT (null, ArgumentType.ACTION, ArgumentType.OBJECT)
+		QUEUEACTIONOBJECT2 (null, ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
 		IDENTITY (ArgumentType.VALUE, ArgumentType.ELEMENT)
 	*/
 	
@@ -345,7 +347,8 @@ TCommandFunctions.Type =
 	QUEUEACTION: 88,
 	QUEUEACTIONSTRING: 89,
 	QUEUEACTIONOBJECT: 90,
-	IDENTITY: 91
+	QUEUEACTIONOBJECT2: 91,
+	IDENTITY: 92
 };
 
 //##[[CONTENT-END

@@ -42,5 +42,15 @@
 		blockTable: {},
 		parent: {}
 	}
+	Context: 
+	{
+		"elements": {}, 	// element-to-variables
+		"owners": {}, 		// element-to-objects
+		"object": {},   	// object-to-element
+		"roomStacks": {},	// player-to-rooms
+		"names": {},		// object-to-names
+		"tags": {},			// object-to-tags
+	}
+
 */
 

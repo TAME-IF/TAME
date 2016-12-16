@@ -21,6 +21,19 @@ var Util = {
 				func(obj[x], x, obj.length);
 	},
 
+	// Array remove
+	"arrayRemove": function(arr, obj)
+	{
+		for (var i = 0; i < arr.length; i++) 
+			if (arr[i] == obj)
+			{
+				arr.splice(i, 1);
+				return true;
+			}
+		
+		return false;
+	},
+
 	// Mapify - [object, ...] to {object.memberKey -> object, ...}
 	"mapify": function(objlist, memberKey, multi) 
 	{
