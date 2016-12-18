@@ -10,7 +10,7 @@
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-BEGIN
+//##[[CONTENT-START
 
 /*****************************************************************************
  See net.mtrop.tame.lang.Value
