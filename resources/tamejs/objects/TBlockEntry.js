@@ -15,45 +15,63 @@ var TBlockEntry = function(type, values)
 {
 	this.type = type;
 	this.values = values;
-	this.hash = null;
+	this.entryString = null;
 };
 
+/**
+ * Convenience method for creating block entries.
+ * @param type the blockentry type.
+ * @param values an array of values.
+ * @return a new TBlockEntry. 
+ */
 TBlockEntry.create = function(type, values)
 {
 	var out = new TBlockEntry(type, values);
-	out.hash = type+':';
-	for (var x in this.values) if (this.values.hasOwnProperty(x))
-		out.hash += x.toString() + ':';
+	
+	out.entryString = out.type + ":";
+	for (var i = 0; i < out.values.length; i++)
+	{
+		out.entryString += out.values[i].toString();
+		if (i < out.values.length - 1)
+			out.entryString += ",";
+	}
 	return out;
 };
 
-/*
-TBlockEntry.Type = {
-	"INIT": "INIT",
-	"AFTERREQUEST": "AFTERREQUEST",
-	"PROCEDURE(1, ArgumentType.VALUE),
-	"ONACTION(1, ArgumentType.ACTION),
-	"ONACTIONWITH(2, ArgumentType.ACTION, ArgumentType.OBJECT),
-	"ONACTIONWITHOTHER(1, ArgumentType.ACTION),
-	"ONMODALACTION(2, ArgumentType.ACTION, ArgumentType.VALUE),
-	"ONWORLDBROWSE(0),
-	"ONROOMBROWSE(0),
-	"ONPLAYERBROWSE(0),
-	"ONCONTAINERBROWSE(0),
-	"ONAMBIGUOUSACTION(0, ArgumentType.ACTION),
-	"ONBADACTION(0, ArgumentType.ACTION),
-	"ONINCOMPLETEACTION(0, ArgumentType.ACTION),
-	"ONUNKNOWNACTION(0, ArgumentType.ACTION),
-	"ONFAILEDACTION(0, ArgumentType.ACTION),
-	"ONFORBIDDENACTION(0, ArgumentType.ACTION),
+TBlockEntry.Type = 
+{
+	"INIT": "Init",
+	"AFTERREQUEST": "AfterRequest",
+	"PROCEDURE": "Procedure",
+	"ONACTION": "OnAction",
+	"ONACTIONWITH": "OnActionWith",
+	"ONACTIONWITHOTHER": "OnActionWithOther",
+	"ONMODALACTION": "OnModalAction",
+	"ONWORLDBROWSE": "OnWorldBrowse",
+	"ONROOMBROWSE": "OnRoomBrowse",
+	"ONPLAYERBROWSE": "OnPlayerBrowse",
+	"ONCONTAINERBROWSE": "OnContainerBrowse",
+	"ONAMBIGUOUSACTION": "OnAmbiguousAction",
+	"ONBADACTION": "OnBadAction",
+	"ONINCOMPLETEACTION": "OnIncompleteAction",
+	"ONUNKNOWNACTION": "OnUnknownAction",
+	"ONFAILEDACTION": "OnFailedAction",
+	"ONFORBIDDENACTION": "OnForbiddenAction"
 };
-*/
 
-//TODO: Finish
+/**
+ * Returns a string representation of this block entry.
+ * This is its "entry string" representation.
+ */
+TBlockEntry.prototype.toString = function()
+{
+	return this.entryString;
+};
+
 
 //##[[CONTENT-END
 
 
-//If testing with NODEJS ==================================================
+// If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TBlockEntry;
 // =========================================================================
