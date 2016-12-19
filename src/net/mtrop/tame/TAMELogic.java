@@ -175,44 +175,6 @@ public final class TAMELogic implements TAMEConstants
 	}
 	
 	/**
-	 * Interprets the input on the request.
-	 * @param request the request.
-	 * @return a new interpreter context using the input.
-	 */
-	private static TAMEInterpreterContext interpret(TAMERequest request)
-	{
-		TAMEInterpreterContext interpreterContext = new TAMEInterpreterContext(request.getInputMessage());
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		
-		interpretAction(moduleContext, interpreterContext);
-		
-		TAction action = interpreterContext.getAction();
-		if (action == null)
-			return interpreterContext;
-		
-		switch (action.getType())
-		{
-			default:
-			case GENERAL:
-				return interpreterContext;
-			case OPEN:
-				interpretOpen(interpreterContext);
-				return interpreterContext;
-			case MODAL:
-				interpretMode(action, interpreterContext);
-				return interpreterContext;
-			case TRANSITIVE:
-				interpretObject1(moduleContext, interpreterContext);
-				return interpreterContext;
-			case DITRANSITIVE:
-				if (interpretObject1(moduleContext, interpreterContext))
-					if (interpretConjugate(action, interpreterContext))
-						interpretObject2(moduleContext, interpreterContext);
-				return interpreterContext;
-		}
-	}
-
-	/**
 	 * Attempts to call the after request block on the world.
 	 * @param request the request object.
 	 * @param response the response object.
@@ -1293,6 +1255,44 @@ public final class TAMELogic implements TAMEConstants
 		else
 		{
 			response.trace(request, "No init block.");
+		}
+	}
+
+	/**
+	 * Interprets the input on the request.
+	 * @param request the request.
+	 * @return a new interpreter context using the input.
+	 */
+	private static TAMEInterpreterContext interpret(TAMERequest request)
+	{
+		TAMEInterpreterContext interpreterContext = new TAMEInterpreterContext(request.getInputMessage());
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		
+		interpretAction(moduleContext, interpreterContext);
+		
+		TAction action = interpreterContext.getAction();
+		if (action == null)
+			return interpreterContext;
+		
+		switch (action.getType())
+		{
+			default:
+			case GENERAL:
+				return interpreterContext;
+			case OPEN:
+				interpretOpen(interpreterContext);
+				return interpreterContext;
+			case MODAL:
+				interpretMode(action, interpreterContext);
+				return interpreterContext;
+			case TRANSITIVE:
+				interpretObject1(moduleContext, interpreterContext);
+				return interpreterContext;
+			case DITRANSITIVE:
+				if (interpretObject1(moduleContext, interpreterContext))
+					if (interpretConjugate(action, interpreterContext))
+						interpretObject2(moduleContext, interpreterContext);
+				return interpreterContext;
 		}
 	}
 

@@ -395,23 +395,25 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	/** 
 	 * Adds a name to an object.
 	 * This name is the one referred to in requests.
+	 * The name is converted to lowercase and all contiguous whitespace is replaced with single spaces.
 	 * @param object the object to use.
 	 * @param name the name to add.
 	 */
 	public void addObjectName(TObject object, String name) 
 	{
-		addStringToObjectMap(objectCurrentNames, object, name);
+		addStringToObjectMap(objectCurrentNames, object, name.toLowerCase().replaceAll("\\s+", " "));
 	}
 
 	/** 
 	 * Removes a name from an object. 
 	 * This name is the one referred to in requests.
+	 * The name is converted to lowercase and all contiguous whitespace is replaced with single spaces.
 	 * @param object the object to use.
 	 * @param name the name to remove.
 	 */
 	public void removeObjectName(TObject object, String name) 
 	{
-		removeStringFromObjectMap(objectCurrentNames, object, name);
+		removeStringFromObjectMap(objectCurrentNames, object, name.toLowerCase().replaceAll("\\s+", " "));
 	}
 
 	/**
@@ -429,6 +431,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	/** 
 	 * Adds a tag to this object.
 	 * This is referred to in tag operations.
+	 * Unlike names, tags do not undergo conversion.
 	 * @param object the object to use.
 	 * @param tag the tag to add.
 	 */
@@ -440,6 +443,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	/** 
 	 * Removes a tag from an object. 
 	 * This is referred to in tag operations.
+	 * Unlike names, tags do not undergo conversion.
 	 * @param object the object to use.
 	 * @param tag the tag to remove.
 	 */

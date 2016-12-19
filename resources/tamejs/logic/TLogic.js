@@ -34,7 +34,13 @@ TLogic.getValue = function(context, elementIdentity, variableName)
 	if (!context.elements[elementIdentity])
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+elementName);
 	
-	var out = context.elements[elementIdentity][variableName.toLowerCase()];
+	var ectx = context.elements[elementIdentity];
+	if (ectx.identity !== elementIdentity)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context mismatch detected for: "+elementIdentity+", got "+ectx.identity);
+	if (!ectx.variables)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element Context \""+elementIdentity+"\" is missing required member: variables");
+
+	var out = ectx.variables[variableName.toLowerCase()];
 	if (out != null)
 		return out;
 	else
@@ -58,7 +64,15 @@ TLogic.setValue = function(context, elementIdentity, variableName, value)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
 	if (!context.elements[elementIdentity])
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+elementIdentity);
-	context.elements[elementIdentity][variableName.toLowerCase()] = value;
+	
+	var ectx = context.elements[elementIdentity];
+	
+	if (ectx.identity !== elementIdentity)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context mismatch detected for: "+elementIdentity+", got "+ectx.identity);
+	if (!ectx.variables)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element Context \""+elementIdentity+"\" is missing required member: variables");
+	
+	ectx.variables[variableName.toLowerCase()] = value;
 };
 
 
@@ -195,18 +209,18 @@ TLogic.removeObject = function(context, objectIdentity)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
 	if(!context.elements)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
-	if(!context.object)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: object");
+	if(!context.objectOwners)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: objectOwners");
 	if(!context.owners)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: owners");
 	if (!context.elements[objectIdentity])
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
 	
-	var elementIdentity = context.object[objectIdentity];
+	var elementIdentity = context.objectOwners[objectIdentity];
 	if (!elementIdentity)
 		return;
 	
-	delete context.object[objectIdentity];
+	delete context.objectOwners[objectIdentity];
 	Util.arrayRemove(context.owners[elementIdentity], objectIdentity);
 };
 
@@ -223,8 +237,8 @@ TLogic.addObjectToElement = function(context, elementIdentity, objectIdentity)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
 	if(!context.elements)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
-	if(!context.object)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: object");
+	if(!context.objectOwners)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: objectOwners");
 	if(!context.owners)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: owners");
 	if (!context.elements[elementIdentity])
@@ -233,7 +247,7 @@ TLogic.addObjectToElement = function(context, elementIdentity, objectIdentity)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
 	
 	TLogic.removeObject(context, objectIdentity);
-	context.object[objectIdentity] = elementIdentity;
+	context.objectOwners[objectIdentity] = elementIdentity;
 	
 	if (!context.owners[elementIdentity])
 		context.owners[elementIdentity] = [];
@@ -254,14 +268,14 @@ TLogic.checkElementHasObject = function(context, elementIdentity, objectIdentity
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
 	if(!context.elements)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
-	if(!context.object)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: object");
+	if(!context.objectOwners)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: objectOwners");
 	if (!context.elements[elementIdentity])
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+elementIdentity);
 	if (!context.elements[objectIdentity])
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
 	
-	return context.object[objectIdentity] == elementIdentity;
+	return context.objectOwners[objectIdentity] == elementIdentity;
 };
 
 
@@ -278,12 +292,12 @@ TLogic.checkObjectHasNoOwner = function(context, objectIdentity)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
 	if(!context.elements)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
-	if(!context.object)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: object");
+	if(!context.objectOwners)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: objectOwners");
 	if (!context.elements[objectIdentity])
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
 	
-	return !context.object[objectIdentity];
+	return !context.objectOwners[objectIdentity];
 };
 
 /**
@@ -340,6 +354,7 @@ TLogic.getObjectsOwnedByElementCount = function(context, elementIdentity)
 
 /**
  * Adds a interpretable name to an object.
+ * The name is converted to lowercase and all contiguous whitespace is replaced with single spaces.
  * Does nothing if the object already has the name.
  * More than one object with this name can result in "ambiguous" actions!
  * @param context the module context.
@@ -358,15 +373,17 @@ TLogic.addObjectName = function(context, objectIdentity, name)
 	if (!context.elements[objectIdentity])
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
 	
+	var n = Util.replaceAll(n.toLowerCase(), "\\s+", " ");
 	var arr = context.names[objectIdentity];
 	if (!arr)
-		arr = context.names[objectIdentity] = [];
-	if (arr.indexOf(name) >= 0)
-		arr.push(name);
+		arr = context.names[objectIdentity] = {};
+	if (!arr[n])
+		arr[n] = true;
 };
 
 /**
  * Removes an interpretable name from an object.
+ * The name is converted to lowercase and all contiguous whitespace is replaced with single spaces.
  * Does nothing if the object does not have the name.
  * @param context the module context.
  * @param objectIdentity the object identity.
@@ -384,28 +401,177 @@ TLogic.removeObjectName = function(context, objectIdentity, name)
 	if (!context.elements[objectIdentity])
 		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
 
+	var n = Util.replaceAll(n.toLowerCase(), "\\s+", " ");
+	var arr = context.names[objectIdentity];
+	if (!arr)
+		return;
+	if (arr[n])
+		delete arr[n];
+};
+
+/**
+ * Checks for an interpretable name on an object.
+ * @param context the module context.
+ * @param objectIdentity the object identity.
+ * @param name the name to remove.
+ * @throws TAMEError if no such element context.
+ */
+TLogic.checkObjectHasName = function(context, objectIdentity, name) 
+{
+	if (!context)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
+	if(!context.elements)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
+	if(!context.names)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: names");
+	if (!context.elements[objectIdentity])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
+
+	var arr = context.names[objectIdentity];
+	return (!arr && arr[name]);
+};
+
+/**
+ * Adds a tag to an object.
+ * Unlike names, tags undergo no conversion.
+ * Does nothing if the object already has the tag.
+ * @param context the module context.
+ * @param objectIdentity the object identity.
+ * @param name the name to add.
+ * @throws TAMEError if no such element context.
+ */
+TLogic.addObjectTag = function(context, objectIdentity, tag)
+{
+	if (!context)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
+	if(!context.elements)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
+	if(!context.tags)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: tags");
+	if (!context.elements[objectIdentity])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
 	
+	var arr = context.tags[objectIdentity];
+	if (!arr)
+		arr = context.tags[objectIdentity] = {};
+	if (!arr[tag])
+		arr[tag] = true;
+};
+
+/**
+ * Removes a tag from an object.
+ * Unlike names, tags undergo no conversion.
+ * Does nothing if the object does not have the tag.
+ * @param context the module context.
+ * @param objectIdentity the object identity.
+ * @param name the name to remove.
+ * @throws TAMEError if no such element context.
+ */
+TLogic.removeObjectTag = function(context, objectIdentity, tag)
+{
+	if (!context)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
+	if(!context.elements)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
+	if(!context.tags)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: tags");
+	if (!context.elements[objectIdentity])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
+
+	var arr = context.tags[objectIdentity];
+	if (!arr)
+		return;
+	if (arr[tag])
+		delete arr[tag];
+};
+
+/**
+ * Checks for a tag on an object.
+ * @param context the module context.
+ * @param objectIdentity the object identity.
+ * @param name the name to remove.
+ * @throws TAMEError if no such element context.
+ */
+TLogic.checkObjectHasTag = function(context, objectIdentity, name) 
+{
+	if (!context)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
+	if(!context.elements)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: elements");
+	if(!context.tags)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is missing required member: tags");
+	if (!context.elements[objectIdentity])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context: "+objectIdentity);
+
+	var arr = context.tags[objectIdentity];
+	return (!arr && arr[name]);
+};
+
+
+/**
+ * Handles initializing a context. Must be called after a new context and game is started.
+ * @param context the module context.
+ * @param tracing if true, add trace cues.
+ * @return (TResponse) the response from the initialize.
+ */
+TLogic.handleInit = function(context, tracing) 
+{
+	/*
+	TAMERequest request = TAMERequest.create(moduleContext, "[INITIALIZE]", tracing);
+	TAMEResponse response = new TAMEResponse();
+
+	response.setInterpretNanos(0L);
+
+	// time this stuff.
+	long nanos = System.nanoTime();
+
+	try {
+		initializeContext(request, response);
+		processActionLoop(request, response);
+	} catch (QuitInterrupt interrupt) {
+		
+	} catch (TAMEFatalException exception) {
+		response.addCue(CUE_FATAL, exception.getMessage());
+	} catch (TAMEInterrupt interrupt) {
+		response.addCue(CUE_ERROR, interrupt.getMessage());
+	}
+	
+	response.setRequestNanos(System.nanoTime() - nanos);
+
+	return response;
+	*/
+};
+
+/**
+ * Handles interpretation and performs actions.
+ * @param context the module context.
+ * @param inputMessage the input message to interpret.
+ * @param tracing if true, add trace cues.
+ * @return (TResponse) the response.
+ */
+TLogic.handleRequest = function(context, inputMessage, tracing)
+{
+	// TODO: Finish this.
+};
+
+TLogic.callBlock = function(request, response, elementContext, block, localValues)
+{
+	// TODO: Finish this.
 };
 
 //TODO: Finish
-
-TLogic.checkObjectHasName = function(context, objectIdentity, name) {};
-TLogic.addObjectTag = function(context, objectIdentity, tag) {};
-TLogic.removeObjectTag = function(context, objectIdentity, tag) {};
-TLogic.checkObjectHasTag = function(context, objectIdentity, tag) {};
 
 /*
 Context: 
 {
 	"elements": {}, 								// element-to-variables
 	"owners": {elemid:[objid, ..], }, 				// element-to-objects
-	"object": {objid:elemid, },   					// object-to-element
+	"objectOwners": {objid:elemid, },   			// object-to-element
 	"roomStacks": {playerid: [roomid, ..], ...},	// player-to-rooms
-	"names": {objid:[name, ...], ...},				// object-to-names
-	"tags": {objid:[name, ...], ...},				// object-to-tags
+	"names": {objid:{name:true, ...}, ...},			// object-to-names
+	"tags": {objid:{name:true, ...}, ...},			// object-to-tags
 }
 */
-
 
 //##[[CONTENT-END
 

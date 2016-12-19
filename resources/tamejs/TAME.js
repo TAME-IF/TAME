@@ -14,13 +14,17 @@ var TModule = TModule || ((typeof require) !== 'undefined' ? require('./objects/
 
 var TAME = (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers){
 
+//##[[CONTENT-GENERATE version
+
 //##[[CONTENT-INCLUDE Util.js
 //##[[CONTENT-INCLUDE TAMEConstants.js
 //##[[CONTENT-INCLUDE TAMEError.js
+//##[[CONTENT-INCLUDE TAMEInterrupt.js
 //##[[CONTENT-INCLUDE objects/TValue.js
 //##[[CONTENT-INCLUDE objects/TRequest.js
 //##[[CONTENT-INCLUDE objects/TResponse.js
 //##[[CONTENT-INCLUDE objects/TBlockEntry.js
+//##[[CONTENT-INCLUDE objects/TAction.js
 //##[[CONTENT-INCLUDE logic/TLogic.js
 //##[[CONTENT-INCLUDE logic/TArithmeticFunctions.js
 //##[[CONTENT-INCLUDE logic/TCommandFunctions.js
@@ -28,9 +32,34 @@ var TAME = (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcon
 //##[[CONTENT-INCLUDE objects/TBlock.js
 //##[[CONTENT-INCLUDE objects/TModule.js
 
-	this.module = new TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers);
-	this.newContext = function() {
+	var module = new TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers);
+	
+	this.newContext = function() 
+	{
 		return this.module.createContext();
+	};
+
+	/**
+	 * Initializes a context. Must be called after a new context and game is started.
+	 * @param context the module context.
+	 * @param tracing if true, add trace cues.
+	 * @return (TResponse) the response from the initialize.
+	 */
+	this.initialize = function(context, tracing) 
+	{
+		return TLogic.handleInit(context, tracing);
+	};
+	
+	/**
+	 * Interprets and performs actions.
+	 * @param context the module context.
+	 * @param inputMessage the input message to interpret.
+	 * @param tracing if true, add trace cues.
+	 * @return (TResponse) the response.
+	 */
+	this.interpret = function(context, inputMessage, tracing) 
+	{
+		return TLogic.handleRequest(context, inputMessage, tracing);
 	};
 
 })(

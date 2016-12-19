@@ -131,15 +131,6 @@ var TCommandFunctions =
 	/* QUEUEACTIONOBJECT2 */
 	/* IDENTITY */
 
- 	/* NOOP */
-	{
-		"name": 'NOOP',
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			// TODO: Finish.
-		}
-	},
-	
 	/*
 		NOOP (null)
 		POP (true)

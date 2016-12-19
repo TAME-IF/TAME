@@ -74,7 +74,13 @@ var Util = {
 					out[objlist[x][memberKey]] = objlist[x][memberValue]; 
 			}
 		return out;
-	}
+	},
+	
+	// replaceall - Return a string that replaces all matching patterns in inputstr with replacement
+	"replaceAll": function(inputstr, expression, replacement) 
+	{
+		return inputstr.replace(new RegExp(expression, 'g'), replacement);
+	},
 	
 };
 

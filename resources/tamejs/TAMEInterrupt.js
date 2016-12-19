@@ -9,34 +9,30 @@
 //##[[CONTENT-START
 
 /*****************************************************************************
- Exception handling.
+ Interrupt handling.
  *****************************************************************************/
-var TAMEError = function(type, message)
+var TAMEInterrupt = function(type)
 {
 	this.type = type;
-	this.message = message;
 };
 
-TAMEError.Type = 
+TAMEInterrupt.Type = 
 {
-	"Module": "Module",
-	"ModuleExecution": "ModuleExecution",
-	"ModuleState": "ModuleState",
-	"Arithmetic": "Arithmetic",
-	"ArithmeticStackState": "ArithmeticStackState",
-	"RunawayRequest": "RunawayRequest",
-	"UnexpectedValue": "UnexpectedValue",
-	"UnexpectedValueType": "UnexpectedValueType"
+	"Break": "Break",
+	"Continue": "Continue",
+	"Error": "Error",
+	"End": "End",
+	"Quit": "Quit"
 };
 
-TAMEError.prototype.toString = function()
+TAMEInterrupt.prototype.toString = function()
 {
-	return "TAMEError: "+ this.type + ": " + this.message;
+	return "TAMEInterrupt: "+ this.type;
 };
 
 //##[[CONTENT-END
 
 
 //If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TAMEError;
+if ((typeof module.exports) !== 'undefined') module.exports = TAMEInterrupt;
 // =========================================================================

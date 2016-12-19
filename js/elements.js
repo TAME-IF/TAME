@@ -46,7 +46,7 @@
 	{
 		"elements": {}, 	// element-to-variables
 		"owners": {}, 		// element-to-objects
-		"object": {},   	// object-to-element
+		"objectOwners": {}, // object-to-element
 		"roomStacks": {},	// player-to-rooms
 		"names": {},		// object-to-names
 		"tags": {},			// object-to-tags

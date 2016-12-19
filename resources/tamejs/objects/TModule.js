@@ -34,7 +34,6 @@ function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontain
 			this.actionNameTable[name] = action.identity;
 		});
 	});
-	// ---------------------------
 
 };
 
@@ -44,8 +43,11 @@ function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontain
  */
 TModule.prototype.createContext = function()
 {
+	var module = this;
+
 	var out = 
 	{
+		"module": module,	// reference to module
 		"elements": {}, 	// element-to-variables
 		"owners": {}, 		// element-to-objects
 		"object": {},   	// object-to-element
