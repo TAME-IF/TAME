@@ -31,11 +31,19 @@ function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontain
 	
 	Util.each(this.actions, function(action){
 		Util.each(action.names, function(name){
-			this.actionNameTable[name] = action.identity;
+			this.actionNameTable[name.toLowerCase()] = action.identity;
 		});
 	});
 
 };
+
+TModule.prototype.getActionByName = function(name)
+{
+	var identity = this.actionNameTable[name.toLowerCase()];
+	if (!identity)
+		return null;
+	return this.actions[identity];
+}
 
 /**
  * Creates a new context for the current module.
@@ -48,6 +56,7 @@ TModule.prototype.createContext = function()
 	var out = 
 	{
 		"module": module,	// reference to module
+		"player": null,		// current player
 		"elements": {}, 	// element-to-variables
 		"owners": {}, 		// element-to-objects
 		"object": {},   	// object-to-element

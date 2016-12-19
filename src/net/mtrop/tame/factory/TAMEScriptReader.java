@@ -1435,7 +1435,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				action.getNames().put(currentToken().getLexeme());
+				action.addName(currentToken().getLexeme());
 				nextToken();
 				
 				return parseActionNameList(action);
@@ -1460,7 +1460,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				action.getNames().put(currentToken().getLexeme());
+				action.addName(currentToken().getLexeme());
 				nextToken();
 				
 				return parseActionNameList(action);
@@ -1485,7 +1485,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				action.getExtraStrings().put(currentToken().getLexeme());
+				action.addExtraStrings(currentToken().getLexeme());
 				nextToken();
 				
 				return parseActionAdditionalNameList(action);
@@ -1510,7 +1510,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				action.getExtraStrings().put(currentToken().getLexeme());
+				action.addExtraStrings(currentToken().getLexeme());
 				nextToken();
 				
 				return parseActionAdditionalNameList(action);

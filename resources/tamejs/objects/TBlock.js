@@ -6,6 +6,10 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
 
+// REQUIREMENTS =========================================================================================
+var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
+// ======================================================================================================
+
 //##[[CONTENT-START
 
 /****************************************************
@@ -19,9 +23,9 @@ var TBlock = function(commandList)
 TBlock.prototype.execute = function(request, response, locals)
 {
 	response.trace(request, "Start block.");
-	_each(this.commandList, function(command){
-		response.trace(request, "CALL %s", command);
-		command.execute(request, response, blockLocal);
+	Util.each(this.commandList, function(command){
+		response.trace(request, "CALL "+command.toString());
+		command.execute(request, response, locals);
 	});
 	response.trace(request, "End block.");
 };

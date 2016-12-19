@@ -44,6 +44,27 @@ TCommand.prototype.execute = function(request, response, blockLocal)
 	TCommandFunctions.execute(this.commandIndex, request, response, blockLocal, this);
 };
 
+TCommand.prototype.toString = function()
+{
+	var out = TCommandFunctions[this.commandIndex].name;
+	if (this.operand0 != null)
+		out += ' ' + this.operand0.toString();
+	if (this.operand1 != null)
+		out += ' ' + this.operand1.toString();
+	if (this.initBlock != null)
+		out += " [INIT]";
+	if (this.conditionalBlock != null)
+		out += " [CONDITIONAL]";
+	if (this.stepBlock != null)
+		out += " [STEP]";
+	if (this.successBlock != null)
+		out += " [SUCCESS]";
+	if (this.failureBlock != null)
+		out += " [FAILURE]";
+	
+	return out;
+};
+
 //##[[CONTENT-END
 
 

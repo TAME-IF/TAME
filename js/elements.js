@@ -3,7 +3,8 @@
 	{
 		identity: 'IDENTITY',
 		type: TAME.ActionType,
-		names: ['NAME',],
+		names: ['name',],
+		extraStrings:['string',],
 		restricted: false
 	}
 	TWorld:
@@ -44,6 +45,8 @@
 	}
 	Context: 
 	{
+		"module": module,	// module reference
+		"player": null,		// current player
 		"elements": {}, 	// element-to-variables
 		"owners": {}, 		// element-to-objects
 		"objectOwners": {}, // object-to-element

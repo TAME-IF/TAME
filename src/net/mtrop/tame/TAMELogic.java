@@ -143,7 +143,7 @@ public final class TAMELogic implements TAMEConstants
 	 * Ensures that the block is called cleanly.
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param context the context that the block is owned by.
+	 * @param context the context that the block is executed through.
 	 * @param block the block to execute.
 	 * @param localValues the local values to set on invoke.
 	 * @throws TAMEInterrupt if an interrupt occurs.
@@ -1344,7 +1344,7 @@ public final class TAMELogic implements TAMEConstants
 			interpreterContext.setModeLookedUp(true);
 
 			String next = sb.toString();
-			if (action.getExtraStrings().contains(next))
+			if (action.containsExtraString(next))
 			{
 				interpreterContext.setMode(next);
 				interpreterContext.setTokenOffset(index);
@@ -1395,7 +1395,7 @@ public final class TAMELogic implements TAMEConstants
 			index++;
 			
 			interpreterContext.setConjugateLookedUp(true);
-			if (action.getExtraStrings().contains(sb.toString()))
+			if (action.containsExtraString(sb.toString()))
 			{
 				interpreterContext.setTokenOffset(index);
 				out = true;

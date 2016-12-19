@@ -148,19 +148,63 @@ public class TAction implements Comparable<TAction>, Saveable
 	}
 	
 	/**
-	 * Gets the names of this action.
-	 * @return the case-insensitive hash containing the names.
+	 * Adds an action name.
+	 * This name is a parseable name via the interpreter that resolves to this action.
+	 * Extra whitespace between this name are replaced with spaces.
+	 * @param name the name to add.
 	 */
-	public CaseInsensitiveHash getNames()
+	public void addName(String name)
+	{
+		names.put(name.replaceAll("\\s+", " "));
+	}
+
+	/**
+	 * Checks if this action contains this name, case-insensitively.
+	 * Keep in mind extra whitespace between names are replaced with spaces.
+	 * @param name the name to check for.
+	 * @return true if so, false if not.
+	 */
+	public boolean containsName(String name)
+	{
+		return names.contains(name);
+	}
+	
+	/**
+	 * Gets the names of this action.
+	 * @return an iterable structure for the names.
+	 */
+	public Iterable<String> getNames()
 	{
 		return names;
 	}
 
 	/**
-	 * Gets this action's extra strings.
-	 * @return the case-insensitive hash containing the names.
+	 * Adds an extra string.
+	 * This parseable string (via interpreter) can be a conjugate or mode, depending on the action type.
+	 * Extra whitespace between these words are replaced with spaces.
+	 * @param extraString the string to add.
 	 */
-	public CaseInsensitiveHash getExtraStrings()
+	public void addExtraStrings(String extraString)
+	{
+		extraStrings.put(extraString.replaceAll("\\s+", " "));
+	}
+
+	/**
+	 * Checks if this action contains this extra string, case-insensitively.
+	 * Keep in mind extra whitespace between extra strings are replaced with spaces.
+	 * @param extraString the string to check for.
+	 * @return true if so, false if not.
+	 */
+	public boolean containsExtraString(String extraString)
+	{
+		return extraStrings.contains(extraString);
+	}
+	
+	/**
+	 * Gets this action's extra strings.
+	 * @return an iterable structure for the extra strings.
+	 */
+	public Iterable<String> getExtraStrings()
 	{
 		return extraStrings;
 	}

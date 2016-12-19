@@ -8,6 +8,7 @@
 
 // REQUIREMENTS =========================================================================================
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
+var TAMEConstants = TAMEConstants || (typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null;
 // ======================================================================================================
 
 //##[[CONTENT-START
@@ -30,6 +31,8 @@ var TResponse = function()
  */
 TResponse.prototype.addCue = function(type, content)
 {
+	if ((typeof content) === 'unefined' || content == null)
+		content = "";
 	this.responseCues.push({"type": type, "content": content});
 };
 
@@ -51,7 +54,7 @@ TResponse.prototype.trace = function(request, content)
 TResponse.prototype.incrementAndCheckCommandsExecuted = function()
 {
 	this.commandsExecuted++;
-	if (this.commandsExecuted >= 100000)
+	if (this.commandsExecuted >= TAMEConstants.RUNAWAY_THRESHOLD)
 		throw new TAMEError(TAMEError.Type.RunawayRequest, "Too many commands executed - possible infinite loop.");
 };
 
