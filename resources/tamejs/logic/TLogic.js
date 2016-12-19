@@ -910,6 +910,13 @@ TLogic.initializeContext = function(request, response)
 };
 
 /*
+resolveElement(context, identity)
+resolveElementContext(context, identity)
+resolveCurrentPlayer(context)
+resolveCurrentPlayerContext(context)
+resolveCurrentRoom(context)
+resolveCurrentRoomContext(context)
+
 doAfterRequest(TAMERequest, TAMEResponse)
 doUnknownAction(TAMERequest, TAMEResponse)
 doActionGeneral(TAMERequest, TAMEResponse, TAction)

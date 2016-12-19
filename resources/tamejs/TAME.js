@@ -62,6 +62,8 @@ var TAME = (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcon
 		return TLogic.handleRequest(context, inputMessage, tracing);
 	};
 
+	return this;
+	
 })(
 //##[[CONTENT-GENERATE header, actions, world, objects, players, rooms, containers
 );
