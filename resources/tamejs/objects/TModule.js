@@ -45,59 +45,6 @@ TModule.prototype.getActionByName = function(name)
 	return this.actions[identity];
 }
 
-/**
- * Creates a new context for the current module.
- * The context in the JS implementation is a regular object - its functions are a part of the module.
- */
-TModule.prototype.createContext = function()
-{
-	var module = this;
-
-	var out = 
-	{
-		"module": module,	// reference to module
-		"player": null,		// current player
-		"elements": {}, 	// element-to-variables
-		"owners": {}, 		// element-to-objects
-		"object": {},   	// object-to-element
-		"roomStacks": {},	// player-to-rooms
-		"names": {},		// object-to-names
-		"tags": {},			// object-to-tags
-	};
-
-	// create object contexts.
-	Util.each(this.objects, function(element, identity){
-		if (out.elements[identity])
-			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+elem.identity);
-		out.elements[identity] = {"identity": identity, "variables": {}};
-
-		out.names[identity] = {};
-		Util.each(element.names, function(name){
-			out.names[identity][name] = true;
-		});
-		Util.each(element.tags, function(tag){
-			out.tags[identity][tag] = true;
-		});
-	});
-	
-	var CONTEXTFUNC = function(element, identity){
-		if (out.elements[identity])
-			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+elem.identity);
-		out.elements[identity] = {"identity": identity, "variables": {}};
-	};
-	
-	// create player contexts.
-	Util.each(this.players, CONTEXTFUNC);
-	// create room contexts.
-	Util.each(this.rooms, CONTEXTFUNC);
-	// create container contexts.
-	Util.each(this.containers, CONTEXTFUNC);
-	// create world context.
-	out.elements["world"] = {"identity": "world", "variables": {}};
-	
-};
-
-
 //##[[CONTENT-END
 
 // If testing with NODEJS ==================================================

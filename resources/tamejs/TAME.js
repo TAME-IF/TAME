@@ -25,18 +25,15 @@ var TAME = (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcon
 //##[[CONTENT-INCLUDE objects/TResponse.js
 //##[[CONTENT-INCLUDE objects/TBlockEntry.js
 //##[[CONTENT-INCLUDE objects/TAction.js
-//##[[CONTENT-INCLUDE logic/TLogic.js
-//##[[CONTENT-INCLUDE logic/TArithmeticFunctions.js
-//##[[CONTENT-INCLUDE logic/TCommandFunctions.js
-//##[[CONTENT-INCLUDE objects/TCommand.js
-//##[[CONTENT-INCLUDE objects/TBlock.js
 //##[[CONTENT-INCLUDE objects/TModule.js
+//##[[CONTENT-INCLUDE objects/TModuleContext.js
+//##[[CONTENT-INCLUDE TAMELogic.js
 
 	var module = new TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers);
 	
 	this.newContext = function() 
 	{
-		return this.module.createContext();
+		return new TModuleContext(this.module);
 	};
 
 	/**
