@@ -12,7 +12,7 @@ var TModule = TModule || ((typeof require) !== 'undefined' ? require('./objects/
 
 //##[[CONTENT-START
 
-var TAME = (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers){
+var TAME = new (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers){
 
 //##[[CONTENT-GENERATE version
 

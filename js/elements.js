@@ -21,13 +21,15 @@
 	TWorld:
 	{
 		identity: 'IDENTITY',
-		parent: 'IDENTITY'
+		parent: 'IDENTITY',
+		archetype: false,
 		blockTable: {},
 	}
 	TObject:
 	{
 		identity: 'IDENTITY',
 		parent: 'IDENTITY',
+		archetype: false,
 		blockTable: {},
 		names: ['NAME',],
 		tags: ['NAME',]
@@ -36,6 +38,7 @@
 	{
 		identity: 'IDENTITY',
 		parent: 'IDENTITY',
+		archetype: false,
 		blockTable: {},
 		permissionType: TAME.RestrictionType, 
 		permittedActionList: []
@@ -44,6 +47,7 @@
 	{
 		identity: 'IDENTITY',
 		parent: 'IDENTITY',
+		archetype: false,
 		blockTable: {},
 		permissionType: TAME.RestrictionType, 
 		permittedActionList: []
@@ -52,6 +56,7 @@
 	{
 		identity: 'IDENTITY',
 		parent: 'IDENTITY'
+		archetype: false,
 		blockTable: {},
 	}
 	Context: 

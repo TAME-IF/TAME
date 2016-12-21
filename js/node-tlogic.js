@@ -1,5 +1,5 @@
 var TValue = require("../resources/tamejs/objects/TValue.js");
-var TLogic = require("../resources/tamejs/logic/TLogic.js");
+var TLogic = require("../resources/tamejs/TAMELogic.js");
 
 var context = 	
 {

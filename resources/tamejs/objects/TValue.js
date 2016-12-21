@@ -15,18 +15,11 @@ var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAM
 /*****************************************************************************
  See net.mtrop.tame.lang.Value
  *****************************************************************************/
-var TValue = function(type, value)
-{
-	if (!type)
-		throw new TAMEError(TAMEError.Type.UnexpectedValueType, "Invalid value type in TValue()");
-	if (typeof value === 'undefined' || value == null)
-		throw new TAMEError(TAMEError.Type.UnexpectedValueType, "Value cannot be undefined or null in TValue()");
-	this.type = type;
-	this.value = value;
-};
+var TValue = {};
 
 /* Type Constants */
-TValue.Type = {
+TValue.Type = 
+{
 	"BOOLEAN": "BOOLEAN",
 	"INTEGER": "INTEGER",
 	"FLOAT": "FLOAT",
@@ -40,21 +33,35 @@ TValue.Type = {
 	"VARIABLE": "VARIABLE"
 };
 
+// Factory.
+TValue.create = function(type, value)
+{
+	if (!type)
+		throw new TAMEError(TAMEError.Type.UnexpectedValueType, "Invalid value type in TValue()");
+	if (typeof value === 'undefined' || value == null)
+		throw new TAMEError(TAMEError.Type.UnexpectedValueType, "Value cannot be undefined or null in TValue()");
+
+	var out = {};
+	out.type = type;
+	out.value = value;
+	return out;
+};
+
 // Convenience constructors.
-TValue.createBoolean = function(value) {return new TValue(TValue.Type.BOOLEAN, Boolean(value));}
-TValue.createInteger = function(value) {return new TValue(TValue.Type.INTEGER, parseInt(value));}
-TValue.createFloat = function(value) {return new TValue(TValue.Type.FLOAT, parseFloat(value));}
-TValue.createString = function(value) {return new TValue(TValue.Type.STRING, String(value));}
-TValue.createWorld = function() {return new TValue(TValue.Type.WORLD, "world");}
-TValue.createObject = function(value) {return new TValue(TValue.Type.OBJECT, String(value));}
-TValue.createContainer = function(value) {return new TValue(TValue.Type.CONTAINER, String(value));}
-TValue.createPlayer = function(value) {return new TValue(TValue.Type.PLAYER, String(value));}
-TValue.createRoom = function(value) {return new TValue(TValue.Type.ROOM, String(value));}
-TValue.createAction = function(value) {return new TValue(TValue.Type.ACTION, String(value));}
-TValue.createVariable = function(value) {return new TValue(TValue.Type.VARIABLE, String(value));}
-TValue.createNaN = function() {return new TValue(TValue.Type.FLOAT, NaN);}
-TValue.createInfinity = function() {return new TValue(TValue.Type.FLOAT, Infinity);}
-TValue.createNegativeInfinity = function() {return new TValue(TValue.Type.FLOAT, -Infinity);}
+TValue.createBoolean = function(value) {return TValue.create(TValue.Type.BOOLEAN, Boolean(value));}
+TValue.createInteger = function(value) {return TValue.create(TValue.Type.INTEGER, parseInt(value));}
+TValue.createFloat = function(value) {return TValue.create(TValue.Type.FLOAT, parseFloat(value));}
+TValue.createString = function(value) {return TValue.create(TValue.Type.STRING, String(value));}
+TValue.createWorld = function() {return TValue.create(TValue.Type.WORLD, "world");}
+TValue.createObject = function(value) {return TValue.create(TValue.Type.OBJECT, String(value));}
+TValue.createContainer = function(value) {return TValue.create(TValue.Type.CONTAINER, String(value));}
+TValue.createPlayer = function(value) {return TValue.create(TValue.Type.PLAYER, String(value));}
+TValue.createRoom = function(value) {return TValue.create(TValue.Type.ROOM, String(value));}
+TValue.createAction = function(value) {return TValue.create(TValue.Type.ACTION, String(value));}
+TValue.createVariable = function(value) {return TValue.create(TValue.Type.VARIABLE, String(value));}
+TValue.createNaN = function() {return TValue.create(TValue.Type.FLOAT, NaN);}
+TValue.createInfinity = function() {return TValue.create(TValue.Type.FLOAT, Infinity);}
+TValue.createNegativeInfinity = function() {return TValue.create(TValue.Type.FLOAT, -Infinity);}
 
 /**
  * Returns if this value is equal to another, value-wise.
@@ -65,12 +72,12 @@ TValue.createNegativeInfinity = function() {return new TValue(TValue.Type.FLOAT,
  */
 TValue.areEqualIgnoreType = function(v1, v2)
 {
-	if (v1.isLiteral() && v2.isLiteral())
+	if (TValue.isLiteral(v1) && TValue.isLiteral(v2))
 	{
-		if (v1.isString() && v2.isString())
+		if (TValue.isString(v1) && TValue.isString(v2))
 			return v1.value == v2.value;
 		else
-			return v1.asDouble() == v2.asDouble();
+			return TValue.asDouble(v1) == TValue.asDouble(v2);
 	}
 	else
 		return TValue.areEqual(v1, v2); 
@@ -103,30 +110,30 @@ TValue.compare = function(v1, v2)
 	var d2 = null;
 
 	// one is not a literal
-	if (!v1.isLiteral() || !v2.isLiteral())
+	if (!TValue.isLiteral(v1) || !TValue.isLiteral(v2))
 	{
-		d1 = v1.asString();
-		d2 = v2.asString();
+		d1 = TValue.asString(v1);
+		d2 = TValue.asString(v2);
 	}
-	else if (v1.isString() || v2.isString())
+	else if (TValue.isString(v1) || TValue.isString(v2))
 	{
-		d1 = v1.asString();
-		d2 = v2.asString();
+		d1 = TValue.asString(v1);
+		d2 = TValue.asString(v2);
 	}
-	else if (v1.isFloatingPoint() || v2.isFloatingPoint())
+	else if (TValue.isFloatingPoint(v1) || TValue.isFloatingPoint(v2))
 	{
-		d1 = v1.asDouble();
-		d2 = v2.asDouble();
+		d1 = TValue.asDouble(v1);
+		d2 = TValue.asDouble(v2);
 	}
-	else if (v1.isInteger() || v2.isInteger())
+	else if (TValue.isInteger(v1) || TValue.isInteger(v2))
 	{
-		d1 = v1.asLong();
-		d2 = v2.asLong();
+		d1 = TValue.asLong(v1);
+		d2 = TValue.asLong(v2);
 	}
-	else if (v1.isBoolean() || v2.isBoolean())
+	else if (TValue.isBoolean(v1) || TValue.isBoolean(v2))
 	{
-		d1 = v1.asBoolean();
-		d2 = v2.asBoolean();
+		d1 = TValue.asBoolean(v1);
+		d2 = TValue.asBoolean(v2);
 		// special case
 		return d1 === d2 ? 0 : (!d1 ? -1 : 1);
 	}
@@ -142,10 +149,10 @@ TValue.compare = function(v1, v2)
  */
 TValue.absolute = function(value1)
 {
-	if (value1.isInteger())
-		return TValue.createInteger(Math.abs(value1.asLong()));
-	else if (value1.isNumeric())
-		return TValue.createFloat(Math.abs(value1.asDouble()));
+	if (TValue.isInteger(value1))
+		return TValue.createInteger(Math.abs(TValue.asLong(value1)));
+	else if (TValue.isNumeric(value1))
+		return TValue.createFloat(Math.abs(TValue.asDouble(value1)));
 	else
 		return TValue.createNaN();
 };
@@ -157,10 +164,10 @@ TValue.absolute = function(value1)
  */
 TValue.negate = function(value1)
 {
-	if (value1.isInteger())
-		return TValue.createInteger(-value1.asLong());
-	else if (value1.isNumeric())
-		return TValue.createFloat(-value1.asDouble());
+	if (TValue.isInteger(value1))
+		return TValue.createInteger(-TValue.asLong(value1));
+	else if (TValue.isNumeric(value1))
+		return TValue.createFloat(-TValue.asDouble(value1));
 	else
 		return TValue.createNaN();
 };
@@ -172,8 +179,8 @@ TValue.negate = function(value1)
  */
 TValue.logicalNot = function(value1)
 {
-	if (value1.isLiteral())
-		return TValue.createBoolean(!value1.asBoolean());
+	if (TValue.isLiteral(value1))
+		return TValue.createBoolean(!TValue.asBoolean(value1));
 	else
 		return TValue.createNaN();
 };
@@ -185,15 +192,15 @@ TValue.logicalNot = function(value1)
  */
 TValue.not = function(value1)
 {
-	if (value1.isInfinite())
+	if (TValue.isInfinite(value1))
 		return TValue.createInteger(-1);
-	else if (value1.isNaN())
+	else if (TValue.isNaN(value1))
 		return TValue.createInteger(-1);
-	else if (value1.isBoolean())
-		return TValue.createBoolean(!value1.asBoolean());
-	else if (value1.isNumeric())
-		return TValue.createInteger(~value1.asLong());
-	else if (value1.isString())
+	else if (TValue.isBoolean(value1))
+		return TValue.createBoolean(!TValue.asBoolean(value1));
+	else if (TValue.isNumeric(value1))
+		return TValue.createInteger(~TValue.asLong(value1));
+	else if (TValue.isString(value1))
 		return TValue.createInteger(-1);
 	else
 		return TValue.createNaN();
@@ -208,31 +215,31 @@ TValue.not = function(value1)
  */
 TValue.add = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic,"These values can't be added: " + value1 + ", " + value2);
 
-	if (value1.isBoolean() && value2.isBoolean())
+	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = value1.asBoolean();
-		var v2 = value2.asBoolean();
+		var v1 = TValue.asBoolean(value1);
+		var v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 || v2);
 	}
-	else if (value1.isString() || value2.isString())
+	else if (TValue.isString(value1) || TValue.isString(value2))
 	{
-		var v1 = value1.asString();
-		var v2 = value2.asString();
+		var v1 = TValue.asString(value1);
+		var v2 = TValue.asString(value2);
 		return TValue.createString(v1 + v2);
 	}
-	else if (value1.isInteger() && value2.isInteger())
+	else if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 + v2);
 	}
 	else
 	{
-		var v1 = value1.asDouble();
-		var v2 = value2.asDouble();
+		var v1 = TValue.asDouble(value1);
+		var v2 = TValue.asDouble(value2);
 		return TValue.createFloat(v1 + v2);
 	}
 };
@@ -246,25 +253,25 @@ TValue.add = function(value1, value2)
  */
 TValue.subtract = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic,"These values can't be subtracted: " + value1 + ", " + value2);
 
-	if (value1.isBoolean() && value2.isBoolean())
+	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = value1.asBoolean();
-		var v2 = value2.asBoolean();
+		var v1 = TValue.asBoolean(value1);
+		var v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 && !v2);
 	}
-	else if (value1.isInteger() && value2.isInteger())
+	else if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 - v2);
 	}
 	else
 	{
-		var v1 = value1.asDouble();
-		var v2 = value2.asDouble();
+		var v1 = TValue.asDouble(value1);
+		var v2 = TValue.asDouble(value2);
 		return TValue.createFloat(v1 - v2);
 	}
 };
@@ -278,25 +285,25 @@ TValue.subtract = function(value1, value2)
  */
 TValue.multiply = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic,"These values can't be multiplied: " + value1 + ", " + value2);
 
-	if (value1.isBoolean() && value2.isBoolean())
+	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = value1.asBoolean();
-		var v2 = value2.asBoolean();
+		var v1 = TValue.asBoolean(value1);
+		var v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 && v2);
 	}
-	else if (value1.isInteger() && value2.isInteger())
+	else if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 * v2);
 	}
 	else
 	{
-		var v1 = value1.asDouble();
-		var v2 = value2.asDouble();
+		var v1 = TValue.asDouble(value1);
+		var v2 = TValue.asDouble(value2);
 		return TValue.createFloat(v1 * v2);
 	}
 };
@@ -310,13 +317,13 @@ TValue.multiply = function(value1, value2)
  */
 TValue.divide = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be divided: " + value1 + ", " + value2);
 
-	if (value1.isInteger() && value2.isInteger())
+	if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		if (v2 == 0)
 		{
 			if (v1 != 0)
@@ -329,8 +336,8 @@ TValue.divide = function(value1, value2)
 	}
 	else
 	{
-		var v1 = value1.asDouble();
-		var v2 = value2.asDouble();
+		var v1 = TValue.asDouble(value1);
+		var v2 = TValue.asDouble(value2);
 		if (v2 == 0.0)
 		{
 			if (!Number.isNaN(v1) && v1 != 0.0)
@@ -352,13 +359,13 @@ TValue.divide = function(value1, value2)
  */
 TValue.modulo = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be modulo divided: " + value1 + ", " + value2);
 
-	if (value1.isInteger() && value2.isInteger())
+	if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		if (v2 == 0)
 			return TValue.createNaN();
 		else
@@ -366,8 +373,8 @@ TValue.modulo = function(value1, value2)
 	}
 	else
 	{
-		var v1 = value1.asDouble();
-		var v2 = value2.asDouble();
+		var v1 = TValue.asDouble(value1);
+		var v2 = TValue.asDouble(value2);
 		if (v2 == 0.0)
 			return TValue.createNaN();
 		else
@@ -384,15 +391,15 @@ TValue.modulo = function(value1, value2)
  */
 TValue.power = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be modulo divided: " + value1 + ", " + value2);
 
-	var v1 = value1.asDouble();
-	var v2 = value2.asDouble();
+	var v1 = TValue.asDouble(value1);
+	var v2 = TValue.asDouble(value2);
 	var p = Math.pow(v1, v2);
 	if (v1 == 0 && v2 < 0)
 		return TValue.createInfinity();
-	else if (value1.isInteger() && value2.isInteger())
+	else if (TValue.isInteger(value1) && TValue.isInteger(value2))
 		return TValue.createInteger(p);
 	else
 		return TValue.createFloat(p);
@@ -409,20 +416,20 @@ TValue.power = function(value1, value2)
  */
 TValue.and = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be bitwise and'ed: " + value1 + ", " + value2);
 	
-	if (value1.isBoolean() && value2.isBoolean())
+	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = value1.asBoolean();
-		var v2 = value2.asBoolean();
+		var v1 = TValue.asBoolean(value1);
+		var v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 && v2);
 	}
 	else
 	{
 		// 
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 & v2);
 	}
 };
@@ -438,19 +445,19 @@ TValue.and = function(value1, value2)
  */
 TValue.or = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be bitwise or'ed: " + value1 + ", " + value2);
 	
-	if (value1.isBoolean() && value2.isBoolean())
+	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = value1.asBoolean();
-		var v2 = value2.asBoolean();
+		var v1 = TValue.asBoolean(value1);
+		var v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 || v2);
 	}
 	else
 	{
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 | v2);
 	}
 };
@@ -466,18 +473,18 @@ TValue.or = function(value1, value2)
  */
 TValue.xor = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be bitwise xor'ed: " + value1 + ", " + value2);
-	if (value1.isBoolean() && value2.isBoolean())
+	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = value1.asBoolean();
-		var v2 = value2.asBoolean();
+		var v1 = TValue.asBoolean(value1);
+		var v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 ^ v2);
 	}
 	else
 	{
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 ^ v2);
 	}
 };
@@ -493,11 +500,11 @@ TValue.xor = function(value1, value2)
  */
 TValue.leftShift = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be shifted: " + value1 + ", " + value2);
 	
-	var v1 = value1.asLong();
-	var v2 = value2.asLong();
+	var v1 = TValue.asLong(value1);
+	var v2 = TValue.asLong(value2);
 	return TValue.createInteger(v1 << v2);	
 };
 
@@ -512,11 +519,11 @@ TValue.leftShift = function(value1, value2)
  */
 TValue.rightShift = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be shifted: " + value1 + ", " + value2);
 	
-	var v1 = value1.asLong();
-	var v2 = value2.asLong();
+	var v1 = TValue.asLong(value1);
+	var v2 = TValue.asLong(value2);
 	return TValue.createInteger(v1 >> v2);	
 };
 
@@ -531,15 +538,15 @@ TValue.rightShift = function(value1, value2)
  */
 TValue.rightShiftPadded = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be shifted: " + value1 + ", " + value2);
 	
-	if (value2.isNaN() || value2.asLong() == 0)
-		return TValue.createInteger(value1.asLong());
+	if (TValue.isNaN(value2) || TValue.asLong(value2) == 0)
+		return TValue.createInteger(TValue.asLong(value1));
 	else
 	{
-		var v1 = value1.asLong();
-		var v2 = value2.asLong();
+		var v1 = TValue.asLong(value1);
+		var v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 >>> v2);	
 	}
 };
@@ -553,11 +560,11 @@ TValue.rightShiftPadded = function(value1, value2)
  */
 TValue.logicalAnd = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be and'ed: " + value1 + ", " + value2);
 	
-	var v1 = value1.asBoolean();
-	var v2 = value2.asBoolean();
+	var v1 = TValue.asBoolean(value1);
+	var v2 = TValue.asBoolean(value2);
 	return TValue.createBoolean(v1 && v2);
 };
 
@@ -570,11 +577,11 @@ TValue.logicalAnd = function(value1, value2)
  */
 TValue.logicalOr = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be and'ed: " + value1 + ", " + value2);
 	
-	var v1 = value1.asBoolean();
-	var v2 = value2.asBoolean();
+	var v1 = TValue.asBoolean(value1);
+	var v2 = TValue.asBoolean(value2);
 	return TValue.createBoolean(v1 || v2);
 };
 
@@ -587,11 +594,11 @@ TValue.logicalOr = function(value1, value2)
  */
 TValue.logicalXOr = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be and'ed: " + value1 + ", " + value2);
 	
-	var v1 = value1.asBoolean();
-	var v2 = value2.asBoolean();
+	var v1 = TValue.asBoolean(value1);
+	var v2 = TValue.asBoolean(value2);
 	return TValue.createBoolean(v1 ^ v2);
 };
 
@@ -653,12 +660,12 @@ TValue.strictNotEquals = function(value1, value2)
  */
 TValue.less = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
-	else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
-		return TValue.createBoolean(value1.compareTo(value2) < 0);
+		return TValue.createBoolean(TValue.compare(value1, value2) < 0);
 };
 
 /**
@@ -671,12 +678,12 @@ TValue.less = function(value1, value2)
  */
 TValue.lessOrEqual = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
-	else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
-		return TValue.createBoolean(value1.compareTo(value2) <= 0);
+		return TValue.createBoolean(TValue.compare(value1, value2) <= 0);
 };
 
 /**
@@ -689,12 +696,12 @@ TValue.lessOrEqual = function(value1, value2)
  */
 TValue.greater = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
-	else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
-		return TValue.createBoolean(value1.compareTo(value2) > 0);
+		return TValue.createBoolean(TValue.compare(value1, value2) > 0);
 };
 
 /**
@@ -707,149 +714,149 @@ TValue.greater = function(value1, value2)
  */
 TValue.greaterOrEqual = function(value1, value2)
 {
-	if (!(value1.isLiteral() || value2.isLiteral()))
+	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
-	else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
+	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
-		return TValue.createBoolean(value1.compareTo(value2) >= 0);
+		return TValue.createBoolean(TValue.compare(value1, value2) >= 0);
 };
 
 /**
  * Returns if this value is a boolean value.
  * @return true if so, false if not.
  */
-TValue.prototype.isBoolean = function()
+TValue.isBoolean = function(value)
 {
-	return this.type === TValue.Type.BOOLEAN;
+	return value.type === TValue.Type.BOOLEAN;
 };
 
 /**
  * Returns if this value is an integer.
  * @return true if so, false if not.
  */
-TValue.prototype.isInteger = function()
+TValue.isInteger = function(value)
 {
-	return this.type === TValue.Type.INTEGER;
+	return value.type === TValue.Type.INTEGER;
 };
 
 /**
  * Returns if this value is a floating-point number.
  * @return true if so, false if not.
  */
-TValue.prototype.isFloatingPoint = function()
+TValue.isFloatingPoint = function(value)
 {
-	return this.type === TValue.Type.FLOAT;
+	return value.type === TValue.Type.FLOAT;
 };
 
 /**
  * Returns if this value is a number.
  * @return true if so, false if not.
  */
-TValue.prototype.isNumeric = function()
+TValue.isNumeric = function(value)
 {
-	return this.type === TValue.Type.INTEGER
-		|| this.type === TValue.Type.FLOAT;
+	return value.type === TValue.Type.INTEGER
+		|| value.type === TValue.Type.FLOAT;
 };
 
 /**
  * Returns if this value is a string value.
  * @return true if so, false if not.
  */
-TValue.prototype.isString = function()
+TValue.isString = function(value)
 {
-	return this.type === TValue.Type.STRING;
+	return value.type === TValue.Type.STRING;
 };
 
 /**
  * Returns if this value is a literal value.
  * @return true if so, false if not.
  */
-TValue.prototype.isLiteral = function()
+TValue.isLiteral = function(value)
 {
-	return this.type === TValue.Type.BOOLEAN
-		|| this.type === TValue.Type.INTEGER
-		|| this.type === TValue.Type.FLOAT
-		|| this.type === TValue.Type.STRING;
+	return value.type === TValue.Type.BOOLEAN
+		|| value.type === TValue.Type.INTEGER
+		|| value.type === TValue.Type.FLOAT
+		|| value.type === TValue.Type.STRING;
 };
 
 /**
  * Returns if this value represents an element.
  * @return true if so, false if not.
  */
-TValue.prototype.isElement = function()
+TValue.isElement = function(value)
 {
-	return this.type === TValue.Type.OBJECT
-		|| this.type === TValue.Type.PLAYER
-		|| this.type === TValue.Type.ROOM
-		|| this.type === TValue.Type.CONTAINER
-		|| this.type === TValue.Type.WORLD;
+	return value.type === TValue.Type.OBJECT
+		|| value.type === TValue.Type.PLAYER
+		|| value.type === TValue.Type.ROOM
+		|| value.type === TValue.Type.CONTAINER
+		|| value.type === TValue.Type.WORLD;
 };
 
 /**
  * Returns if this value represents an object container.
  * @return true if so, false if not.
  */
-TValue.prototype.isObjectContainer = function()
-{;
-	return this.type === TValue.Type.PLAYER
-		|| this.type === TValue.Type.ROOM
-		|| this.type === TValue.Type.CONTAINER
-		|| this.type === TValue.Type.WORLD;
+TValue.isObjectContainer = function(value)
+{
+	return value.type === TValue.Type.PLAYER
+		|| value.type === TValue.Type.ROOM
+		|| value.type === TValue.Type.CONTAINER
+		|| value.type === TValue.Type.WORLD;
 };
 
 /**
  * Returns if this value represents an action.
  * @return true if so, false if not.
  */
-TValue.prototype.isAction = function()
+TValue.isAction = function(value)
 {
-	return this.type === TValue.Type.ACTION;
+	return value.type === TValue.Type.ACTION;
 };
 
 /**
  * Returns if this value represents a variable.
  * @return true if so, false if not.
  */
-TValue.prototype.isVariable = function()
+TValue.isVariable = function(value)
 {
-	return this.type === TValue.Type.VARIABLE;
+	return value.type === TValue.Type.VARIABLE;
 };
 
 /**
  * Returns if this value represents a boolean.
  * @return true if so, false if not.
  */
-TValue.prototype.isBoolean = function()
+TValue.isBoolean = function(value)
 {
-	return this.type === TValue.Type.BOOLEAN;
+	return value.type === TValue.Type.BOOLEAN;
 };
 
 /**
  * Returns if this value evaluates to <code>NaN</code>.
  * @return true if so, false if not.
  */
-TValue.prototype.isNaN = function()
+TValue.isNaN = function(value)
 {
-	return Number.isNaN(this.asDouble());
+	return Number.isNaN(TValue.asDouble(value));
 };
 
 /**
  * Returns if this value is floating point and literally <code>NaN</code>.
  * @return true if so, false if not.
  */
-TValue.prototype.isStrictlyNaN = function()
+TValue.isStrictlyNaN = function(value)
 {
-	return this.isFloatingPoint() && this.isNaN();
+	return TValue.isFloatingPoint(value) && TValue.isNaN(value);
 };
 
 /**
  * Returns if this value evaluates to positive or negative infinity.
  * @return true if so, false if not.
  */
-TValue.prototype.isInfinite = function()
+TValue.isInfinite = function(value)
 {
-	var v = this.asDouble();
+	var v = TValue.asDouble(value);
 	return v === Infinity || v === -Infinity;
 };
 
@@ -857,18 +864,18 @@ TValue.prototype.isInfinite = function()
  * Returns this value as a long value.
  * @return the long value of this value.
  */
-TValue.prototype.asLong = function()
+TValue.asLong = function(value)
 {
-	if (this.isInfinite() || this.isNaN())
+	if (TValue.isInfinite(value) || TValue.isNaN(value))
 		return 0;
-	else if (this.isBoolean())
-		return this.asBoolean() ? 1 : 0;
-	else if (this.isInteger())
-		return this.value;
-	else if (this.isFloatingPoint())
-		return parseInt(this.value);
-	else if (this.isString())
-		return parseInt(this.asString());
+	else if (TValue.isBoolean(value))
+		return TValue.asBoolean(value) ? 1 : 0;
+	else if (TValue.isInteger(value))
+		return value.value;
+	else if (TValue.isFloatingPoint(value))
+		return parseInt(value.value);
+	else if (TValue.isString(value))
+		return parseInt(TValue.asString(value));
 	else
 		return 0;
 };
@@ -877,17 +884,17 @@ TValue.prototype.asLong = function()
  * Returns the double value of this value.
  * @return the double value of this value, or {@link Double#NaN} if not parsable as a number.
  */
-TValue.prototype.asDouble = function()
+TValue.asDouble = function(value)
 {
-	if (this.isBoolean())
-		return this.asBoolean() ? 1.0 : 0.0;
-	else if (this.isInteger())
-		return parseFloat(this.value);
-	else if (this.isFloatingPoint())
-		return this.value;
-	else if (this.isString())
+	if (TValue.isBoolean(value))
+		return TValue.asBoolean(value) ? 1.0 : 0.0;
+	else if (TValue.isInteger(value))
+		return parseFloat(value.value);
+	else if (TValue.isFloatingPoint(value))
+		return value.value;
+	else if (TValue.isString(value))
 	{
-		var vlower = this.value.toLowerCase();
+		var vlower = value.value.toLowerCase();
 		if (vlower === "nan")
 			return NaN;
 		else if (vlower === "infinity")
@@ -895,7 +902,7 @@ TValue.prototype.asDouble = function()
 		else if (vlower === "-infinity")
 			return -Infinity;
 		else
-			return parseFloat(this.asString());
+			return parseFloat(value.value);
 	}
 	else
 		return NaN;
@@ -905,35 +912,35 @@ TValue.prototype.asDouble = function()
  * Returns the String value of this value (not the same as toString()!!).
  * @return the String value of this value.
  */
-TValue.prototype.asString = function()
+TValue.asString = function(value)
 {
-	if (this.isFloatingPoint() && this.asDouble() % 1 == 0)
-		return this.value+".0";
+	if (TValue.isFloatingPoint(value) && TValue.asDouble(value) % 1 == 0)
+		return value.value+".0";
 	else
-		return ""+this.value;
+		return ""+value.value;
 };
 
 /**
  * Returns this value as a boolean value.
  * @return true if this evaluates true, false if not.
  */
-TValue.prototype.asBoolean = function()
+TValue.asBoolean = function(value)
 {
-	if (this.isBoolean())
-		return this.value;
-	else if (this.isFloatingPoint())
+	if (TValue.isBoolean(value))
+		return value.value;
+	else if (TValue.isFloatingPoint(value))
 	{
-		if (this.isInfinite())
+		if (TValue.isInfinite(value))
 			return true;
-		else if (Number.isNaN(this.value))
+		else if (Number.isNaN(value.value))
 			return false;
 		else
-			return this.asDouble() != 0;
+			return TValue.asDouble(value) != 0;
 	}
-	else if (this.isInteger())
-		return this.asLong() != 0;
-	else if (this.isString())
-		return this.value.length !== 0;
+	else if (TValue.isInteger(value))
+		return TValue.asLong(value) != 0;
+	else if (TValue.isString(value))
+		return value.value.length !== 0;
 	else
 		return true; // all objects are true
 };
@@ -942,47 +949,17 @@ TValue.prototype.asBoolean = function()
  * Returns if this value evaluates to "true".
  * @return true if so, false if not.
  */
-TValue.prototype.isTrue = function()
+TValue.isTrue = function(value)
 {
-	return this.asBoolean();
+	return TValue.asBoolean(value);
 };
     
 /**
  * @return a string representation of this value (for debug, usually).
  */
-TValue.prototype.toString = function()
+TValue.toString = function(value)
 {
-	return this.type + "[" + this.asString() + "]";
-};
-
-/**
- * Returns if this value is equal to another, value-wise.
- * If they are literals, they are compared by their string values.
- * @param otherValue the other value.
- * @return true if so, false if not.
- */
-TValue.prototype.equalsIgnoreType = function(otherValue)
-{
-	return TValue.areEqualIgnoreType(this, otherValue);
-};
-
-/**
- * Returns if this value is equal to another: PERFECTLY EQUAL, type strict.
- * @param otherValue the other value.
- * @return true if so, false if not.
- */
-TValue.prototype.equals = function(otherValue)
-{
-	return TValue.areEqual(this, otherValue);
-};
-
-/**
- * Compares this value with another.
- * @param v the other value.
- */
-TValue.prototype.compareTo = function(v)
-{
-	return TValue.compare(this, v);
+	return value.type + "[" + TValue.asString(value) + "]";
 };
 
 //##[[CONTENT-END

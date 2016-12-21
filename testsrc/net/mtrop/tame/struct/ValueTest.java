@@ -74,10 +74,6 @@ public final class ValueTest
 		
 		for (ArithmeticOperator op : ArithmeticOperator.VALUES)
 		{
-			// output is inconsistently represented between Java and JS
-			if (op == ArithmeticOperator.POWER) 
-				continue;
-			
 			if (op.isBinary())
 			{
 				for (int i = 0; i < TEST_VALUES.length; i++)

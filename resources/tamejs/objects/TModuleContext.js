@@ -535,12 +535,15 @@ TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, name)
 };
 
 /*
-	resolveElement(identity)
-	resolveElementContext(identity)
 	resolveCurrentPlayer()
 	resolveCurrentPlayerContext()
 	resolveCurrentRoom()
 	resolveCurrentRoomContext()
+	resolveAction(identity)
+	resolveElement(identity)
+	resolveElementContext(identity)
+	resolveElementVariableValue(identity, variable)
+	resolveBlock(identity, blockType, blockValues)
 */
 
 
@@ -549,6 +552,6 @@ TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, name)
 //##[[CONTENT-END
 
 
-//If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TContext;
+// If testing with NODEJS ==================================================
+if ((typeof module.exports) !== 'undefined') module.exports = TModuleContext;
 // =========================================================================

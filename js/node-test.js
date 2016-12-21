@@ -1,4 +1,5 @@
 var Util = require("../resources/tamejs/Util.js");
+var TValue = require("../resources/tamejs/objects/TValue.js");
 var TAction = require("../resources/tamejs/objects/TAction.js");
 
 console.log(TAction.create("a_examine").toString());
@@ -9,3 +10,6 @@ console.log(TAction.createInitial("a_examine").toString());
 console.log(TAction.createInitialModal("a_examine", "butt").toString());
 console.log(TAction.createInitialObject("a_examine", "o_apple").toString());
 console.log(TAction.createInitialObject2("a_examine", "o_apple", "o_pear").toString());
+
+console.log(Util.blockEntryName("Init", [TValue.createBoolean(true)]));
+

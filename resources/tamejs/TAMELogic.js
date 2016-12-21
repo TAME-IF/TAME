@@ -7,11 +7,11 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
-var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
-var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
-var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/TValue.js') : null);
-var TRequest = TRequest || ((typeof require) !== 'undefined' ? require('../objects/TRequest.js') : null);
-var TResponse = TResponse || ((typeof require) !== 'undefined' ? require('../objects/TResponse.js') : null);
+var Util = Util || ((typeof require) !== 'undefined' ? require('./Util.js') : null);
+var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('./TAMEError.js') : null);
+var TValue = TValue || ((typeof require) !== 'undefined' ? require('./objects/TValue.js') : null);
+var TRequest = TRequest || ((typeof require) !== 'undefined' ? require('./objects/TRequest.js') : null);
+var TResponse = TResponse || ((typeof require) !== 'undefined' ? require('./objects/TResponse.js') : null);
 // ======================================================================================================
 
 //##[[CONTENT-START
