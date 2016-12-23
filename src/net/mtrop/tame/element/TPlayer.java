@@ -108,7 +108,13 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 	{
 		permittedActionList.put(action.getIdentity());
 	}
-	
+
+	@Override
+	public Iterable<String> getPermissionActions()
+	{
+		return permittedActionList;
+	}
+
 	@Override
 	public boolean allowsAction(TAction action)
 	{
@@ -121,7 +127,7 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 		else
 			throw new ModuleException("Bad or unknown permission type found: "+permissionType);
 	}
-	
+
 	@Override
 	public Block resolveBlock(BlockEntry blockEntry)
 	{

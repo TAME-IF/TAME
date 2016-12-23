@@ -1,7 +1,7 @@
 /*
 	TCommand
 	{
-		commandIndex: 0,
+		opcode: 0,
 		operand0: TValue,
 		operand1: TValue,
 		initBlock: [],

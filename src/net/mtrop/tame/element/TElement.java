@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.ObjectPair;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -73,6 +74,14 @@ public abstract class TElement implements Saveable
 	public void addBlock(BlockEntry blockEntry, Block block)
 	{
 		blockTable.add(blockEntry, block);
+	}
+	
+	/**
+	 * @return an iterable structure for all block entries in this table.
+	 */
+	public Iterable<ObjectPair<BlockEntry, Block>> getBlockEntries()
+	{
+		return blockTable.getEntries();
 	}
 	
 	/**

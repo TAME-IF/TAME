@@ -21,12 +21,14 @@ public class BlockEntry implements Saveable
 	private Value[] values;
 	
 	private int hash;
+	private String entryString;
 	
 	private BlockEntry()
 	{
 		this.entryType = null;
 		this.values = null;
 		this.hash = 0;
+		this.entryString = null;
 	}
 	
 	private BlockEntry(BlockEntryType entryType, Value... values)
@@ -76,17 +78,36 @@ public class BlockEntry implements Saveable
 	{
 		return values;
 	}
+	
+	/**
+	 * Returns a string representation of this entry.
+	 * Useful for languages that cannot use objects as keys.
+	 * @return a string representation of this entry.
+	 */
+	public String getEntryString()
+	{
+		if (entryString != null)
+			return entryString;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(entryType.name()).append('(');
+		for (int i = 0; i < values.length; i++)
+		{
+			sb.append(values[i].toString());
+			if (i < values.length - 1)
+				sb.append(", ");
+		}
+		sb.append(')');
+		entryString = sb.toString();
+		
+		return entryString;
+	}
 
 	@Override
 	public int hashCode()
 	{
 		if (hash == 0)
-		{
-			int out = entryType.ordinal();
-			for (int i = 0; i < values.length; i++)
-				out += 31 * values[i].hashCode();
-			hash = out;
-		}
+			hash = getEntryString().hashCode();
 		return hash;
 	}
 	
@@ -178,16 +199,7 @@ public class BlockEntry implements Saveable
 	@Override
 	public String toString() 
 	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(entryType.name()).append('(');
-		for (int i = 0; i < values.length; i++)
-		{
-			sb.append(values[i].toString());
-			if (i < values.length - 1)
-				sb.append(", ");
-		}
-		sb.append(')');
-		return sb.toString();
+		return getEntryString();
 	}
 	
 }

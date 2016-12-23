@@ -33,8 +33,11 @@ var TModuleContext = function(module)
 	
 	// create object contexts.
 	Util.each(m.objects, function(element, identity){
+		if (element.archetype)
+			return;
+		
 		if (s.elements[identity])
-			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+element.identity);
+			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+identity);
 		s.elements[identity] = {"identity": identity, "variables": {}};
 
 		s.names[identity] = {};
@@ -47,8 +50,10 @@ var TModuleContext = function(module)
 	});
 	
 	var CONTEXTFUNC = function(element, identity){
+		if (element.archetype)
+			return;
 		if (s.elements[identity])
-			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+element.identity);
+			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+identity);
 		s.elements[identity] = {"identity": identity, "variables": {}};
 	};
 	
@@ -64,65 +69,25 @@ var TModuleContext = function(module)
 };
 
 /**
- * Gets a value by variable name from a specific element contextState.
- * Variable names are converted to lower-case - they resolve case-insensitively.
- * @param elementIdentity the element identity.
- * @param variableName the variable name.
- * @return (TValue) the corresponding value or BOOLEAN[false] if not found.
- * @throws TAMEError if no such element contextState.
+ * Sets the current player.
+ * @param playerIdentity the player identity, or null.
+ * @throws TAMEError if no such player.
  */
-TModuleContext.prototype.getValue = function(elementIdentity, variableName)
-{
-	var contextState = this.state;
-	
-	if(!contextState.elements)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Context state is missing required member: elements");
-	if (!contextState.elements[elementIdentity])
-		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+elementName);
-	
-	var ectx = contextState.elements[elementIdentity];
-	if (ectx.identity !== elementIdentity)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Context mismatch detected for: "+elementIdentity+", got "+ectx.identity);
-	if (!ectx.variables)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Element Context \""+elementIdentity+"\" is missing required member: variables");
-
-	var out = ectx.variables[variableName.toLowerCase()];
-	if (out != null)
-		return out;
-	else
-		return TValue.createBoolean(false);
-};
-
-/**
- * Sets a value by variable name from a specific element contextState.
- * Variable names are converted to lower-case - they resolve case-insensitively.
- * @param elementIdentity the element identity.
- * @param variableName the variable name.
- * @param value (TValue) the new value.
- * @throws TAMEError if no such element contextState.
- */
-TModuleContext.prototype.setValue = function(elementIdentity, variableName, value)
+TModuleContext.prototype.setCurrentPlayer = function(playerIdentity) 
 {
 	var contextState = this.state;
 
+	if (!context)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
 	if(!contextState.elements)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context state is missing required member: elements");
-	if (!contextState.elements[elementIdentity])
-		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+elementIdentity);
+	if (!contextState.elements[playerIdentity])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+playerIdentity);
 	
-	var ectx = contextState.elements[elementIdentity];
-	
-	if (ectx.identity !== elementIdentity)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Context mismatch detected for: "+elementIdentity+", got "+ectx.identity);
-	if (!ectx.variables)
-		throw new TAMEError(TAMEError.Type.ModuleState, "Element Context \""+elementIdentity+"\" is missing required member: variables");
-	
-	ectx.variables[variableName.toLowerCase()] = value;
+	contextState.player = playerIdentity;
 };
 
-
 /**
- * 
  * Removes a player from all rooms.
  * @param playerIdentity the player identity.
  * @throws TAMEError if no such player.
@@ -144,7 +109,7 @@ TModuleContext.prototype.removePlayer = function(playerIdentity)
  * Pushes a room onto a player room stack.
  * @param playerIdentity the player identity.
  * @param roomIdentity the room identity.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.pushRoomOntoPlayer = function(playerIdentity, roomIdentity) 
 {
@@ -167,7 +132,7 @@ TModuleContext.prototype.pushRoomOntoPlayer = function(playerIdentity, roomIdent
 /**
  * Pops a room off of a player room stack.
  * @param playerIdentity the player identity.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.popRoomFromPlayer = function(playerIdentity)
 {
@@ -192,7 +157,7 @@ TModuleContext.prototype.popRoomFromPlayer = function(playerIdentity)
  * Gets the current room identity for a player.
  * @param playerIdentity the player identity.
  * @return room identity, or null if no current room.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.getCurrentRoom = function(playerIdentity)
 {
@@ -217,7 +182,7 @@ TModuleContext.prototype.getCurrentRoom = function(playerIdentity)
  * @param playerIdentity the player identity.
  * @param roomIdentity the room identity.
  * @return true if the room is in the player's stack, false if not, or the player is in no room.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.checkPlayerIsInRoom = function(playerIdentity, roomIdentity) 
 {
@@ -242,7 +207,7 @@ TModuleContext.prototype.checkPlayerIsInRoom = function(playerIdentity, roomIden
 /**
  * Removes an object from its owner.
  * @param objectIdentity the object identity.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.removeObject = function(objectIdentity) 
 {
@@ -269,7 +234,7 @@ TModuleContext.prototype.removeObject = function(objectIdentity)
  * Adds an object to an element.
  * @param elementIdentity the element identity.
  * @param objectIdentity the object identity.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.addObjectToElement = function(elementIdentity, objectIdentity) 
 {
@@ -299,7 +264,7 @@ TModuleContext.prototype.addObjectToElement = function(elementIdentity, objectId
  * @param elementIdentity the element identity.
  * @param objectIdentity the object identity.
  * @return true if the element is the owner of the object, false if not.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.checkElementHasObject = function(elementIdentity, objectIdentity) 
 {
@@ -322,7 +287,7 @@ TModuleContext.prototype.checkElementHasObject = function(elementIdentity, objec
  * Checks if an object has no owner.
  * @param objectIdentity the object identity.
  * @return true if the object is owned by nobody, false if it has an owner.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.checkObjectHasNoOwner = function(objectIdentity) 
 {
@@ -343,7 +308,7 @@ TModuleContext.prototype.checkObjectHasNoOwner = function(objectIdentity)
  * The list is a copy, and can be modified without ruining the original.
  * @param elementIdentity the element identity.
  * @return an array of object identities contained by this element.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.getObjectsOwnedByElement = function(elementIdentity)
 {
@@ -368,7 +333,7 @@ TModuleContext.prototype.getObjectsOwnedByElement = function(elementIdentity)
  * The list is a copy, and can be modified without ruining the original.
  * @param elementIdentity the element identity.
  * @return an array of object identities contained by this element.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.getObjectsOwnedByElementCount = function(elementIdentity)
 {
@@ -395,7 +360,7 @@ TModuleContext.prototype.getObjectsOwnedByElementCount = function(elementIdentit
  * More than one object with this name can result in "ambiguous" actions!
  * @param objectIdentity the object identity.
  * @param name the name to add.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.addObjectName = function(objectIdentity, name)
 {
@@ -422,7 +387,7 @@ TModuleContext.prototype.addObjectName = function(objectIdentity, name)
  * Does nothing if the object does not have the name.
  * @param objectIdentity the object identity.
  * @param name the name to remove.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.removeObjectName = function(objectIdentity, name)
 {
@@ -447,7 +412,8 @@ TModuleContext.prototype.removeObjectName = function(objectIdentity, name)
  * Checks for an interpretable name on an object.
  * @param objectIdentity the object identity.
  * @param name the name to remove.
- * @throws TAMEError if no such element contextState.
+ * @return true if it exists, false if not.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.checkObjectHasName = function(objectIdentity, name) 
 {
@@ -470,7 +436,7 @@ TModuleContext.prototype.checkObjectHasName = function(objectIdentity, name)
  * Does nothing if the object already has the tag.
  * @param objectIdentity the object identity.
  * @param name the name to add.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.addObjectTag = function(objectIdentity, tag)
 {
@@ -496,7 +462,7 @@ TModuleContext.prototype.addObjectTag = function(objectIdentity, tag)
  * Does nothing if the object does not have the tag.
  * @param objectIdentity the object identity.
  * @param name the name to remove.
- * @throws TAMEError if no such element contextState.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.removeObjectTag = function(objectIdentity, tag)
 {
@@ -520,7 +486,8 @@ TModuleContext.prototype.removeObjectTag = function(objectIdentity, tag)
  * Checks for a tag on an object.
  * @param objectIdentity the object identity.
  * @param name the name to remove.
- * @throws TAMEError if no such element contextState.
+ * @return true if it exists, false if not.
+ * @throws TAMEError if no such element context.
  */
 TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, name) 
 {
@@ -537,18 +504,139 @@ TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, name)
 	return (!arr && arr[name]);
 };
 
+/**
+ * Resolves the current player.
+ * @return the player object or null if no current player.
+ * @throws TAMEError if no such element context.
+ */
+TModuleContext.prototype.resolveCurrentPlayer = function()
+{
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context state is missing required member: elements");
+
+	if (!contextState.player)
+		return null;
+	
+	if (!contextState.elements[contextState.player])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+contextState.player);
+	
+	return this.module.players[contextState.player];
+};
+
+/**
+ * Resolves the current player's context, if a current player exists.
+ * @return the player object or null if no current player.
+ * @throws TAMEError if no such element context.
+ */
+TModuleContext.prototype.resolveCurrentPlayerContext = function()
+{
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context state is missing required member: elements");
+
+	if (!contextState.player)
+		return null;
+	
+	if (!contextState.elements[contextState.player])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+contextState.player);
+	
+	return contextState.elements[contextState.player];
+};
+
+/**
+ * Resolves the current room, if a current room exists.
+ * This is the topmost room on the current player's stack.
+ * @return the room object or null if no current room or player.
+ * @throws TAMEError if no such element context.
+ */
+TModuleContext.prototype.resolveCurrentRoom = function()
+{
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context state is missing required member: elements");
+
+	if (!contextState.player)
+		return null;
+	
+	if (!contextState.elements[contextState.player])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+contextState.player);
+
+	var roomIdentity = this.getCurrentRoom(contextState.player);
+
+	if (!roomIdentity)
+		return null;
+	
+	if (!contextState.elements[roomIdentity])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+roomIdentity);
+	
+	return this.module.rooms[roomIdentity];
+};
+
+/**
+ * Resolves the current room's context, if a current room exists.
+ * This is the topmost room on the current player's stack.
+ * @return the room context object or null if no current room or player.
+ * @throws TAMEError if no such element context.
+ */
+TModuleContext.prototype.resolveCurrentRoomContext = function()
+{
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw new TAMEError(TAMEError.Type.ModuleState, "Context state is missing required member: elements");
+
+	if (!contextState.player)
+		return null;
+	
+	if (!contextState.elements[contextState.player])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+contextState.player);
+
+	var roomIdentity = this.getCurrentRoom(contextState.player);
+
+	if (!roomIdentity)
+		return null;
+	
+	if (!contextState.elements[roomIdentity])
+		throw new TAMEError(TAMEError.Type.ModuleState, "Element is missing from context state: "+roomIdentity);
+	
+	return contextState.elements[roomIdentity];
+};
+
 /*
-	resolveCurrentPlayer()
-	resolveCurrentPlayerContext()
-	resolveCurrentRoom()
-	resolveCurrentRoomContext()
 	resolveAction(identity)
 	resolveElement(identity)
 	resolveElementContext(identity)
 	resolveElementVariableValue(identity, variable)
 	resolveBlock(identity, blockType, blockValues)
 */
-
+/*
+	Context: 
+	{
+		"module": {
+			header: {value:str, ...}
+			actions: {id:obj, ...}
+			world: {}
+			objects: {id:obj, ...}
+			players: {id:obj, ...}
+			rooms: {id:obj, ...}
+			containers: {id:obj, ...}
+			actionNameTable = {str:actionid, ... };
+		},		
+		"state": {
+			"player": null,		// current player
+			"elements": {}, 	// element-to-variables
+			"owners": {}, 		// element-to-objects
+			"objectOwners": {}, // object-to-element
+			"roomStacks": {},	// player-to-rooms
+			"names": {},		// object-to-names
+			"tags": {}			// object-to-tags
+		}
+	}
+*/
 
 //TODO: Finish this.
 

@@ -31,7 +31,12 @@ public interface ForbiddenHandler
      */
     public void addPermissionAction(TAction action);
  
-    /**
+	/**
+	 * @return an iterable list of the allowed actions.
+	 */
+	public Iterable<String> getPermissionActions();
+
+	/**
      * Checks if an action is allowed for this room.
      * @param action the action to check for this object.
      * @return true if this action is allowed, false if not.

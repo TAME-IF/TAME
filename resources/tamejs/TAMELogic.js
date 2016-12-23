@@ -595,7 +595,7 @@ var TLogic = {};
  */
 TLogic.commandToString = function(cmdObject)
 {
-	var out = TCommandFunctions[cmdObject.commandIndex].name;
+	var out = TCommandFunctions[cmdObject.opcode].name;
 	if (cmdObject.operand0 != null)
 		out += ' ' + cmdObject.operand0.toString();
 	if (cmdObject.operand1 != null)
@@ -643,7 +643,7 @@ TLogic.executeBlock = function(block, request, response, blockLocal)
  */
 TLogic.executeCommand = function(command, request, response, blockLocal)
 {
-	TCommandFunctions[command.commandIndex].doCommand(request, response, blockLocal, command);
+	TCommandFunctions[command.opcode].doCommand(request, response, blockLocal, command);
 	response.incrementAndCheckCommandsExecuted();
 }
 

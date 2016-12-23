@@ -105,7 +105,13 @@ public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRo
 	{
 		permittedActionList.put(action.getIdentity());
 	}
-	
+
+	@Override
+	public Iterable<String> getPermissionActions()
+	{
+		return permittedActionList;
+	}
+
 	@Override
 	public boolean allowsAction(TAction action)
 	{

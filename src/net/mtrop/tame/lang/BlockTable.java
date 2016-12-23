@@ -64,6 +64,14 @@ public class BlockTable implements Saveable
 		return blockMap.get(blockEntry);
 	}
 	
+	/**
+	 * @return an iterable structure for all entries in this table.
+	 */
+	public Iterable<ObjectPair<BlockEntry, Block>> getEntries()
+	{
+		return blockMap;
+	}
+
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{

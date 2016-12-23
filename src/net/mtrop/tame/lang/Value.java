@@ -450,6 +450,14 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
+	 * @return the underlying object wrapping the value.
+	 */
+	public Object getValue() 
+	{
+		return value;
+	}
+	
+	/**
 	 * Returns this value as a boolean value.
 	 * @return true if this evaluates true, false if not.
 	 */
