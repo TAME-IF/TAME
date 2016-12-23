@@ -29,6 +29,8 @@ public final class TAMECompilerMain
 {
 	/** Default out file. */
 	private static final String DEFAULT_OUTFILE = "module.out";
+	/** Default JS out file. */
+	private static final String DEFAULT_JS_OUTFILE = DEFAULT_OUTFILE + ".js";
 	/** Switch - don't optimize. */
 	private static final String SWITCH_NOOPTIMIZE0 = "--no-optimize"; 
 	private static final String SWITCH_NOOPTIMIZE1 = "-n"; 
@@ -41,6 +43,18 @@ public final class TAMECompilerMain
 	/** Switch - add defines. */
 	private static final String SWITCH_DEFINE0 = "--defines"; 
 	private static final String SWITCH_DEFINE1 = "-d"; 
+
+	// TODO: Implement.
+	
+	/** Switch - JS export. */
+	private static final String SWITCH_JS0 = "--js"; 
+	private static final String SWITCH_JS1 = "-js"; 
+
+	/** Switch - JS export, add wrapper. */
+	private static final String SWITCH_JSWRAPPER0 = "--js-wrapper"; 
+	private static final String SWITCH_JSWRAPPER1 = "-w"; 
+
+	
 	
 	// Scan options.
 	private static boolean scanOptions(Options options, String[] args)

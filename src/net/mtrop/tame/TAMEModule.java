@@ -319,27 +319,42 @@ public class TAMEModule implements Saveable
 		return containers.size();
 	}
 
-	HashMap<String, TPlayer> getPlayerList()
+	/**
+	 * @return an iterable list of player pairs. 
+	 */
+	public Iterable<ObjectPair<String, TPlayer>> getPlayerList()
 	{
 		return players;
 	}
 
-	HashMap<String, TAction> getActionList()
+	/**
+	 * @return an iterable list of action pairs. 
+	 */
+	public Iterable<ObjectPair<String, TAction>> getActionList()
 	{
 		return actions;
 	}
 
-	HashMap<String, TRoom> getRoomList()
+	/**
+	 * @return an iterable list of room pairs. 
+	 */
+	public Iterable<ObjectPair<String, TRoom>> getRoomList()
 	{
 		return rooms;
 	}
 
-	HashMap<String, TObject> getObjectList()
+	/**
+	 * @return an iterable list of object pairs. 
+	 */
+	public Iterable<ObjectPair<String, TObject>> getObjectList()
 	{
 		return objects;
 	}
 
-	HashMap<String, TContainer> getContainerList()
+	/**
+	 * @return an iterable list of container pairs. 
+	 */
+	public Iterable<ObjectPair<String, TContainer>> getContainerList()
 	{
 		return containers;
 	}
@@ -607,7 +622,16 @@ public class TAMEModule implements Saveable
 			outList.toArray(out);
 			return out;
 		}
-	
+		
+		/**
+		 * Gets the attribute map for the header.
+		 * @return a reference to the map.
+		 */
+		public CaseInsensitiveHashMap<String> getAttributeMap()
+		{
+			return attributes;
+		}
+		
 		@Override
 		public void writeBytes(OutputStream out) throws IOException
 		{

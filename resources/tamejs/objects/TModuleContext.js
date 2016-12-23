@@ -13,50 +13,53 @@ var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : n
 //##[[CONTENT-START
 
 /****************************************************
- See net.mtrop.tame.lang.Block
+ See net.mtrop.tame.TAMEModuleContext
  ****************************************************/
 var TModuleContext = function(module)
 {
-	this.module = module,		// module reference
-	this.state = {};			// savable state.
+	this.module = module,			// module reference
+	this.state = {};				// savable state.
 	
-	state.player = null;		// current player
-	state.elements = {}; 		// element-to-variables
-	state.owners = {}; 			// element-to-objects
-	state.objectOwners = {};	// object-to-element
-	state.roomStacks = {};		// player-to-rooms
-	state.names = {};			// object-to-names
-	state.tags = {};			// object-to-tags
+	this.state.player = null;		// current player
+	this.state.elements = {}; 		// element-to-variables
+	this.state.owners = {}; 		// element-to-objects
+	this.state.objectOwners = {};	// object-to-element
+	this.state.roomStacks = {};		// player-to-rooms
+	this.state.names = {};			// object-to-names
+	this.state.tags = {};			// object-to-tags
+	
+	var s = this.state;
+	var m = this.module;
 	
 	// create object contexts.
-	Util.each(module.objects, function(element, identity){
-		if (out.elements[identity])
+	Util.each(m.objects, function(element, identity){
+		if (s.elements[identity])
 			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+element.identity);
-		state.elements[identity] = {"identity": identity, "variables": {}};
+		s.elements[identity] = {"identity": identity, "variables": {}};
 
-		state.names[identity] = {};
+		s.names[identity] = {};
 		Util.each(element.names, function(name){
-			state.names[identity][name] = true;
+			s.names[identity][name] = true;
 		});
 		Util.each(element.tags, function(tag){
-			state.tags[identity][tag] = true;
+			s.tags[identity][tag] = true;
 		});
 	});
 	
 	var CONTEXTFUNC = function(element, identity){
-		if (state.elements[identity])
+		if (s.elements[identity])
 			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+element.identity);
-		state.elements[identity] = {"identity": identity, "variables": {}};
+		s.elements[identity] = {"identity": identity, "variables": {}};
 	};
 	
 	// create player contexts.
-	Util.each(module.players, CONTEXTFUNC);
+	Util.each(m.players, CONTEXTFUNC);
 	// create room contexts.
-	Util.each(module.rooms, CONTEXTFUNC);
+	Util.each(m.rooms, CONTEXTFUNC);
 	// create container contexts.
-	Util.each(module.containers, CONTEXTFUNC);
+	Util.each(m.containers, CONTEXTFUNC);
 	// create world context.
-	state.elements["world"] = {"identity": "world", "variables": {}};
+	s.elements["world"] = {"identity": "world", "variables": {}};
 	
 };
 

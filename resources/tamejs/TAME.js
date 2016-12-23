@@ -29,11 +29,11 @@ var TAME = new (function(theader, tactions, tworld, tobjects, tplayers, trooms, 
 //##[[CONTENT-INCLUDE objects/TModuleContext.js
 //##[[CONTENT-INCLUDE TAMELogic.js
 
-	var module = new TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers);
+	var tameModule = new TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers);
 	
 	this.newContext = function() 
 	{
-		return new TModuleContext(this.module);
+		return new TModuleContext(tameModule);
 	};
 
 	/**

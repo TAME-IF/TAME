@@ -27,11 +27,12 @@ function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontain
 	this.rooms = Util.mapify(trooms, "identity");
 	this.containers = Util.mapify(tcontainers, "identity");
 	this.world = tworld;
-	this.actionNameTable = {};
+	
+	var ant = this.actionNameTable = {};
 	
 	Util.each(this.actions, function(action){
 		Util.each(action.names, function(name){
-			this.actionNameTable[name.toLowerCase()] = action.identity;
+			ant[name.toLowerCase()] = action.identity;
 		});
 	});
 

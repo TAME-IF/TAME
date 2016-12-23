@@ -655,7 +655,7 @@ TLogic.executeCommand = function(command, request, response, blockLocal)
  */
 TLogic.handleInit = function(context, tracing) 
 {
-	var request = TRequest.create(context, "[INITIALIZE]", tracing);
+	var request = new TRequest(context, "[INITIALIZE]", tracing);
 	var response = new TResponse();
 	
 	response.interpretNanos = 0;
@@ -695,7 +695,7 @@ TLogic.handleInit = function(context, tracing)
  */
 TLogic.handleRequest = function(context, inputMessage, tracing)
 {
-	var request = TRequest.create(context, inputMessage, tracing);
+	var request = new TRequest(context, inputMessage, tracing);
 	var response = new TResponse();
 
 	var time = Date.now();
@@ -732,7 +732,7 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
  * @param request (TRequest) the request object.
  * @param response (TResponse) the response object.
  * @param elementContext (object) the context that the block is executed through.
- * @param block (TBlock) the block to execute.
+ * @param block [Object, ...] the block to execute.
  * @param localValues (object) the local values to set on invoke.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
@@ -749,7 +749,7 @@ TLogic.callBlock = function(request, response, elementContext, block, localValue
 	});
 
 	try {
-		block.execute(request, response, blockLocal);
+		TLogic.executeBlock(block, request, response, blockLocal);
 	} catch (t) {
 		throw t;
 	} finally {
@@ -769,7 +769,7 @@ TLogic.callBlock = function(request, response, elementContext, block, localValue
  */
 TLogic.interpret = function(request)
 {
-	var tokens = request.inputMessage.toLowerCase().split("\\s+");
+	var tokens = request.inputMessage.toLowerCase().split(/\s+/);
 	var interpreterContext = 
 	{
 		"tokens": tokens,
@@ -833,7 +833,7 @@ TLogic.interpretAction = function(moduleContext, interpreterContext)
 
 	while (index < tokens.length)
 	{
-		if (sb.length() > 0)
+		if (sb.length > 0)
 			sb += ' ';
 		sb += tokens[index];
 		index++;
@@ -862,7 +862,7 @@ TLogic.interpretMode = function(action, interpreterContext)
 
 	while (index < tokens.length)
 	{
-		if (sb.length() > 0)
+		if (sb.length > 0)
 			sb += ' ';
 		sb += tokens[index];
 		index++;
@@ -893,13 +893,13 @@ TLogic.interpretOpen = function(interpreterContext)
 	while (index < tokens.length)
 	{
 		interpreterContext.targetLookedUp = true;
-		if (sb.length() > 0)
+		if (sb.length > 0)
 			sb += ' ';
 		sb += tokens[index];
 		index++;
 	}
 	
-	interpreterContext.target = sb.length() > 0 ? sb : null;
+	interpreterContext.target = sb.length > 0 ? sb : null;
 	interpreterContext.tokenOffset = index;
 };
 
@@ -917,7 +917,7 @@ TLogic.interpretConjugate = function(action, interpreterContext)
 
 	while (index < tokens.length)
 	{
-		if (sb.length() > 0)
+		if (sb.length > 0)
 			sb += ' ';
 		sb += tokens[index];
 		index++;
@@ -952,7 +952,7 @@ TLogic.interpretObject1 = function(moduleContext, interpreterContext)
 
 	while (index < tokens.length)
 	{
-		if (sb.length() > 0)
+		if (sb.length > 0)
 			sb += ' ';
 		sb += tokens[index];
 		index++;
@@ -993,7 +993,7 @@ TLogic.interpretObject2 = function(moduleContext, interpreterContext)
 
 	while (index < tokens.length)
 	{
-		if (sb.length() > 0)
+		if (sb.length > 0)
 			sb += ' ';
 		sb += tokens[index];
 		index++;

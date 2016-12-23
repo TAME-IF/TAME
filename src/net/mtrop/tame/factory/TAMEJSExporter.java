@@ -10,10 +10,19 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Iterator;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.ObjectPair;
+import com.blackrook.lang.json.JSONWriter;
 
+import net.mtrop.tame.TAMELogic;
 import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
+import net.mtrop.tame.element.TObject;
+import net.mtrop.tame.element.TPlayer;
+import net.mtrop.tame.element.TRoom;
 
 /**
  * The JavaScript exporter for TAME.
@@ -34,6 +43,23 @@ public final class TAMEJSExporter
 	private static final String JS_DIRECTIVE_INCLUDE = JS_DIRECTIVE_PREFIX + "CONTENT-INCLUDE";
 	/** Reader directive - END */
 	private static final String JS_DIRECTIVE_END = JS_DIRECTIVE_PREFIX + "CONTENT-END";
+	
+	/** Generate version. */
+	private static final String GENERATE_VERSION = "version";
+	/** Generate header. */
+	private static final String GENERATE_HEADER = "header";
+	/** Generate actions. */
+	private static final String GENERATE_ACTIONS = "actions";
+	/** Generate world. */
+	private static final String GENERATE_WORLD = "world";
+	/** Generate objects. */
+	private static final String GENERATE_OBJECTS = "objects";
+	/** Generate players. */
+	private static final String GENERATE_PLAYERS = "players";
+	/** Generate rooms. */
+	private static final String GENERATE_ROOMS = "rooms";
+	/** Generate containers. */
+	private static final String GENERATE_CONTAINERS = "containers";
 	
 	/** Default writer options. */
 	private static final TAMEJSExporterOptions DEFAULT_OPTIONS = new DefaultJSExporterOptions();
@@ -189,10 +215,124 @@ public final class TAMEJSExporter
 	 * @param module the source module.
 	 * @param typeList the list of types (comma/space separated).
 	 */
-	private static void generateResource(Writer writer, TAMEModule module, String typeList)
+	private static void generateResource(Writer writer, TAMEModule module, String typeList) throws IOException
 	{
 		String[] parts = typeList.split("\\,\\s+");
-		// TODO Auto-generated method stub
+		for (int i = 0; i < parts.length; i++)
+		{
+			String type = parts[i];
+			if (type.equalsIgnoreCase(GENERATE_VERSION))
+				generateResourceVersion(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_HEADER))
+				generateResourceHeader(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_ACTIONS))
+				generateResourceActions(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_WORLD))
+				generateResourceWorld(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_OBJECTS))
+				generateResourceObjects(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_PLAYERS))
+				generateResourcePlayers(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_ROOMS))
+				generateResourceRooms(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_CONTAINERS))
+				generateResourceContainers(writer, module);
+			
+			if (i < parts.length - 1)
+				writer.write(',');
+		}
+	}
+	
+	private static <T> void generateResourceList(Writer writer, Iterator<ObjectPair<String, T>> it) throws IOException 
+	{
+		writer.append('[');
+		while (it.hasNext())
+		{
+			JSONWriter.writeJSON(it.next().getValue(), writer);
+			if (it.hasNext())
+				writer.append(',');
+		}
+		writer.append(']');
+	}
+	
+	/**
+	 * Generates the Version line in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceVersion(Writer writer, TAMEModule module) throws IOException
+	{
+		writer.append("this.version = "+JSONWriter.writeJSONString(TAMELogic.getVersion())+";\n");
+	}
+	
+	/**
+	 * Generates the header object in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceHeader(Writer writer, TAMEModule module) throws IOException
+	{
+		JSONWriter.writeJSON(module.getHeader().getAttributeMap(), writer);
+	}
+	
+	/**
+	 * Generates the action list in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceActions(Writer writer, TAMEModule module) throws IOException
+	{
+		generateResourceList(writer, module.getActionList().iterator());
+	}
+
+	/**
+	 * Generates the world object in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceWorld(Writer writer, TAMEModule module) throws IOException
+	{
+		JSONWriter.writeJSON(module.getWorld(), writer);
+	}
+	
+	/**
+	 * Generates the object list in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceObjects(Writer writer, TAMEModule module) throws IOException
+	{
+		generateResourceList(writer, module.getObjectList().iterator());
+	}
+	
+	/**
+	 * Generates the player list in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourcePlayers(Writer writer, TAMEModule module) throws IOException
+	{
+		generateResourceList(writer, module.getPlayerList().iterator());
+	}
+	
+	/**
+	 * Generates the room list in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceRooms(Writer writer, TAMEModule module) throws IOException
+	{
+		generateResourceList(writer, module.getRoomList().iterator());
+	}
+	
+	/**
+	 * Generates the containers list in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceContainers(Writer writer, TAMEModule module) throws IOException
+	{
+		generateResourceList(writer, module.getContainerList().iterator());
 	}
 	
 }

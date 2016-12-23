@@ -107,9 +107,9 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		{
 			TObjectContext context = element.getValue();
 			TObject object = context.getElement();
-			for (String name : object.getNameIterable())
+			for (String name : object.getNames())
 				ownershipMap.addObjectName(object, name);
-			for (String tag : object.getTagIterable())
+			for (String tag : object.getTags())
 				ownershipMap.addObjectTag(object, tag);
 		}
 	}
@@ -185,11 +185,11 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	public String[] getAvailableActionNames()
 	{
 		Hash<String> hash = new Hash<String>();
-		Iterator<String> it = module.getActionList().keyIterator();
+		Iterator<ObjectPair<String, TAction>> it = module.getActionList().iterator();
 		while (it.hasNext())
 		{
-			String actionId = it.next();
-			TAction action = module.getActionList().get(actionId);
+			ObjectPair<String, TAction> actionId = it.next();
+			TAction action = module.getActionByIdentity(actionId.getKey());
 			TPlayer player = getCurrentPlayerContext() != null ? getCurrentPlayerContext().getElement() : null;
 			TRoom room = getCurrentRoomContext() != null ? getCurrentRoomContext().getElement() : null;
 			
@@ -202,11 +202,11 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 				hash.put(s);
 		}
 		
-		it = hash.iterator();
+		Iterator<String> hit = hash.iterator();
 		String[] out = new String[hash.size()];
 		int i = 0;
-		while (it.hasNext())
-			out[i++] = it.next();
+		while (hit.hasNext())
+			out[i++] = hit.next();
 		Arrays.sort(out);
 		return out;
 	}
@@ -362,7 +362,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TAction resolveAction(String actionIdentity)
 	{
-		TAction action = module.getActionList().get(actionIdentity);
+		TAction action = module.getActionByIdentity(actionIdentity);
 
 		if (action == null)
 			throw new ModuleExecutionException("Expected action '%s' in module context!", actionIdentity);

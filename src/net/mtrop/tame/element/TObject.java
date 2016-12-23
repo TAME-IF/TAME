@@ -105,7 +105,7 @@ public class TObject extends TElement implements Inheritable<TObject>
 	 * Gets the initial names on this object as an iterable structure.
 	 * @return the case-insensitive hash containing the names.
 	 */
-	public Iterable<String> getNameIterable()
+	public Iterable<String> getNames()
 	{
 		return names;
 	}
@@ -126,7 +126,7 @@ public class TObject extends TElement implements Inheritable<TObject>
 	 * Gets the initial tags on this object as an iterable structure.
 	 * @return an iterable object for iteration.
 	 */
-	public Iterable<String> getTagIterable()
+	public Iterable<String> getTags()
 	{
 		return tags;
 	}
