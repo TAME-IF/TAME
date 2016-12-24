@@ -11,9 +11,10 @@
 /*****************************************************************************
  Interrupt handling.
  *****************************************************************************/
-var TAMEInterrupt = function(type)
+var TAMEInterrupt = function(type, message)
 {
 	this.type = type;
+	this.message = message;
 };
 
 TAMEInterrupt.Type = 
@@ -25,9 +26,17 @@ TAMEInterrupt.Type =
 	"Quit": "Quit"
 };
 
+// Convenience Constructors
+TAMEInterrupt.Break = function() { return new TAMEInterrupt(TAMEInterrupt.Type.Break, "A break interrupt was thrown!"); };
+TAMEInterrupt.Continue = function() { return new TAMEInterrupt(TAMEInterrupt.Type.Continue, "A continue interrupt was thrown!"); };
+TAMEInterrupt.Error = function(message) { return new TAMEInterrupt(TAMEInterrupt.Type.Error, message); };
+TAMEInterrupt.End = function() { return new TAMEInterrupt(TAMEInterrupt.Type.End, "An end interrupt was thrown!"); };
+TAMEInterrupt.Quit = function() { return new TAMEInterrupt(TAMEInterrupt.Type.Quit, "A quit interrupt was thrown!"); };
+
+
 TAMEInterrupt.prototype.toString = function()
 {
-	return "TAMEInterrupt: "+ this.type;
+	return "TAMEInterrupt: "+ this.type + ": " + this.message;
 };
 
 //##[[CONTENT-END

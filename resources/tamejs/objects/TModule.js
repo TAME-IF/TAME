@@ -22,17 +22,29 @@ function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontain
 	// Fields --------------------
 	this.header = theader;
 	this.actions = Util.mapify(tactions, "identity");
-	this.objects = Util.mapify(tobjects, "identity");
-	this.players = Util.mapify(tplayers, "identity");
-	this.rooms = Util.mapify(trooms, "identity");
-	this.containers = Util.mapify(tcontainers, "identity");
-	this.world = tworld;
+	this.elements = {};
+	this.actionNameTable = {};
 	
-	var ant = this.actionNameTable = {};
+	var elem = this.elements;
+	var act = this.actions;
+	var antbl = this.actionNameTable;
+
+	var ELEMACCUM = function(element, identity) 
+	{
+		if (elem[identity] || act[identity])
+			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+identity);
+		elem[identity] = element;
+	};
+	
+	Util.each(Util.mapify(tobjects, "identity"), ELEMACCUM);
+	Util.each(Util.mapify(tplayers, "identity"), ELEMACCUM);
+	Util.each(Util.mapify(trooms, "identity"), ELEMACCUM);
+	Util.each(Util.mapify(tcontainers, "identity"), ELEMACCUM);
+	ELEMACCUM(tworld, tworld.identity);
 	
 	Util.each(this.actions, function(action){
 		Util.each(action.names, function(name){
-			ant[name.toLowerCase()] = action.identity;
+			antbl[name.toLowerCase()] = action.identity;
 		});
 	});
 

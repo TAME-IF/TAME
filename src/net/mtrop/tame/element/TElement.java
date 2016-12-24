@@ -15,6 +15,7 @@ import java.io.OutputStream;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
+import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -30,6 +31,13 @@ import net.mtrop.tame.lang.Saveable;
  */
 public abstract class TElement implements Saveable
 {	
+	private static final CaseInsensitiveHash BAD_IDENTITIES = new CaseInsensitiveHash()
+	{{
+		put("player");
+		put("room");
+		put("world");
+	}};
+	
 	/** Element's primary identity. */
 	private String identity;
 	/** Element block map. */
@@ -60,6 +68,19 @@ public abstract class TElement implements Saveable
 	 * @param identity the identity to set.
 	 */
 	protected void setIdentity(String identity)
+	{
+		if (Common.isEmpty(identity))
+			throw new IllegalArgumentException("Identity cannot be blank.");
+		if (BAD_IDENTITIES.contains(identity))
+			throw new IllegalArgumentException("Identity cannot be \"player\" or \"room\" or \"world\".");
+		this.identity = identity;
+	}
+		
+	/** 
+	 * Sets the identity (primary identifier name) without doing an illegal identity check. 
+	 * @param identity the identity to set.
+	 */
+	protected void setIdentityForced(String identity)
 	{
 		if (Common.isEmpty(identity))
 			throw new IllegalArgumentException("Identity cannot be blank.");

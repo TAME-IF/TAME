@@ -337,6 +337,7 @@ public final class TAMEJSExporter
 			JSONObject out = JSONObject.createEmptyObject();
 			JSONObject arr;
 			
+			out.addMember("tameType", "TAction");
 			out.addMember("identity", action.getIdentity());
 			out.addMember("type", action.getType().name());
 			if (action.isRestricted())
@@ -363,6 +364,7 @@ public final class TAMEJSExporter
 	{
 		JSONObject out = JSONObject.createEmptyObject();
 		TWorld world = module.getWorld();
+		out.addMember("tameType", "TWorld");
 		out.addMember("identity", world.getIdentity());
 		out.addMember("blockTable", convertBlockTable(world.getBlockEntries()));
 		JSONWriter.writeJSON(out, writer);
@@ -383,6 +385,7 @@ public final class TAMEJSExporter
 			JSONObject out = JSONObject.createEmptyObject();
 			JSONObject arr;
 			
+			out.addMember("tameType", "TObject");
 			out.addMember("identity", object.getIdentity());
 			if (object.getParent() != null)
 				out.addMember("parent", object.getParent().getIdentity());
@@ -418,6 +421,7 @@ public final class TAMEJSExporter
 			JSONObject out = JSONObject.createEmptyObject();
 			JSONObject arr;
 			
+			out.addMember("tameType", "TPlayer");
 			out.addMember("identity", player.getIdentity());
 			if (player.getParent() != null)
 				out.addMember("parent", player.getParent().getIdentity());
@@ -452,6 +456,7 @@ public final class TAMEJSExporter
 			JSONObject out = JSONObject.createEmptyObject();
 			JSONObject arr;
 			
+			out.addMember("tameType", "TRoom");
 			out.addMember("identity", room.getIdentity());
 			if (room.getParent() != null)
 				out.addMember("parent", room.getParent().getIdentity());
@@ -485,6 +490,7 @@ public final class TAMEJSExporter
 			TContainer container = it.next().getValue();
 			JSONObject out = JSONObject.createEmptyObject();
 			
+			out.addMember("tameType", "TContainer");
 			out.addMember("identity", container.getIdentity());
 			if (container.getParent() != null)
 				out.addMember("parent", container.getParent().getIdentity());

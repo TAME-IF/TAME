@@ -821,8 +821,8 @@ TLogic.interpret = function(request)
 
 /**
  * Interprets an action from the input line.
- * @param moduleContext (Object) the module context.
- * @param interpreterContext (Object) the TAMEInterpreterContext.
+ * @param moduleContext (TModuleContext) the module context.
+ * @param interpreterContext (Object) the interpreter context.
  */
 TLogic.interpretAction = function(moduleContext, interpreterContext)
 {
@@ -852,7 +852,7 @@ TLogic.interpretAction = function(moduleContext, interpreterContext)
 /**
  * Interprets an action mode from the input line.
  * @param action (object:action) the action to use.
- * @param interpreterContext (object) the interpreterContext.
+ * @param interpreterContext (Object) the interpreter context.
  */
 TLogic.interpretMode = function(action, interpreterContext)
 {
@@ -882,7 +882,7 @@ TLogic.interpretMode = function(action, interpreterContext)
 
 /**
  * Interprets open target.
- * @param interpreterContext the TAMEInterpreterContext.
+ * @param interpreterContext (Object) the interpreter context.
  */
 TLogic.interpretOpen = function(interpreterContext)
 {
@@ -906,7 +906,7 @@ TLogic.interpretOpen = function(interpreterContext)
 /**
  * Interprets an action conjugate from the input line (like "with" or "on" or whatever).
  * @param action the action to use.
- * @param interpreterContext the TAMEInterpreterContext.
+ * @param interpreterContext (Object) the interpreter context.
  */
 TLogic.interpretConjugate = function(action, interpreterContext)
 {
@@ -941,8 +941,8 @@ TLogic.interpretConjugate = function(action, interpreterContext)
  * player's person, as well as in the current room. These checks are skipped if
  * the player is null, or the current room is null.
  * The priority order is player inventory, then room contents, then world.
- * @param moduleContext the module context.
- * @param interpreterContext the TAMEInterpreterContext.
+ * @param moduleContext (TModuleContext) the module context.
+ * @param interpreterContext (Object) the interpreter context.
  */
 TLogic.interpretObject1 = function(moduleContext, interpreterContext)
 {

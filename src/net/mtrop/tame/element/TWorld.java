@@ -28,9 +28,9 @@ public class TWorld extends TElement implements Inheritable<TWorld>
 	public TWorld()
 	{
 		super();
-		setIdentity(TAMEConstants.IDENTITY_CURRENT_WORLD);
+		setIdentityForced(TAMEConstants.IDENTITY_CURRENT_WORLD);
 	}
-
+	
 	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.
