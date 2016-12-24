@@ -47,8 +47,8 @@ public final class TAMECompilerMain
 	// TODO: Implement.
 	
 	/** Switch - JS export. */
-	private static final String SWITCH_JS0 = "--js"; 
-	private static final String SWITCH_JS1 = "-js"; 
+	private static final String SWITCH_JS0 = "--js-outfile"; 
+	private static final String SWITCH_JS1 = "-jo"; 
 
 	/** Switch - JS export, add wrapper. */
 	private static final String SWITCH_JSWRAPPER0 = "--js-wrapper"; 
@@ -63,6 +63,7 @@ public final class TAMECompilerMain
 		final int STATE_OUTPATH = 1;
 		final int STATE_DEFINES = 2;
 		final int STATE_SWITCHES = 3;
+		final int STATE_JSOUTPATH = 4;
 		
 		int state = STATE_INPATH;
 		
@@ -98,6 +99,21 @@ public final class TAMECompilerMain
 					else
 					{
 						options.fileOutPath = arg;
+						state = STATE_SWITCHES;
+					}
+					break;
+				}
+				
+				case STATE_JSOUTPATH:
+				{
+					if (arg.startsWith("-"))
+					{
+						System.out.println("ERROR: Expected an \"out\" path after switch.");
+						return false;
+					}
+					else
+					{
+						options.fileOutPath = arg;
 					}
 					break;
 				}
@@ -107,7 +123,7 @@ public final class TAMECompilerMain
 					if (arg.startsWith("-"))
 					{
 						state = STATE_SWITCHES;
-						i++;
+						i--;
 						continue;
 					}
 					else
@@ -243,6 +259,7 @@ public final class TAMECompilerMain
 	{
 		private String fileInPath;
 		private String fileOutPath;
+		private String fileJSOutPath;
 		
 		private boolean optimizing;
 		private boolean verbose;
