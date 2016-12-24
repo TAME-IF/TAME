@@ -77,7 +77,7 @@ TModuleContext.prototype.setCurrentPlayer = function(playerIdentity)
 {
 	var contextState = this.state;
 
-	if (!context)
+	if (!contextState)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
 	if(!contextState.elements)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context state is missing required member: elements");
@@ -96,7 +96,7 @@ TModuleContext.prototype.removePlayer = function(playerIdentity)
 {
 	var contextState = this.state;
 
-	if (!context)
+	if (!contextState)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context is invalid or null");
 	if(!contextState.elements)
 		throw new TAMEError(TAMEError.Type.ModuleState, "Context state is missing required member: elements");
@@ -546,6 +546,7 @@ TModuleContext.prototype.resolveAction = function(actionIdentity)
  * @param elementIdentity the element identity.
  * @return the corresponding action or null if no current room or player.
  * @throws TAMEError if no such element context.
+ * @throws TAMEInterrupt if identity refers to a current object that is not set.
  */
 TModuleContext.prototype.resolveElement = function(elementIdentity)
 {	
@@ -566,7 +567,7 @@ TModuleContext.prototype.resolveElement = function(elementIdentity)
 			throw TAMEInterrupt.Error("Current room context called with no current room!");
 	}
 	
-	out = this.module.element[elementIdentity];
+	out = this.module.elements[elementIdentity];
 	
 	if (!out)
 		throw new TAMEError(TAMEError.Type.ModuleExecution, "Element is missing from module: "+elementIdentity);
@@ -580,6 +581,7 @@ TModuleContext.prototype.resolveElement = function(elementIdentity)
  * @param elementIdentity the element identity.
  * @return the corresponding action or null if no current room or player.
  * @throws TAMEError if no such element context.
+ * @throws TAMEInterrupt if identity refers to a current object that is not set.
  */
 TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 {	
@@ -608,32 +610,59 @@ TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 	return out;
 };
 
-/*
-	resolveElementVariableValue(identity, variable)
-	resolveBlock(identity, blockType, blockValues)
-*/
-/*
-	Context: 
-	{
-		"module": {
-			header: {value:str, ...}
-			actions: {id:obj, ...}
-			elements: {id:obj, ...}
-			actionNameTable = {str:actionid, ... };
-		},		
-		"state": {
-			"player": null,		// current player
-			"elements": {}, 	// element-to-contexts
-			"owners": {}, 		// element-to-objects
-			"objectOwners": {}, // object-to-element
-			"roomStacks": {},	// player-to-rooms
-			"names": {},		// object-to-names
-			"tags": {}			// object-to-tags
-		}
-	}
-*/
+/**
+ * Resolves an element context by its identity.
+ * The identities "player", "room", and "world" are special.
+ * @param elementIdentity the element identity.
+ * @param variable the variable name.
+ * @return the corresponding action or null if no current room or player.
+ * @throws TAMEError if no such element context.
+ * @throws TAMEInterrupt if identity refers to a current object that is not set.
+ */
+TModuleContext.prototype.resolveElementVariableValue = function(elementIdentity, variable)
+{
+	var value = this.resolveElementContext(elementIdentity).variables[variable.toLowerCase()];
+	if (!value)
+		return TValue.createBoolean(false);
+	else
+		return value;
+};
 
-//TODO: Finish this.
+/**
+ * Resolves a qualifying code block starting from an element.
+ * The identities "player", "room", and "world" are special.
+ * @param elementIdentity the starting element identity.
+ * @param blockType the block entry type.
+ * @param blockValues the values for matching the block.
+ * @return the first qualifying block in the lineage, or null if no matching block.
+ * @throws TAMEError if no such element context.
+ */
+TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blockValues)
+{
+	var blockname =	blockType + "(";
+	for (var i = 0; i < blockValues.length; i++)
+	{
+		blockname += TValue.toString(values[i]);
+		if (i < blockValues.length - 1)
+			blockname += ",";
+	}
+	blockname += ")";
+
+	var qualifyingBlock = null;
+	var element = this.resolveElement(elementIdentity); 
+	
+	while (element)
+	{
+		var out = element.blockTable[blockname];
+		if (out)
+			return out;
+		if (element.parent)
+			element = this.resolveElement(elementIdentity);
+	}
+
+	return null;
+};
+
 
 //##[[CONTENT-END
 

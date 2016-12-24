@@ -65,6 +65,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	 * Additional strings. 
 	 * For DITRANSITIVE, this is the object separator conjunctions.
 	 * For MODAL, these are the valid targets.
+	 * For OPEN, these are the local variables that hold the input data (usually just one).
 	 */
 	private CaseInsensitiveHash extraStrings;
 	

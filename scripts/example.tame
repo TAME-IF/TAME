@@ -6,7 +6,7 @@ action general a_quit named "quit";
 action general a_inv named "inv", "inventory", "view inventory", "look at the inventory", "look at inventory";
 action general a_save named "save";
 action general a_load named "load";
-action open a_say named "say";
+action open a_say named "say" local target;
 action general a_test named "test";
 action general a_counter named "counter";
 action general a_tick;

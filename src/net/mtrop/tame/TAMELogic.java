@@ -164,7 +164,7 @@ public final class TAMELogic implements TAMEConstants
 		}
 		
 		try {
-			block.call(request, response, blockLocal);
+			block.execute(request, response, blockLocal);
 		} catch (Throwable t) {
 			throw t;
 		} finally {
@@ -310,7 +310,14 @@ public final class TAMELogic implements TAMEConstants
 				{
 					response.trace(request, "Found general action block on room.");
 					if (openTarget != null)
-						callBlock(request, response, currentRoomContext, blockToCall, new ObjectPair<String, Value>(OPEN_TARGET_VARIABLE, Value.create(openTarget)));
+					{
+						// just get the first one.
+						for (String variableName : action.getExtraStrings())
+						{
+							callBlock(request, response, currentRoomContext, blockToCall, new ObjectPair<String, Value>(variableName, Value.create(openTarget)));
+							break;
+						}
+					}
 					else
 						callBlock(request, response, currentRoomContext, blockToCall);
 					return;
@@ -324,7 +331,14 @@ public final class TAMELogic implements TAMEConstants
 			{
 				response.trace(request, "Found general action block on player.");
 				if (openTarget != null)
-					callBlock(request, response, currentPlayerContext, blockToCall, new ObjectPair<String, Value>(OPEN_TARGET_VARIABLE, Value.create(openTarget)));
+				{
+					// just get the first one.
+					for (String variableName : action.getExtraStrings())
+					{
+						callBlock(request, response, currentPlayerContext, blockToCall, new ObjectPair<String, Value>(variableName, Value.create(openTarget)));
+						break;
+					}
+				}
 				else
 					callBlock(request, response, currentPlayerContext, blockToCall);
 				return;
@@ -342,7 +356,14 @@ public final class TAMELogic implements TAMEConstants
 		{
 			response.trace(request, "Found general action block on world.");
 			if (openTarget != null)
-				callBlock(request, response, worldContext, blockToCall, new ObjectPair<String, Value>(OPEN_TARGET_VARIABLE, Value.create(openTarget)));
+			{
+				// just get the first one.
+				for (String variableName : action.getExtraStrings())
+				{
+					callBlock(request, response, worldContext, blockToCall, new ObjectPair<String, Value>(variableName, Value.create(openTarget)));
+					break;
+				}
+			}
 			else
 				callBlock(request, response, worldContext, blockToCall);
 			return;

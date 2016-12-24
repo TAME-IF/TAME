@@ -27,7 +27,7 @@ public interface CommandType
 	 * @param statement the calling statement (get blocks from this).
 	 * @throws TAMEInterrupt if a TAMEInterrupt occurs.
 	 */
-	public void call(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command statement) throws TAMEInterrupt;
+	public void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command statement) throws TAMEInterrupt;
 	
 	/**
 	 * Does this represent a linguistic construct?

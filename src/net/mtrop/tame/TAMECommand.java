@@ -297,7 +297,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new ModuleExecutionException("Conditional block for IF does NOT EXIST!");
 			
 			response.trace(request, "Calling IF conditional...");
-			conditional.call(request, response, blockLocal);
+			conditional.execute(request, response, blockLocal);
 			
 			// get remaining expression value.
 			Value value = request.popValue();
@@ -312,7 +312,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				Block success = command.getSuccessBlock();
 				if (success == null)
 					throw new ModuleExecutionException("Success block for IF does NOT EXIST!");
-				success.call(request, response, blockLocal);
+				success.execute(request, response, blockLocal);
 			}
 			else
 			{
@@ -321,7 +321,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				if (failure != null)
 				{
 					response.trace(request, "Calling IF failure block...");
-					failure.call(request, response, blockLocal);
+					failure.execute(request, response, blockLocal);
 				}
 			}
 			
@@ -346,7 +346,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 					Block success = command.getSuccessBlock();
 					if (success == null)
 						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
-					success.call(request, response, blockLocal);
+					success.execute(request, response, blockLocal);
 				} catch (BreakInterrupt interrupt) {
 					break;
 				} catch (ContinueInterrupt interrupt) {
@@ -363,7 +363,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for WHILE does NOT EXIST!");
-			conditional.call(request, response, blockLocal);
+			conditional.execute(request, response, blockLocal);
 			
 			// get remaining expression value.
 			Value value = request.popValue();
@@ -401,15 +401,15 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			response.trace(request, "Calling FOR init block...");
 			for (
-				init.call(request, response, blockLocal); 
+				init.execute(request, response, blockLocal); 
 				callConditional(request, response, blockLocal, command); 
 				response.trace(request, "Calling FOR stepping block..."), 
-				step.call(request, response, blockLocal)
+				step.execute(request, response, blockLocal)
 			)
 			{
 				try {
 					response.trace(request, "Calling FOR success block...");
-					success.call(request, response, blockLocal);
+					success.execute(request, response, blockLocal);
 				} catch (BreakInterrupt interrupt) {
 					break;
 				} catch (ContinueInterrupt interrupt) {
@@ -426,7 +426,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for WHILE does NOT EXIST!");
-			conditional.call(request, response, blockLocal);
+			conditional.execute(request, response, blockLocal);
 			
 			// get remaining expression value.
 			Value value = request.popValue();
@@ -471,29 +471,59 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 
 	/**
-	 * Adds a cue to the response.
-	 * First POP is the value to print. 
-	 * Second POP is the cue name. 
-	 * Returns nothing. 
+	 * Calls a procedure local to a specified element's lineage.
+	 * First POP is the procedure name/value. 
+	 * Second POP is the element identity. 
+	 * Returns nothing.
 	 */
-	ADDCUE (/*Return: */ null, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	CALLFROM (/*Return: */ null, /*Args: */ ArgumentType.ELEMENT, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value value = request.popValue();
-			Value cue = request.popValue();
+			Value procedureName = request.popValue();
+			Value elementValue = request.popValue();
+
+			if (!procedureName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CALLFROM call.");
 			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
-			if (!cue.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
-	
-			response.addCue(cue.asString(), value.asString());
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TElementContext<?> elementContext = null;
+			
+			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
+			
+			switch (elementValue.getType())
+			{
+				case CONTAINER:
+					elementContext = moduleContext.resolveContainerContext(elementValue.asString());
+					break;
+				case ROOM:
+					elementContext = moduleContext.resolveRoomContext(elementValue.asString());
+					break;
+				case PLAYER:
+					elementContext = moduleContext.resolvePlayerContext(elementValue.asString());
+					break;
+				case OBJECT:
+					elementContext = moduleContext.resolveObjectContext(elementValue.asString());
+					break;
+				case WORLD:
+					elementContext = moduleContext.resolveWorldContext();
+					break;
+				default:
+					throw new UnexpectedValueTypeException("Expected element type in CALLFROM call.");
+			}
+
+			TElement element = elementContext.getElement();
+			
+			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, procedureName));
+			if (block != null)
+				TAMELogic.callBlock(request, response, elementContext, block);
+			else
+				response.addCue(CUE_ERROR, "No such procedure ("+procedureName.asString()+") in lineage of element " + element);
 		}
 		
-	}, 
-	
+	},
+
 	/**
 	 * Throws a BREAK interrupt.
 	 * Is keyword. Returns nothing. 
@@ -554,6 +584,30 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		}
 		
 	},
+	
+	/**
+	 * Adds a cue to the response.
+	 * First POP is the value to print. 
+	 * Second POP is the cue name. 
+	 * Returns nothing. 
+	 */
+	ADDCUE (/*Return: */ null, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			Value cue = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
+			if (!cue.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in ADDCUE call.");
+	
+			response.addCue(cue.asString(), value.asString());
+		}
+		
+	}, 
 	
 	/**
 	 * Adds a TEXT cue to the response.
@@ -2525,18 +2579,27 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
 			
-			if (element.getType() == ValueType.CONTAINER)
-				request.pushValue(Value.create(moduleContext.resolveContainer(element.asString()).getIdentity()));
-			else if (element.getType() == ValueType.ROOM)
-				request.pushValue(Value.create(moduleContext.resolveRoom(element.asString()).getIdentity()));
-			else if (element.getType() == ValueType.PLAYER)
-				request.pushValue(Value.create(moduleContext.resolvePlayer(element.asString()).getIdentity()));
-			else if (element.getType() == ValueType.OBJECT)
-				request.pushValue(Value.create(moduleContext.resolveObject(element.asString()).getIdentity()));
-			else if (element.getType() == ValueType.WORLD)
-				request.pushValue(Value.create(moduleContext.resolveWorld().getIdentity()));
-			else
-				throw new UnexpectedValueTypeException("Expected element type in IDENTITY call.");
+			switch (element.getType())
+			{
+				case CONTAINER:
+					request.pushValue(Value.create(moduleContext.resolveContainer(element.asString()).getIdentity()));
+					break;
+				case ROOM:
+					request.pushValue(Value.create(moduleContext.resolveRoom(element.asString()).getIdentity()));
+					break;
+				case PLAYER:
+					request.pushValue(Value.create(moduleContext.resolvePlayer(element.asString()).getIdentity()));
+					break;
+				case OBJECT:
+					request.pushValue(Value.create(moduleContext.resolveObject(element.asString()).getIdentity()));
+					break;
+				case WORLD:
+					request.pushValue(Value.create(moduleContext.resolveWorld().getIdentity()));
+					break;
+				default:
+					throw new UnexpectedValueTypeException("Expected element type in IDENTITY call.");
+			}
+
 		}
 		
 	}
@@ -2624,7 +2687,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * @param command the command object.
 	 * @throws TAMEInterrupt if an interrupt occurs. 
 	 */
-	public final void call(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+	public final void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 	{
 		doCommand(request, response, blockLocal, command);
 		response.incrementAndCheckCommandsExecuted();

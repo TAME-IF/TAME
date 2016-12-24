@@ -23,14 +23,16 @@ var TAME = new (function(theader, tactions, tworld, tobjects, tplayers, trooms, 
 //##[[CONTENT-INCLUDE objects/TValue.js
 //##[[CONTENT-INCLUDE objects/TRequest.js
 //##[[CONTENT-INCLUDE objects/TResponse.js
-//##[[CONTENT-INCLUDE objects/TBlockEntry.js
 //##[[CONTENT-INCLUDE objects/TAction.js
 //##[[CONTENT-INCLUDE objects/TModule.js
 //##[[CONTENT-INCLUDE objects/TModuleContext.js
 //##[[CONTENT-INCLUDE TAMELogic.js
 
 	var tameModule = new TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers);
-	
+
+	/**
+	 * Creates a new context for the embedded module.
+	 */
 	this.newContext = function() 
 	{
 		return new TModuleContext(tameModule);

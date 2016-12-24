@@ -1270,7 +1270,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		/**
 		 * Parses an action clause (after "action").
 		 * 		[GENERAL] [IDENTIFIER] [ActionNames] ";"
-		 * 		[OPEN] [IDENTIFIER] [ActionNames] ";"
+		 * 		[OPEN] [IDENTIFIER] [ActionNames] [LOCAL] [IDENTIFIER] ";"
 		 * 		[MODAL] [IDENTIFIER] [ActionNames] [ActionAdditionalNames] ";"
 		 * 		[TRANSITIVE] [IDENTIFIER] [ActionNames] ";"
 		 * 		[DITRANSITIVE] [IDENTIFIER] [ActionNames] [ActionAdditionalNames] ";"
@@ -1327,6 +1327,22 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				if (!parseActionNames(action))
 					return false;
+
+				if (!matchType(TSKernel.TYPE_LOCAL))
+				{
+					addErrorMessage("Expected \"local\", to declare the target variable.");
+					return false;
+				}
+
+				if (!isVariable())
+				{
+					addErrorMessage("Expected non-keyword identifier for variable name.");
+					return false;
+				}
+				
+				String varname = currentToken().getLexeme();
+				action.addExtraStrings(varname);
+				nextToken();
 				
 				currentModule.addAction(action);
 				return true;

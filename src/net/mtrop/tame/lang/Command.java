@@ -136,9 +136,9 @@ public class Command implements CallableType, Saveable
 	}
 
 	@Override
-	public void call(TAMERequest request, TAMEResponse response, ValueHash blockLocal) throws TAMEInterrupt
+	public void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal) throws TAMEInterrupt
 	{
-		operation.call(request, response, blockLocal, this);
+		operation.execute(request, response, blockLocal, this);
 	}
 
 	/**
