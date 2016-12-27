@@ -55,7 +55,7 @@ TResponse.prototype.incrementAndCheckCommandsExecuted = function()
 {
 	this.commandsExecuted++;
 	if (this.commandsExecuted >= TAMEConstants.RUNAWAY_THRESHOLD)
-		throw new TAMEError(TAMEError.Type.RunawayRequest, "Too many commands executed - possible infinite loop.");
+		throw TAMEError.RunawayRequest("Too many commands executed - possible infinite loop.");
 };
 
 //##[[CONTENT-END

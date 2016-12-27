@@ -32,7 +32,7 @@ function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontain
 	var ELEMACCUM = function(element, identity) 
 	{
 		if (elem[identity] || act[identity])
-			throw new TAMEError(TAMEError.Type.Module, "Another element already has the identity "+identity);
+			throw TAMEError.Module("Another element already has the identity "+identity);
 		elem[identity] = element;
 	};
 	

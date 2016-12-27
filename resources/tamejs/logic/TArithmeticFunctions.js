@@ -267,6 +267,8 @@ TArithmeticFunctions.Type =
 	"GREATER_OR_EQUAL": 26
 };
 
+TArithmeticFunctions.COUNT = TArithmeticFunctions.Type.length; 
+
 //##[[CONTENT-END
 
 

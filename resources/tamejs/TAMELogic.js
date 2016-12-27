@@ -18,13 +18,14 @@ var TCommandFunctions = TCommandFunctions || ((typeof require) !== 'undefined' ?
 
 //##[[CONTENT-START
 
+var TLogic = {};
+
 //##[[CONTENT-INCLUDE logic/TArithmeticFunctions.js
 //##[[CONTENT-INCLUDE logic/TCommandFunctions.js
 
 /****************************************************************************
  * Main logic junk.
  ****************************************************************************/
-var TLogic = {};
 
 /**
  * Turns a command into a readable string.

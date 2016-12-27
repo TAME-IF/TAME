@@ -34,6 +34,17 @@ TAMEError.prototype.toString = function()
 	return "TAMEError: "+ this.type + ": " + this.message;
 };
 
+// Convenience Constructors
+
+TAMEError.Module = function(message) {return new TAMEError(TAMEError.Type.Module, message);};
+TAMEError.ModuleExecution = function(message) {return new TAMEError(TAMEError.Type.ModuleExecution, message);};
+TAMEError.ModuleState = function(message) {return new TAMEError(TAMEError.Type.ModuleState, message);};
+TAMEError.Arithmetic = function(message) {return new TAMEError(TAMEError.Type.Arithmetic, message);};
+TAMEError.ArithmeticStackState = function(message) {return new TAMEError(TAMEError.Type.ArithmeticStackState, message);};
+TAMEError.RunawayRequest = function(message) {return new TAMEError(TAMEError.Type.RunawayRequest, message);};
+TAMEError.UnexpectedValue = function(message) {return new TAMEError(TAMEError.Type.UnexpectedValue, message);};
+TAMEError.UnexpectedValueType = function(message) {return new TAMEError(TAMEError.Type.UnexpectedValueType, message);};
+
 //##[[CONTENT-END
 
 

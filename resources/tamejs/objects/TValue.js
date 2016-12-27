@@ -37,9 +37,9 @@ TValue.Type =
 TValue.create = function(type, value)
 {
 	if (!type)
-		throw new TAMEError(TAMEError.Type.UnexpectedValueType, "Invalid value type in TValue()");
+		throw TAMEError.UnexpectedValueType("Invalid value type in TValue()");
 	if (typeof value === 'undefined' || value == null)
-		throw new TAMEError(TAMEError.Type.UnexpectedValueType, "Value cannot be undefined or null in TValue()");
+		throw TAMEError.UnexpectedValueType("Value cannot be undefined or null in TValue()");
 
 	var out = {};
 	out.type = type;
@@ -216,7 +216,7 @@ TValue.not = function(value1)
 TValue.add = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic,"These values can't be added: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be added: " + value1 + ", " + value2);
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -254,7 +254,7 @@ TValue.add = function(value1, value2)
 TValue.subtract = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic,"These values can't be subtracted: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be subtracted: " + value1 + ", " + value2);
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -286,7 +286,7 @@ TValue.subtract = function(value1, value2)
 TValue.multiply = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic,"These values can't be multiplied: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be multiplied: " + value1 + ", " + value2);
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -318,7 +318,7 @@ TValue.multiply = function(value1, value2)
 TValue.divide = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be divided: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be divided: " + value1 + ", " + value2);
 
 	if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
@@ -360,7 +360,7 @@ TValue.divide = function(value1, value2)
 TValue.modulo = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be modulo divided: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be modulo divided: " + value1 + ", " + value2);
 
 	if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
@@ -392,7 +392,7 @@ TValue.modulo = function(value1, value2)
 TValue.power = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be modulo divided: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be modulo divided: " + value1 + ", " + value2);
 
 	var v1 = TValue.asDouble(value1);
 	var v2 = TValue.asDouble(value2);
@@ -417,7 +417,7 @@ TValue.power = function(value1, value2)
 TValue.and = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be bitwise and'ed: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be bitwise and'ed: " + value1 + ", " + value2);
 	
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -446,7 +446,7 @@ TValue.and = function(value1, value2)
 TValue.or = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be bitwise or'ed: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be bitwise or'ed: " + value1 + ", " + value2);
 	
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -474,7 +474,7 @@ TValue.or = function(value1, value2)
 TValue.xor = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be bitwise xor'ed: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be bitwise xor'ed: " + value1 + ", " + value2);
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
 		var v1 = TValue.asBoolean(value1);
@@ -501,7 +501,7 @@ TValue.xor = function(value1, value2)
 TValue.leftShift = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be shifted: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be shifted: " + value1 + ", " + value2);
 	
 	var v1 = TValue.asLong(value1);
 	var v2 = TValue.asLong(value2);
@@ -520,7 +520,7 @@ TValue.leftShift = function(value1, value2)
 TValue.rightShift = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be shifted: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be shifted: " + value1 + ", " + value2);
 	
 	var v1 = TValue.asLong(value1);
 	var v2 = TValue.asLong(value2);
@@ -539,7 +539,7 @@ TValue.rightShift = function(value1, value2)
 TValue.rightShiftPadded = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be shifted: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be shifted: " + value1 + ", " + value2);
 	
 	if (TValue.isNaN(value2) || TValue.asLong(value2) == 0)
 		return TValue.createInteger(TValue.asLong(value1));
@@ -561,7 +561,7 @@ TValue.rightShiftPadded = function(value1, value2)
 TValue.logicalAnd = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be and'ed: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be and'ed: " + value1 + ", " + value2);
 	
 	var v1 = TValue.asBoolean(value1);
 	var v2 = TValue.asBoolean(value2);
@@ -578,7 +578,7 @@ TValue.logicalAnd = function(value1, value2)
 TValue.logicalOr = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be and'ed: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be and'ed: " + value1 + ", " + value2);
 	
 	var v1 = TValue.asBoolean(value1);
 	var v2 = TValue.asBoolean(value2);
@@ -595,7 +595,7 @@ TValue.logicalOr = function(value1, value2)
 TValue.logicalXOr = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be and'ed: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be and'ed: " + value1 + ", " + value2);
 	
 	var v1 = TValue.asBoolean(value1);
 	var v2 = TValue.asBoolean(value2);
@@ -661,7 +661,7 @@ TValue.strictNotEquals = function(value1, value2)
 TValue.less = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be compared: " + value1 + ", " + value2);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -679,7 +679,7 @@ TValue.less = function(value1, value2)
 TValue.lessOrEqual = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be compared: " + value1 + ", " + value2);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -697,7 +697,7 @@ TValue.lessOrEqual = function(value1, value2)
 TValue.greater = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be compared: " + value1 + ", " + value2);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -715,7 +715,7 @@ TValue.greater = function(value1, value2)
 TValue.greaterOrEqual = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw new TAMEError(TAMEError.Type.Arithmetic, "These values can't be compared: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be compared: " + value1 + ", " + value2);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 

@@ -8,6 +8,8 @@
 
 // REQUIREMENTS =========================================================================================
 var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/TValue.js') : null);
+var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefined' ? require('./TArithmeticFunctions.js') : null);
+var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('../TAMELogic.js') : null);
 // ======================================================================================================
 
 //##[[CONTENT-START
@@ -31,7 +33,7 @@ var TCommandFunctions =
 		"name": 'POP', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			request.popValue();
 		}
 	},
 
@@ -40,7 +42,20 @@ var TCommandFunctions =
 		"name": 'POPVALUE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varvalue = command.operand0;
+			var value = command.operand1;
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPVALUE call.");
+			if (!TValue.isVariable(varvalue))
+				throw TAMEError.UnexpectedValueType("Expected variable type in POPVALUE call.");
+
+			var variableName = TValue.asString(varvalue);
+			
+			if (blockLocal[variableName])
+				blockLocal[variableName] = value;
+			else
+				request.peekContext().variables[variableName] = value;
 		}
 	},
 
@@ -49,7 +64,16 @@ var TCommandFunctions =
 		"name": 'POPLOCALVALUE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varvalue = command.operand0;
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPLOCALVALUE call.");
+			if (!TValue.isVariable(varvalue))
+				throw TAMEError.UnexpectedValueType("Expected variable type in POPLOCALVALUE call.");
+
+			var variableName = TValue.asString(varvalue);
+			blockLocal[variableName] = value;
 		}
 	},
 
@@ -58,7 +82,21 @@ var TCommandFunctions =
 		"name": 'POPELEMENTVALUE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject = command.operand0;
+			var variable = command.operand1;
+			var value = request.popValue();
+
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPELEMENTVALUE call.");
+			if (!TValue.isVariable(varvalue))
+				throw TAMEError.UnexpectedValueType("Expected variable type in POPELEMENTVALUE call.");
+			if (!TValue.isElement(varObject))
+				throw TAMEError.UnexpectedValueType("Expected element type in POPELEMENTVALUE call.");
+
+			var variableName = TValue.asString(variable);
+			var objectName = TValue.asString(varObject);
+
+			request.moduleContext.resolveElementContext(objectName).variables[variableName] = value;
 		}
 	},
 
@@ -67,7 +105,20 @@ var TCommandFunctions =
 		"name": 'PUSHVALUE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = command.operand0;
+			
+			if (TValue.isVariable(value))
+			{
+				var variableName = TValue.asString(value);
+				if (blockLocal[variableName])
+					request.pushValue(blockLocal[variableName]);
+				else
+					request.pushValue(request.peekContext().variables[variableName]);
+			}
+			else
+			{
+				request.pushValue(value);
+			}
 		}
 	},
 
@@ -76,7 +127,18 @@ var TCommandFunctions =
 		"name": 'PUSHELEMENTVALUE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject = command.operand0;
+			var variable = command.operand1;
+
+			if (!TValue.isVariable(variable))
+				throw TAMEError.UnexpectedValueType("Expected variable type in PUSHELEMENTVALUE call.");
+			if (!TValue.isElement(varObject))
+				throw TAMEError.UnexpectedValueType("Expected element type in PUSHELEMENTVALUE call.");
+
+			var objectName = TValue.asString(varObject);
+			var varibleName = TValue.asString(variable);
+
+			request.pushValue(request.moduleContext.resolveElementContext(objectName).variables[variableName]);
 		}
 	},
 
@@ -85,7 +147,29 @@ var TCommandFunctions =
 		"name": 'ARITHMETICFUNC', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var functionValue = command.operand0;
+
+			if (!TValue.isInteger(functionValue))
+				throw TAMEError.UnexpectedValueType("Expected integer type in ARITHMETICFUNC call.");
+
+			var funcval = TValue.asLong(functionValue);
+			if (functionType < 0 || functionType >= TArithmeticFunctions.COUNT)
+				throw TAMEError.UnexpectedValue("Expected arithmetic function type, got illegal value "+funcval+".");
+			
+			var operator = TArithmeticFunctions[funcval];
+			response.trace(request, "Function is " + operator.name);
+			
+			if (operator.binary)
+			{
+				var v2 = request.popValue();
+				var v1 = request.popValue();
+				request.pushValue(operator.doOperation(v1, v2));
+			}
+			else
+			{
+				var v1 = request.popValue();
+				request.pushValue(operator.doOperation(v1));
+			}
 		}
 	},
 
@@ -94,7 +178,39 @@ var TCommandFunctions =
 		"name": 'IF', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			// block should contain arithmetic commands and a last push.
+			var conditional = command.conditionalBlock;
+			if (!contitional)
+				throw TAMEError.ModuleExecution("Conditional block for IF does NOT EXIST!");
+			
+			response.trace(request, "Calling IF conditional...");
+			TLogic.executeBlock(conditional, request, response, blockLocal);
+
+			// get remaining expression value.
+			var value = request.popValue();
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type after IF conditional block execution.");
+
+			if (TValue.asBoolean(value))
+			{
+				response.trace(request, "Result "+TValue.toString(value)+" evaluates true.");
+				response.trace(request, "Calling IF success block...");
+				
+				var success = command.successBlock;
+				if (!success)
+					throw TAMEError.ModuleExecution("Success block for IF does NOT EXIST!");
+				TLogic.executeBlock(success, request, response, blockLocal);
+			}
+			else
+			{
+				response.trace(request, "Result "+TValue.toString(value)+" evaluates false.");
+				var failure = command.failureBlock;
+				if (failure)
+				{
+					response.trace(request, "Calling IF failure block...");
+					TLogic.executeBlock(failure, request, response, blockLocal);
+				}
+			}
 		}
 	},
 
@@ -103,7 +219,25 @@ var TCommandFunctions =
 		"name": 'WHILE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
+			while ()
+			
 			// TODO: Finish this.
+			/*
+			while (callConditional(request, response, blockLocal, command))
+			{
+				try {
+					response.trace(request, "Calling WHILE success block...");
+					Block success = command.getSuccessBlock();
+					if (success == null)
+						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
+					success.execute(request, response, blockLocal);
+				} catch (BreakInterrupt interrupt) {
+					break;
+				} catch (ContinueInterrupt interrupt) {
+					continue;
+				}
+			}
+			 */
 		}
 	},
 
@@ -960,7 +1094,7 @@ TCommandFunctions.Type =
 	"QUEUEACTIONSTRING": 90, 
 	"QUEUEACTIONOBJECT": 91, 
 	"QUEUEACTIONOBJECT2": 92, 
-	"IDENTITY": 93, 
+	"IDENTITY": 93 
 };
 
 	/*

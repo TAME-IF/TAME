@@ -65,15 +65,6 @@ TRequest.prototype.hasActionItems = function()
 };
 
 /**
- * Gets the module context that this affects.
- * @return the module context. 
- */
-TRequest.prototype.getModuleContext = function()
-{
-	return this.moduleContext;
-};
-
-/**
  * Dequeues an action item from the queue to be processed later.
  * @return the next action item to process.
  */
@@ -126,7 +117,7 @@ TRequest.prototype.pushValue = function(value)
 TRequest.prototype.popValue = function()
 {
 	if (this.valueStack.length == 0)
-		throw new TAMEError(TAMEError.Type.ArithmeticStackState, "Attempt to pop an empty arithmetic stack.");
+		throw TAMEError.ArithmeticStackState("Attempt to pop an empty arithmetic stack.");
 	return this.valueStack.pop();
 };
 
@@ -138,7 +129,7 @@ TRequest.prototype.popValue = function()
 TRequest.prototype.checkStackClear = function()
 {
 	if (this.valueStack.length != 0)
-		throw new TAMEError(TAMEError.Type.ArithmeticStackState, "Arithmetic stack is not empty.");
+		throw TAMEError.ArithmeticStackState("Arithmetic stack is not empty.");
 };
 
 
