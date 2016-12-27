@@ -103,11 +103,15 @@ public final class TAMEJSExporter
 	 */
 	public static void export(File file, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
-		FileOutputStream fos = new FileOutputStream(file);
+		FileOutputStream fos = null;
+		PrintWriter pw = null;
 		try {
-			export(new PrintWriter(fos, true), module, options);
+			fos = new FileOutputStream(file);
+			pw = new PrintWriter(fos, true);
+			export(pw, module, options);
+			pw.flush();
 		} finally {
-			Common.close(fos);
+			Common.close(pw);
 		}
 	}
 	
@@ -131,7 +135,14 @@ public final class TAMEJSExporter
 	 */
 	public static void export(OutputStream out, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
-		export(new PrintWriter(out, true), module, options);
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(out, true);
+			export(pw, module, options);
+			pw.flush();
+		} finally {
+			Common.close(pw);
+		}
 	}
 	
 	/**
@@ -165,7 +176,7 @@ public final class TAMEJSExporter
 	 * @param module the module to eventually write to.
 	 * @param path the import path.
 	 */
-	public static void processResource(Writer writer, TAMEModule module, String path) throws IOException
+	private static void processResource(Writer writer, TAMEModule module, String path) throws IOException
 	{
 		String parentPath = path.substring(0, path.lastIndexOf('/') + 1);
 		

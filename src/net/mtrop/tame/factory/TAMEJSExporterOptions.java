@@ -6,5 +6,9 @@ package net.mtrop.tame.factory;
  */
 public interface TAMEJSExporterOptions 
 {
-	// TODO: Finish this.
+	/**
+	 * Gets the JS Wrapper name to use.
+	 * @return the wrapper name, or null for no wrapper.
+	 */
+	public String getWrapperName();
 }

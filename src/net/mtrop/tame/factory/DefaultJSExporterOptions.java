@@ -7,4 +7,10 @@ package net.mtrop.tame.factory;
 public class DefaultJSExporterOptions implements TAMEJSExporterOptions
 {
 
+	@Override
+	public String getWrapperName()
+	{
+		return null;
+	}
+
 }
