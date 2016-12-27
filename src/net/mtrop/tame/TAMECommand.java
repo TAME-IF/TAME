@@ -425,14 +425,14 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			// block should contain arithmetic commands and a last push.
 			Block conditional = command.getConditionalBlock();
 			if (conditional == null)
-				throw new ModuleExecutionException("Conditional block for WHILE does NOT EXIST!");
+				throw new ModuleExecutionException("Conditional block for FOR does NOT EXIST!");
 			conditional.execute(request, response, blockLocal);
 			
 			// get remaining expression value.
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type after WHILE conditional block execution.");
+				throw new UnexpectedValueTypeException("Expected literal type after FOR conditional block execution.");
 	
 			boolean out = value.asBoolean();
 			response.trace(request, "Result %s evaluates %b.", value, out);

@@ -188,14 +188,16 @@ var TCommandFunctions =
 
 			// get remaining expression value.
 			var value = request.popValue();
+			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type after IF conditional block execution.");
 
-			if (TValue.asBoolean(value))
+			var result = TValue.asBoolean(value);
+			response.trace(request, "Result "+TValue.toString(value)+" evaluates "+result+".");
+			
+			if (result)
 			{
-				response.trace(request, "Result "+TValue.toString(value)+" evaluates true.");
 				response.trace(request, "Calling IF success block...");
-				
 				var success = command.successBlock;
 				if (!success)
 					throw TAMEError.ModuleExecution("Success block for IF does NOT EXIST!");
@@ -203,7 +205,6 @@ var TCommandFunctions =
 			}
 			else
 			{
-				response.trace(request, "Result "+TValue.toString(value)+" evaluates false.");
 				var failure = command.failureBlock;
 				if (failure)
 				{
@@ -219,7 +220,11 @@ var TCommandFunctions =
 		"name": 'WHILE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
+			
 			while ()
+			{
+			
+			}
 			
 			// TODO: Finish this.
 			/*
@@ -1096,6 +1101,8 @@ TCommandFunctions.Type =
 	"QUEUEACTIONOBJECT2": 92, 
 	"IDENTITY": 93 
 };
+
+
 
 	/*
 		NOOP (null)

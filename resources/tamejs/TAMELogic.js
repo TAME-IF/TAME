@@ -86,6 +86,8 @@ TLogic.executeCommand = function(command, request, response, blockLocal)
 	response.incrementAndCheckCommandsExecuted();
 }
 
+TLogic.callConditional()
+
 /**
  * Handles initializing a context. Must be called after a new context and game is started.
  * @param context the module context.
