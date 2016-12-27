@@ -15,118 +15,953 @@ var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/T
 /*****************************************************************************
 Command entry points.
 *****************************************************************************/
-var TCommandFunctions = 
+var TCommandFunctions =
 [
 	/* NOOP */
 	{
-		"name": 'NOOP',
+		"name": 'NOOP', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// Does nothing.
+			// Do nothing.
 		}
 	},
-	
+
 	/* POP */
 	{
-		"name": 'POP',
+		"name": 'POP', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish.
+			// TODO: Finish this.
 		}
 	},
 
 	/* POPVALUE */
+	{
+		"name": 'POPVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* POPLOCALVALUE */
+	{
+		"name": 'POPLOCALVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* POPELEMENTVALUE */
+	{
+		"name": 'POPELEMENTVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* PUSHVALUE */
+	{
+		"name": 'PUSHVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* PUSHELEMENTVALUE */
+	{
+		"name": 'PUSHELEMENTVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ARITHMETICFUNC */
+	{
+		"name": 'ARITHMETICFUNC', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* IF */
+	{
+		"name": 'IF', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* WHILE */
+	{
+		"name": 'WHILE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* FOR */
+	{
+		"name": 'FOR', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* CALL */
+	{
+		"name": 'CALL', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* CALLFROM */
+	{
+		"name": 'CALLFROM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* BREAK */
+	{
+		"name": 'BREAK', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* CONTINUE */
+	{
+		"name": 'CONTINUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* QUIT */
+	{
+		"name": 'QUIT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* END */
+	{
+		"name": 'END', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ADDCUE */
+	{
+		"name": 'ADDCUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* TEXT */
+	{
+		"name": 'TEXT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* TEXTLN */
+	{
+		"name": 'TEXTLN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* TEXTF */
+	{
+		"name": 'TEXTF', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* TEXTFLN */
+	{
+		"name": 'TEXTFLN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* PAUSE */
+	{
+		"name": 'PAUSE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* WAIT */
+	{
+		"name": 'WAIT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* TIP */
+	{
+		"name": 'TIP', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* INFO */
+	{
+		"name": 'INFO', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ASBOOLEAN */
+	{
+		"name": 'ASBOOLEAN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ASINT */
+	{
+		"name": 'ASINT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ASFLOAT */
+	{
+		"name": 'ASFLOAT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ASSTRING */
+	{
+		"name": 'ASSTRING', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRLEN */
+	{
+		"name": 'STRLEN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRREPLACE */
+	{
+		"name": 'STRREPLACE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRINDEX */
+	{
+		"name": 'STRINDEX', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRLASTINDEX */
+	{
+		"name": 'STRLASTINDEX', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRCONTAINS */
+	{
+		"name": 'STRCONTAINS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRCONTAINSPATTERN */
+	{
+		"name": 'STRCONTAINSPATTERN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRCONTAINSTOKEN */
+	{
+		"name": 'STRCONTAINSTOKEN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* SUBSTR */
+	{
+		"name": 'SUBSTR', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRLOWER */
+	{
+		"name": 'STRLOWER', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRUPPER */
+	{
+		"name": 'STRUPPER', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* STRCHAR */
+	{
+		"name": 'STRCHAR', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* FLOOR */
+	{
+		"name": 'FLOOR', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* CEILING */
+	{
+		"name": 'CEILING', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ROUND */
+	{
+		"name": 'ROUND', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* FIX */
+	{
+		"name": 'FIX', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* SQRT */
+	{
+		"name": 'SQRT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* PI */
+	{
+		"name": 'PI', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* E */
+	{
+		"name": 'E', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* SIN */
+	{
+		"name": 'SIN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* COS */
+	{
+		"name": 'COS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* TAN */
+	{
+		"name": 'TAN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* MIN */
+	{
+		"name": 'MIN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* MAX */
+	{
+		"name": 'MAX', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* CLAMP */
+	{
+		"name": 'CLAMP', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* RANDOM */
+	{
+		"name": 'RANDOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* FRANDOM */
+	{
+		"name": 'FRANDOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* GRANDOM */
+	{
+		"name": 'GRANDOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* TIME */
+	{
+		"name": 'TIME', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* SECONDS */
+	{
+		"name": 'SECONDS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* MINUTES */
+	{
+		"name": 'MINUTES', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* HOURS */
+	{
+		"name": 'HOURS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* DAYS */
+	{
+		"name": 'DAYS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* FORMATTIME */
+	{
+		"name": 'FORMATTIME', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* OBJECTHASNAME */
+	{
+		"name": 'OBJECTHASNAME', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* OBJECTHASTAG */
+	{
+		"name": 'OBJECTHASTAG', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ADDOBJECTNAME */
+	{
+		"name": 'ADDOBJECTNAME', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ADDOBJECTTAG */
+	{
+		"name": 'ADDOBJECTTAG', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* ADDOBJECTTAGTOALLIN */
+	{
+		"name": 'ADDOBJECTTAGTOALLIN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* REMOVEOBJECTNAME */
+	{
+		"name": 'REMOVEOBJECTNAME', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* REMOVEOBJECTTAG */
+	{
+		"name": 'REMOVEOBJECTTAG', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* REMOVEOBJECTTAGFROMALLIN */
+	{
+		"name": 'REMOVEOBJECTTAGFROMALLIN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* GIVEOBJECT */
+	{
+		"name": 'GIVEOBJECT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* REMOVEOBJECT */
+	{
+		"name": 'REMOVEOBJECT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* MOVEOBJECTSWITHTAG */
+	{
+		"name": 'MOVEOBJECTSWITHTAG', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* OBJECTCOUNT */
+	{
+		"name": 'OBJECTCOUNT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* HASOBJECT */
+	{
+		"name": 'HASOBJECT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* OBJECTHASNOOWNER */
+	{
+		"name": 'OBJECTHASNOOWNER', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* PLAYERISINROOM */
+	{
+		"name": 'PLAYERISINROOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* PLAYERCANACCESSOBJECT */
+	{
+		"name": 'PLAYERCANACCESSOBJECT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* BROWSE */
+	{
+		"name": 'BROWSE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* SETPLAYER */
+	{
+		"name": 'SETPLAYER', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* SETROOM */
+	{
+		"name": 'SETROOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* PUSHROOM */
+	{
+		"name": 'PUSHROOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* POPROOM */
+	{
+		"name": 'POPROOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* SWAPROOM */
+	{
+		"name": 'SWAPROOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* CURRENTPLAYERIS */
+	{
+		"name": 'CURRENTPLAYERIS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* NOCURRENTPLAYER */
+	{
+		"name": 'NOCURRENTPLAYER', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* CURRENTROOMIS */
+	{
+		"name": 'CURRENTROOMIS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* NOCURRENTROOM */
+	{
+		"name": 'NOCURRENTROOM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* QUEUEACTION */
+	{
+		"name": 'QUEUEACTION', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* QUEUEACTIONSTRING */
+	{
+		"name": 'QUEUEACTIONSTRING', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* QUEUEACTIONOBJECT */
+	{
+		"name": 'QUEUEACTIONOBJECT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* QUEUEACTIONOBJECT2 */
+	{
+		"name": 'QUEUEACTIONOBJECT2', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
 	/* IDENTITY */
+	{
+		"name": 'IDENTITY', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
+];
+
+TCommandFunctions.Type =
+{
+	"NOOP": 0, 
+	"POP": 1, 
+	"POPVALUE": 2, 
+	"POPLOCALVALUE": 3, 
+	"POPELEMENTVALUE": 4, 
+	"PUSHVALUE": 5, 
+	"PUSHELEMENTVALUE": 6, 
+	"ARITHMETICFUNC": 7, 
+	"IF": 8, 
+	"WHILE": 9, 
+	"FOR": 10, 
+	"CALL": 11, 
+	"CALLFROM": 12, 
+	"BREAK": 13, 
+	"CONTINUE": 14, 
+	"QUIT": 15, 
+	"END": 16, 
+	"ADDCUE": 17, 
+	"TEXT": 18, 
+	"TEXTLN": 19, 
+	"TEXTF": 20, 
+	"TEXTFLN": 21, 
+	"PAUSE": 22, 
+	"WAIT": 23, 
+	"TIP": 24, 
+	"INFO": 25, 
+	"ASBOOLEAN": 26, 
+	"ASINT": 27, 
+	"ASFLOAT": 28, 
+	"ASSTRING": 29, 
+	"STRLEN": 30, 
+	"STRREPLACE": 31, 
+	"STRINDEX": 32, 
+	"STRLASTINDEX": 33, 
+	"STRCONTAINS": 34, 
+	"STRCONTAINSPATTERN": 35, 
+	"STRCONTAINSTOKEN": 36, 
+	"SUBSTR": 37, 
+	"STRLOWER": 38, 
+	"STRUPPER": 39, 
+	"STRCHAR": 40, 
+	"FLOOR": 41, 
+	"CEILING": 42, 
+	"ROUND": 43, 
+	"FIX": 44, 
+	"SQRT": 45, 
+	"PI": 46, 
+	"E": 47, 
+	"SIN": 48, 
+	"COS": 49, 
+	"TAN": 50, 
+	"MIN": 51, 
+	"MAX": 52, 
+	"CLAMP": 53, 
+	"RANDOM": 54, 
+	"FRANDOM": 55, 
+	"GRANDOM": 56, 
+	"TIME": 57, 
+	"SECONDS": 58, 
+	"MINUTES": 59, 
+	"HOURS": 60, 
+	"DAYS": 61, 
+	"FORMATTIME": 62, 
+	"OBJECTHASNAME": 63, 
+	"OBJECTHASTAG": 64, 
+	"ADDOBJECTNAME": 65, 
+	"ADDOBJECTTAG": 66, 
+	"ADDOBJECTTAGTOALLIN": 67, 
+	"REMOVEOBJECTNAME": 68, 
+	"REMOVEOBJECTTAG": 69, 
+	"REMOVEOBJECTTAGFROMALLIN": 70, 
+	"GIVEOBJECT": 71, 
+	"REMOVEOBJECT": 72, 
+	"MOVEOBJECTSWITHTAG": 73, 
+	"OBJECTCOUNT": 74, 
+	"HASOBJECT": 75, 
+	"OBJECTHASNOOWNER": 76, 
+	"PLAYERISINROOM": 77, 
+	"PLAYERCANACCESSOBJECT": 78, 
+	"BROWSE": 79, 
+	"SETPLAYER": 80, 
+	"SETROOM": 81, 
+	"PUSHROOM": 82, 
+	"POPROOM": 83, 
+	"SWAPROOM": 84, 
+	"CURRENTPLAYERIS": 85, 
+	"NOCURRENTPLAYER": 86, 
+	"CURRENTROOMIS": 87, 
+	"NOCURRENTROOM": 88, 
+	"QUEUEACTION": 89, 
+	"QUEUEACTIONSTRING": 90, 
+	"QUEUEACTIONOBJECT": 91, 
+	"QUEUEACTIONOBJECT2": 92, 
+	"IDENTITY": 93, 
+};
 
 	/*
 		NOOP (null)
@@ -224,107 +1059,6 @@ var TCommandFunctions =
 		QUEUEACTIONOBJECT2 (null, ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
 		IDENTITY (ArgumentType.VALUE, ArgumentType.ELEMENT)
 	*/
-	
-];
-
-/* Type enumeration. */
-TCommandFunctions.Type = 
-{
-	NOOP: 0,
-	POP: 1,
-	POPVALUE: 2,
-	POPLOCALVALUE: 3,
-	POPELEMENTVALUE: 4,
-	PUSHVALUE: 5,
-	PUSHELEMENTVALUE: 6,
-	ARITHMETICFUNC: 7,
-	IF: 8,
-	WHILE: 9,
-	FOR: 10,
-	CALL: 11,
-	CALLFROM: 11,
-	BREAK: 13,
-	CONTINUE: 14,
-	QUIT: 15,
-	END: 16,
-	ADDCUE: 12,
-	TEXT: 17,
-	TEXTLN: 18,
-	TEXTF: 19,
-	TEXTFLN: 20,
-	PAUSE: 21,
-	WAIT: 22,
-	TIP: 23,
-	INFO: 24,
-	ASBOOLEAN: 25,
-	ASINT: 26,
-	ASFLOAT: 27,
-	ASSTRING: 28,
-	STRLEN: 29,
-	STRREPLACE: 30,
-	STRINDEX: 31,
-	STRLASTINDEX: 32,
-	STRCONTAINS: 33,
-	STRCONTAINSPATTERN: 34,
-	STRCONTAINSTOKEN: 35,
-	SUBSTR: 36,
-	STRLOWER: 37,
-	STRUPPER: 38,
-	STRCHAR: 39,
-	FLOOR: 40,
-	CEILING: 41,
-	ROUND: 42,
-	FIX: 43,
-	SQRT: 44,
-	PI: 45,
-	E: 46,
-	SIN: 47,
-	COS: 48,
-	TAN: 49,
-	MIN: 50,
-	MAX: 51,
-	CLAMP: 52,
-	RANDOM: 53,
-	FRANDOM: 54,
-	GRANDOM: 55,
-	TIME: 56,
-	SECONDS: 57,
-	MINUTES: 58,
-	HOURS: 59,
-	DAYS: 60,
-	FORMATTIME: 61,
-	OBJECTHASNAME: 62,
-	OBJECTHASTAG: 63,
-	ADDOBJECTNAME: 64,
-	ADDOBJECTTAG: 65,
-	ADDOBJECTTAGTOALLIN: 66,
-	REMOVEOBJECTNAME: 67,
-	REMOVEOBJECTTAG: 68,
-	REMOVEOBJECTTAGFROMALLIN: 69,
-	GIVEOBJECT: 70,
-	REMOVEOBJECT: 71,
-	MOVEOBJECTSWITHTAG: 72,
-	OBJECTCOUNT: 73,
-	HASOBJECT: 74,
-	OBJECTHASNOOWNER: 75,
-	PLAYERISINROOM: 76,
-	PLAYERCANACCESSOBJECT: 77,
-	BROWSE: 78,
-	SETPLAYER: 79,
-	SETROOM: 80,
-	PUSHROOM: 81,
-	POPROOM: 82,
-	SWAPROOM: 83,
-	CURRENTPLAYERIS: 84,
-	NOCURRENTPLAYER: 85,
-	CURRENTROOMIS: 86,
-	NOCURRENTROOM: 87,
-	QUEUEACTION: 88,
-	QUEUEACTIONSTRING: 89,
-	QUEUEACTIONOBJECT: 90,
-	QUEUEACTIONOBJECT2: 91,
-	IDENTITY: 92
-};
 
 //##[[CONTENT-END
 
