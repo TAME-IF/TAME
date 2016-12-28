@@ -433,16 +433,12 @@ var TCommandFunctions =
 		"name": 'TEXTFLN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			"name": 'TEXTF', 
-			"doCommand": function(request, response, blockLocal, command)
-			{
-				var value = request.popValue();
-				
-				if (!TValue.isLiteral(value))
-					throw TAMEError.UnexpectedValueType("Expected literal type in TEXTFLN call.");
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in TEXTFLN call.");
 
-				response.addCue(TAMEConstants.Cue.TEXTF, TValue.asString(value) + '\n');
-			}
+			response.addCue(TAMEConstants.Cue.TEXTF, TValue.asString(value) + '\n');
 		}
 	},
 
@@ -572,7 +568,22 @@ var TCommandFunctions =
 		"name": 'STRREPLACE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value3 = request.popValue();
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACE call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACE call.");
+			if (!TValue.isLiteral(value3))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACE call.");
+
+			var replacement = TValue.asString(value3);
+			var pattern = TValue.asString(value2);
+			var source = TValue.asString(value1);
+
+			request.pushValue(TValue.createString(source.replace(pattern, replacement)));
 		}
 	},
 
@@ -581,7 +592,22 @@ var TCommandFunctions =
 		"name": 'STRREPLACEPATTERN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value3 = request.popValue();
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERN call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERN call.");
+			if (!TValue.isLiteral(value3))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERN call.");
+
+			var replacement = TValue.asString(value3);
+			var pattern = TValue.asString(value2);
+			var source = TValue.asString(value1);
+			
+			request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'm'), replacement)));
 		}
 	},
 
@@ -590,7 +616,22 @@ var TCommandFunctions =
 		"name": 'STRREPLACEPATTERNALL', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value3 = request.popValue();
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERNALL call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERNALL call.");
+			if (!TValue.isLiteral(value3))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERNALL call.");
+
+			var replacement = TValue.asString(value3);
+			var pattern = TValue.asString(value2);
+			var source = TValue.asString(value1);
+			
+			request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'gm'), replacement)));
 		}
 	},
 
@@ -599,7 +640,18 @@ var TCommandFunctions =
 		"name": 'STRINDEX', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRINDEX call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRINDEX call.");
+			
+			var sequence = TValue.asString(value2);
+			var str = TValue.asString(value1);
+
+			request.pushValue(TValue.createInteger(str.indexOf(sequence)));
 		}
 	},
 
@@ -608,7 +660,18 @@ var TCommandFunctions =
 		"name": 'STRLASTINDEX', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRLASTINDEX call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRLASTINDEX call.");
+			
+			var sequence = TValue.asString(value2);
+			var str = TValue.asString(value1);
+
+			request.pushValue(TValue.createInteger(str.lastIndexOf(sequence)));
 		}
 	},
 
@@ -617,7 +680,18 @@ var TCommandFunctions =
 		"name": 'STRCONTAINS', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINS call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINS call.");
+			
+			var sequence = TValue.asString(value2);
+			var str = TValue.asString(value1);
+
+			request.pushValue(TValue.createBoolean(str.indexOf(sequence) >= 0));
 		}
 	},
 
@@ -626,7 +700,18 @@ var TCommandFunctions =
 		"name": 'STRCONTAINSPATTERN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSPATTERN call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSPATTERN call.");
+			
+			var pattern = TValue.asString(value2);
+			var str = TValue.asString(value1);
+
+			request.pushValue(TValue.createBoolean((new RegExp(pattern, 'gm')).test(str)));
 		}
 	},
 
@@ -635,7 +720,58 @@ var TCommandFunctions =
 		"name": 'STRCONTAINSTOKEN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSTOKEN call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSTOKEN call.");
+			
+			var token = TValue.asString(value2);
+			var str = TValue.asString(value1);
+
+			request.pushValue(TValue.createBoolean(str.split(/\s+/).indexOf(token) >= 0));
+		}
+	},
+
+	/* STRSTARTSWITH */
+	{
+		"name": 'STRSTARTSWITH', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRSTARTSWITH call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRSTARTSWITH call.");
+			
+			var sequence = TValue.asString(value2);
+			var str = TValue.asString(value1);
+
+			request.pushValue(TValue.createBoolean(str.startsWith(sequence)));
+		}
+	},
+
+	/* STRENDSWITH */
+	{
+		"name": 'STRENDSWITH', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRENDSWITH call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRENDSWITH call.");
+			
+			var sequence = TValue.asString(value2);
+			var str = TValue.asString(value1);
+
+			request.pushValue(TValue.createBoolean(str.endsWith(sequence)));
 		}
 	},
 
@@ -644,7 +780,22 @@ var TCommandFunctions =
 		"name": 'SUBSTR', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value3 = request.popValue();
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTR call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTR call.");
+			if (!TValue.isLiteral(value3))
+				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTR call.");
+
+			var end = TValue.asLong(value3);
+			var start = TValue.asLong(value2);
+			var source = TValue.asString(value1);
+			
+			request.pushValue(TValue.createString(source.substring(start, end)));
 		}
 	},
 
@@ -653,7 +804,12 @@ var TCommandFunctions =
 		"name": 'STRLOWER', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRLOWER call.");
+
+			request.pushValue(TValue.createString(TValue.asString(value1).toLowerCase()));
 		}
 	},
 
@@ -662,7 +818,12 @@ var TCommandFunctions =
 		"name": 'STRUPPER', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRUPPER call.");
+
+			request.pushValue(TValue.createString(TValue.asString(value1).toUpperCase()));
 		}
 	},
 
@@ -671,7 +832,35 @@ var TCommandFunctions =
 		"name": 'STRCHAR', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCHAR call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCHAR call.");
+			
+			var index = TValue.asLong(value2);
+			var str = TValue.asString(value1);
+
+			if (index < 0 || index >= str.length)
+				request.pushValue(TValue.createString(''));
+			else
+				request.pushValue(TValue.createString(str.charAt(index)));
+		}
+	},
+
+	/* STRTRIM */
+	{
+		"name": 'STRTRIM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRTRIM call.");
+
+			request.pushValue(TValue.createString(TValue.asString(value1).trim()));
 		}
 	},
 
@@ -680,7 +869,12 @@ var TCommandFunctions =
 		"name": 'FLOOR', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in FLOOR call.");
+
+			request.pushValue(TValue.createFloat(Math.floor(TValue.asDouble(value1))));
 		}
 	},
 
@@ -689,7 +883,12 @@ var TCommandFunctions =
 		"name": 'CEILING', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CEILING call.");
+
+			request.pushValue(TValue.createFloat(Math.ceil(TValue.asDouble(value1))));
 		}
 	},
 
@@ -698,7 +897,12 @@ var TCommandFunctions =
 		"name": 'ROUND', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in ROUND call.");
+
+			request.pushValue(TValue.createFloat(Math.round(TValue.asDouble(value1))));
 		}
 	},
 
@@ -707,7 +911,19 @@ var TCommandFunctions =
 		"name": 'FIX', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in FIX call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in FIX call.");
+			
+			var d = TValue.asDouble(value1);
+			var f = TValue.asDouble(value2);
+			var t = Math.pow(10, f);
+
+			request.pushValue(TValue.createFloat(Math.round(d * t) / t));
 		}
 	},
 
@@ -716,7 +932,12 @@ var TCommandFunctions =
 		"name": 'SQRT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in SQRT call.");
+
+			request.pushValue(TValue.createFloat(Math.sqrt(TValue.asDouble(value1))));
 		}
 	},
 
@@ -725,7 +946,7 @@ var TCommandFunctions =
 		"name": 'PI', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			request.pushValue(TValue.createFloat(Math.PI));
 		}
 	},
 
@@ -734,7 +955,7 @@ var TCommandFunctions =
 		"name": 'E', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			request.pushValue(TValue.createFloat(Math.E));
 		}
 	},
 
@@ -743,7 +964,12 @@ var TCommandFunctions =
 		"name": 'SIN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in SIN call.");
+
+			request.pushValue(TValue.createFloat(Math.sin(TValue.asDouble(value1))));
 		}
 	},
 
@@ -752,7 +978,12 @@ var TCommandFunctions =
 		"name": 'COS', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in COS call.");
+
+			request.pushValue(TValue.createFloat(Math.cos(TValue.asDouble(value1))));
 		}
 	},
 
@@ -761,7 +992,12 @@ var TCommandFunctions =
 		"name": 'TAN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in TAN call.");
+
+			request.pushValue(TValue.createFloat(Math.tan(TValue.asDouble(value1))));
 		}
 	},
 
@@ -770,7 +1006,15 @@ var TCommandFunctions =
 		"name": 'MIN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in MIN call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in MIN call.");
+			
+			request.pushValue(TValue.compare(value1, value2) <= 0 ? value1 : value2);
 		}
 	},
 
@@ -779,7 +1023,15 @@ var TCommandFunctions =
 		"name": 'MAX', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in MAX call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in MAX call.");
+			
+			request.pushValue(TValue.compare(value1, value2) > 0 ? value1 : value2);
 		}
 	},
 
@@ -788,7 +1040,22 @@ var TCommandFunctions =
 		"name": 'CLAMP', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value3 = request.popValue();
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CLAMP call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CLAMP call.");
+			if (!TValue.isLiteral(value3))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CLAMP call.");
+
+			var hi = TValue.asDouble(value3);
+			var lo = TValue.asDouble(value2);
+			var number = TValue.asDouble(value1);
+			
+			request.pushValue(TValue.createFloat(Math.min(Math.max(number, lo), hi)));
 		}
 	},
 
@@ -797,7 +1064,33 @@ var TCommandFunctions =
 		"name": 'RANDOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in RANDOM call.");
+
+			if (TValue.isInteger(value1) || TValue.isBoolean(value1))
+			{
+				var value = TValue.asLong(value1);
+				if (value == 0)
+					request.pushValue(Value.createInteger(0));
+				else
+				{
+					var v = Math.floor(Math.random() * Math.abs(value));
+					if (value < 0)
+						request.pushValue(Value.createInteger(-v));
+					else
+						request.pushValue(Value.createInteger(v));
+				}
+			}
+			else
+			{
+				var value = TValue.asDouble(value1);
+				if (value == 0.0)
+					request.pushValue(Value.createFloat(0.0));
+				else
+					request.pushValue(Value.createFloat(Math.random() * value));
+			}
 		}
 	},
 
@@ -806,7 +1099,7 @@ var TCommandFunctions =
 		"name": 'FRANDOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			request.pushValue(Value.createFloat(Math.random()));
 		}
 	},
 
@@ -815,7 +1108,10 @@ var TCommandFunctions =
 		"name": 'GRANDOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			// Box-Muller Approximate algorithm c/o Maxwell Collard on StackOverflow
+		    var u = 1 - Math.random();
+		    var v = 1 - Math.random();
+			request.pushValue(Value.createFloat(Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)));
 		}
 	},
 
@@ -824,7 +1120,7 @@ var TCommandFunctions =
 		"name": 'TIME', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			request.pushValue(Value.createInteger(Date.now()));
 		}
 	},
 
@@ -833,7 +1129,18 @@ var TCommandFunctions =
 		"name": 'SECONDS', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in SECONDS call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in SECONDS call.");
+
+			var first = TValue.asLong(value1);
+			var second = TValue.asLong(value2);
+
+			request.pushValue(Value.createInteger((second - first) / 1000));
 		}
 	},
 
@@ -842,7 +1149,18 @@ var TCommandFunctions =
 		"name": 'MINUTES', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in MINUTES call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in MINUTES call.");
+
+			var first = TValue.asLong(value1);
+			var second = TValue.asLong(value2);
+
+			request.pushValue(Value.createInteger((second - first) / (1000 * 60)));
 		}
 	},
 
@@ -851,7 +1169,18 @@ var TCommandFunctions =
 		"name": 'HOURS', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in HOURS call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in HOURS call.");
+
+			var first = TValue.asLong(value1);
+			var second = TValue.asLong(value2);
+
+			request.pushValue(Value.createInteger((second - first) / (1000 * 60 * 60)));
 		}
 	},
 
@@ -860,7 +1189,18 @@ var TCommandFunctions =
 		"name": 'DAYS', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in DAYS call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in DAYS call.");
+
+			var first = TValue.asLong(value1);
+			var second = TValue.asLong(value2);
+
+			request.pushValue(Value.createInteger((second - first) / (1000 * 60 * 60 * 24)));
 		}
 	},
 
@@ -1195,165 +1535,71 @@ TCommandFunctions.Type =
 	"STRCONTAINS": 36, 
 	"STRCONTAINSPATTERN": 37, 
 	"STRCONTAINSTOKEN": 38, 
-	"SUBSTR": 39, 
-	"STRLOWER": 40, 
-	"STRUPPER": 41, 
-	"STRCHAR": 42, 
-	"FLOOR": 43, 
-	"CEILING": 44, 
-	"ROUND": 45, 
-	"FIX": 46, 
-	"SQRT": 47, 
-	"PI": 48, 
-	"E": 49, 
-	"SIN": 50, 
-	"COS": 51, 
-	"TAN": 52, 
-	"MIN": 53, 
-	"MAX": 54, 
-	"CLAMP": 55, 
-	"RANDOM": 56, 
-	"FRANDOM": 57, 
-	"GRANDOM": 58, 
-	"TIME": 59, 
-	"SECONDS": 60, 
-	"MINUTES": 61, 
-	"HOURS": 62, 
-	"DAYS": 63, 
-	"FORMATTIME": 64, 
-	"OBJECTHASNAME": 65, 
-	"OBJECTHASTAG": 66, 
-	"ADDOBJECTNAME": 67, 
-	"ADDOBJECTTAG": 68, 
-	"ADDOBJECTTAGTOALLIN": 69, 
-	"REMOVEOBJECTNAME": 70, 
-	"REMOVEOBJECTTAG": 71, 
-	"REMOVEOBJECTTAGFROMALLIN": 72, 
-	"GIVEOBJECT": 73, 
-	"REMOVEOBJECT": 74, 
-	"MOVEOBJECTSWITHTAG": 75, 
-	"OBJECTCOUNT": 76, 
-	"HASOBJECT": 77, 
-	"OBJECTHASNOOWNER": 78, 
-	"PLAYERISINROOM": 79, 
-	"PLAYERCANACCESSOBJECT": 80, 
-	"BROWSE": 81, 
-	"SETPLAYER": 82, 
-	"SETROOM": 83, 
-	"PUSHROOM": 84, 
-	"POPROOM": 85, 
-	"SWAPROOM": 86, 
-	"CURRENTPLAYERIS": 87, 
-	"NOCURRENTPLAYER": 88, 
-	"CURRENTROOMIS": 89, 
-	"NOCURRENTROOM": 90, 
-	"QUEUEACTION": 91, 
-	"QUEUEACTIONSTRING": 92, 
-	"QUEUEACTIONOBJECT": 93, 
-	"QUEUEACTIONOBJECT2": 94, 
-	"IDENTITY": 95, 
+	"STRSTARTSWITH": 39, 
+	"STRENDSWITH": 40, 
+	"SUBSTR": 41, 
+	"STRLOWER": 42, 
+	"STRUPPER": 43, 
+	"STRCHAR": 44, 
+	"STRTRIM": 45, 
+	"FLOOR": 46, 
+	"CEILING": 47, 
+	"ROUND": 48, 
+	"FIX": 49, 
+	"SQRT": 50, 
+	"PI": 51, 
+	"E": 52, 
+	"SIN": 53, 
+	"COS": 54, 
+	"TAN": 55, 
+	"MIN": 56, 
+	"MAX": 57, 
+	"CLAMP": 58, 
+	"RANDOM": 59, 
+	"FRANDOM": 60, 
+	"GRANDOM": 61, 
+	"TIME": 62, 
+	"SECONDS": 63, 
+	"MINUTES": 64, 
+	"HOURS": 65, 
+	"DAYS": 66, 
+	"FORMATTIME": 67, 
+	"OBJECTHASNAME": 68, 
+	"OBJECTHASTAG": 69, 
+	"ADDOBJECTNAME": 70, 
+	"ADDOBJECTTAG": 71, 
+	"ADDOBJECTTAGTOALLIN": 72, 
+	"REMOVEOBJECTNAME": 73, 
+	"REMOVEOBJECTTAG": 74, 
+	"REMOVEOBJECTTAGFROMALLIN": 75, 
+	"GIVEOBJECT": 76, 
+	"REMOVEOBJECT": 77, 
+	"MOVEOBJECTSWITHTAG": 78, 
+	"OBJECTCOUNT": 79, 
+	"HASOBJECT": 80, 
+	"OBJECTHASNOOWNER": 81, 
+	"PLAYERISINROOM": 82, 
+	"PLAYERCANACCESSOBJECT": 83, 
+	"BROWSE": 84, 
+	"SETPLAYER": 85, 
+	"SETROOM": 86, 
+	"PUSHROOM": 87, 
+	"POPROOM": 88, 
+	"SWAPROOM": 89, 
+	"CURRENTPLAYERIS": 90, 
+	"NOCURRENTPLAYER": 91, 
+	"CURRENTROOMIS": 92, 
+	"NOCURRENTROOM": 93, 
+	"QUEUEACTION": 94, 
+	"QUEUEACTIONSTRING": 95, 
+	"QUEUEACTIONOBJECT": 96, 
+	"QUEUEACTIONOBJECT2": 97, 
+	"IDENTITY": 98, 
 };
-
-	/*
-		NOOP (null)
-		POP (true)
-		POPVALUE (true)
-		POPLOCALVALUE (true)
-		POPELEMENTVALUE (true)
-		PUSHVALUE (true)
-		PUSHELEMENTVALUE (true)
-		ARITHMETICFUNC (true)
-		IF (true, true)
-		WHILE (true, true)
-		FOR (true, true)
-		CALL (null, ArgumentType.VALUE)
-		CALLFROM (null, ArgumentType.ELEMENT, ArgumentType.VALUE)
-		BREAK ()
-		CONTINUE ()
-		QUIT ()
-		END ()
-		ADDCUE (null, ArgumentType.VALUE, ArgumentType.VALUE)
-		TEXT (null, ArgumentType.VALUE)
-		TEXTLN (null, ArgumentType.VALUE)
-		TEXTF (null, ArgumentType.VALUE)
-		TEXTFLN (null, ArgumentType.VALUE)
-		PAUSE (null)
-		WAIT (null, ArgumentType.VALUE)
-		TIP (null, ArgumentType.VALUE)
-		INFO (null, ArgumentType.VALUE)
-		ASBOOLEAN (ArgumentType.VALUE, ArgumentType.VALUE)
-		ASINT (ArgumentType.VALUE, ArgumentType.VALUE)
-		ASFLOAT (ArgumentType.VALUE, ArgumentType.VALUE)
-		ASSTRING (ArgumentType.VALUE, ArgumentType.VALUE)
-		STRLEN (ArgumentType.VALUE, ArgumentType.VALUE)
-		STRREPLACE (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		STRINDEX (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		STRLASTINDEX (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		STRCONTAINS (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		STRCONTAINSPATTERN (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		STRCONTAINSTOKEN (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		SUBSTR (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		STRLOWER (ArgumentType.VALUE, ArgumentType.VALUE)
-		STRUPPER (ArgumentType.VALUE, ArgumentType.VALUE)
-		STRCHAR (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		FLOOR (ArgumentType.VALUE, ArgumentType.VALUE)
-		CEILING (ArgumentType.VALUE, ArgumentType.VALUE)
-		ROUND (ArgumentType.VALUE, ArgumentType.VALUE)
-		FIX (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		SQRT (ArgumentType.VALUE, ArgumentType.VALUE)
-		PI (ArgumentType.VALUE)
-		E (ArgumentType.VALUE)
-		SIN (ArgumentType.VALUE, ArgumentType.VALUE)
-		COS (ArgumentType.VALUE, ArgumentType.VALUE)
-		TAN (ArgumentType.VALUE, ArgumentType.VALUE)
-		MIN (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		MAX (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		CLAMP (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		RANDOM (ArgumentType.VALUE, ArgumentType.VALUE)
-		FRANDOM (ArgumentType.VALUE)
-		GRANDOM (ArgumentType.VALUE)
-		TIME (ArgumentType.VALUE)
-		SECONDS (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		MINUTES (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		HOURS (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		DAYS (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		FORMATTIME (ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-		OBJECTHASNAME (ArgumentType.VALUE, ArgumentType.OBJECT, ArgumentType.VALUE)
-		OBJECTHASTAG (ArgumentType.VALUE, ArgumentType.OBJECT, ArgumentType.VALUE)
-		ADDOBJECTNAME (null, ArgumentType.OBJECT, ArgumentType.VALUE)
-		ADDOBJECTTAG (null, ArgumentType.OBJECT, ArgumentType.VALUE)
-		ADDOBJECTTAGTOALLIN (null, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
-		REMOVEOBJECTNAME (null, ArgumentType.OBJECT, ArgumentType.VALUE)
-		REMOVEOBJECTTAG (null, ArgumentType.OBJECT, ArgumentType.VALUE)
-		REMOVEOBJECTTAGFROMALLIN (null, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
-		GIVEOBJECT (null, ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT)
-		REMOVEOBJECT (null, ArgumentType.OBJECT)
-		MOVEOBJECTSWITHTAG (null, ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
-		OBJECTCOUNT (ArgumentType.VALUE, ArgumentType.OBJECT_CONTAINER)
-		HASOBJECT (ArgumentType.VALUE, ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT)
-		OBJECTHASNOOWNER (ArgumentType.VALUE, ArgumentType.OBJECT)
-		PLAYERISINROOM (ArgumentType.VALUE, ArgumentType.PLAYER, ArgumentType.ROOM)
-		PLAYERCANACCESSOBJECT (ArgumentType.VALUE, ArgumentType.PLAYER, ArgumentType.OBJECT)
-		BROWSE (null, ArgumentType.OBJECT_CONTAINER)
-		SETPLAYER (null, ArgumentType.PLAYER)
-		SETROOM (null, ArgumentType.ROOM)
-		PUSHROOM (null, ArgumentType.ROOM)
-		POPROOM (null)
-		SWAPROOM (null, ArgumentType.ROOM)
-		CURRENTPLAYERIS (ArgumentType.VALUE, ArgumentType.PLAYER)
-		NOCURRENTPLAYER (ArgumentType.VALUE)
-		CURRENTROOMIS (ArgumentType.VALUE, ArgumentType.ROOM)
-		NOCURRENTROOM (ArgumentType.VALUE)
-		QUEUEACTION (null, ArgumentType.ACTION)
-		QUEUEACTIONSTRING (null, ArgumentType.ACTION, ArgumentType.VALUE)
-		QUEUEACTIONOBJECT (null, ArgumentType.ACTION, ArgumentType.OBJECT)
-		QUEUEACTIONOBJECT2 (null, ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
-		IDENTITY (ArgumentType.VALUE, ArgumentType.ELEMENT)
-	*/
 
 //##[[CONTENT-END
 
 
-//If testing with NODEJS ==================================================
+// If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TCommandFunctions;
 // =========================================================================

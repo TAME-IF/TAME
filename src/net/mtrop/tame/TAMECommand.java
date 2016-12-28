@@ -1115,6 +1115,60 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * Gets if a string starts with a particular sequence of characters. True if so.
+	 * First POP is the sequence to match. 
+	 * Second POP is the string. 
+	 * Returns boolean.
+	 */
+	STRSTARTSWITH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRSTARTSWITH call.");
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRSTARTSWITH call.");
+
+			String sequence = value2.asString();
+			String str = value1.asString();
+			
+			request.pushValue(Value.create(str.startsWith(sequence)));
+		}
+		
+	},
+	
+	/**
+	 * Gets if a string ends with a particular sequence of characters. True if so.
+	 * First POP is the sequence to match. 
+	 * Second POP is the string. 
+	 * Returns boolean.
+	 */
+	STRENDSWITH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRENDSWITH call.");
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRENDSWITH call.");
+
+			String sequence = value2.asString();
+			String str = value1.asString();
+			
+			request.pushValue(Value.create(str.endsWith(sequence)));
+		}
+		
+	},
+	
+	/**
 	 * Gets a substring from a larger one.
 	 * First POP is the ending index, exclusive. 
 	 * Second POP is the starting index, inclusive. 
@@ -1212,6 +1266,26 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.pushValue(Value.create(""));
 			else
 				request.pushValue(Value.create(String.valueOf(str.charAt(index))));
+		}
+		
+	},
+	
+	/**
+	 * Gets a string trimmed of whitespace at both ends.
+	 * POP is the string. 
+	 * Returns string. 
+	 */
+	STRTRIM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRTRIM call.");
+
+			request.pushValue(Value.create(value.asString().trim()));
 		}
 		
 	},
