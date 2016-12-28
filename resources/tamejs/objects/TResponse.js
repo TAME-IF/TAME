@@ -31,8 +31,10 @@ var TResponse = function()
  */
 TResponse.prototype.addCue = function(type, content)
 {
-	if ((typeof content) === 'unefined' || content == null)
+	if ((typeof content) === 'undefined' || content == null)
 		content = "";
+	else
+		content = String(content);
 	this.responseCues.push({"type": type, "content": content});
 };
 

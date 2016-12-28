@@ -10,6 +10,7 @@
 var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/TValue.js') : null);
 var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefined' ? require('./TArithmeticFunctions.js') : null);
 var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('../TAMELogic.js') : null);
+var TAMEConstants = TAMEConstants || ((typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null);
 // ======================================================================================================
 
 //##[[CONTENT-START
@@ -178,22 +179,7 @@ var TCommandFunctions =
 		"name": 'IF', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// block should contain arithmetic commands and a last push.
-			var conditional = command.conditionalBlock;
-			if (!contitional)
-				throw TAMEError.ModuleExecution("Conditional block for IF does NOT EXIST!");
-			
-			response.trace(request, "Calling IF conditional...");
-			TLogic.executeBlock(conditional, request, response, blockLocal);
-
-			// get remaining expression value.
-			var value = request.popValue();
-			
-			if (!TValue.isLiteral(value))
-				throw TAMEError.UnexpectedValueType("Expected literal type after IF conditional block execution.");
-
-			var result = TValue.asBoolean(value);
-			response.trace(request, "Result "+TValue.toString(value)+" evaluates "+result+".");
+			var result = TLogic.callConditional('IF', request, response, blockLocal, command);
 			
 			if (result)
 			{
@@ -211,6 +197,10 @@ var TCommandFunctions =
 					response.trace(request, "Calling IF failure block...");
 					TLogic.executeBlock(failure, request, response, blockLocal);
 				}
+				else
+				{
+					response.trace(request, "No failure block.");
+				}
 			}
 		}
 	},
@@ -220,29 +210,28 @@ var TCommandFunctions =
 		"name": 'WHILE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			
-			while ()
-			{
-			
-			}
-			
-			// TODO: Finish this.
-			/*
-			while (callConditional(request, response, blockLocal, command))
+			while (TLogic.callConditional('WHILE', request, response, blockLocal, command))
 			{
 				try {
 					response.trace(request, "Calling WHILE success block...");
-					Block success = command.getSuccessBlock();
-					if (success == null)
-						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
-					success.execute(request, response, blockLocal);
-				} catch (BreakInterrupt interrupt) {
-					break;
-				} catch (ContinueInterrupt interrupt) {
-					continue;
+					var success = command.successBlock;
+					if (!success)
+						throw TAMEError.ModuleExecution("Success block for WHILE does NOT EXIST!");
+					TLogic.executeBlock(success, request, response, blockLocal);
+				} catch (err) {
+					if (err instanceof TAMEInterrupt)
+					{
+						if (err.type === TAMEInterrupt.Type.Break)
+							break;
+						else if (err.type === TAMEInterrupt.Type.Continue)
+							continue;
+						else
+							throw err;
+					}
+					else
+						throw err;
 				}
 			}
-			 */
 		}
 	},
 
@@ -251,7 +240,42 @@ var TCommandFunctions =
 		"name": 'FOR', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var init = command.initBlock;
+			if (!init)
+				throw TAMEError.ModuleExecution("Init block for FOR does NOT EXIST!");
+			var success = command.successBlock;
+			if (!success)
+				throw TAMEError.ModuleExecution("Success block for FOR does NOT EXIST!");
+			var step = command.stepBlock;
+			if (!step)
+				throw TAMEError.ModuleExecution("Step block for FOR does NOT EXIST!");
+
+			response.trace(request, "Calling FOR init block...");
+
+			for (
+				TLogic.executeBlock(init, request, response, blockLocal);
+				TLogic.callConditional(request, response, blockLocal, command);
+				response.trace(request, "Calling FOR stepping block..."),
+				TLogic.executeBlock(step, request, response, blockLocal)
+			)
+			{
+				try {
+					response.trace(request, "Calling FOR success block...");
+					TLogic.executeBlock(success, request, response, blockLocal);
+				} catch (err) {
+					if (err instanceof TAMEInterrupt)
+					{
+						if (err.type === TAMEInterrupt.Type.Break)
+							break;
+						else if (err.type === TAMEInterrupt.Type.Continue)
+							continue;
+						else
+							throw err;
+					}
+					else
+						throw err;
+				}
+			}
 		}
 	},
 
@@ -260,7 +284,21 @@ var TCommandFunctions =
 		"name": 'CALL', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var procedureName = request.popValue();
+			if (!TValue.isLiteral(procedureName))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CALL call.");
+			
+			if (!request.peekContext())
+				throw TAMEError.ModuleExecution("Attempted CALL call without a context!");
+
+			var elementContext = request.peekContext();
+			var element = request.moduleContext.resolveElement(elementContext.identity);
+
+			var block = request.moduleContext.resolveBlock(element.identity, 'PROCEDURE', [procedureName]);
+			if (block)
+				TLogic.executeBlock(block, request, response, elementContext);
+			else
+				response.addCue(TAMEConstants.Cue.ERROR, "No such procedure ("+TValue.asString(procedureName)+") in lineage of element " + TLogic.elementToString(element));
 		}
 	},
 
@@ -269,7 +307,24 @@ var TCommandFunctions =
 		"name": 'CALLFROM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var procedureName = request.popValue();
+			var elementValue = request.popValue();
+			
+			if (!TValue.isLiteral(procedureName))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CALLFROM call.");
+			if (!TValue.isElement(elementValue))
+				throw TAMEError.UnexpectedValueType("Expected element type in CALLFROM call.");
+
+			var id = TValue.asString(elementValue);
+			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
+			var elementContext = request.moduleContext.resolveElementContext(id);
+			var element = request.moduleContext.resolveElement(id);
+
+			var block = TLogic.executeBlock(block, request, response, elementContext);
+			if (block)
+				TLogic.executeBlock(block, request, response, elementContext);
+			else
+				response.addCue(TAMEConstants.Cue.ERROR, "No such procedure ("+TValue.asString(procedureName)+") in lineage of element " + TLogic.elementToString(element));
 		}
 	},
 
@@ -278,7 +333,8 @@ var TCommandFunctions =
 		"name": 'BREAK', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			response.trace(request, "Throwing break interrupt...");
+			throw TAMEInterrupt.Break();
 		}
 	},
 
@@ -287,7 +343,8 @@ var TCommandFunctions =
 		"name": 'CONTINUE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			response.trace(request, "Throwing continue interrupt...");
+			throw TAMEInterrupt.Continue();
 		}
 	},
 
@@ -296,7 +353,9 @@ var TCommandFunctions =
 		"name": 'QUIT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			response.trace(request, "Throwing quit interrupt...");
+			response.addCue(TAMEConstants.Cue.QUIT);
+			throw TAMEInterrupt.Quit();
 		}
 	},
 
@@ -305,7 +364,8 @@ var TCommandFunctions =
 		"name": 'END', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			response.trace(request, "Throwing end interrupt...");
+			throw TAMEInterrupt.End();
 		}
 	},
 
@@ -314,7 +374,15 @@ var TCommandFunctions =
 		"name": 'ADDCUE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			var cue = request.popValue();
+
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in ADDCUE call.");
+			if (!TValue.isLiteral(cue))
+				throw TAMEError.UnexpectedValueType("Expected literal type in ADDCUE call.");
+
+			response.addCue(TValue.asString(cue), TValue.asString(value));
 		}
 	},
 
@@ -323,7 +391,12 @@ var TCommandFunctions =
 		"name": 'TEXT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in TEXT call.");
+
+			response.addCue(TAMEConstants.Cue.TEXT, TValue.asString(value));
 		}
 	},
 
@@ -332,7 +405,12 @@ var TCommandFunctions =
 		"name": 'TEXTLN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in TEXTLN call.");
+
+			response.addCue(TAMEConstants.Cue.TEXT, TValue.asString(value) + '\n');
 		}
 	},
 
@@ -341,7 +419,12 @@ var TCommandFunctions =
 		"name": 'TEXTF', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in TEXTF call.");
+
+			response.addCue(TAMEConstants.Cue.TEXTF, TValue.asString(value));
 		}
 	},
 
@@ -350,7 +433,16 @@ var TCommandFunctions =
 		"name": 'TEXTFLN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			"name": 'TEXTF', 
+			"doCommand": function(request, response, blockLocal, command)
+			{
+				var value = request.popValue();
+				
+				if (!TValue.isLiteral(value))
+					throw TAMEError.UnexpectedValueType("Expected literal type in TEXTFLN call.");
+
+				response.addCue(TAMEConstants.Cue.TEXTF, TValue.asString(value) + '\n');
+			}
 		}
 	},
 
@@ -359,7 +451,7 @@ var TCommandFunctions =
 		"name": 'PAUSE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			response.addCue(TAMEConstants.Cue.PAUSE);
 		}
 	},
 
@@ -368,7 +460,12 @@ var TCommandFunctions =
 		"name": 'WAIT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in WAIT call.");
+
+			response.addCue(TAMEConstants.Cue.TEXTF, TValue.asLong(value));
 		}
 	},
 
@@ -377,7 +474,12 @@ var TCommandFunctions =
 		"name": 'TIP', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in TIP call.");
+
+			response.addCue(TAMEConstants.Cue.TIP, TValue.asString(value));
 		}
 	},
 
@@ -386,7 +488,12 @@ var TCommandFunctions =
 		"name": 'INFO', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in INFO call.");
+
+			response.addCue(TAMEConstants.Cue.INFO, TValue.asString(value));
 		}
 	},
 
@@ -395,7 +502,12 @@ var TCommandFunctions =
 		"name": 'ASBOOLEAN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in ASBOOLEAN call.");
+
+			request.pushValue(TValue.createBoolean(TValue.asBoolean(value)));
 		}
 	},
 
@@ -404,7 +516,12 @@ var TCommandFunctions =
 		"name": 'ASINT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in ASINT call.");
+
+			request.pushValue(TValue.createInteger(TValue.asLong(value)));
 		}
 	},
 
@@ -413,7 +530,12 @@ var TCommandFunctions =
 		"name": 'ASFLOAT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in ASFLOAT call.");
+
+			request.pushValue(TValue.createFloat(TValue.asDouble(value)));
 		}
 	},
 
@@ -422,7 +544,12 @@ var TCommandFunctions =
 		"name": 'ASSTRING', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in ASSTRING call.");
+
+			request.pushValue(TValue.createString(TValue.asString(value)));
 		}
 	},
 
@@ -431,13 +558,36 @@ var TCommandFunctions =
 		"name": 'STRLEN', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRLEN call.");
+
+			request.pushValue(TValue.createInteger(TValue.asString(value).length));
 		}
 	},
 
 	/* STRREPLACE */
 	{
 		"name": 'STRREPLACE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
+	/* STRREPLACEPATTERN */
+	{
+		"name": 'STRREPLACEPATTERN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			// TODO: Finish this.
+		}
+	},
+
+	/* STRREPLACEPATTERNALL */
+	{
+		"name": 'STRREPLACEPATTERNALL', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			// TODO: Finish this.
@@ -1038,71 +1188,71 @@ TCommandFunctions.Type =
 	"ASSTRING": 29, 
 	"STRLEN": 30, 
 	"STRREPLACE": 31, 
-	"STRINDEX": 32, 
-	"STRLASTINDEX": 33, 
-	"STRCONTAINS": 34, 
-	"STRCONTAINSPATTERN": 35, 
-	"STRCONTAINSTOKEN": 36, 
-	"SUBSTR": 37, 
-	"STRLOWER": 38, 
-	"STRUPPER": 39, 
-	"STRCHAR": 40, 
-	"FLOOR": 41, 
-	"CEILING": 42, 
-	"ROUND": 43, 
-	"FIX": 44, 
-	"SQRT": 45, 
-	"PI": 46, 
-	"E": 47, 
-	"SIN": 48, 
-	"COS": 49, 
-	"TAN": 50, 
-	"MIN": 51, 
-	"MAX": 52, 
-	"CLAMP": 53, 
-	"RANDOM": 54, 
-	"FRANDOM": 55, 
-	"GRANDOM": 56, 
-	"TIME": 57, 
-	"SECONDS": 58, 
-	"MINUTES": 59, 
-	"HOURS": 60, 
-	"DAYS": 61, 
-	"FORMATTIME": 62, 
-	"OBJECTHASNAME": 63, 
-	"OBJECTHASTAG": 64, 
-	"ADDOBJECTNAME": 65, 
-	"ADDOBJECTTAG": 66, 
-	"ADDOBJECTTAGTOALLIN": 67, 
-	"REMOVEOBJECTNAME": 68, 
-	"REMOVEOBJECTTAG": 69, 
-	"REMOVEOBJECTTAGFROMALLIN": 70, 
-	"GIVEOBJECT": 71, 
-	"REMOVEOBJECT": 72, 
-	"MOVEOBJECTSWITHTAG": 73, 
-	"OBJECTCOUNT": 74, 
-	"HASOBJECT": 75, 
-	"OBJECTHASNOOWNER": 76, 
-	"PLAYERISINROOM": 77, 
-	"PLAYERCANACCESSOBJECT": 78, 
-	"BROWSE": 79, 
-	"SETPLAYER": 80, 
-	"SETROOM": 81, 
-	"PUSHROOM": 82, 
-	"POPROOM": 83, 
-	"SWAPROOM": 84, 
-	"CURRENTPLAYERIS": 85, 
-	"NOCURRENTPLAYER": 86, 
-	"CURRENTROOMIS": 87, 
-	"NOCURRENTROOM": 88, 
-	"QUEUEACTION": 89, 
-	"QUEUEACTIONSTRING": 90, 
-	"QUEUEACTIONOBJECT": 91, 
-	"QUEUEACTIONOBJECT2": 92, 
-	"IDENTITY": 93 
+	"STRREPLACEPATTERN": 32, 
+	"STRREPLACEPATTERNALL": 33, 
+	"STRINDEX": 34, 
+	"STRLASTINDEX": 35, 
+	"STRCONTAINS": 36, 
+	"STRCONTAINSPATTERN": 37, 
+	"STRCONTAINSTOKEN": 38, 
+	"SUBSTR": 39, 
+	"STRLOWER": 40, 
+	"STRUPPER": 41, 
+	"STRCHAR": 42, 
+	"FLOOR": 43, 
+	"CEILING": 44, 
+	"ROUND": 45, 
+	"FIX": 46, 
+	"SQRT": 47, 
+	"PI": 48, 
+	"E": 49, 
+	"SIN": 50, 
+	"COS": 51, 
+	"TAN": 52, 
+	"MIN": 53, 
+	"MAX": 54, 
+	"CLAMP": 55, 
+	"RANDOM": 56, 
+	"FRANDOM": 57, 
+	"GRANDOM": 58, 
+	"TIME": 59, 
+	"SECONDS": 60, 
+	"MINUTES": 61, 
+	"HOURS": 62, 
+	"DAYS": 63, 
+	"FORMATTIME": 64, 
+	"OBJECTHASNAME": 65, 
+	"OBJECTHASTAG": 66, 
+	"ADDOBJECTNAME": 67, 
+	"ADDOBJECTTAG": 68, 
+	"ADDOBJECTTAGTOALLIN": 69, 
+	"REMOVEOBJECTNAME": 70, 
+	"REMOVEOBJECTTAG": 71, 
+	"REMOVEOBJECTTAGFROMALLIN": 72, 
+	"GIVEOBJECT": 73, 
+	"REMOVEOBJECT": 74, 
+	"MOVEOBJECTSWITHTAG": 75, 
+	"OBJECTCOUNT": 76, 
+	"HASOBJECT": 77, 
+	"OBJECTHASNOOWNER": 78, 
+	"PLAYERISINROOM": 79, 
+	"PLAYERCANACCESSOBJECT": 80, 
+	"BROWSE": 81, 
+	"SETPLAYER": 82, 
+	"SETROOM": 83, 
+	"PUSHROOM": 84, 
+	"POPROOM": 85, 
+	"SWAPROOM": 86, 
+	"CURRENTPLAYERIS": 87, 
+	"NOCURRENTPLAYER": 88, 
+	"CURRENTROOMIS": 89, 
+	"NOCURRENTROOM": 90, 
+	"QUEUEACTION": 91, 
+	"QUEUEACTIONSTRING": 92, 
+	"QUEUEACTIONOBJECT": 93, 
+	"QUEUEACTIONOBJECT2": 94, 
+	"IDENTITY": 95, 
 };
-
-
 
 	/*
 		NOOP (null)

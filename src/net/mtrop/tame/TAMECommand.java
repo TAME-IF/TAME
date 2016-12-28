@@ -323,6 +323,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 					response.trace(request, "Calling IF failure block...");
 					failure.execute(request, response, blockLocal);
 				}
+				else
+				{
+					response.trace(request, "No failure block...");
+				}
 			}
 			
 		}
@@ -897,7 +901,71 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Returns the index of where a pattern starts in a string. -1 is not found.
+	 * Replaces the first found RegEx pattern of characters in a string with another string.
+	 * First POP is the string to replace with. 
+	 * Second POP is the search regex pattern. 
+	 * Third POP is the string to do replacing in. 
+	 * Returns string. 
+	 */
+	STRREPLACEPATTERN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value3 = request.popValue();
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value3.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERN call.");
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERN call.");
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERN call.");
+
+			String replacement = value3.asString();
+			String pattern = value2.asString();
+			String source = value1.asString();
+
+			request.pushValue(Value.create(source.replaceFirst(pattern, replacement)));
+		}
+		
+	},
+
+	/**
+	 * Replaces every found RegEx pattern of characters in a string with another string.
+	 * First POP is the string to replace with. 
+	 * Second POP is the search regex pattern. 
+	 * Third POP is the string to do replacing in. 
+	 * Returns string. 
+	 */
+	STRREPLACEPATTERNALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value3 = request.popValue();
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value3.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERNALL call.");
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERNALL call.");
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERNALL call.");
+
+			String replacement = value3.asString();
+			String pattern = value2.asString();
+			String source = value1.asString();
+
+			request.pushValue(Value.create(source.replaceAll(pattern, replacement)));
+		}
+		
+	},
+
+	/**
+	 * Returns the index of where a character sequence starts in a string. -1 is not found.
 	 * First POP is what to search for. 
 	 * Second POP is the string. 
 	 * Returns integer.
@@ -924,7 +992,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Returns the last possible index of where a pattern starts in a string. -1 is not found.
+	 * Returns the last possible index of where a character sequence starts in a string. -1 is not found.
 	 * First POP is what to search for. 
 	 * Second POP is the string. 
 	 * Returns integer.
@@ -978,7 +1046,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Returns if a character sequence matching a regular expression exists in a given string. True if so.\
+	 * Returns if a character sequence matching a regular expression exists in a given string. True if so.
 	 * First POP is what to search for (RegEx). 
 	 * Second POP is the string. 
 	 * Returns boolean.
@@ -1013,7 +1081,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	
 	/**
 	 * Returns if a string token exists in the given string (case-insensitive).
-	 * A token is a whitespace-broken piece.
+	 * A token is a whitespace-broken piece of a string.
 	 * First POP is what to search for. 
 	 * Second POP is the string. 
 	 * Returns boolean.
@@ -1396,7 +1464,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	/**
 	 * Returns the clamping of a number in an inclusive interval.
 	 * First POP is the interval end.
-	 * Second POP is the interval end.
+	 * Second POP is the interval start.
 	 * Third POP is the value.
 	 * Returns float.
 	 */
@@ -1428,7 +1496,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	/**
 	 * Returns a random number from 0 to input-1.
 	 * POP is the interval end.
-	 * Returns integer or float.
+	 * Returns integer or float, depending on input.
 	 */
 	RANDOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
@@ -1465,7 +1533,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Returns a random number from 0.0 to 1.0 exclusive.
+	 * Returns a random number from 0.0 (inclusive) to 1.0 (exclusive).
 	 * POPs nothing.
 	 * Returns float.
 	 */

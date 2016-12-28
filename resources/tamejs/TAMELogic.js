@@ -54,6 +54,16 @@ TLogic.commandToString = function(cmdObject)
 };
 
 /**
+ * Turns an element into a readable string.
+ * @param elemObject (Object) the command object.
+ * @return a string.
+ */
+TLogic.elementToString = function(elemObject)
+{
+	return elemObject.type + "[" + elemObject.identity + "]";
+};
+
+/**
  * Executes a block of commands.
  * @param command (Object) the command object.
  * @param request (TRequest) the request object.
@@ -66,7 +76,7 @@ TLogic.executeBlock = function(block, request, response, blockLocal)
 	response.trace(request, "Start block.");
 	Util.each(this.commandList, function(command){
 		response.trace(request, "CALL "+TLogic.commandToString(command));
-		TLogic.executeCommand(command, request, response, blockLocal);
+		TLogic.executeCommand(request, response, blockLocal, command);
 	});
 	response.trace(request, "End block.");
 };
@@ -74,19 +84,47 @@ TLogic.executeBlock = function(block, request, response, blockLocal)
 /**
  * Increments the runaway command counter and calls the command.  
  * Command index.
- * @param command (Object) the command object.
  * @param request (TRequest) the request object.
  * @param response (TResponse) the response object.
  * @param blockLocal (Object) the local variables on the block call.
+ * @param command (Object) the command object.
  * @throws TAMEInterrupt if an interrupt occurs. 
  */
-TLogic.executeCommand = function(command, request, response, blockLocal)
+TLogic.executeCommand = function(request, response, blockLocal, command)
 {
 	TCommandFunctions[command.opcode].doCommand(request, response, blockLocal, command);
 	response.incrementAndCheckCommandsExecuted();
 }
 
-TLogic.callConditional()
+/**
+ * Calls the conditional block on a command, returning the result as a .
+ * @param request (TRequest) the request object.
+ * @param response (TResponse) the response object.
+ * @param blockLocal (Object) the local variables on the block call.
+ * @param command (Object) the command object.
+ * @return true if result is equivalent to true, false if not.
+ * @throws TAMEInterrupt if an interrupt occurs. 
+ */
+TLogic.callConditional = function(commandName, request, response, blockLocal, command)
+{
+	// block should contain arithmetic commands and a last push.
+	var conditional = command.conditionalBlock;
+	if (!contitional)
+		throw TAMEError.ModuleExecution("Conditional block for "+commandName+" does NOT EXIST!");
+	
+	response.trace(request, "Calling "+commandName+" conditional...");
+	TLogic.executeBlock(conditional, request, response, blockLocal);
+
+	// get remaining expression value.
+	var value = request.popValue();
+	
+	if (!TValue.isLiteral(value))
+		throw TAMEError.UnexpectedValueType("Expected literal type after "+commandName+" conditional block execution.");
+
+	var result = TValue.asBoolean(value);
+	response.trace(request, "Result "+TValue.toString(value)+" evaluates "+result+".");
+	return result;
+}
 
 /**
  * Handles initializing a context. Must be called after a new context and game is started.
