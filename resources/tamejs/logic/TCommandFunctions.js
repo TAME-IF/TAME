@@ -1235,7 +1235,7 @@ var TCommandFunctions =
 
 			if (!TValue.isLiteral(nameValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in OBJECTHASNAME call.");
-			if (TValue.isObject(varObject))
+			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in OBJECTHASNAME call.");
 
 			request.pushValue(TValue.createBoolean(request.moduleContext.checkObjectHasName(TValue.asString(varObject), TValue.asString(nameValue))));
@@ -1252,7 +1252,7 @@ var TCommandFunctions =
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in OBJECTHASTAG call.");
-			if (TValue.isObject(varObject))
+			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in OBJECTHASTAG call.");
 
 			request.pushValue(TValue.createBoolean(request.moduleContext.checkObjectHasTag(TValue.asString(varObject), TValue.asString(tagValue))));
@@ -1269,7 +1269,7 @@ var TCommandFunctions =
 
 			if (!TValue.isLiteral(nameValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ADDOBJECTNAME call.");
-			if (TValue.isObject(varObject))
+			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in ADDOBJECTNAME call.");
 
 			request.pushValue(TValue.createBoolean(request.moduleContext.addObjectName(TValue.asString(varObject), TValue.asString(nameValue))));
@@ -1286,7 +1286,7 @@ var TCommandFunctions =
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ADDOBJECTTAG call.");
-			if (TValue.isObject(varObject))
+			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in ADDOBJECTTAG call.");
 
 			request.pushValue(TValue.createBoolean(request.moduleContext.addObjectTag(TValue.asString(varObject), TValue.asString(tagValue))));
@@ -1306,8 +1306,10 @@ var TCommandFunctions =
 			if (!TValue.isObjectContainer(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in ADDOBJECTTAGTOALLIN call.");
 
+			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
+			
 			var tag = TValue.asString(tagValue);
-			Util.each(request.moduleContext.getObjectsOwnedByElement(TValue.asString(varObject)), function(objectIdentity){
+			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity, function(objectIdentity){
 				request.moduleContext.addObjectTag(objectIdentity, tag);
 			});
 		}
@@ -1323,7 +1325,7 @@ var TCommandFunctions =
 
 			if (!TValue.isLiteral(nameValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in REMOVEOBJECTNAME call.");
-			if (TValue.isObject(varObject))
+			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in REMOVEOBJECTNAME call.");
 
 			request.pushValue(TValue.createBoolean(request.moduleContext.removeObjectName(TValue.asString(varObject), TValue.asString(nameValue))));
@@ -1340,7 +1342,7 @@ var TCommandFunctions =
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in REMOVEOBJECTTAG call.");
-			if (TValue.isObject(varObject))
+			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in REMOVEOBJECTTAG call.");
 
 			request.pushValue(TValue.createBoolean(request.moduleContext.removeObjectTag(TValue.asString(varObject), TValue.asString(tagValue))));
@@ -1360,8 +1362,10 @@ var TCommandFunctions =
 			if (!TValue.isObjectContainer(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in REMOVEOBJECTTAGFROMALLIN call.");
 
+			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
+			
 			var tag = TValue.asString(tagValue);
-			Util.each(request.moduleContext.getObjectsOwnedByElement(TValue.asString(varObject)), function(objectIdentity){
+			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity, function(objectIdentity){
 				request.moduleContext.removeObjectTag(objectIdentity, tag);
 			});
 		}
@@ -1372,7 +1376,15 @@ var TCommandFunctions =
 		"name": 'GIVEOBJECT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject = request.popValue();
+			var varObjectContainer = request.popValue();
+
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected object type in GIVEOBJECT call.");
+			if (!TValue.isObjectContainer(varObjectContainer))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in GIVEOBJECT call.");
+
+			request.moduleContext.addObjectToElement(TValue.asString(varObjectContainer)), TValue.asString(varObject)));
 		}
 	},
 
@@ -1381,7 +1393,12 @@ var TCommandFunctions =
 		"name": 'REMOVEOBJECT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject = request.popValue();
+
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected object type in REMOVEOBJECT call.");
+
+			request.moduleContext.removeObject(TValue.asString(varObject));
 		}
 	},
 
