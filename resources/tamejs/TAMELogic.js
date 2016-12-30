@@ -28,6 +28,32 @@ var TLogic = {};
  ****************************************************************************/
 
 /**
+ * Sets a value on a variable hash.
+ * @param valueHash the hash that contains the variables.
+ * @param variableName the variable name.
+ * @param value the value.
+ */
+TLogic.setValue = function(valueHash, variableName, value)
+{
+	variableName = variableName.toLowerCase();
+	valueHash[variableName] = value;
+};
+
+/**
+ * Sets a value on a variable hash.
+ * @param valueHash the hash that contains the variables.
+ * @param variableName the variable name.
+ */
+TLogic.getValue = function(valueHash, variableName)
+{
+	variableName = variableName.toLowerCase();
+	if (!valueHash[variableName])
+		return TValue.createBoolean(false);
+	else
+		return valueHash[variableName];
+};
+
+/**
  * Turns a command into a readable string.
  * @param cmdObject (Object) the command object.
  * @return a string.

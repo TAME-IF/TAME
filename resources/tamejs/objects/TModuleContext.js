@@ -43,6 +43,8 @@ var TModuleContext = function(module)
 	// create element contexts.
 	Util.each(m.elements, function(element, identity)
 	{
+		identity = identity.toLowerCase();
+		
 		if (element.archetype)
 			return;
 		if (s.elements[identity])
@@ -56,10 +58,12 @@ var TModuleContext = function(module)
 			s.tags[identity] = {};
 			Util.each(element.names, function(name)
 			{
+				name = name.toLowerCase();
 				s.names[identity][name] = true;
 			});
 			Util.each(element.tags, function(tag)
 			{
+				tag = tag.toLowerCase();
 				s.tags[identity][tag] = true;
 			});		
 		}
@@ -448,13 +452,14 @@ TModuleContext.prototype.checkObjectHasName = function(objectIdentity, name)
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
+	name = name.toLowerCase();
 	var arr = contextState.names[objectIdentity];
 	return (!arr && arr[name]);
 };
 
 /**
- * Adds a tag to an object.
- * Unlike names, tags undergo no conversion.
+ * Adds a tag to an object. Tags are case-insensitive.
+ * Unlike names, tags undergo no whitespace conversion.
  * Does nothing if the object already has the tag.
  * @param objectIdentity the object identity.
  * @param name the name to add.
@@ -471,6 +476,7 @@ TModuleContext.prototype.addObjectTag = function(objectIdentity, tag)
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
+	tag = tag.toLowerCase();
 	var arr = contextState.tags[objectIdentity];
 	if (!arr)
 		arr = contextState.tags[objectIdentity] = {};
@@ -479,8 +485,8 @@ TModuleContext.prototype.addObjectTag = function(objectIdentity, tag)
 };
 
 /**
- * Removes a tag from an object.
- * Unlike names, tags undergo no conversion.
+ * Removes a tag from an object. Tags are case-insensitive.
+ * Unlike names, tags undergo no whitespace conversion.
  * Does nothing if the object does not have the tag.
  * @param objectIdentity the object identity.
  * @param name the name to remove.
@@ -497,6 +503,7 @@ TModuleContext.prototype.removeObjectTag = function(objectIdentity, tag)
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
+	tag = tag.toLowerCase();
 	var arr = contextState.tags[objectIdentity];
 	if (!arr)
 		return;
@@ -505,7 +512,8 @@ TModuleContext.prototype.removeObjectTag = function(objectIdentity, tag)
 };
 
 /**
- * Checks for a tag on an object.
+ * Checks for a tag on an object. Tags are case-insensitive.
+ * Unlike names, tags undergo no whitespace conversion.
  * @param objectIdentity the object identity.
  * @param name the name to remove.
  * @return true if it exists, false if not.
@@ -522,6 +530,7 @@ TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, name)
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
+	tag = tag.toLowerCase();
 	var arr = contextState.tags[objectIdentity];
 	return (!arr && arr[name]);
 };
@@ -550,7 +559,12 @@ TModuleContext.prototype.resolveAction = function(actionIdentity)
  */
 TModuleContext.prototype.resolveElement = function(elementIdentity)
 {	
-	var out;
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw TAMEError.ModuleState("Context state is missing required member: elements");
+	
+	elementIdentity = elementIdentity.toLowerCase();
 	
 	// current player
 	if (elementIdentity === 'player')
@@ -567,7 +581,7 @@ TModuleContext.prototype.resolveElement = function(elementIdentity)
 			throw TAMEInterrupt.Error("Current room context called with no current room!");
 	}
 	
-	out = this.module.elements[elementIdentity];
+	var out = contextState.elements[elementIdentity];
 	
 	if (!out)
 		throw TAMEModule.ModuleExecution("Element is missing from module: "+elementIdentity);
@@ -585,8 +599,13 @@ TModuleContext.prototype.resolveElement = function(elementIdentity)
  */
 TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 {	
-	var out;
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	
+	elementIdentity = elementIdentity.toLowerCase();
+
 	// current player
 	if (elementIdentity === 'player')
 	{
@@ -602,7 +621,7 @@ TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 			throw TAMEInterrupt.Error("Current room context called with no current room!");
 	}
 	
-	out = this.state.elements[elementIdentity];
+	var out = contextState.elements[elementIdentity];
 	
 	if (!out)
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
@@ -675,8 +694,6 @@ TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray
 {
 	// TODO: Finish this.
 };
-
-
 
 
 //##[[CONTENT-END

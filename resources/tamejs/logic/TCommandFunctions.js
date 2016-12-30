@@ -54,10 +54,10 @@ var TCommandFunctions =
 
 			var variableName = TValue.asString(varvalue);
 			
-			if (blockLocal[variableName])
-				blockLocal[variableName] = value;
+			if (blockLocal[variableName.toLowerCase()])
+				TLogic.setValue(blockLocal, variableName, value);
 			else
-				request.peekContext().variables[variableName] = value;
+				TLogic.setValue(request.peekContext().variables, variableName, value);
 		}
 	},
 
@@ -74,8 +74,7 @@ var TCommandFunctions =
 			if (!TValue.isVariable(varvalue))
 				throw TAMEError.UnexpectedValueType("Expected variable type in POPLOCALVALUE call.");
 
-			var variableName = TValue.asString(varvalue);
-			blockLocal[variableName] = value;
+			TLogic.setValue(blockLocal, TValue.asString(varvalue), value);
 		}
 	},
 
@@ -95,10 +94,9 @@ var TCommandFunctions =
 			if (!TValue.isElement(varObject))
 				throw TAMEError.UnexpectedValueType("Expected element type in POPELEMENTVALUE call.");
 
-			var variableName = TValue.asString(variable);
 			var objectName = TValue.asString(varObject);
 
-			request.moduleContext.resolveElementContext(objectName).variables[variableName] = value;
+			TLogic.setValue(request.moduleContext.resolveElementContext(objectName).variables, TValue.asString(variable), value);
 		}
 	},
 
@@ -111,11 +109,11 @@ var TCommandFunctions =
 			
 			if (TValue.isVariable(value))
 			{
-				var variableName = TValue.asString(value);
+				var variableName = TValue.asString(value).toLowerCase();
 				if (blockLocal[variableName])
-					request.pushValue(blockLocal[variableName]);
+					request.pushValue(TLogic.getValue(blockLocal, variableName));
 				else
-					request.pushValue(request.peekContext().variables[variableName]);
+					request.pushValue(TLogic.getValue(request.peekContext().variables, variableName));
 			}
 			else
 			{
@@ -138,9 +136,8 @@ var TCommandFunctions =
 				throw TAMEError.UnexpectedValueType("Expected element type in PUSHELEMENTVALUE call.");
 
 			var elementName = TValue.asString(varElement);
-			var varibleName = TValue.asString(variable);
 
-			request.pushValue(request.moduleContext.resolveElementContext(elementName).variables[variableName]);
+			request.pushValue(TLogic.getValue(request.moduleContext.resolveElementContext(elementName).variables, TValue.asString(variable)));
 		}
 	},
 

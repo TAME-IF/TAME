@@ -26,6 +26,7 @@ import net.mtrop.tame.lang.Saveable;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
+import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.hash.Hash;
 import com.blackrook.commons.hash.HashMap;
@@ -74,15 +75,15 @@ public class TAMEModule implements Saveable
 		this.header = new Header();
 		
 		this.world = null;
-		this.actions = new HashMap<String, TAction>(20);
-		this.players = new HashMap<String, TPlayer>(2);
-		this.rooms = new HashMap<String, TRoom>(10);
-		this.objects = new HashMap<String, TObject>(20);
-		this.containers = new HashMap<String, TContainer>(5);
+		this.actions = new CaseInsensitiveHashMap<TAction>(20);
+		this.players = new CaseInsensitiveHashMap<TPlayer>(2);
+		this.rooms = new CaseInsensitiveHashMap<TRoom>(10);
+		this.objects = new CaseInsensitiveHashMap<TObject>(20);
+		this.containers = new CaseInsensitiveHashMap<TContainer>(5);
 		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
 		this.digest = null;
 		
-		this.knownIdentities = new Hash<String>(200);
+		this.knownIdentities = new CaseInsensitiveHash(200);
 	}
 
 	/**

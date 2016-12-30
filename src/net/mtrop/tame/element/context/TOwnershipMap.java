@@ -431,7 +431,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	/** 
 	 * Adds a tag to this object.
 	 * This is referred to in tag operations.
-	 * Unlike names, tags do not undergo conversion.
+	 * Unlike names, tags do not undergo whitespace conversion.
 	 * @param object the object to use.
 	 * @param tag the tag to add.
 	 */
@@ -443,7 +443,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	/** 
 	 * Removes a tag from an object. 
 	 * This is referred to in tag operations.
-	 * Unlike names, tags do not undergo conversion.
+	 * Unlike names, tags do not undergo whitespace conversion.
 	 * @param object the object to use.
 	 * @param tag the tag to remove.
 	 */
@@ -455,6 +455,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	/**
 	 * Checks if an object contains a particular tag.
 	 * This is referred to in tag operations.
+	 * Unlike names, tags do not undergo whitespace conversion.
 	 * @param object the object to use.
 	 * @param tag the tag to check.
 	 * @return true if so, false if not.
