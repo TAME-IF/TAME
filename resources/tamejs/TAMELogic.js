@@ -496,20 +496,6 @@ TLogic.interpretObject2 = function(moduleContext, interpreterContext)
 	return interpreterContext.object2 != null;
 };
 
-/**
- * Returns all objects in the accessible area by an object name read from the interpreter.
- * The output stops if the size of the output array is reached.
- * @param moduleContext the module context.
- * @param name the name from the interpreter.
- * @param outputArray the output vector of found objects.
- * @param arrayOffset the starting offset into the array to put them.
- * @return the amount of objects found.
- */
-TLogic.findAccessibleObjectsByName = function(moduleContext, name, outputArray, arrayOffset)
-{
-	// TODO: Finish this.
-};
-
 TLogic.enqueueInterpretedAction = function(request, response, interpreterContext) 
 {
 	// TODO: Finish this.
@@ -521,6 +507,36 @@ TLogic.processActionLoop = function(request, response)
 };
 
 TLogic.initializeContext = function(request, response) 
+{
+	// TODO: Finish this.
+};
+
+TLogic.checkObjectAccessibility = function(request, response, playerIdentity, objectIdentity) 
+{
+	// TODO: Finish this.
+};
+
+TLogic.doPlayerSwitch = function(request, response, playerIdentity)
+{
+	// TODO: Finish this.
+};
+
+TLogic.doRoomPop = function(request, response, playerIdentity)
+{
+	// TODO: Finish this.
+};
+
+TLogic.doRoomPush = function(request, response, playerIdentity, roomIdentity)
+{
+	// TODO: Finish this.
+};
+
+TLogic.doRoomSwitch = function(request, response, playerIdentity, roomIdentity)
+{
+	// TODO: Finish this.
+};
+
+TLogic.doBrowse = function(request, response, blockEntryTypeName, roomIdentity)
 {
 	// TODO: Finish this.
 };
@@ -548,7 +564,7 @@ callPlayerActionForbiddenBlock(TAMERequest, TAMEResponse, TAction, TPlayerContex
 callRoomActionForbiddenBlock(TAMERequest, TAMEResponse, TAction, TRoomContext)
 callInitOnContexts(TAMERequest, TAMEResponse, Iterator<? extends TElementContext<?>>)
 callInitBlock(TAMERequest, TAMEResponse, TElementContext<?>)
- */
+*/
 
 //TODO: Finish
 

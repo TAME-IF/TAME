@@ -273,7 +273,7 @@ TModuleContext.prototype.addObjectToElement = function(elementIdentity, objectId
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
-	TModuleContext.prototype.removeObject(context, objectIdentity);
+	this.removeObject(context, objectIdentity);
 	contextState.objectOwners[objectIdentity] = elementIdentity;
 	
 	if (!contextState.owners[elementIdentity])
@@ -662,6 +662,21 @@ TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blo
 
 	return null;
 };
+
+/**
+ * Returns all objects in the accessible area by an object name read from the interpreter.
+ * The output stops if the size of the output array is reached.
+ * @param name the name from the interpreter.
+ * @param outputArray the output vector of found objects.
+ * @param arrayOffset the starting offset into the array to put them.
+ * @return the amount of objects found.
+ */
+TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray, arrayOffset)
+{
+	// TODO: Finish this.
+};
+
+
 
 
 //##[[CONTENT-END

@@ -24,10 +24,8 @@ import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.element.context.TElementContext;
-import net.mtrop.tame.element.context.TObjectContext;
 import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.exception.ModuleExecutionException;
-import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.exception.UnexpectedValueTypeException;
 import net.mtrop.tame.interrupt.BreakInterrupt;
 import net.mtrop.tame.interrupt.EndInterrupt;
@@ -35,7 +33,6 @@ import net.mtrop.tame.interrupt.ContinueInterrupt;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
 import net.mtrop.tame.lang.ArgumentType;
-import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -275,7 +272,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (!functionValue.isInteger())
 				throw new UnexpectedValueTypeException("Expected integer type in ARITHMETICFUNC call.");
 
-			doArithmeticStackFunction(request, response, (int)functionValue.asLong());
+			TAMELogic.doArithmeticStackFunction(request, response, (int)functionValue.asLong());
 		}
 
 	},
@@ -2319,7 +2316,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			
-			request.pushValue(Value.create(checkObjectAccessibility(request, response, player, object)));
+			request.pushValue(Value.create(TAMELogic.checkObjectAccessibility(request, response, player, object)));
 		}
 		
 	},
@@ -2346,16 +2343,16 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				default:
 					throw new UnexpectedValueTypeException("INTERNAL ERROR IN BROWSE.");
 				case ROOM:
-					doRoomBrowse(request, response, moduleContext.resolveRoom(varObjectContainer.asString()));
+					TAMELogic.doRoomBrowse(request, response, moduleContext.resolveRoom(varObjectContainer.asString()));
 					break;
 				case PLAYER:
-					doPlayerBrowse(request, response, moduleContext.resolvePlayer(varObjectContainer.asString()));
+					TAMELogic.doPlayerBrowse(request, response, moduleContext.resolvePlayer(varObjectContainer.asString()));
 					break;
 				case CONTAINER:
-					doContainerBrowse(request, response, moduleContext.resolveContainer(varObjectContainer.asString()));
+					TAMELogic.doContainerBrowse(request, response, moduleContext.resolveContainer(varObjectContainer.asString()));
 					break;
 				case WORLD:
-					doWorldBrowse(request, response, moduleContext.resolveWorld());
+					TAMELogic.doWorldBrowse(request, response, moduleContext.resolveWorld());
 					break;
 			}
 			
@@ -2379,7 +2376,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected player type in SETPLAYER call.");
 
 			TPlayer nextPlayer = request.getModuleContext().resolvePlayer(varPlayer.asString());
-			doPlayerSwitch(request, response, nextPlayer);
+			TAMELogic.doPlayerSwitch(request, response, nextPlayer);
 		}
 		
 	},
@@ -2406,7 +2403,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (player == null)
 				throw new ErrorInterrupt("No current player!");
 
-			doRoomSwitch(request, response, player, nextRoom);
+			TAMELogic.doRoomSwitch(request, response, player, nextRoom);
 		}
 
 	},
@@ -2435,7 +2432,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new ErrorInterrupt("No current player!");
 			
 			// push new room on the player's stack and call focus.
-			doRoomPush(request, response, player, nextRoom);
+			TAMELogic.doRoomPush(request, response, player, nextRoom);
 		}
 
 	},
@@ -2462,7 +2459,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (currentRoom == null)
 				throw new ErrorInterrupt("No rooms for current player!");
 			
-			doRoomPop(request, response, player);
+			TAMELogic.doRoomPop(request, response, player);
 		}
 
 	},
@@ -2495,8 +2492,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (currentRoom == null)
 				throw new ErrorInterrupt("No rooms for current player!");
 			
-			doRoomPop(request, response, player);
-			doRoomPush(request, response, player, nextRoom);
+			TAMELogic.doRoomPop(request, response, player);
+			TAMELogic.doRoomPush(request, response, player, nextRoom);
 		}
 
 	},
@@ -2835,270 +2832,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		response.incrementAndCheckCommandsExecuted();
 	}
 
-	/**
-	 * Checks if an object is accessible to a player.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param player the player viewpoint.
-	 * @param object the object to check.
-	 * @return true if the object is considered "accessible," false if not.
-	 */
-	private static boolean checkObjectAccessibility(TAMERequest request, TAMEResponse response, TPlayer player, TObject object)
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TWorld world = moduleContext.resolveWorld();
-		TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
-		
-		response.trace(request, "Check world for %s...", object);
-		if (ownershipMap.checkWorldHasObject(world, object))
-		{
-			response.trace(request, "Found.");
-			return true;
-		}
-
-		response.trace(request, "Check %s for %s...", player, object);
-		if (ownershipMap.checkPlayerHasObject(player, object))
-		{
-			response.trace(request, "Found.");
-			return true;
-		}
-		
-		TRoom currentRoom = ownershipMap.getCurrentRoom(player);
-		
-		response.trace(request, "Check %s for %s...", currentRoom, object);
-		if (currentRoom != null && ownershipMap.checkRoomHasObject(currentRoom, object))
-		{
-			response.trace(request, "Found.");
-			return true;
-		}
-		
-		response.trace(request, "Not found.");
-		return false;
-	}
-	
-	/**
-	 * Performs an arithmetic function on the stack.
-	 * @param request the request context.
-	 * @param response the response object.
-	 * @param functionType the function type.
-	 */
-	private static void doArithmeticStackFunction(TAMERequest request, TAMEResponse response, int functionType)
-	{
-		if (functionType < 0 || functionType >= ArithmeticOperator.VALUES.length)
-			throw new UnexpectedValueException("Expected arithmetic function type, got illegal value %d.", functionType);
-	
-		ArithmeticOperator operator =  ArithmeticOperator.VALUES[functionType];
-		response.trace(request, "Function is %s", operator.name());
-		
-		if (operator.isBinary())
-		{
-			Value v2 = request.popValue();
-			Value v1 = request.popValue();
-			request.pushValue(operator.doOperation(v1, v2));
-		}
-		else
-		{
-			Value v1 = request.popValue();
-			request.pushValue(operator.doOperation(v1));
-		}
-	}
-
-	/**
-	 * Attempts to perform a player switch.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param nextPlayer the next player.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static void doPlayerSwitch(TAMERequest request, TAMEResponse response, TPlayer nextPlayer) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		
-		// set next player.
-		response.trace(request, "Setting current player to %s.", nextPlayer);
-		moduleContext.setCurrentPlayer(nextPlayer);
-	}
-
-	/**
-	 * Attempts to perform a room stack pop for a player.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param player the player to pop a room context from.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static void doRoomPop(TAMERequest request, TAMEResponse response, TPlayer player) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		
-		response.trace(request, "Popping top room from %s.", player);
-		ownership.popRoomFromPlayer(player);
-	}
-
-	/**
-	 * Attempts to perform a room stack push for a player.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param player the player that entered the room.
-	 * @param nextRoom the player to push a room context onto.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static void doRoomPush(TAMERequest request, TAMEResponse response, TPlayer player, TRoom nextRoom) throws TAMEInterrupt
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-	
-		response.trace(request, "Pushing %s on %s.", nextRoom, player);
-		moduleContext.getOwnershipMap().pushRoomOntoPlayer(player, nextRoom);
-	}
-
-	/**
-	 * Attempts to perform a room switch.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param player the player that is switching rooms.
-	 * @param nextRoom the target room.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static void doRoomSwitch(TAMERequest request, TAMEResponse response, TPlayer player, TRoom nextRoom) throws TAMEInterrupt
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		response.trace(request, "Leaving rooms for %s.", player);
-	
-		// pop all rooms on the stack.
-		while (ownership.getCurrentRoom(player) != null)
-			doRoomPop(request, response, player);
-	
-		// push new room on the stack and call focus.
-		doRoomPush(request, response, player, nextRoom);
-	}
-
-	/**
-	 * Attempts to perform a world browse.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param world the world to browse.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static void doWorldBrowse(TAMERequest request, TAMEResponse response, TWorld world) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
-		response.trace(request, "Start browse %s.", world);
-		
-		for (TObject object : ownership.getObjectsOwnedByWorld(world))
-		{
-			TObjectContext objectContext = moduleContext.getObjectContext(object);
-	
-			// find via inheritance.
-			response.trace(request, "Check %s for browse block.", object);
-			Block block = object.resolveBlock(blockEntry);
-			if (block != null)
-			{
-				response.trace(request, "Calling world browse block.");
-				TAMELogic.callBlock(request, response, objectContext, block);
-			}
-			
-		}
-	
-	}
-
-	/**
-	 * Attempts to perform a player browse.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param player the player to browse.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static void doPlayerBrowse(TAMERequest request, TAMEResponse response, TPlayer player) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
-		response.trace(request, "Start browse %s.", player);
-		
-		for (TObject object : ownership.getObjectsOwnedByPlayer(player))
-		{
-			TObjectContext objectContext = moduleContext.getObjectContext(object);
-	
-			// find via inheritance.
-			response.trace(request, "Check %s for browse block.", object);
-			Block block = object.resolveBlock(blockEntry);
-			if (block != null)
-			{
-				response.trace(request, "Calling player browse block.");
-				TAMELogic.callBlock(request, response, objectContext, block);
-			}
-			
-		}
-	
-	}
-
-	/**
-	 * Attempts to perform a room browse.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param room the room to browse.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static void doRoomBrowse(TAMERequest request, TAMEResponse response, TRoom room) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
-		
-		response.trace(request, "Start browse %s.", room);
-		
-		for (TObject object : ownership.getObjectsOwnedByRoom(room))
-		{
-			TObjectContext objectContext = moduleContext.getObjectContext(object);
-	
-			// find via inheritance.
-			response.trace(request, "Check %s for browse block.", object);
-			Block block = object.resolveBlock(blockEntry);
-			if (block != null)
-			{
-				response.trace(request, "Calling room browse block.");
-				TAMELogic.callBlock(request, response, objectContext, block);
-			}
-			
-		}
-	
-	}
-
-	/**
-	 * Attempts to perform a container browse.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param container the container to browse.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static void doContainerBrowse(TAMERequest request, TAMEResponse response, TContainer container) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
-	
-		response.trace(request, "Start browse %s.", container);
-		
-		for (TObject object : ownership.getObjectsOwnedByContainer(container))
-		{
-			TObjectContext objectContext = moduleContext.getObjectContext(object);
-	
-			// find via inheritance.
-			response.trace(request, "Check %s for browse block.", object);
-			Block block = object.resolveBlock(blockEntry);
-			if (block != null)
-			{
-				response.trace(request, "Calling container browse block.");
-				TAMELogic.callBlock(request, response, objectContext, block);
-			}
-			
-		}
-	
-	}
-	
 	/**
 	 * Resolves a list of all objects contained by an object container.
 	 * @param varObjectContainer the value to resolve via module context.

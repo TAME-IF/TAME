@@ -129,18 +129,18 @@ var TCommandFunctions =
 		"name": 'PUSHELEMENTVALUE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			var varObject = command.operand0;
+			var varElement = command.operand0;
 			var variable = command.operand1;
 
 			if (!TValue.isVariable(variable))
 				throw TAMEError.UnexpectedValueType("Expected variable type in PUSHELEMENTVALUE call.");
-			if (!TValue.isElement(varObject))
+			if (!TValue.isElement(varElement))
 				throw TAMEError.UnexpectedValueType("Expected element type in PUSHELEMENTVALUE call.");
 
-			var objectName = TValue.asString(varObject);
+			var elementName = TValue.asString(varElement);
 			var varibleName = TValue.asString(variable);
 
-			request.pushValue(request.moduleContext.resolveElementContext(objectName).variables[variableName]);
+			request.pushValue(request.moduleContext.resolveElementContext(elementName).variables[variableName]);
 		}
 	},
 
@@ -321,7 +321,7 @@ var TCommandFunctions =
 			var elementContext = request.moduleContext.resolveElementContext(id);
 			var element = request.moduleContext.resolveElement(id);
 
-			var block = TLogic.executeBlock(block, request, response, elementContext);
+			var block = request.moduleContext.resolveBlock(element.identity, 'PROCEDURE', [procedureName]);
 			if (block)
 				TLogic.executeBlock(block, request, response, elementContext);
 			else
@@ -1309,7 +1309,7 @@ var TCommandFunctions =
 			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
 			
 			var tag = TValue.asString(tagValue);
-			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity, function(objectIdentity){
+			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity), function(objectIdentity){
 				request.moduleContext.addObjectTag(objectIdentity, tag);
 			});
 		}
@@ -1365,7 +1365,7 @@ var TCommandFunctions =
 			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
 			
 			var tag = TValue.asString(tagValue);
-			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity, function(objectIdentity){
+			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity), function(objectIdentity){
 				request.moduleContext.removeObjectTag(objectIdentity, tag);
 			});
 		}
@@ -1384,7 +1384,9 @@ var TCommandFunctions =
 			if (!TValue.isObjectContainer(varObjectContainer))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in GIVEOBJECT call.");
 
-			request.moduleContext.addObjectToElement(TValue.asString(varObjectContainer)), TValue.asString(varObject)));
+			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
+
+			request.moduleContext.addObjectToElement(element.identity, TValue.asString(varObject));
 		}
 	},
 
@@ -1407,7 +1409,20 @@ var TCommandFunctions =
 		"name": 'MOVEOBJECTSWITHTAG', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var tagValue = request.popValue();
+			var elementValue = request.popValue();
+
+			if (!TValue.isLiteral(tagValue))
+				throw TAMEError.UnexpectedValueType("Expected literal type in MOVEOBJECTSWITHTAG call.");
+			if (!TValue.isObjectContainer(elementValue))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in MOVEOBJECTSWITHTAG call.");
+
+			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
+			
+			var tag = TValue.asString(tagValue);
+			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity), function(objectIdentity){
+				request.moduleContext.addObjectToElement(objectIdentity, element.identity);
+			});
 		}
 	},
 
@@ -1416,7 +1431,14 @@ var TCommandFunctions =
 		"name": 'OBJECTCOUNT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var elementValue = request.popValue();
+
+			if (!TValue.isObjectContainer(elementValue))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in OBJECTCOUNT call.");
+
+			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
+
+			request.pushValue(TValue.createInteger(request.moduleContext.getObjectsOwnedByElementCount(element.identity)));
 		}
 	},
 
@@ -1425,7 +1447,17 @@ var TCommandFunctions =
 		"name": 'HASOBJECT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject = request.popValue();
+			var varObjectContainer = request.popValue();
+
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected object type in HASOBJECT call.");
+			if (!TValue.isObjectContainer(varObjectContainer))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in HASOBJECT call.");
+
+			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
+
+			request.pushValue(TValue.createBoolean(request.moduleContext.checkElementHasObject(element.identity, TValue.asString(varObject))));
 		}
 	},
 
@@ -1434,7 +1466,12 @@ var TCommandFunctions =
 		"name": 'OBJECTHASNOOWNER', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject = request.popValue();
+
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected object type in OBJECTHASNOOWNER call.");
+
+			request.pushValue(TValue.createBoolean(request.moduleContext.checkObjectHasNoOwner(TValue.asString(varObject))));
 		}
 	},
 
@@ -1443,7 +1480,19 @@ var TCommandFunctions =
 		"name": 'PLAYERISINROOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varRoom = request.popValue();
+			var varPlayer = request.popValue();
+			
+			if (!TValue.isRoom(varRoom))
+				throw TAMEError.UnexpectedValueType("Expected room type in PLAYERISINROOM call.");
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in PLAYERISINROOM call.");
+
+			var context = request.moduleContext;
+			var room = context.resolveElement(TValue.asString(varRoom));
+			var player = context.resolveElement(TValue.asString(varPlayer));
+
+			request.pushValue(TValue.createBoolean(context.checkPlayerIsInRoom(player, room)))
 		}
 	},
 
@@ -1452,7 +1501,17 @@ var TCommandFunctions =
 		"name": 'PLAYERCANACCESSOBJECT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject = request.popValue();
+			var varPlayer = request.popValue();
+
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected object type in PLAYERCANACCESSOBJECT call.");
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in PLAYERCANACCESSOBJECT call.");
+
+			var player = request.moduleContext.resolveElement(TValue.asString(varPlayer));
+
+			request.pushValue(TValue.createBoolean(TLogic.checkObjectAccessibility(request, response, player.identity, TValue.asString(varObject))));
 		}
 	},
 
@@ -1461,7 +1520,23 @@ var TCommandFunctions =
 		"name": 'BROWSE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObjectContainer = request.popValue();
+
+			if (!TValue.isObjectContainer(varObjectContainer))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in BROWSE call.");
+
+			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
+
+			if (element.tameType === 'TContainer')
+				TLogic.doBrowse(request, response, 'ONCONTAINERBROWSE', element.identity);
+			else if (element.tameType === 'TPlayer')
+				TLogic.doBrowse(request, response, 'ONPLAYERBROWSE', element.identity);
+			else if (element.tameType === 'TRoom')
+				TLogic.doBrowse(request, response, 'ONROOMBROWSE', element.identity);
+			else if (element.tameType === 'TWorld')
+				TLogic.doBrowse(request, response, 'ONWORLDBROWSE', element.identity);
+			else
+				throw TAMEError.UnexpectedValueType("INTERNAL ERROR IN BROWSE.");
 		}
 	},
 
@@ -1470,7 +1545,14 @@ var TCommandFunctions =
 		"name": 'SETPLAYER', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varPlayer = request.popValue();
+
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in SETPLAYER call.");
+
+			var player = request.moduleContext.resolveElement(TValue.asString(varPlayer));
+
+			request.moduleContext.setCurrentPlayer(player.identity);
 		}
 	},
 
@@ -1479,7 +1561,19 @@ var TCommandFunctions =
 		"name": 'SETROOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varRoom = request.popValue();
+
+			if (!TValue.isRoom(varRoom))
+				throw TAMEError.UnexpectedValueType("Expected room type in SETROOM call.");
+
+			var context = request.moduleContext;
+			var player = context.getCurrentPlayer();
+			
+			if (!player)
+				throw TAMEInterrupt.Error("No current player!");
+
+			var room = context.resolveElement(TValue.asString(varRoom));
+			TLogic.doRoomSwitch(request, response, player.identity, room.identity);
 		}
 	},
 
@@ -1488,7 +1582,19 @@ var TCommandFunctions =
 		"name": 'PUSHROOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varRoom = request.popValue();
+
+			if (!TValue.isRoom(varRoom))
+				throw TAMEError.UnexpectedValueType("Expected room type in PUSHROOM call.");
+
+			var context = request.moduleContext;
+			var player = context.getCurrentPlayer();
+			
+			if (!player)
+				throw TAMEInterrupt.Error("No current player!");
+
+			var room = context.resolveElement(TValue.asString(varRoom));
+			TLogic.doRoomPush(request, response, player.identity, room.identity);
 		}
 	},
 

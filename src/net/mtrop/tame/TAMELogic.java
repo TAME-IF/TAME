@@ -17,6 +17,7 @@ import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.linkedlist.Queue;
 
 import net.mtrop.tame.element.TAction;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
@@ -28,8 +29,10 @@ import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
+import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
+import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -174,6 +177,467 @@ public final class TAMELogic implements TAMEConstants
 		request.checkStackClear();
 	}
 	
+	/**
+	 * Checks if an object is accessible to a player.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param player the player viewpoint.
+	 * @param object the object to check.
+	 * @return true if the object is considered "accessible," false if not.
+	 */
+	public static boolean checkObjectAccessibility(TAMERequest request, TAMEResponse response, TPlayer player, TObject object)
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TWorld world = moduleContext.resolveWorld();
+		TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
+		
+		response.trace(request, "Check world for %s...", object);
+		if (ownershipMap.checkWorldHasObject(world, object))
+		{
+			response.trace(request, "Found.");
+			return true;
+		}
+	
+		response.trace(request, "Check %s for %s...", player, object);
+		if (ownershipMap.checkPlayerHasObject(player, object))
+		{
+			response.trace(request, "Found.");
+			return true;
+		}
+		
+		TRoom currentRoom = ownershipMap.getCurrentRoom(player);
+		
+		response.trace(request, "Check %s for %s...", currentRoom, object);
+		if (currentRoom != null && ownershipMap.checkRoomHasObject(currentRoom, object))
+		{
+			response.trace(request, "Found.");
+			return true;
+		}
+		
+		response.trace(request, "Not found.");
+		return false;
+	}
+
+	/**
+	 * Performs an arithmetic function on the stack.
+	 * @param request the request context.
+	 * @param response the response object.
+	 * @param functionType the function type.
+	 */
+	public static void doArithmeticStackFunction(TAMERequest request, TAMEResponse response, int functionType)
+	{
+		if (functionType < 0 || functionType >= ArithmeticOperator.VALUES.length)
+			throw new UnexpectedValueException("Expected arithmetic function type, got illegal value %d.", functionType);
+	
+		ArithmeticOperator operator =  ArithmeticOperator.VALUES[functionType];
+		response.trace(request, "Function is %s", operator.name());
+		
+		if (operator.isBinary())
+		{
+			Value v2 = request.popValue();
+			Value v1 = request.popValue();
+			request.pushValue(operator.doOperation(v1, v2));
+		}
+		else
+		{
+			Value v1 = request.popValue();
+			request.pushValue(operator.doOperation(v1));
+		}
+	}
+
+	/**
+	 * Attempts to perform a player switch.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param nextPlayer the next player.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doPlayerSwitch(TAMERequest request, TAMEResponse response, TPlayer nextPlayer) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		
+		// set next player.
+		response.trace(request, "Setting current player to %s.", nextPlayer);
+		moduleContext.setCurrentPlayer(nextPlayer);
+	}
+
+	/**
+	 * Attempts to perform a room stack pop for a player.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param player the player to pop a room context from.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doRoomPop(TAMERequest request, TAMEResponse response, TPlayer player) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		
+		response.trace(request, "Popping top room from %s.", player);
+		ownership.popRoomFromPlayer(player);
+	}
+
+	/**
+	 * Attempts to perform a room stack push for a player.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param player the player that entered the room.
+	 * @param nextRoom the player to push a room context onto.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doRoomPush(TAMERequest request, TAMEResponse response, TPlayer player, TRoom nextRoom) throws TAMEInterrupt
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+	
+		response.trace(request, "Pushing %s on %s.", nextRoom, player);
+		moduleContext.getOwnershipMap().pushRoomOntoPlayer(player, nextRoom);
+	}
+
+	/**
+	 * Attempts to perform a room switch.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param player the player that is switching rooms.
+	 * @param nextRoom the target room.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doRoomSwitch(TAMERequest request, TAMEResponse response, TPlayer player, TRoom nextRoom) throws TAMEInterrupt
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		response.trace(request, "Leaving rooms for %s.", player);
+	
+		// pop all rooms on the stack.
+		while (ownership.getCurrentRoom(player) != null)
+			doRoomPop(request, response, player);
+	
+		// push new room on the stack and call focus.
+		doRoomPush(request, response, player, nextRoom);
+	}
+
+	/**
+	 * Attempts to perform a world browse.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param world the world to browse.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doWorldBrowse(TAMERequest request, TAMEResponse response, TWorld world) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
+		response.trace(request, "Start browse %s.", world);
+		
+		for (TObject object : ownership.getObjectsOwnedByWorld(world))
+		{
+			TObjectContext objectContext = moduleContext.getObjectContext(object);
+	
+			// find via inheritance.
+			response.trace(request, "Check %s for browse block.", object);
+			Block block = object.resolveBlock(blockEntry);
+			if (block != null)
+			{
+				response.trace(request, "Calling world browse block.");
+				callBlock(request, response, objectContext, block);
+			}
+			
+		}
+	
+	}
+
+	/**
+	 * Attempts to perform a player browse.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param player the player to browse.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doPlayerBrowse(TAMERequest request, TAMEResponse response, TPlayer player) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
+		response.trace(request, "Start browse %s.", player);
+		
+		for (TObject object : ownership.getObjectsOwnedByPlayer(player))
+		{
+			TObjectContext objectContext = moduleContext.getObjectContext(object);
+	
+			// find via inheritance.
+			response.trace(request, "Check %s for browse block.", object);
+			Block block = object.resolveBlock(blockEntry);
+			if (block != null)
+			{
+				response.trace(request, "Calling player browse block.");
+				callBlock(request, response, objectContext, block);
+			}
+			
+		}
+	
+	}
+
+	/**
+	 * Attempts to perform a room browse.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param room the room to browse.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doRoomBrowse(TAMERequest request, TAMEResponse response, TRoom room) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
+		
+		response.trace(request, "Start browse %s.", room);
+		
+		for (TObject object : ownership.getObjectsOwnedByRoom(room))
+		{
+			TObjectContext objectContext = moduleContext.getObjectContext(object);
+	
+			// find via inheritance.
+			response.trace(request, "Check %s for browse block.", object);
+			Block block = object.resolveBlock(blockEntry);
+			if (block != null)
+			{
+				response.trace(request, "Calling room browse block.");
+				callBlock(request, response, objectContext, block);
+			}
+			
+		}
+	
+	}
+
+	/**
+	 * Attempts to perform a container browse.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param container the container to browse.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void doContainerBrowse(TAMERequest request, TAMEResponse response, TContainer container) throws TAMEInterrupt 
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TOwnershipMap ownership = moduleContext.getOwnershipMap();
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
+	
+		response.trace(request, "Start browse %s.", container);
+		
+		for (TObject object : ownership.getObjectsOwnedByContainer(container))
+		{
+			TObjectContext objectContext = moduleContext.getObjectContext(object);
+	
+			// find via inheritance.
+			response.trace(request, "Check %s for browse block.", object);
+			Block block = object.resolveBlock(blockEntry);
+			if (block != null)
+			{
+				response.trace(request, "Calling container browse block.");
+				callBlock(request, response, objectContext, block);
+			}
+			
+		}
+	
+	}
+
+	/**
+	 * Initializes a newly-created context by executing each initialization block on each object.
+	 * @param request the request object containing the module context.
+	 * @param response the response object.
+	 * @throws TAMEInterrupt if an interrupt is thrown.
+	 * @throws TAMEFatalException if something goes wrong during execution.
+	 */
+	private static void initializeContext(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		
+		response.trace(request, "Starting init...");
+	
+		callInitOnContexts(request, response, moduleContext.getContainerContextList().valueIterator());
+		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
+		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());
+		callInitOnContexts(request, response, moduleContext.getPlayerContextList().valueIterator());
+		callInitBlock(request, response, moduleContext.getWorldContext());
+		
+	}
+
+	/**
+	 * Does an action loop: this keeps processing queued actions 
+	 * until there is nothing left to process.
+	 * @param request the request context.
+	 * @param response the response object.
+	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
+	 * @throws TAMEFatalException if something goes wrong during execution.
+	 */
+	private static void processActionLoop(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
+	{
+		boolean initial = true;
+		while (request.hasActionItems())
+		{
+			TAMEAction tameAction = request.nextActionItem();
+			TAction action = tameAction.getAction();
+			
+			try {
+			
+				switch (action.getType())
+				{
+					default:
+					case GENERAL:
+						doActionGeneral(request, response, action);
+						break;
+					case OPEN:
+						doActionOpen(request, response, action, tameAction.getTarget());
+						break;
+					case MODAL:
+						doActionModal(request, response, action, tameAction.getTarget());
+						break;
+					case TRANSITIVE:
+						doActionTransitive(request, response, action, tameAction.getObject1());
+						break;
+					case DITRANSITIVE:
+						if (tameAction.getObject2() == null)
+							doActionTransitive(request, response, action, tameAction.getObject1());
+						else
+							doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
+						break;
+				}
+				
+				request.checkStackClear();
+				
+			} catch (EndInterrupt end) {
+				// Catches end.
+			}
+			
+			// do the "after" stuff.
+			if (!request.hasActionItems() && initial)
+			{
+				initial = false;
+				doAfterRequest(request, response);
+			}
+			
+		}
+		
+	}
+
+	private static void enqueueInterpretedAction(TAMERequest request, TAMEResponse response, TAMEInterpreterContext interpreterContext) throws TAMEInterrupt 
+	{
+		TAction action = interpreterContext.getAction();
+		if (action == null)
+			doUnknownAction(request, response);
+		else
+		{
+			switch (action.getType())
+			{
+				default:
+				case GENERAL:
+					request.addActionItem(TAMEAction.createInitial(action));
+					break;
+				case OPEN:
+				{
+					if (!interpreterContext.isTargetLookedUp())
+					{
+						response.trace(request, "Performing open action %s with no target (incomplete)!", action);
+						if (!callActionIncomplete(request, response, action))
+							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					}
+					else
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getTarget()));
+					break;
+				}
+				case MODAL:
+				{
+					if (!interpreterContext.isModeLookedUp())
+					{
+						response.trace(request, "Performing modal action %s with no mode (incomplete)!", action);
+						if (!callActionIncomplete(request, response, action))
+							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					}
+					else if (interpreterContext.getMode() == null)
+					{
+						response.trace(request, "Performing modal action %s with an unknown mode!", action);
+						if (!callBadAction(request, response, action))
+							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+					}
+					else
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getMode()));
+					break;
+				}
+				case TRANSITIVE:
+				{
+					if (interpreterContext.isObjectAmbiguous())
+					{
+						response.trace(request, "Object is ambiguous for action %s.", action);
+						if (!callAmbiguousAction(request, response, action))
+							response.addCue(CUE_ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
+					}
+					else if (!interpreterContext.isObject1LookedUp())
+					{
+						response.trace(request, "Performing transitive action %s with no object (incomplete)!", action);
+						if (!callActionIncomplete(request, response, action))
+							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					}
+					else if (interpreterContext.getObject1() == null)
+					{
+						response.trace(request, "Performing transitive action %s with an unknown object!", action);
+						if (!callBadAction(request, response, action))
+							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+					}
+					else
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1()));
+					break;
+				}
+				case DITRANSITIVE:
+				{
+					if (interpreterContext.isObjectAmbiguous())
+					{
+						response.trace(request, "Object is ambiguous for action %s.", action);
+						if (!callAmbiguousAction(request, response, action))
+							response.addCue(CUE_ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
+					}
+					else if (!interpreterContext.isObject1LookedUp())
+					{
+						response.trace(request, "Performing ditransitive action %s with no first object (incomplete)!", action);
+						if (!callActionIncomplete(request, response, action))
+							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					}
+					else if (interpreterContext.getObject1() == null)
+					{
+						response.trace(request, "Performing ditransitive action %s with an unknown first object!", action);
+						if (!callBadAction(request, response, action))
+							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+					}
+					else if (!interpreterContext.isConjugateLookedUp())
+					{
+						response.trace(request, "Performing ditransitive action %s as a transitive one...", action);
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1()));
+					}
+					else if (!interpreterContext.isConjugateFound())
+					{
+						response.trace(request, "Performing ditransitive action %s with an unknown conjugate!", action);
+						if (!callBadAction(request, response, action))
+							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+					}
+					else if (!interpreterContext.isObject2LookedUp())
+					{
+						response.trace(request, "Performing ditransitive action %s with no second object (incomplete)!", action);
+						if (!callActionIncomplete(request, response, action))
+							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					}
+					else if (interpreterContext.getObject2() == null)
+					{
+						response.trace(request, "Performing ditransitive action %s with an unknown second object!", action);
+						if (!callBadAction(request, response, action))
+							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+					}
+					else
+						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1(), interpreterContext.getObject2()));
+					break;
+				}
+			}
+		}
+	}
+
 	/**
 	 * Attempts to call the after request block on the world.
 	 * @param request the request object.
@@ -566,253 +1030,6 @@ public final class TAMELogic implements TAMEConstants
 		
 	}
 	
-	/**
-	 * Returns all objects in the accessible area by an object name read from the interpreter.
-	 * The output stops if the size of the output array is reached.
-	 * @param moduleContext the module context.
-	 * @param name the name from the interpreter.
-	 * @param outputArray the output vector of found objects.
-	 * @param arrayOffset the starting offset into the array to put them.
-	 * @return the amount of objects found.
-	 */
-	private static int findAccessibleObjectsByName(TAMEModuleContext moduleContext, String name, TObject[] outputArray, int arrayOffset)
-	{
-		TPlayerContext playerContext = moduleContext.getCurrentPlayerContext();
-		TRoomContext roomContext = moduleContext.getCurrentRoomContext();
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		TOwnershipMap ownerMap = moduleContext.getOwnershipMap();
-		int start = arrayOffset;
-		
-		if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
-		{
-			if (ownerMap.checkObjectHasName(obj, name))
-			{
-				outputArray[arrayOffset++] = obj;
-				if (arrayOffset == outputArray.length)
-					return arrayOffset - start;
-			}
-		}
-		
-		if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
-		{
-			if (ownerMap.checkObjectHasName(obj, name))
-			{
-				outputArray[arrayOffset++] = obj;
-				if (arrayOffset == outputArray.length)
-					return arrayOffset - start;
-			}
-		}
-	
-		for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
-		{
-			if (ownerMap.checkObjectHasName(obj, name))
-			{
-				outputArray[arrayOffset++] = obj;
-				if (arrayOffset == outputArray.length)
-					return arrayOffset - start;
-			}
-		}
-	
-		return arrayOffset - start;
-	}
-
-	/**
-	 * Initializes a newly-created context by executing each initialization block on each object.
-	 * @param request the request object containing the module context.
-	 * @param response the response object.
-	 * @throws TAMEInterrupt if an interrupt is thrown.
-	 * @throws TAMEFatalException if something goes wrong during execution.
-	 */
-	private static void initializeContext(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		
-		response.trace(request, "Starting init...");
-
-		callInitOnContexts(request, response, moduleContext.getContainerContextList().valueIterator());
-		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
-		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());
-		callInitOnContexts(request, response, moduleContext.getPlayerContextList().valueIterator());
-		callInitBlock(request, response, moduleContext.getWorldContext());
-		
-	}
-
-	/**
-	 * Does an action loop: this keeps processing queued actions 
-	 * until there is nothing left to process.
-	 * @param request the request context.
-	 * @param response the response object.
-	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
-	 * @throws TAMEFatalException if something goes wrong during execution.
-	 */
-	private static void processActionLoop(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
-	{
-		boolean initial = true;
-		while (request.hasActionItems())
-		{
-			TAMEAction tameAction = request.nextActionItem();
-			TAction action = tameAction.getAction();
-			
-			try {
-			
-				switch (action.getType())
-				{
-					default:
-					case GENERAL:
-						doActionGeneral(request, response, action);
-						break;
-					case OPEN:
-						doActionOpen(request, response, action, tameAction.getTarget());
-						break;
-					case MODAL:
-						doActionModal(request, response, action, tameAction.getTarget());
-						break;
-					case TRANSITIVE:
-						doActionTransitive(request, response, action, tameAction.getObject1());
-						break;
-					case DITRANSITIVE:
-						if (tameAction.getObject2() == null)
-							doActionTransitive(request, response, action, tameAction.getObject1());
-						else
-							doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
-						break;
-				}
-				
-				request.checkStackClear();
-				
-			} catch (EndInterrupt end) {
-				// Catches end.
-			}
-			
-			// do the "after" stuff.
-			if (!request.hasActionItems() && initial)
-			{
-				initial = false;
-				doAfterRequest(request, response);
-			}
-			
-		}
-		
-	}
-
-	private static void enqueueInterpretedAction(TAMERequest request, TAMEResponse response, TAMEInterpreterContext interpreterContext) throws TAMEInterrupt 
-	{
-		TAction action = interpreterContext.getAction();
-		if (action == null)
-			doUnknownAction(request, response);
-		else
-		{
-			switch (action.getType())
-			{
-				default:
-				case GENERAL:
-					request.addActionItem(TAMEAction.createInitial(action));
-					break;
-				case OPEN:
-				{
-					if (!interpreterContext.isTargetLookedUp())
-					{
-						response.trace(request, "Performing open action %s with no target (incomplete)!", action);
-						if (!callActionIncomplete(request, response, action))
-							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
-					}
-					else
-						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getTarget()));
-					break;
-				}
-				case MODAL:
-				{
-					if (!interpreterContext.isModeLookedUp())
-					{
-						response.trace(request, "Performing modal action %s with no mode (incomplete)!", action);
-						if (!callActionIncomplete(request, response, action))
-							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
-					}
-					else if (interpreterContext.getMode() == null)
-					{
-						response.trace(request, "Performing modal action %s with an unknown mode!", action);
-						if (!callBadAction(request, response, action))
-							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
-					}
-					else
-						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getMode()));
-					break;
-				}
-				case TRANSITIVE:
-				{
-					if (interpreterContext.isObjectAmbiguous())
-					{
-						response.trace(request, "Object is ambiguous for action %s.", action);
-						if (!callAmbiguousAction(request, response, action))
-							response.addCue(CUE_ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
-					}
-					else if (!interpreterContext.isObject1LookedUp())
-					{
-						response.trace(request, "Performing transitive action %s with no object (incomplete)!", action);
-						if (!callActionIncomplete(request, response, action))
-							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
-					}
-					else if (interpreterContext.getObject1() == null)
-					{
-						response.trace(request, "Performing transitive action %s with an unknown object!", action);
-						if (!callBadAction(request, response, action))
-							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
-					}
-					else
-						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1()));
-					break;
-				}
-				case DITRANSITIVE:
-				{
-					if (interpreterContext.isObjectAmbiguous())
-					{
-						response.trace(request, "Object is ambiguous for action %s.", action);
-						if (!callAmbiguousAction(request, response, action))
-							response.addCue(CUE_ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
-					}
-					else if (!interpreterContext.isObject1LookedUp())
-					{
-						response.trace(request, "Performing ditransitive action %s with no first object (incomplete)!", action);
-						if (!callActionIncomplete(request, response, action))
-							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
-					}
-					else if (interpreterContext.getObject1() == null)
-					{
-						response.trace(request, "Performing ditransitive action %s with an unknown first object!", action);
-						if (!callBadAction(request, response, action))
-							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
-					}
-					else if (!interpreterContext.isConjugateLookedUp())
-					{
-						response.trace(request, "Performing ditransitive action %s as a transitive one...", action);
-						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1()));
-					}
-					else if (!interpreterContext.isConjugateFound())
-					{
-						response.trace(request, "Performing ditransitive action %s with an unknown conjugate!", action);
-						if (!callBadAction(request, response, action))
-							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
-					}
-					else if (!interpreterContext.isObject2LookedUp())
-					{
-						response.trace(request, "Performing ditransitive action %s with no second object (incomplete)!", action);
-						if (!callActionIncomplete(request, response, action))
-							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
-					}
-					else if (interpreterContext.getObject2() == null)
-					{
-						response.trace(request, "Performing ditransitive action %s with an unknown second object!", action);
-						if (!callBadAction(request, response, action))
-							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
-					}
-					else
-						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1(), interpreterContext.getObject2()));
-					break;
-				}
-			}
-		}
-	}
-
 	/**
 	 * Attempts to call the ambiguous action blocks.
 	 * @param request the request object.
@@ -1451,7 +1668,7 @@ public final class TAMELogic implements TAMEConstants
 			index++;
 
 			interpreterContext.setObject1LookedUp(true);
-			int out = findAccessibleObjectsByName(moduleContext, sb.toString(), interpreterContext.getObjects(), 0);
+			int out = moduleContext.getAccessibleObjectsByName(sb.toString(), interpreterContext.getObjects(), 0);
 			if (out > 1)
 			{
 				interpreterContext.setObjectAmbiguous(true);
@@ -1493,7 +1710,7 @@ public final class TAMELogic implements TAMEConstants
 			index++;
 
 			interpreterContext.setObject2LookedUp(true);
-			int out = findAccessibleObjectsByName(moduleContext, sb.toString(), interpreterContext.getObjects(), 0);
+			int out = moduleContext.getAccessibleObjectsByName(sb.toString(), interpreterContext.getObjects(), 0);
 			if (out > 1)
 			{
 				interpreterContext.setObjectAmbiguous(true);

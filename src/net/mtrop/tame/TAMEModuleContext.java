@@ -347,6 +347,56 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
+	 * Returns all objects in the accessible area by an object name read from the interpreter.
+	 * The output stops if the size of the output array is reached.
+	 * @param moduleContext the module context.
+	 * @param name the name from the interpreter.
+	 * @param outputArray the output vector of found objects.
+	 * @param arrayOffset the starting offset into the array to put them.
+	 * @return the amount of objects found.
+	 */
+	public int getAccessibleObjectsByName(String name, TObject[] outputArray, int arrayOffset)
+	{
+		TPlayerContext playerContext = getCurrentPlayerContext();
+		TRoomContext roomContext = getCurrentRoomContext();
+		TWorldContext worldContext = getWorldContext();
+		TOwnershipMap ownerMap = getOwnershipMap();
+		int start = arrayOffset;
+		
+		if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
+		{
+			if (ownerMap.checkObjectHasName(obj, name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+		
+		if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
+		{
+			if (ownerMap.checkObjectHasName(obj, name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+	
+		for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
+		{
+			if (ownerMap.checkObjectHasName(obj, name))
+			{
+				outputArray[arrayOffset++] = obj;
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+	
+		return arrayOffset - start;
+	}
+
+	/**
 	 * Resolves a world context.
 	 * @return the context resolved.
 	 */
@@ -706,5 +756,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		readBytes(bis);
 		bis.close();
 	}
+	
+	
 	
 }
