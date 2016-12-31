@@ -8,6 +8,7 @@
 
 // REQUIREMENTS =========================================================================================
 var TModule = TModule || ((typeof require) !== 'undefined' ? require('./objects/TModule.js') : null);
+var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('./TAMELogic.js') : null);
 // ======================================================================================================
 
 //##[[CONTENT-START
