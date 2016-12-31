@@ -39,7 +39,6 @@ import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.lang.Saveable;
-import net.mtrop.tame.lang.Value;
 
 /**
  * A mutable context for a module.
@@ -52,9 +51,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/** A random number generator. */
 	private Random random;
-
-	/** Current active player. */
-	private TPlayer currentPlayer;
 
 	/** World context. */
 	private TWorldContext worldContext;
@@ -79,7 +75,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		this.module = module;
 		this.random = new Random();
 		
-		currentPlayer = null;
 		playerContextHash = new HashMap<String, TPlayerContext>(3);
 		roomContextHash = new HashMap<String, TRoomContext>(20);
 		objectContextHash = new HashMap<String, TObjectContext>(40);
@@ -136,45 +131,36 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * Get the player context list.
 	 * @return the context map.
 	 */
-	HashMap<String, TPlayerContext> getPlayerContextList()
+	public Iterator<TPlayerContext> getPlayerContextIterator()
 	{
-		return playerContextHash;
+		return playerContextHash.valueIterator();
 	}
 
 	/**
 	 * Get the room context list.
 	 * @return the context map.
 	 */
-	HashMap<String, TRoomContext> getRoomContextList()
+	public Iterator<TRoomContext> getRoomContextIterator()
 	{
-		return roomContextHash;
+		return roomContextHash.valueIterator();
 	}
 
 	/**
 	 * Get the object context list.
 	 * @return the context map.
 	 */
-	HashMap<String, TObjectContext> getObjectContextList()
+	public Iterator<TObjectContext> getObjectContextIterator()
 	{
-		return objectContextHash;
+		return objectContextHash.valueIterator();
 	}
 
 	/**
 	 * Get the container context list.
 	 * @return the context map.
 	 */
-	HashMap<String, TContainerContext> getContainerContextList()
+	public Iterator<TContainerContext> getContainerContextIterator()
 	{
-		return containerContextHash;
-	}
-
-	/**
-	 * Gets the ownership map.
-	 * @return the ownership map object.
-	 */
-	TOwnershipMap getOwnershipMap()
-	{
-		return ownershipMap;
+		return containerContextHash.valueIterator();
 	}
 
 	/**
@@ -301,39 +287,12 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
-	 * Sets the current player.
-	 * @param player the player to set as current player.
-	 */
-	public void setCurrentPlayer(TPlayer player)
-	{
-		currentPlayer = player;
-	}
-
-	/**
-	 * Gets the current player by the current player id.
-	 * @return the current player, or null if not set.
-	 */
-	public TPlayer getCurrentPlayer()
-	{
-		return currentPlayer;
-	}
-
-	/**
-	 * Gets the current room by the current room id.
-	 * @return the current room, or null if not set or current player is not set.
-	 */
-	public TRoom getCurrentRoom()
-	{
-		return currentPlayer != null ? ownershipMap.getCurrentRoom(currentPlayer) : null;
-	}
-
-	/**
 	 * Gets the current player context by the current player id.
 	 * @return the current player context, or null if not set.
 	 */
 	public TPlayerContext getCurrentPlayerContext()
 	{
-		return currentPlayer != null ? getPlayerContext(currentPlayer) : null;
+		return ownershipMap.getCurrentPlayer() != null ? getPlayerContext(ownershipMap.getCurrentPlayer()) : null;
 	}
 
 	/**
@@ -342,10 +301,18 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TRoomContext getCurrentRoomContext()
 	{
-		TRoom room = getCurrentRoom();
+		TRoom room = ownershipMap.getCurrentRoom();
 		return room != null ? getRoomContext(room) : null;
 	}
 
+	/**
+	 * @return the ownership map for this context.
+	 */
+	public TOwnershipMap getOwnershipMap() 
+	{
+		return ownershipMap;
+	}
+	
 	/**
 	 * Returns all objects in the accessible area by an object name read from the interpreter.
 	 * The output stops if the size of the output array is reached.
@@ -360,12 +327,11 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		TPlayerContext playerContext = getCurrentPlayerContext();
 		TRoomContext roomContext = getCurrentRoomContext();
 		TWorldContext worldContext = getWorldContext();
-		TOwnershipMap ownerMap = getOwnershipMap();
 		int start = arrayOffset;
 		
-		if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
+		if (playerContext != null) for (TObject obj : ownershipMap.getObjectsOwnedByPlayer(playerContext.getElement()))
 		{
-			if (ownerMap.checkObjectHasName(obj, name))
+			if (ownershipMap.checkObjectHasName(obj, name))
 			{
 				outputArray[arrayOffset++] = obj;
 				if (arrayOffset == outputArray.length)
@@ -373,9 +339,9 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			}
 		}
 		
-		if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
+		if (roomContext != null) for (TObject obj : ownershipMap.getObjectsOwnedByRoom(roomContext.getElement()))
 		{
-			if (ownerMap.checkObjectHasName(obj, name))
+			if (ownershipMap.checkObjectHasName(obj, name))
 			{
 				outputArray[arrayOffset++] = obj;
 				if (arrayOffset == outputArray.length)
@@ -383,9 +349,9 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			}
 		}
 	
-		for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
+		for (TObject obj : ownershipMap.getObjectsOwnedByWorld(worldContext.getElement()))
 		{
-			if (ownerMap.checkObjectHasName(obj, name))
+			if (ownershipMap.checkObjectHasName(obj, name))
 			{
 				outputArray[arrayOffset++] = obj;
 				if (arrayOffset == outputArray.length)
@@ -443,7 +409,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		{
 			context = getCurrentPlayerContext();
 			if (context == null)
-				throw new ErrorInterrupt("Current player context called with no current player!");
+				throw new ErrorInterrupt("Current player context requested with no current player!");
 		}
 		else
 		{
@@ -481,7 +447,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		{
 			context = getCurrentRoomContext();
 			if (context == null)
-				throw new ErrorInterrupt("Current room context called with no current room!");
+				throw new ErrorInterrupt("Current room context requested with no current room!");
 		}
 		else
 		{
@@ -555,62 +521,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		return resolveContainerContext(containerIdentity).getElement();
 	}
 
-	/**
-	 * Resolves a persistent variable from the world context element.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	public Value resolveWorldVariableValue(String variableName)
-	{
-		return resolveWorldContext().getValue(variableName);
-	}
-
-	/**
-	 * Resolves a persistent variable from a player context element.
-	 * @param playerIdentity a player identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 * @throws ErrorInterrupt if no current player, if it is requested.
-	 */
-	public Value resolvePlayerVariableValue(String playerIdentity, String variableName) throws ErrorInterrupt
-	{
-		return resolvePlayerContext(playerIdentity).getValue(variableName);
-	}
-
-	/**
-	 * Resolves a persistent variable from a room context element.
-	 * @param roomIdentity a room identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 * @throws ErrorInterrupt if no current room, if it is requested.
-	 */
-	public Value resolveRoomVariableValue(String roomIdentity, String variableName) throws ErrorInterrupt
-	{
-		return resolveRoomContext(roomIdentity).getValue(variableName);
-	}
-
-	/**
-	 * Resolves a persistent variable from an object context element.
-	 * @param objectIdentity an object identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	public Value resolveObjectVariableValue(String objectIdentity, String variableName)
-	{
-		return resolveObjectContext(objectIdentity).getValue(variableName);
-	}
-
-	/**
-	 * Resolves a persistent variable from a container context element.
-	 * @param containerIdentity a container identity.
-	 * @param variableName the variable name.
-	 * @return the value resolved.
-	 */
-	public Value resolveContainerVariableValue(String containerIdentity, String variableName)
-	{
-		return resolveContainerContext(containerIdentity).getValue(variableName);
-	}
-
 	@Override
 	public void writeBytes(OutputStream out) throws IOException 
 	{
@@ -624,9 +534,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		if ((digest = module.getDigest()) == null)
 			digest = module.calculateDigest();
 		sw.writeBytes(digest);
-		sw.writeBoolean(currentPlayer != null);
-		if (currentPlayer != null)
-			sw.writeString(currentPlayer.getIdentity(), "UTF-8");
 		
 		sw.writeString(worldContext.getElement().getIdentity(), "UTF-8");
 		worldContext.writeStateBytes(module, out);
@@ -682,17 +589,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		if (!Arrays.equals(digest, moduleDigest))
 			throw new ModuleStateException("Module and state digests do not match. Save state may not be for this module.");
 		
-		// has current player.
-		if (sr.readBoolean())
-		{
-			identity = sr.readString("UTF-8");
-			currentPlayer = module.getPlayerByIdentity(identity);
-			if (currentPlayer == null)
-				throw new ModuleStateException("Expected player '%s' in module context!", identity);
-		}
-		else
-			currentPlayer = null;
-
 		identity = sr.readString("UTF-8");
 		if (!identity.equals(IDENTITY_CURRENT_WORLD))
 			throw new ModuleStateException("Expected world '%s' in module context!", identity);

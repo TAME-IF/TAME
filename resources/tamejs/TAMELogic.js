@@ -463,7 +463,7 @@ TLogic.interpretObject1 = function(moduleContext, interpreterContext)
 		index++;
 		
 		interpreterContext.object1LookedUp = true;
-		var out = TLogic.findAccessibleObjectsByName(moduleContext, sb, interpreterContext.objects, 0);
+		var out = moduleContext.getAccessibleObjectsByName(sb, interpreterContext.objects, 0);
 		if (out > 1)
 		{
 			interpreterContext.objectAmbiguous = true;
@@ -504,7 +504,7 @@ TLogic.interpretObject2 = function(moduleContext, interpreterContext)
 		index++;
 		
 		interpreterContext.object2LookedUp = true;
-		var out = TLogic.findAccessibleObjectsByName(moduleContext, sb, interpreterContext.objects, 0);
+		var out = moduleContext.getAccessibleObjectsByName(sb, interpreterContext.objects, 0);
 		if (out > 1)
 		{
 			interpreterContext.objectAmbiguous = true;

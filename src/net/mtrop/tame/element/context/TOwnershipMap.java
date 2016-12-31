@@ -50,6 +50,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	protected HashedQueueMap<TPlayer, TObject> objectsOwnedByPlayer;
 	/** Ownership map - objects owned by container. */
 	protected HashedQueueMap<TContainer, TObject> objectsOwnedByContainer;
+
+	/** Current player. */
+	private TPlayer currentPlayer;
 	/** Room stack. */
 	protected HashMap<TPlayer, Stack<TRoom>> playerToRoomStack;
 	
@@ -58,7 +61,6 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	/** Map of object to its current tags. */
 	protected HashMap<TObject, CaseInsensitiveHash> objectCurrentTags;
 
-	
 	/** Reverse lookup object - not saved. */
 	protected HashMap<TObject, TElement> objectToElement;
 
@@ -71,6 +73,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		objectsOwnedByRoom = new HashedQueueMap<TRoom, TObject>(10);
 		objectsOwnedByPlayer = new HashedQueueMap<TPlayer, TObject>(4);
 		objectsOwnedByContainer = new HashedQueueMap<TContainer, TObject>(3);
+		currentPlayer = null;
 		playerToRoomStack = new HashMap<TPlayer, Stack<TRoom>>(3);
 		objectCurrentNames = new HashMap<TObject, CaseInsensitiveHash>();
 		objectCurrentTags = new HashMap<TObject, CaseInsensitiveHash>();
@@ -86,6 +89,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		objectsOwnedByWorld.clear();
 		objectsOwnedByRoom.clear();
 		objectsOwnedByPlayer.clear();
+		objectsOwnedByContainer.clear();
+		currentPlayer = null;
 		playerToRoomStack.clear();
 		objectCurrentNames.clear();
 		objectCurrentTags.clear();
@@ -227,17 +232,6 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	/**
-	 * Returns the current room for a player.
-	 * @param player the player to use.
-	 * @return the current room or null if no room.
-	 */
-	public TRoom getCurrentRoom(TPlayer player)
-	{
-		Stack<TRoom> stack = playerToRoomStack.get(player);
-		return stack != null ? stack.peek() : null;
-	}
-	
-	/**
 	 * Checks if a world possesses an object.
 	 * @param world the world to use.
 	 * @param object the object in question.
@@ -310,6 +304,44 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		if (playerToRoomStack.containsKey(player))
 			return playerToRoomStack.get(player).contains(room);
 		return false;
+	}
+
+	/**
+	 * Sets the current player.
+	 * @param player the player to set as current player.
+	 */
+	public void setCurrentPlayer(TPlayer player)
+	{
+		currentPlayer = player;
+	}
+
+	/**
+	 * Gets the current player by the current player id.
+	 * @return the current player, or null if not set.
+	 */
+	public TPlayer getCurrentPlayer()
+	{
+		return currentPlayer;
+	}
+
+	/**
+	 * Returns the current room for a player.
+	 * @param player the player to use.
+	 * @return the current room or null if no room.
+	 */
+	public TRoom getCurrentRoom(TPlayer player)
+	{
+		Stack<TRoom> stack = playerToRoomStack.get(player);
+		return stack != null ? stack.peek() : null;
+	}
+
+	/**
+	 * Gets the current room by the current room id.
+	 * @return the current room, or null if not set or current player is not set.
+	 */
+	public TRoom getCurrentRoom()
+	{
+		return currentPlayer != null ? getCurrentRoom(currentPlayer) : null;
 	}
 
 	/**
@@ -518,6 +550,10 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		writeQueueMap(sw, objectsOwnedByPlayer);
 		writeQueueMap(sw, objectsOwnedByContainer);
 		
+		sw.writeBoolean(currentPlayer != null);
+		if (currentPlayer != null)
+			sw.writeString(currentPlayer.getIdentity(), "UTF-8");
+
 		sw.writeInt(playerToRoomStack.size());
 		for (ObjectPair<TPlayer, Stack<TRoom>> playerPair : playerToRoomStack)
 		{
@@ -648,6 +684,17 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 				addObjectToContainer(object, container);
 			}
 		}
+
+		// has current player.
+		if (sr.readBoolean())
+		{
+			String identity = sr.readString("UTF-8");
+			currentPlayer = module.getPlayerByIdentity(identity);
+			if (currentPlayer == null)
+				throw new ModuleStateException("Expected player '%s' in module context!", identity);
+		}
+		else
+			currentPlayer = null;
 
 		int ptrssize = sr.readInt();
 		while (ptrssize-- > 0)

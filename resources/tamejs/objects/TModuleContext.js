@@ -85,6 +85,9 @@ TModuleContext.prototype.setCurrentPlayer = function(playerIdentity)
 		throw TAMEError.ModuleState("Context is invalid or null");
 	if(!contextState.elements)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
+	
+	playerIdentity = playerIdentity.toLowerCase();
+	
 	if (!contextState.elements[playerIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	
@@ -123,6 +126,10 @@ TModuleContext.prototype.pushRoomOntoPlayer = function(playerIdentity, roomIdent
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.roomStacks)
 		throw TAMEError.ModuleState("Context state is missing required member: roomStacks");
+
+	playerIdentity = playerIdentity.toLowerCase();
+	roomIdentity = roomIdentity.toLowerCase();
+
 	if (!contextState.elements[playerIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	if (!contextState.elements[roomIdentity])
@@ -146,9 +153,11 @@ TModuleContext.prototype.popRoomFromPlayer = function(playerIdentity)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.roomStacks)
 		throw TAMEError.ModuleState("Context state is missing required member: roomStacks");
+
+	playerIdentity = playerIdentity.toLowerCase();
+
 	if (!contextState.elements[playerIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
-	
 	if (!contextState.roomStacks[playerIdentity])
 		return;
 
@@ -172,6 +181,10 @@ TModuleContext.prototype.checkPlayerIsInRoom = function(playerIdentity, roomIden
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.roomStacks)
 		throw TAMEError.ModuleState("Context state is missing required member: roomStacks");
+
+	playerIdentity = playerIdentity.toLowerCase();
+	roomIdentity = roomIdentity.toLowerCase();
+
 	if (!contextState.elements[playerIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	if (!contextState.elements[roomIdentity])
@@ -182,52 +195,6 @@ TModuleContext.prototype.checkPlayerIsInRoom = function(playerIdentity, roomIden
 		return false;
 	else
 		roomstack.indexOf(roomIdentity) >= 0;
-};
-
-/**
- * Gets the current player.
- * @return room identity, or null/undefined if no current player.
- * @throws TAMEError if no such stored element context.
- */
-TModuleContext.prototype.getCurrentPlayer = function()
-{
-	var contextState = this.state;
-
-	if(!contextState.elements)
-		throw TAMEError.ModuleState("Context state is missing required member: elements");
-	if(!contextState.roomStacks)
-		throw TAMEError.ModuleState("Context state is missing required member: roomStacks");
-
-	return contextState.player;
-};
-
-/**
- * Gets the current room. Influenced by current player.
- * @return room identity, or null if no current room (or no current player).
- * @throws TAMEError if no such stored element context.
- */
-TModuleContext.prototype.getCurrentRoom = function()
-{
-	var contextState = this.state;
-
-	if(!contextState.elements)
-		throw TAMEError.ModuleState("Context state is missing required member: elements");
-	if(!contextState.roomStacks)
-		throw TAMEError.ModuleState("Context state is missing required member: roomStacks");
-
-	var playerIdentity = contextState.player; 
-	
-	if (!playerIdentity)
-		return null;
-
-	if (!contextState.elements[playerIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
-
-	if (!contextState.roomStacks[playerIdentity])
-		return null;
-
-	var len = contextState.roomStacks[playerIdentity].length;
-	return contextState.roomStacks[playerIdentity][len - 1];
 };
 
 /**
@@ -245,6 +212,9 @@ TModuleContext.prototype.removeObject = function(objectIdentity)
 		throw TAMEError.ModuleState("Context state is missing required member: objectOwners");
 	if(!contextState.owners)
 		throw TAMEError.ModuleState("Context state is missing required member: owners");
+
+	objectIdentity = objectIdentity.toLowerCase();
+	
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
@@ -272,6 +242,10 @@ TModuleContext.prototype.addObjectToElement = function(elementIdentity, objectId
 		throw TAMEError.ModuleState("Context state is missing required member: objectOwners");
 	if(!contextState.owners)
 		throw TAMEError.ModuleState("Context state is missing required member: owners");
+
+	elementIdentity = elementIdentity.toLowerCase();
+	objectIdentity = objectIdentity.toLowerCase();
+	
 	if (!contextState.elements[elementIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
 	if (!contextState.elements[objectIdentity])
@@ -300,6 +274,10 @@ TModuleContext.prototype.checkElementHasObject = function(elementIdentity, objec
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.objectOwners)
 		throw TAMEError.ModuleState("Context state is missing required member: objectOwners");
+
+	elementIdentity = elementIdentity.toLowerCase();
+	objectIdentity = objectIdentity.toLowerCase();
+
 	if (!contextState.elements[elementIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
 	if (!contextState.elements[objectIdentity])
@@ -323,6 +301,9 @@ TModuleContext.prototype.checkObjectHasNoOwner = function(objectIdentity)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.objectOwners)
 		throw TAMEError.ModuleState("Context state is missing required member: objectOwners");
+
+	objectIdentity = objectIdentity.toLowerCase();
+	
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
@@ -344,6 +325,9 @@ TModuleContext.prototype.getObjectsOwnedByElement = function(elementIdentity)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.owners)
 		throw TAMEError.ModuleState("Context state is missing required member: owners");
+
+	elementIdentity = elementIdentity.toLowerCase();
+	
 	if (!contextState.elements[elementIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
 	
@@ -369,6 +353,9 @@ TModuleContext.prototype.getObjectsOwnedByElementCount = function(elementIdentit
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.owners)
 		throw TAMEError.ModuleState("Context state is missing required member: owners");
+
+	elementIdentity = elementIdentity.toLowerCase();
+
 	if (!contextState.elements[elementIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
 	
@@ -396,6 +383,9 @@ TModuleContext.prototype.addObjectName = function(objectIdentity, name)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.names)
 		throw TAMEError.ModuleState("Context state is missing required member: names");
+
+	objectIdentity = objectIdentity.toLowerCase();
+	
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
@@ -423,6 +413,9 @@ TModuleContext.prototype.removeObjectName = function(objectIdentity, name)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.names)
 		throw TAMEError.ModuleState("Context state is missing required member: names");
+
+	objectIdentity = objectIdentity.toLowerCase();
+
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
@@ -449,6 +442,9 @@ TModuleContext.prototype.checkObjectHasName = function(objectIdentity, name)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.names)
 		throw TAMEError.ModuleState("Context state is missing required member: names");
+	
+	objectIdentity = objectIdentity.toLowerCase();
+
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
@@ -473,6 +469,9 @@ TModuleContext.prototype.addObjectTag = function(objectIdentity, tag)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.tags)
 		throw TAMEError.ModuleState("Context state is missing required member: tags");
+	
+	objectIdentity = objectIdentity.toLowerCase();
+
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
@@ -500,6 +499,9 @@ TModuleContext.prototype.removeObjectTag = function(objectIdentity, tag)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.tags)
 		throw TAMEError.ModuleState("Context state is missing required member: tags");
+	
+	objectIdentity = objectIdentity.toLowerCase();
+
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
@@ -519,7 +521,7 @@ TModuleContext.prototype.removeObjectTag = function(objectIdentity, tag)
  * @return true if it exists, false if not.
  * @throws TAMEError if no such element context.
  */
-TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, name) 
+TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, tag) 
 {
 	var contextState = this.state;
 
@@ -527,12 +529,118 @@ TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, name)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if(!contextState.tags)
 		throw TAMEError.ModuleState("Context state is missing required member: tags");
+	
+	objectIdentity = objectIdentity.toLowerCase();
+
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
 	tag = tag.toLowerCase();
 	var arr = contextState.tags[objectIdentity];
-	return (!arr && arr[name]);
+	return (!arr && arr[tag]);
+};
+
+/**
+ * Gets an element by its identity.
+ * @return the element or null.
+ */
+TModuleContext.prototype.getElement = function(elementIdentity)
+{
+	return this.module.elements[elementIdentity.toLowerCase()];
+};
+
+/**
+ * Gets an element context by its identity.
+ * @return the element context or null.
+ * @throws TAMEError if no such stored element context.
+ */
+TModuleContext.prototype.getElementContext = function(elementIdentity)
+{
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw TAMEError.ModuleState("Context state is missing required member: elements");
+	
+	return contextState.elements[elementIdentity.toLowerCase()];
+};
+
+/**
+ * Gets the current player.
+ * @return player element, or null/undefined if no current player.
+ * @throws TAMEError if no such stored element context.
+ */
+TModuleContext.prototype.getCurrentPlayer = function()
+{
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw TAMEError.ModuleState("Context state is missing required member: elements");
+
+	if (!contextState.player)
+		return null;
+	
+	return this.getElement(contextState.player);
+};
+
+/**
+ * Gets the current player context.
+ * @return player context, or null/undefined if no current player.
+ * @throws TAMEError if no such stored element context.
+ */
+TModuleContext.prototype.getCurrentPlayerContext = function()
+{
+	var player = this.getCurrentPlayer();
+	if (!player)
+		return null;
+	
+	return this.getElementContext(player.identity);
+};
+
+/**
+ * Gets the current room. Influenced by current player.
+ * @return room element, or null if no current room (or no current player).
+ * @throws TAMEError if no such stored element context.
+ */
+TModuleContext.prototype.getCurrentRoom = function(playerIdentity)
+{
+	var contextState = this.state;
+
+	if(!contextState.elements)
+		throw TAMEError.ModuleState("Context state is missing required member: elements");
+	if(!contextState.roomStacks)
+		throw TAMEError.ModuleState("Context state is missing required member: roomStacks");
+
+	if (!playerIdentity)
+		playerIdentity = contextState.player;
+	else
+		playerIdentity = playerIdentity.toLowerCase(); 
+	
+	if (!playerIdentity)
+		return null;
+
+	if (!contextState.elements[playerIdentity])
+		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
+
+	var stack = contextState.roomStacks[playerIdentity];
+
+	if (!stack)
+		return null;
+
+	return this.getElement(stack[stack.length - 1]);
+};
+
+/**
+ * Gets the current room context.
+ * @return room context, or null/undefined if no current player.
+ * @throws TAMEError if no such stored element context.
+ */
+TModuleContext.prototype.getCurrentRoomContext = function()
+{
+	var room = this.getCurrentRoom();
+	if (!room)
+		return null;
+	
+	return this.getElementContext(room.identity);
 };
 
 /**
@@ -559,34 +667,36 @@ TModuleContext.prototype.resolveAction = function(actionIdentity)
  */
 TModuleContext.prototype.resolveElement = function(elementIdentity)
 {	
-	var contextState = this.state;
-
-	if(!contextState.elements)
-		throw TAMEError.ModuleState("Context state is missing required member: elements");
-	
+	var element = null;
 	elementIdentity = elementIdentity.toLowerCase();
 	
 	// current player
 	if (elementIdentity === 'player')
 	{
-		elementIdentity = this.getCurrentPlayer();
-		if (!elementIdentity)
+		element = this.getCurrentPlayer();
+		if (!element)
 			throw TAMEInterrupt.Error("Current player context called with no current player!");
+		return element;
 	}
 	// current room
 	else if (elementIdentity === 'room')
 	{
-		elementIdentity = this.getCurrentRoom();
-		if (!elementIdentity)
+		var player = this.getCurrentPlayer();
+		if (!player)
+			throw TAMEInterrupt.Error("Current room context called with no current player!");
+		
+		element = this.getCurrentRoom();
+		if (!element)
 			throw TAMEInterrupt.Error("Current room context called with no current room!");
+		return element;
 	}
-	
-	var out = contextState.elements[elementIdentity];
-	
-	if (!out)
-		throw TAMEModule.ModuleExecution("Element is missing from module: "+elementIdentity);
-	
-	return out;
+	else
+	{
+		element = this.getElement(elementIdentity);
+		if (!element)
+			throw TAMEModule.ModuleExecution("Expected element '"+elementIdentity+"' in module!");
+		return element;
+	}
 };
 
 /**
@@ -603,48 +713,13 @@ TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 
 	if(!contextState.elements)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
-	
-	elementIdentity = elementIdentity.toLowerCase();
 
-	// current player
-	if (elementIdentity === 'player')
-	{
-		elementIdentity = this.getCurrentPlayer();
-		if (!elementIdentity)
-			throw TAMEInterrupt.Error("Current player context called with no current player!");
-	}
-	// current room
-	else if (elementIdentity === 'room')
-	{
-		elementIdentity = this.getCurrentRoom();
-		if (!elementIdentity)
-			throw TAMEInterrupt.Error("Current room context called with no current room!");
-	}
-	
-	var out = contextState.elements[elementIdentity];
-	
-	if (!out)
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
-	
-	return out;
-};
+	var element = this.resolveElement(elementIdentity);
 
-/**
- * Resolves an element context by its identity.
- * The identities "player", "room", and "world" are special.
- * @param elementIdentity the element identity.
- * @param variable the variable name.
- * @return the corresponding action or null if no current room or player.
- * @throws TAMEError if no such element context.
- * @throws TAMEInterrupt if identity refers to a current object that is not set.
- */
-TModuleContext.prototype.resolveElementVariableValue = function(elementIdentity, variable)
-{
-	var value = this.resolveElementContext(elementIdentity).variables[variable.toLowerCase()];
-	if (!value)
-		return TValue.createBoolean(false);
-	else
-		return value;
+	if (!contextState.elements[element.identity])
+		throw TAMEModule.ModuleExecution("Element is missing from context state: "+element.identity);
+	
+	return contextState.elements[element.identity];
 };
 
 /**
@@ -693,6 +768,45 @@ TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blo
 TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray, arrayOffset)
 {
 	// TODO: Finish this.
+	/*
+	TPlayerContext playerContext = getCurrentPlayerContext();
+	TRoomContext roomContext = getCurrentRoomContext();
+	TWorldContext worldContext = getWorldContext();
+	TOwnershipMap ownerMap = getOwnershipMap();
+	int start = arrayOffset;
+	
+	if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
+	{
+		if (ownerMap.checkObjectHasName(obj, name))
+		{
+			outputArray[arrayOffset++] = obj;
+			if (arrayOffset == outputArray.length)
+				return arrayOffset - start;
+		}
+	}
+	
+	if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
+	{
+		if (ownerMap.checkObjectHasName(obj, name))
+		{
+			outputArray[arrayOffset++] = obj;
+			if (arrayOffset == outputArray.length)
+				return arrayOffset - start;
+		}
+	}
+
+	for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
+	{
+		if (ownerMap.checkObjectHasName(obj, name))
+		{
+			outputArray[arrayOffset++] = obj;
+			if (arrayOffset == outputArray.length)
+				return arrayOffset - start;
+		}
+	}
+
+	return arrayOffset - start;
+	 */
 };
 
 

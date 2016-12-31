@@ -258,7 +258,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		// set next player.
 		response.trace(request, "Setting current player to %s.", nextPlayer);
-		moduleContext.setCurrentPlayer(nextPlayer);
+		moduleContext.getOwnershipMap().setCurrentPlayer(nextPlayer);
 	}
 
 	/**
@@ -454,10 +454,10 @@ public final class TAMELogic implements TAMEConstants
 		
 		response.trace(request, "Starting init...");
 	
-		callInitOnContexts(request, response, moduleContext.getContainerContextList().valueIterator());
-		callInitOnContexts(request, response, moduleContext.getObjectContextList().valueIterator());
-		callInitOnContexts(request, response, moduleContext.getRoomContextList().valueIterator());
-		callInitOnContexts(request, response, moduleContext.getPlayerContextList().valueIterator());
+		callInitOnContexts(request, response, moduleContext.getContainerContextIterator());
+		callInitOnContexts(request, response, moduleContext.getObjectContextIterator());
+		callInitOnContexts(request, response, moduleContext.getRoomContextIterator());
+		callInitOnContexts(request, response, moduleContext.getPlayerContextIterator());
 		callInitBlock(request, response, moduleContext.getWorldContext());
 		
 	}

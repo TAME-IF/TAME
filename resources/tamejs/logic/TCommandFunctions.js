@@ -7,10 +7,13 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
+var TAction = TAction || ((typeof require) !== 'undefined' ? require('../objects/TAction.js') : null);
 var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/TValue.js') : null);
 var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefined' ? require('./TArithmeticFunctions.js') : null);
 var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('../TAMELogic.js') : null);
 var TAMEConstants = TAMEConstants || ((typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null);
+var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
+var TAMEInterrupt = TAMEInterrupt || ((typeof require) !== 'undefined' ? require('../TAMEInterrupt.js') : null);
 var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
 // ======================================================================================================
 
@@ -1559,17 +1562,17 @@ var TCommandFunctions =
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var varRoom = request.popValue();
+			var varPlayer = request.popValue();
 
 			if (!TValue.isRoom(varRoom))
 				throw TAMEError.UnexpectedValueType("Expected room type in SETROOM call.");
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in SETROOM call.");
 
 			var context = request.moduleContext;
-			var player = context.getCurrentPlayer();
-			
-			if (!player)
-				throw TAMEInterrupt.Error("No current player!");
-
 			var room = context.resolveElement(TValue.asString(varRoom));
+			var player = context.resolveElement(TValue.asString(varPlayer));
+			
 			TLogic.doRoomSwitch(request, response, player.identity, room.identity);
 		}
 	},
@@ -1580,17 +1583,17 @@ var TCommandFunctions =
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var varRoom = request.popValue();
+			var varPlayer = request.popValue();
 
 			if (!TValue.isRoom(varRoom))
 				throw TAMEError.UnexpectedValueType("Expected room type in PUSHROOM call.");
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in PUSHROOM call.");
 
 			var context = request.moduleContext;
-			var player = context.getCurrentPlayer();
-			
-			if (!player)
-				throw TAMEInterrupt.Error("No current player!");
-
 			var room = context.resolveElement(TValue.asString(varRoom));
+			var player = context.resolveElement(TValue.asString(varPlayer));
+
 			TLogic.doRoomPush(request, response, player.identity, room.identity);
 		}
 	},
@@ -1600,7 +1603,20 @@ var TCommandFunctions =
 		"name": 'POPROOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varPlayer = request.popValue();
+
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in POPROOM call.");
+
+			var context = request.moduleContext;
+			var player = context.resolveElement(TValue.asString(varPlayer));
+
+			var currentRoom = context.getCurrentRoom(player.identity);
+			
+			if (currentRoom == null)
+				throw TAMEInterrupt.Error("No rooms for player" + TLogic.elementToString(player));
+			
+			TLogic.doRoomPop(request, response, player.identity);
 		}
 	},
 
@@ -1609,7 +1625,28 @@ var TCommandFunctions =
 		"name": 'SWAPROOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varRoom = request.popValue();
+			var varPlayer = request.popValue();
+
+			if (!TValue.isRoom(varRoom))
+				throw TAMEError.UnexpectedValueType("Expected room type in SWAPROOM call.");
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in SWAPROOM call.");
+
+			var context = request.moduleContext;
+			var player = context.resolveElement(TValue.asString(varPlayer));
+
+			if (player == null)
+				throw TAMEInterrupt.Error("No current player!");
+
+			var nextRoom = moduleContext.resolveRoom(TValue.asString(varRoom)); 
+			var currentRoom = moduleContext.getCurrentRoom(player.identity);
+
+			if (currentRoom == null)
+				throw new ErrorInterrupt("No rooms for current player!");
+			
+			TLogic.doRoomPop(request, response, player.identity);
+			TLogic.doRoomPush(request, response, player.identity, nextRoom.identity);
 		}
 	},
 
@@ -1618,7 +1655,16 @@ var TCommandFunctions =
 		"name": 'CURRENTPLAYERIS', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varPlayer = request.popValue();
+
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in CURRENTPLAYERIS call.");
+
+			var context = request.moduleContext;
+			var player = context.resolveElement(TValue.asString(varPlayer));
+			var currentPlayer = context.getCurrentPlayer();
+			
+			request.pushValue(TValue.createBoolean(currentPlayer != null && player.identity == currentPlayer.identity));
 		}
 	},
 
@@ -1627,7 +1673,8 @@ var TCommandFunctions =
 		"name": 'NOCURRENTPLAYER', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var currentPlayer = request.moduleContext.getCurrentPlayer();
+			request.pushValue(TValue.createBoolean(currentPlayer != null));
 		}
 	},
 
@@ -1636,7 +1683,16 @@ var TCommandFunctions =
 		"name": 'CURRENTROOMIS', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varRoom = request.popValue();
+
+			if (!TValue.isRoom(varRoom))
+				throw TAMEError.UnexpectedValueType("Expected room type in CURRENTPLAYERIS call.");
+
+			var context = request.moduleContext;
+			var room = context.resolveElement(TValue.asString(varRoom));
+			var currentRoom = context.getCurrentRoom();
+			
+			request.pushValue(TValue.createBoolean(currentRoom != null && room.identity == currentRoom.identity));
 		}
 	},
 
@@ -1645,7 +1701,8 @@ var TCommandFunctions =
 		"name": 'NOCURRENTROOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var currentRoom = request.moduleContext.getCurrentRoom();
+			request.pushValue(TValue.createBoolean(currentRoom != null));
 		}
 	},
 

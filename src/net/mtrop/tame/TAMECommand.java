@@ -229,29 +229,33 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (!varObject.isElement())
 				throw new UnexpectedValueTypeException("Expected element type in PUSHELEMENTVALUE call.");
 
-			String objectName = varObject.asString();
+			String elementName = varObject.asString();
 			String variableName = variable.asString();
 
+			TElementContext<?> context = null; 
+			
 			switch (varObject.getType())
 			{
 				default:
 					throw new UnexpectedValueTypeException("INTERNAL ERROR IN PUSHELEMENTVALUE.");
 				case OBJECT:
-					request.pushValue(request.getModuleContext().resolveObjectVariableValue(objectName, variableName));
+					context = request.getModuleContext().resolveObjectContext(elementName);
 					break;
 				case ROOM:
-					request.pushValue(request.getModuleContext().resolveRoomVariableValue(objectName, variableName));
+					context = request.getModuleContext().resolveRoomContext(elementName);
 					break;
 				case PLAYER:
-					request.pushValue(request.getModuleContext().resolvePlayerVariableValue(objectName, variableName));
+					context = request.getModuleContext().resolvePlayerContext(elementName);
 					break;
 				case CONTAINER:
-					request.pushValue(request.getModuleContext().resolveContainerVariableValue(objectName, variableName));
+					context = request.getModuleContext().resolveContainerContext(elementName);
 					break;
 				case WORLD:
-					request.pushValue(request.getModuleContext().resolveWorldVariableValue(variableName));
+					context = request.getModuleContext().resolveWorldContext();
 					break;
 			}
+			
+			request.pushValue(context.getValue(variableName));
 		}
 		
 	},
@@ -2386,22 +2390,22 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the new room.
 	 * Returns nothing.
 	 */
-	SETROOM (/*Return: */ null, /*Args: */ ArgumentType.ROOM)
+	SETROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
-			
+			Value varPlayer = request.popValue();
+
 			if (varRoom.getType() != ValueType.ROOM)
 				throw new UnexpectedValueTypeException("Expected room type in SETROOM call.");
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in SETROOM call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TRoom nextRoom = moduleContext.resolveRoom(varRoom.asString());
-			TPlayer player = moduleContext.getCurrentPlayer();
-
-			if (player == null)
-				throw new ErrorInterrupt("No current player!");
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
 
 			TAMELogic.doRoomSwitch(request, response, player, nextRoom);
 		}
@@ -2414,22 +2418,22 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the new room.
 	 * Returns nothing.
 	 */
-	PUSHROOM (/*Return: */ null, /*Args: */ ArgumentType.ROOM)
+	PUSHROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
+			Value varPlayer = request.popValue();
 			
 			if (varRoom.getType() != ValueType.ROOM)
 				throw new UnexpectedValueTypeException("Expected room type in PUSHROOM call.");
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in PUSHROOM call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TRoom nextRoom = moduleContext.resolveRoom(varRoom.asString());
-			TPlayer player = moduleContext.getCurrentPlayer();
-			
-			if (player == null)
-				throw new ErrorInterrupt("No current player!");
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
 			
 			// push new room on the player's stack and call focus.
 			TAMELogic.doRoomPush(request, response, player, nextRoom);
@@ -2443,21 +2447,23 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POPs nothing.
 	 * Returns nothing.
 	 */
-	POPROOM (/*Return: */ null)
+	POPROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			TAMEModuleContext moduleContext = request.getModuleContext();
-			TPlayer player = moduleContext.getCurrentPlayer();
-			
-			if (player == null)
-				throw new ErrorInterrupt("No current player!");
+			Value varPlayer = request.popValue();
 
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in POPROOM call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
+			
 			TRoom currentRoom = moduleContext.getOwnershipMap().getCurrentRoom(player);
 			
 			if (currentRoom == null)
-				throw new ErrorInterrupt("No rooms for current player!");
+				throw new ErrorInterrupt("No rooms for player "+player);
 			
 			TAMELogic.doRoomPop(request, response, player);
 		}
@@ -2470,18 +2476,22 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the new room.
 	 * Returns nothing.
 	 */
-	SWAPROOM (/*Return: */ null, /*Args: */ ArgumentType.ROOM)
+	SWAPROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
-			
+			Value varPlayer = request.popValue();
+
 			if (varRoom.getType() != ValueType.ROOM)
 				throw new UnexpectedValueTypeException("Expected room type in SWAPROOM call.");
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in SWAPROOM call.");
+
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TPlayer player = moduleContext.getCurrentPlayer();
+			TPlayer player = moduleContext.getOwnershipMap().getCurrentPlayer();
 			
 			if (player == null)
 				throw new ErrorInterrupt("No current player!");
@@ -2515,7 +2525,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
-			TPlayer currentPlayer = moduleContext.getCurrentPlayer();
+			TPlayer currentPlayer = moduleContext.getOwnershipMap().getCurrentPlayer();
 			
 			request.pushValue(Value.create(currentPlayer != null && player.equals(currentPlayer)));
 		}
@@ -2533,7 +2543,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TPlayer player = moduleContext.getCurrentPlayer();
+			TPlayer player = moduleContext.getOwnershipMap().getCurrentPlayer();
 			request.pushValue(Value.create(player == null));
 		}
 
@@ -2556,7 +2566,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TRoom room = moduleContext.resolveRoom(varRoom.asString());
-			TRoom currentRoom = moduleContext.getCurrentRoom();
+			TRoom currentRoom = moduleContext.getOwnershipMap().getCurrentRoom();
 			
 			request.pushValue(Value.create(currentRoom != null && room.equals(currentRoom)));
 		}
@@ -2574,7 +2584,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TRoom room = moduleContext.getCurrentRoom();
+			TRoom room = moduleContext.getOwnershipMap().getCurrentRoom();
 			request.pushValue(Value.create(room == null));
 		}
 
