@@ -350,7 +350,7 @@ public final class TAMEJSExporter
 			
 			out.addMember("tameType", TAction.class.getSimpleName());
 			out.addMember("identity", action.getIdentity());
-			out.addMember("type", action.getType().name());
+			out.addMember("type", action.getType().ordinal());
 			if (action.isRestricted())
 				out.addMember("restricted", true);
 			if ((arr = JSONObject.create(action.getNames())).length() > 0)
@@ -439,7 +439,7 @@ public final class TAMEJSExporter
 			if (player.isArchetype())
 				out.addMember("archetype", true);
 
-			out.addMember("permissionType", player.getPermissionType().name());
+			out.addMember("permissionType", player.getPermissionType().ordinal());
 			if ((arr = JSONObject.create(player.getPermissionActions())).length() > 0)
 				out.addMember("permittedActionList", arr);
 
@@ -474,7 +474,7 @@ public final class TAMEJSExporter
 			if (room.isArchetype())
 				out.addMember("archetype", true);
 
-			out.addMember("permissionType", room.getPermissionType().name());
+			out.addMember("permissionType", room.getPermissionType().ordinal());
 			if ((arr = JSONObject.create(room.getPermissionActions())).length() > 0)
 				out.addMember("permittedActionList", arr);
 

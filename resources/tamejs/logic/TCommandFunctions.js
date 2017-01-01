@@ -1693,7 +1693,17 @@ var TCommandFunctions =
 		"name": 'QUEUEACTION', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varAction = request.popValue();
+
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTION call.");
+
+			var action = request.getModuleContext().resolveAction(TValue.asString(varAction));
+
+			if (action.type != TAMEConstants.ActionType.GENERAL)
+				throw TAMEInterrupt.Error(action.identity + " is not a general action.");
+			else
+				request.addActionItem(TAction.create(action.identity));
 		}
 	},
 
@@ -1702,7 +1712,20 @@ var TCommandFunctions =
 		"name": 'QUEUEACTIONSTRING', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varTarget = request.popValue();
+			var varAction = request.popValue();
+
+			if (!TValue.isLiteral(varTarget))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONSTRING call.");
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONSTRING call.");
+
+			var action = request.getModuleContext().resolveAction(TValue.asString(varAction));
+
+			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
+				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
+			else
+				request.addActionItem(TAction.createModal(action.identity, TValue.asString(varTarget)));
 		}
 	},
 
@@ -1711,7 +1734,21 @@ var TCommandFunctions =
 		"name": 'QUEUEACTIONOBJECT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject = request.popValue();
+			var varAction = request.popValue();
+
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT call.");
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONOBJECT call.");
+
+			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
+			var object = request.moduleContext.resolveElement(TValue.asString(varObject));
+
+			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
+				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
+			else
+				request.addActionItem(TAction.createObject(action.identity, object.identity));
 		}
 	},
 
@@ -1720,7 +1757,26 @@ var TCommandFunctions =
 		"name": 'QUEUEACTIONOBJECT2', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var varObject2 = request.popValue();
+			var varObject = request.popValue();
+			var varAction = request.popValue();
+
+			if (!TValue.isObject(varObject2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT2 call.");
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT2 call.");
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONOBJECT2 call.");
+
+			var context = request.moduleContext;
+			var action = context.resolveAction(TValue.asString(varAction));
+			var object = context.resolveElement(TValue.asString(varObject));
+			var object2 = context.resolveElement(TValue.asString(varObject2));
+
+			if (action.type != TAMEConstants.ActionType.DITRANSITIVE)
+				throw TAMEInterrupt.Error(action.identity + " is not a ditransitive action.");
+			else
+				request.addActionItem(TAction.createObject2(action.identity, object.identity, object2.identity));
 		}
 	},
 
@@ -1729,7 +1785,13 @@ var TCommandFunctions =
 		"name": 'IDENTITY', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			// TODO: Finish this.
+			var elementValue = request.popValue();
+			
+			if (!TValue.isElement(elementValue))
+				throw TAMEError.UnexpectedValueType("Expected element type in IDENTITY call.");
+			
+			var element = moduleContext.resolveElement(TValue.asString(elementValue));
+			request.pushValue(TValue.createString(element.identity));
 		}
 	},
 

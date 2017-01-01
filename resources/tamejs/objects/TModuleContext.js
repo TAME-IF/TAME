@@ -767,46 +767,28 @@ TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blo
  */
 TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray, arrayOffset)
 {
-	// TODO: Finish this.
-	/*
-	TPlayerContext playerContext = getCurrentPlayerContext();
-	TRoomContext roomContext = getCurrentRoomContext();
-	TWorldContext worldContext = getWorldContext();
-	TOwnershipMap ownerMap = getOwnershipMap();
-	int start = arrayOffset;
-	
-	if (playerContext != null) for (TObject obj : ownerMap.getObjectsOwnedByPlayer(playerContext.getElement()))
-	{
-		if (ownerMap.checkObjectHasName(obj, name))
-		{
-			outputArray[arrayOffset++] = obj;
-			if (arrayOffset == outputArray.length)
-				return arrayOffset - start;
-		}
-	}
-	
-	if (roomContext != null) for (TObject obj : ownerMap.getObjectsOwnedByRoom(roomContext.getElement()))
-	{
-		if (ownerMap.checkObjectHasName(obj, name))
-		{
-			outputArray[arrayOffset++] = obj;
-			if (arrayOffset == outputArray.length)
-				return arrayOffset - start;
-		}
-	}
+	var playerContext = this.getCurrentPlayerContext();
+	var roomContext = this.getCurrentRoomContext();
+	var worldContext = this.getElementContext("world");
 
-	for (TObject obj : ownerMap.getObjectsOwnedByWorld(worldContext.getElement()))
+	var start = arrayOffset;
+	var NAMECHECK = function(objectIdentity)
 	{
-		if (ownerMap.checkObjectHasName(obj, name))
+		if (this.checkObjectHasName(objectIdentity, name))
 		{
 			outputArray[arrayOffset++] = obj;
 			if (arrayOffset == outputArray.length)
 				return arrayOffset - start;
 		}
-	}
+	};
+	
+	if (playerContext != null) 
+		Util.each(this.getObjectsOwnedByElement(playerContext.identity), NAMECHECK);
+	if (roomContext != null) 
+		Util.each(this.getObjectsOwnedByElement(roomContext.identity), NAMECHECK);
+	Util.each(this.getObjectsOwnedByElement(worldContext.identity), NAMECHECK);
 
 	return arrayOffset - start;
-	 */
 };
 
 
