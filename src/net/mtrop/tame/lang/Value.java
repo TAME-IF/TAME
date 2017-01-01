@@ -934,18 +934,20 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value power(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be modulo divided: " + value1 + ", " + value2);
+			throw new ArithmeticException("These values can't be raised to a power: " + value1 + ", " + value2);
 
 		double v1 = value1.asDouble();
 		double v2 = value2.asDouble();
 		double p = Math.pow(v1, v2);
-		
+		return create(p);
+		/*
 		if (v1 == 0.0 && v2 < 0.0)
 			return create(Double.POSITIVE_INFINITY);
 		else if (value1.isInteger() && value2.isInteger())
 			return create((long)p);
 		else
 			return create(p);
+		*/
 	}
 	
 	/**

@@ -634,9 +634,9 @@ TModuleContext.prototype.getCurrentRoom = function(playerIdentity)
  * @return room context, or null/undefined if no current player.
  * @throws TAMEError if no such stored element context.
  */
-TModuleContext.prototype.getCurrentRoomContext = function()
+TModuleContext.prototype.getCurrentRoomContext = function(playerIdentity)
 {
-	var room = this.getCurrentRoom();
+	var room = this.getCurrentRoom(playerIdentity);
 	if (!room)
 		return null;
 	

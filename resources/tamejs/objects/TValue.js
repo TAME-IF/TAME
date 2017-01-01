@@ -392,17 +392,12 @@ TValue.modulo = function(value1, value2)
 TValue.power = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be modulo divided: " + value1 + ", " + value2);
+		throw TAMEError.Arithmetic("These values can't be raised to a power: " + value1 + ", " + value2);
 
 	var v1 = TValue.asDouble(value1);
 	var v2 = TValue.asDouble(value2);
 	var p = Math.pow(v1, v2);
-	if (v1 == 0 && v2 < 0)
-		return TValue.createInfinity();
-	else if (TValue.isInteger(value1) && TValue.isInteger(value2))
-		return TValue.createInteger(p);
-	else
-		return TValue.createFloat(p);
+	return TValue.createFloat(p);
 };
 
 /**
@@ -875,7 +870,7 @@ TValue.asLong = function(value)
 	else if (TValue.isFloatingPoint(value))
 		return parseInt(value.value);
 	else if (TValue.isString(value))
-		return parseInt(TValue.asString(value));
+		return parseInt(TValue.asString(value).toLowerCase());
 	else
 		return 0;
 };
@@ -914,8 +909,32 @@ TValue.asDouble = function(value)
  */
 TValue.asString = function(value)
 {
-	if (TValue.isFloatingPoint(value) && TValue.asDouble(value) % 1 == 0)
-		return value.value+".0";
+	if (TValue.isString(value))
+		return value.value;
+	else if (TValue.isInfinite(value) || TValue.isNaN(value))
+		return ""+value.value;
+	else if (TValue.isFloatingPoint(value))
+	{
+		// make it equal to Java/C#
+		var d = TValue.asDouble(value);
+		if (Math.abs(d) == 0.0)
+			return "0.0";
+		else if (Math.abs(d) < 0.001 || Math.abs(d) >= 10000000)
+		{
+			var out = d.toExponential().toUpperCase().replace('+','');
+			if (out.indexOf('.') < 0)
+			{
+				var ie = out.indexOf('E');
+				return out.substring(0, ie) + ".0" + out.substring(ie);
+			}
+			else
+				return out;
+		}
+		else if (d % 1 == 0)		
+			return value.value+".0";
+		else
+			return ""+value.value;
+	}
 	else
 		return ""+value.value;
 };

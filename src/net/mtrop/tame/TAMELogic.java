@@ -255,8 +255,6 @@ public final class TAMELogic implements TAMEConstants
 	public static void doPlayerSwitch(TAMERequest request, TAMEResponse response, TPlayer nextPlayer) throws TAMEInterrupt 
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		
-		// set next player.
 		response.trace(request, "Setting current player to %s.", nextPlayer);
 		moduleContext.getOwnershipMap().setCurrentPlayer(nextPlayer);
 	}
@@ -271,24 +269,21 @@ public final class TAMELogic implements TAMEConstants
 	public static void doRoomPop(TAMERequest request, TAMEResponse response, TPlayer player) throws TAMEInterrupt 
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		
 		response.trace(request, "Popping top room from %s.", player);
-		ownership.popRoomFromPlayer(player);
+		moduleContext.getOwnershipMap().popRoomFromPlayer(player);
 	}
 
 	/**
 	 * Attempts to perform a room stack push for a player.
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param player the player that entered the room.
-	 * @param nextRoom the player to push a room context onto.
+	 * @param player the player to push a room context onto.
+	 * @param nextRoom the room to push.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
 	public static void doRoomPush(TAMERequest request, TAMEResponse response, TPlayer player, TRoom nextRoom) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-	
 		response.trace(request, "Pushing %s on %s.", nextRoom, player);
 		moduleContext.getOwnershipMap().pushRoomOntoPlayer(player, nextRoom);
 	}

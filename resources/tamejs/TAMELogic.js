@@ -522,50 +522,135 @@ TLogic.interpretObject2 = function(moduleContext, interpreterContext)
 	return interpreterContext.object2 != null;
 };
 
-TLogic.enqueueInterpretedAction = function(request, response, interpreterContext) 
-{
-	// TODO: Finish this.
-};
-
-TLogic.processActionLoop = function(request, response) 
-{
-	// TODO: Finish this.
-};
-
-TLogic.initializeContext = function(request, response) 
-{
-	// TODO: Finish this.
-};
-
 TLogic.checkObjectAccessibility = function(request, response, playerIdentity, objectIdentity) 
 {
 	// TODO: Finish this.
 };
 
+
+/**
+ * Performs an arithmetic function on the stack.
+ * @param request the request context.
+ * @param response the response object.
+ * @param functionType the function type (index).
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
+TLogic.doArithmeticStackFunction = function(request, response, functionType)
+{
+	if (functionType < 0 || functionType >= TArithmeticFunctions.COUNT)
+		throw TAMEError.UnexpectedValue("Expected arithmetic function type, got illegal value "+functionType+".");
+	
+	var operator = TArithmeticFunctions[functionType];
+	response.trace(request, "Function is " + operator.name);
+	
+	if (operator.binary)
+	{
+		var v2 = request.popValue();
+		var v1 = request.popValue();
+		request.pushValue(operator.doOperation(v1, v2));
+	}
+	else
+	{
+		var v1 = request.popValue();
+		request.pushValue(operator.doOperation(v1));
+	}
+};
+
+/**
+ * Attempts to perform a player switch.
+ * @param request the request object.
+ * @param response the response object.
+ * @param playerIdentity the next player identity.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
 TLogic.doPlayerSwitch = function(request, response, playerIdentity)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	response.trace(request, "Setting current player to " + playerIdentity);
+	context.setCurrentPlayer(playerIdentity);
 };
 
+/**
+ * Attempts to perform a room stack pop for a player.
+ * @param request the request object.
+ * @param response the response object.
+ * @param playerIdentity the player identity to pop a room context from.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
 TLogic.doRoomPop = function(request, response, playerIdentity)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	response.trace(request, "Popping top room from "+playerIdentity+".");
+	context.popRoomFromPlayer(playerIdentity);
 };
 
+/**
+ * Attempts to perform a room stack push for a player.
+ * @param request the request object.
+ * @param response the response object.
+ * @param playerIdentity the player identity to push a room context onto.
+ * @param roomIdentity the room identity to push.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
 TLogic.doRoomPush = function(request, response, playerIdentity, roomIdentity)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	response.trace(request, "Pushing "+roomIdentity+" on "+playerIdentity+".");
+	context.pushRoomOntoPlayer(playerIdentity, roomIdentity);
 };
 
+/**
+ * Attempts to perform a room switch.
+ * @param request the request object.
+ * @param response the response object.
+ * @param playerIdentity the player identity that is switching rooms.
+ * @param roomIdentity the target room identity.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
 TLogic.doRoomSwitch = function(request, response, playerIdentity, roomIdentity)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	response.trace(request, "Leaving rooms for "+playerIdentity+".");
+
+	// pop all rooms on the stack.
+	while (context.getCurrentRoom(playerIdentity) != null)
+		TLogic.doRoomPop(request, response, playerIdentity);
+
+	// push new room on the stack and call focus.
+	TLogic.doRoomPush(request, response, playerIdentity, roomIdentity);
 };
 
-TLogic.doBrowse = function(request, response, blockEntryTypeName, roomIdentity)
+/**
+ * Attempts to perform a player browse.
+ * @param request the request object.
+ * @param response the response object.
+ * @param blockEntryTypeName the block entry type name.
+ * @param elementIdentity the element identity to browse through.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
+TLogic.doBrowse = function(request, response, blockEntryTypeName, elementIdentity)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	
+	var element = context.resolveElement(elementIdentity);
+	response.trace(request, "Start browse "+TLogic.elementToString(element)+".");
+
+	Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity)
+	{
+		var object = moduleContext.getElement(objectIdentity);
+		var objectContext = moduleContext.getElementContext(objectIdentity);
+		
+		var objtostr = TLogic.elementToString(object);
+		response.trace(request, "Check "+objtostr+" for browse block.");
+		var block = context.resolveBlock(objectIdentity, blockEntryTypeName, []);
+		if (block != null)
+		{
+			response.trace(request, "Calling "+objtostr+" browse block.");
+			TLogic.callBlock(request, response, objectContext, block);
+		}
+	});
 };
+
 
 /*
 doAfterRequest(TAMERequest, TAMEResponse)
@@ -591,6 +676,23 @@ callRoomActionForbiddenBlock(TAMERequest, TAMEResponse, TAction, TRoomContext)
 callInitOnContexts(TAMERequest, TAMEResponse, Iterator<? extends TElementContext<?>>)
 callInitBlock(TAMERequest, TAMEResponse, TElementContext<?>)
 */
+
+
+TLogic.enqueueInterpretedAction = function(request, response, interpreterContext) 
+{
+	// TODO: Finish this.
+};
+
+TLogic.processActionLoop = function(request, response) 
+{
+	// TODO: Finish this.
+};
+
+TLogic.initializeContext = function(request, response) 
+{
+	// TODO: Finish this.
+};
+
 
 //TODO: Finish
 

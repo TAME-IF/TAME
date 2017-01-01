@@ -9,7 +9,6 @@
 // REQUIREMENTS =========================================================================================
 var TAction = TAction || ((typeof require) !== 'undefined' ? require('../objects/TAction.js') : null);
 var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/TValue.js') : null);
-var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefined' ? require('./TArithmeticFunctions.js') : null);
 var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('../TAMELogic.js') : null);
 var TAMEConstants = TAMEConstants || ((typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null);
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
@@ -154,24 +153,7 @@ var TCommandFunctions =
 			if (!TValue.isInteger(functionValue))
 				throw TAMEError.UnexpectedValueType("Expected integer type in ARITHMETICFUNC call.");
 
-			var funcval = TValue.asLong(functionValue);
-			if (functionType < 0 || functionType >= TArithmeticFunctions.COUNT)
-				throw TAMEError.UnexpectedValue("Expected arithmetic function type, got illegal value "+funcval+".");
-			
-			var operator = TArithmeticFunctions[funcval];
-			response.trace(request, "Function is " + operator.name);
-			
-			if (operator.binary)
-			{
-				var v2 = request.popValue();
-				var v1 = request.popValue();
-				request.pushValue(operator.doOperation(v1, v2));
-			}
-			else
-			{
-				var v1 = request.popValue();
-				request.pushValue(operator.doOperation(v1));
-			}
+			TLogic.doArithmeticStackFunction(request, response, TValue.asLong(functionValue));
 		}
 	},
 
