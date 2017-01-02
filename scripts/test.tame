@@ -146,19 +146,19 @@ world
 		textln(hasobject(world, o_object1));
 		textln(hasobject(r_room1, o_object1));
 		textln(objectcount(r_room1));
-		browseroom(r_room1);
+		browse(r_room1);
 
 		giveobject(p_main, o_object1);
 		textln(hasobject(r_room1, o_object1));
 		textln(hasobject(p_main, o_object1));
 		textln(objectcount(p_main));
-		browseplayer(p_main);
+		browse(p_main);
 
 		giveobject(c_container1, o_object1);
 		textln(hasobject(p_main, o_object1));
 		textln(hasobject(c_container1, o_object1));
 		textln(objectcount(c_container1));
-		browsecontainer(c_container1);
+		browse(c_container1);
 
 		removeobject(o_object1);
 		textln(objecthasnoowner(o_object1));
@@ -183,31 +183,31 @@ world
 		textln(nocurrentroom());
 
 		textln(currentroomis(r_room1));
-		setroom(r_room1);
+		setroom(player, r_room1);
 		textln(currentroomis(r_room1));
 		textln(currentroomis(room));
 
 		textln(nocurrentplayer());
 		textln(nocurrentroom());
 
-		pushroom(r_room2);
+		pushroom(player, r_room2);
 		textln(identity(room));
-		poproom();
+		poproom(player);
 		textln(identity(room));
 		
-		pushroom(r_room2);
+		pushroom(player, r_room2);
 		textln(identity(room));
-		pushroom(r_room3);
+		pushroom(player, r_room3);
 		textln(identity(room));
-		pushroom(r_room2);
+		pushroom(player, r_room2);
 		textln(identity(room));
-		swaproom(r_room1);
+		swaproom(player, r_room1);
 		textln(identity(room));
-		poproom();
+		poproom(player);
 		textln(identity(room));
-		poproom();
+		poproom(player);
 		textln(identity(room));
-		poproom();
+		poproom(player);
 		textln(identity(room));
 
 		textln(4 < 5);

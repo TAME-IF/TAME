@@ -47,7 +47,7 @@ var TCommandFunctions =
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var varvalue = command.operand0;
-			var value = command.operand1;
+			var value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in POPVALUE call.");
@@ -237,7 +237,7 @@ var TCommandFunctions =
 
 			for (
 				TLogic.executeBlock(init, request, response, blockLocal);
-				TLogic.callConditional(request, response, blockLocal, command);
+				TLogic.callConditional('FOR', request, response, blockLocal, command);
 				response.trace(request, "Calling FOR stepping block..."),
 				TLogic.executeBlock(step, request, response, blockLocal)
 			)
@@ -444,7 +444,7 @@ var TCommandFunctions =
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in WAIT call.");
 
-			response.addCue(TAMEConstants.Cue.TEXTF, TValue.asLong(value));
+			response.addCue(TAMEConstants.Cue.WAIT, TValue.asLong(value));
 		}
 	},
 
@@ -1056,23 +1056,23 @@ var TCommandFunctions =
 			{
 				var value = TValue.asLong(value1);
 				if (value == 0)
-					request.pushValue(Value.createInteger(0));
+					request.pushValue(TValue.createInteger(0));
 				else
 				{
 					var v = Math.floor(Math.random() * Math.abs(value));
 					if (value < 0)
-						request.pushValue(Value.createInteger(-v));
+						request.pushValue(TValue.createInteger(-v));
 					else
-						request.pushValue(Value.createInteger(v));
+						request.pushValue(TValue.createInteger(v));
 				}
 			}
 			else
 			{
 				var value = TValue.asDouble(value1);
 				if (value == 0.0)
-					request.pushValue(Value.createFloat(0.0));
+					request.pushValue(TValue.createFloat(0.0));
 				else
-					request.pushValue(Value.createFloat(Math.random() * value));
+					request.pushValue(TValue.createFloat(Math.random() * value));
 			}
 		}
 	},
@@ -1082,7 +1082,7 @@ var TCommandFunctions =
 		"name": 'FRANDOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			request.pushValue(Value.createFloat(Math.random()));
+			request.pushValue(TValue.createFloat(Math.random()));
 		}
 	},
 
@@ -1094,7 +1094,7 @@ var TCommandFunctions =
 			// Box-Muller Approximate algorithm c/o Maxwell Collard on StackOverflow
 		    var u = 1 - Math.random();
 		    var v = 1 - Math.random();
-			request.pushValue(Value.createFloat(Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)));
+			request.pushValue(TValue.createFloat(Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)));
 		}
 	},
 
@@ -1103,7 +1103,7 @@ var TCommandFunctions =
 		"name": 'TIME', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			request.pushValue(Value.createInteger(Date.now()));
+			request.pushValue(TValue.createInteger(Date.now()));
 		}
 	},
 
@@ -1123,7 +1123,7 @@ var TCommandFunctions =
 			var first = TValue.asLong(value1);
 			var second = TValue.asLong(value2);
 
-			request.pushValue(Value.createInteger((second - first) / 1000));
+			request.pushValue(TValue.createInteger((second - first) / 1000));
 		}
 	},
 
@@ -1143,7 +1143,7 @@ var TCommandFunctions =
 			var first = TValue.asLong(value1);
 			var second = TValue.asLong(value2);
 
-			request.pushValue(Value.createInteger((second - first) / (1000 * 60)));
+			request.pushValue(TValue.createInteger((second - first) / (1000 * 60)));
 		}
 	},
 
@@ -1163,7 +1163,7 @@ var TCommandFunctions =
 			var first = TValue.asLong(value1);
 			var second = TValue.asLong(value2);
 
-			request.pushValue(Value.createInteger((second - first) / (1000 * 60 * 60)));
+			request.pushValue(TValue.createInteger((second - first) / (1000 * 60 * 60)));
 		}
 	},
 
@@ -1183,7 +1183,7 @@ var TCommandFunctions =
 			var first = TValue.asLong(value1);
 			var second = TValue.asLong(value2);
 
-			request.pushValue(Value.createInteger((second - first) / (1000 * 60 * 60 * 24)));
+			request.pushValue(TValue.createInteger((second - first) / (1000 * 60 * 60 * 24)));
 		}
 	},
 
@@ -1203,7 +1203,7 @@ var TCommandFunctions =
 			var date = TValue.asLong(value1);
 			var format = TValue.asString(value2);
 
-			request.pushValue(Value.createString(Util.formatDate(date, format, false)));
+			request.pushValue(TValue.createString(Util.formatDate(date, format, false)));
 		}
 	},
 
@@ -1254,7 +1254,7 @@ var TCommandFunctions =
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in ADDOBJECTNAME call.");
 
-			request.pushValue(TValue.createBoolean(request.moduleContext.addObjectName(TValue.asString(varObject), TValue.asString(nameValue))));
+			request.moduleContext.addObjectName(TValue.asString(varObject), TValue.asString(nameValue));
 		}
 	},
 
@@ -1797,111 +1797,7 @@ var TCommandFunctions =
 
 ];
 
-TCommandFunctions.Type =
-{
-	"NOOP": 0, 
-	"POP": 1, 
-	"POPVALUE": 2, 
-	"POPLOCALVALUE": 3, 
-	"POPELEMENTVALUE": 4, 
-	"PUSHVALUE": 5, 
-	"PUSHELEMENTVALUE": 6, 
-	"ARITHMETICFUNC": 7, 
-	"IF": 8, 
-	"WHILE": 9, 
-	"FOR": 10, 
-	"CALL": 11, 
-	"CALLFROM": 12, 
-	"BREAK": 13, 
-	"CONTINUE": 14, 
-	"QUIT": 15, 
-	"END": 16, 
-	"ADDCUE": 17, 
-	"TEXT": 18, 
-	"TEXTLN": 19, 
-	"TEXTF": 20, 
-	"TEXTFLN": 21, 
-	"PAUSE": 22, 
-	"WAIT": 23, 
-	"TIP": 24, 
-	"INFO": 25, 
-	"ASBOOLEAN": 26, 
-	"ASINT": 27, 
-	"ASFLOAT": 28, 
-	"ASSTRING": 29, 
-	"STRLEN": 30, 
-	"STRREPLACE": 31, 
-	"STRREPLACEPATTERN": 32, 
-	"STRREPLACEPATTERNALL": 33, 
-	"STRINDEX": 34, 
-	"STRLASTINDEX": 35, 
-	"STRCONTAINS": 36, 
-	"STRCONTAINSPATTERN": 37, 
-	"STRCONTAINSTOKEN": 38, 
-	"STRSTARTSWITH": 39, 
-	"STRENDSWITH": 40, 
-	"SUBSTR": 41, 
-	"STRLOWER": 42, 
-	"STRUPPER": 43, 
-	"STRCHAR": 44, 
-	"STRTRIM": 45, 
-	"FLOOR": 46, 
-	"CEILING": 47, 
-	"ROUND": 48, 
-	"FIX": 49, 
-	"SQRT": 50, 
-	"PI": 51, 
-	"E": 52, 
-	"SIN": 53, 
-	"COS": 54, 
-	"TAN": 55, 
-	"MIN": 56, 
-	"MAX": 57, 
-	"CLAMP": 58, 
-	"RANDOM": 59, 
-	"FRANDOM": 60, 
-	"GRANDOM": 61, 
-	"TIME": 62, 
-	"SECONDS": 63, 
-	"MINUTES": 64, 
-	"HOURS": 65, 
-	"DAYS": 66, 
-	"FORMATTIME": 67, 
-	"OBJECTHASNAME": 68, 
-	"OBJECTHASTAG": 69, 
-	"ADDOBJECTNAME": 70, 
-	"ADDOBJECTTAG": 71, 
-	"ADDOBJECTTAGTOALLIN": 72, 
-	"REMOVEOBJECTNAME": 73, 
-	"REMOVEOBJECTTAG": 74, 
-	"REMOVEOBJECTTAGFROMALLIN": 75, 
-	"GIVEOBJECT": 76, 
-	"REMOVEOBJECT": 77, 
-	"MOVEOBJECTSWITHTAG": 78, 
-	"OBJECTCOUNT": 79, 
-	"HASOBJECT": 80, 
-	"OBJECTHASNOOWNER": 81, 
-	"PLAYERISINROOM": 82, 
-	"PLAYERCANACCESSOBJECT": 83, 
-	"BROWSE": 84, 
-	"SETPLAYER": 85, 
-	"SETROOM": 86, 
-	"PUSHROOM": 87, 
-	"POPROOM": 88, 
-	"SWAPROOM": 89, 
-	"CURRENTPLAYERIS": 90, 
-	"NOCURRENTPLAYER": 91, 
-	"CURRENTROOMIS": 92, 
-	"NOCURRENTROOM": 93, 
-	"QUEUEACTION": 94, 
-	"QUEUEACTIONSTRING": 95, 
-	"QUEUEACTIONOBJECT": 96, 
-	"QUEUEACTIONOBJECT2": 97, 
-	"IDENTITY": 98, 
-};
-
 //##[[CONTENT-END
-
 
 // If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TCommandFunctions;

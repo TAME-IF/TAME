@@ -62,9 +62,9 @@ TLogic.commandToString = function(cmdObject)
 {
 	var out = TCommandFunctions[cmdObject.opcode].name;
 	if (cmdObject.operand0 != null)
-		out += ' ' + cmdObject.operand0.toString();
+		out += ' ' + TValue.toString(cmdObject.operand0);
 	if (cmdObject.operand1 != null)
-		out += ' ' + cmdObject.operand1.toString();
+		out += ' ' + TValue.toString(cmdObject.operand1);
 	if (cmdObject.initBlock != null)
 		out += " [INIT]";
 	if (cmdObject.conditionalBlock != null)
@@ -91,7 +91,7 @@ TLogic.elementToString = function(elemObject)
 
 /**
  * Executes a block of commands.
- * @param command (Object) the command object.
+ * @param block (Array) the block of commands.
  * @param request (TRequest) the request object.
  * @param response (TResponse) the response object.
  * @param blockLocal (Object) the local variables on the block call.
@@ -100,7 +100,7 @@ TLogic.elementToString = function(elemObject)
 TLogic.executeBlock = function(block, request, response, blockLocal)
 {
 	response.trace(request, "Start block.");
-	Util.each(this.commandList, function(command){
+	Util.each(block, function(command){
 		response.trace(request, "CALL "+TLogic.commandToString(command));
 		TLogic.executeCommand(request, response, blockLocal, command);
 	});
@@ -135,7 +135,7 @@ TLogic.callConditional = function(commandName, request, response, blockLocal, co
 {
 	// block should contain arithmetic commands and a last push.
 	var conditional = command.conditionalBlock;
-	if (!contitional)
+	if (!conditional)
 		throw TAMEError.ModuleExecution("Conditional block for "+commandName+" does NOT EXIST!");
 	
 	response.trace(request, "Calling "+commandName+" conditional...");
@@ -651,15 +651,32 @@ TLogic.doBrowse = function(request, response, blockEntryTypeName, elementIdentit
 	});
 };
 
-
-TLogic.callInitOnContexts = function(request, response, contextList)
-{
-	// TODO: Finish this.
-};
-
+// Call init on a single context.
 TLogic.callInitBlock = function(request, response, context)
 {
-	// TODO: Finish this.
+	var elementIdentity = context.identity;
+	response.trace(request, "Attempt init from Context:"+elementIdentity+".");
+	var element = request.moduleContext.resolveElement(elementIdentity);
+	
+	var initBlock = request.moduleContext.resolveBlock(elementIdentity, "INIT", []);
+	if (initBlock != null)
+	{
+		response.trace(request, "Calling init block from Context:"+elementIdentity+".");
+		TLogic.callBlock(request, response, context, initBlock);
+	}
+	else
+	{
+		response.trace(request, "No init block.");
+	}
+};
+
+// Call init on iterable contexts.
+TLogic.callInitOnContexts = function(request, response, contextList)
+{
+	Util.each(contextList, function(context)
+	{
+		TLogic.callInitBlock(request, response, context);
+	});
 };
 
 /**
@@ -672,7 +689,33 @@ TLogic.callInitBlock = function(request, response, context)
  */
 TLogic.initializeContext = function(request, response) 
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	
+	response.trace(request, "Starting init...");
+
+	var containerContexts = [];
+	var objectContexts = [];
+	var roomContexts = [];
+	var playerContexts = [];
+	
+	Util.each(context.module.elements, function(element)
+	{
+		var elementContext = context.resolveElementContext(element.identity);
+		if (element.tameType === 'TContainer')
+			containerContexts.push(elementContext);
+		else if (element.tameType === 'TObject')
+			objectContexts.push(elementContext);
+		else if (element.tameType === 'TPlayer')
+			playerContexts.push(elementContext);
+		else if (element.tameType === 'TRoom')
+			roomContexts.push(elementContext);
+	});
+	
+	TLogic.callInitOnContexts(request, response, containerContexts);
+	TLogic.callInitOnContexts(request, response, objectContexts);
+	TLogic.callInitOnContexts(request, response, roomContexts);
+	TLogic.callInitOnContexts(request, response, playerContexts);
+	TLogic.callInitBlock(request, response, context.resolveElementContext("world"));
 };
 
 

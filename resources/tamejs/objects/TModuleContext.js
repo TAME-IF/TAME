@@ -389,7 +389,7 @@ TModuleContext.prototype.addObjectName = function(objectIdentity, name)
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
-	var n = Util.replaceAll(n.toLowerCase(), "\\s+", " ");
+	var n = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
 	var arr = contextState.names[objectIdentity];
 	if (!arr)
 		arr = contextState.names[objectIdentity] = {};
@@ -419,7 +419,7 @@ TModuleContext.prototype.removeObjectName = function(objectIdentity, name)
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
-	var n = Util.replaceAll(n.toLowerCase(), "\\s+", " ");
+	var n = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
 	var arr = contextState.names[objectIdentity];
 	if (!arr)
 		return;
@@ -752,6 +752,8 @@ TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blo
 			return out;
 		if (element.parent)
 			element = this.resolveElement(elementIdentity);
+		else
+			element = null;
 	}
 
 	return null;

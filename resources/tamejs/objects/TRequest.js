@@ -97,7 +97,7 @@ TRequest.prototype.popContext = function()
  */
 TRequest.prototype.peekContext = function()
 {
-	return this.contextStack[this.contextStack - 1];
+	return this.contextStack[this.contextStack.length - 1];
 };
 
 /**

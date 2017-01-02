@@ -241,6 +241,11 @@ var Util = {
 	            else
 	                return _PAD(millis, 3);
 	        },
+	        "z": function(token, date, utc)
+	        {
+	            var offset = (date.getTimezoneOffset() / 60) * 100;
+	            return (offset > 0 ? '-' : '') +_PAD(offset, 4)+'';
+	        },
 	        "Z": function(token, date, utc)
 	        {
 	            var offset = (date.getTimezoneOffset() / 60) * 100;
@@ -255,6 +260,7 @@ var Util = {
 	        }
 	    };
 
+	    date = new Date(date);
 		var out = formatstring;
 		var tokens = formatstring.match(_DATEFORMATREGEX);
 

@@ -801,6 +801,42 @@ TValue.isObjectContainer = function(value)
 };
 
 /**
+ * Returns if this value represents an object.
+ * @return true if so, false if not.
+ */
+TValue.isObject = function(value)
+{
+	return value.type === TValue.Type.OBJECT;
+};
+
+/**
+ * Returns if this value represents a room.
+ * @return true if so, false if not.
+ */
+TValue.isRoom = function(value)
+{
+	return value.type === TValue.Type.ROOM;
+};
+
+/**
+ * Returns if this value represents a player.
+ * @return true if so, false if not.
+ */
+TValue.isPlayer = function(value)
+{
+	return value.type === TValue.Type.PLAYER;
+};
+
+/**
+ * Returns if this value represents a container.
+ * @return true if so, false if not.
+ */
+TValue.isContainer = function(value)
+{
+	return value.type === TValue.Type.CONTAINER;
+};
+
+/**
  * Returns if this value represents an action.
  * @return true if so, false if not.
  */
