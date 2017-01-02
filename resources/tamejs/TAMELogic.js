@@ -652,6 +652,30 @@ TLogic.doBrowse = function(request, response, blockEntryTypeName, elementIdentit
 };
 
 
+TLogic.callInitOnContexts = function(request, response, contextList)
+{
+	// TODO: Finish this.
+};
+
+TLogic.callInitBlock = function(request, response, context)
+{
+	// TODO: Finish this.
+};
+
+/**
+ * Initializes a newly-created context by executing each initialization block on each object.
+ * Order is Containers, Objects, Rooms, Players, and the World.
+ * @param request the request object containing the module context.
+ * @param response the response object.
+ * @throws TAMEInterrupt if an interrupt is thrown.
+ * @throws TAMEFatalException if something goes wrong during execution.
+ */
+TLogic.initializeContext = function(request, response) 
+{
+	// TODO: Finish this.
+};
+
+
 /*
 doAfterRequest(TAMERequest, TAMEResponse)
 doUnknownAction(TAMERequest, TAMEResponse)
@@ -673,8 +697,6 @@ callWorldActionFailBlock(TAMERequest, TAMEResponse, TAction, TWorldContext)
 callPlayerActionFailBlock(TAMERequest, TAMEResponse, TAction, TPlayerContext)
 callPlayerActionForbiddenBlock(TAMERequest, TAMEResponse, TAction, TPlayerContext)
 callRoomActionForbiddenBlock(TAMERequest, TAMEResponse, TAction, TRoomContext)
-callInitOnContexts(TAMERequest, TAMEResponse, Iterator<? extends TElementContext<?>>)
-callInitBlock(TAMERequest, TAMEResponse, TElementContext<?>)
 */
 
 
@@ -684,11 +706,6 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 };
 
 TLogic.processActionLoop = function(request, response) 
-{
-	// TODO: Finish this.
-};
-
-TLogic.initializeContext = function(request, response) 
 {
 	// TODO: Finish this.
 };

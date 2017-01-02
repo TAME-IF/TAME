@@ -438,6 +438,7 @@ public final class TAMELogic implements TAMEConstants
 
 	/**
 	 * Initializes a newly-created context by executing each initialization block on each object.
+	 * Order is Containers, Objects, Rooms, Players, and the World.
 	 * @param request the request object containing the module context.
 	 * @param response the response object.
 	 * @throws TAMEInterrupt if an interrupt is thrown.
