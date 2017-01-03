@@ -12,6 +12,7 @@ public enum BlockEntryType
 {
 	INIT(0),
 	AFTERREQUEST(0),
+	AFTERMODULEINIT(0),
 	PROCEDURE(1, ArgumentType.VALUE),
 	ONACTION(1, ArgumentType.ACTION),
 	ONACTIONWITH(2, ArgumentType.ACTION, ArgumentType.OBJECT),
@@ -27,6 +28,7 @@ public enum BlockEntryType
 	ONUNKNOWNACTION(0, ArgumentType.ACTION),
 	ONFAILEDACTION(0, ArgumentType.ACTION),
 	ONFORBIDDENACTION(0, ArgumentType.ACTION),
+	ONROOMFORBIDDENACTION(0, ArgumentType.ACTION),
 	;
 	
 	/** Array to get around multiple allocations. */

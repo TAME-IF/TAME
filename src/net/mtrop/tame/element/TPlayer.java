@@ -70,6 +70,7 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 			case ONMODALACTION:
 			case ONFAILEDACTION:
 			case ONFORBIDDENACTION:
+			case ONROOMFORBIDDENACTION:
 			case ONINCOMPLETEACTION:
 			case ONAMBIGUOUSACTION:
 			case ONUNKNOWNACTION:
