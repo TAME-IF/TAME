@@ -251,7 +251,7 @@ TModuleContext.prototype.addObjectToElement = function(elementIdentity, objectId
 	if (!contextState.elements[objectIdentity])
 		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
-	this.removeObject(context, objectIdentity);
+	this.removeObject(objectIdentity);
 	contextState.objectOwners[objectIdentity] = elementIdentity;
 	
 	if (!contextState.owners[elementIdentity])

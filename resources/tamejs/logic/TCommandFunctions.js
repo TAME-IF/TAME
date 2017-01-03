@@ -1474,7 +1474,7 @@ var TCommandFunctions =
 			var room = context.resolveElement(TValue.asString(varRoom));
 			var player = context.resolveElement(TValue.asString(varPlayer));
 
-			request.pushValue(TValue.createBoolean(context.checkPlayerIsInRoom(player, room)))
+			request.pushValue(TValue.createBoolean(context.checkPlayerIsInRoom(player.identity, room.identity)))
 		}
 	},
 
@@ -1621,8 +1621,8 @@ var TCommandFunctions =
 			if (player == null)
 				throw TAMEInterrupt.Error("No current player!");
 
-			var nextRoom = moduleContext.resolveRoom(TValue.asString(varRoom)); 
-			var currentRoom = moduleContext.getCurrentRoom(player.identity);
+			var nextRoom = context.resolveElement(TValue.asString(varRoom)); 
+			var currentRoom = context.getCurrentRoom(player.identity);
 
 			if (currentRoom == null)
 				throw new ErrorInterrupt("No rooms for current player!");
@@ -1698,7 +1698,7 @@ var TCommandFunctions =
 			if (!TValue.isAction(varAction))
 				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTION call.");
 
-			var action = request.getModuleContext().resolveAction(TValue.asString(varAction));
+			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.GENERAL)
 				throw TAMEInterrupt.Error(action.identity + " is not a general action.");
@@ -1720,7 +1720,7 @@ var TCommandFunctions =
 			if (!TValue.isAction(varAction))
 				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONSTRING call.");
 
-			var action = request.getModuleContext().resolveAction(TValue.asString(varAction));
+			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
 				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
@@ -1790,7 +1790,7 @@ var TCommandFunctions =
 			if (!TValue.isElement(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected element type in IDENTITY call.");
 			
-			var element = moduleContext.resolveElement(TValue.asString(elementValue));
+			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
 			request.pushValue(TValue.createString(element.identity));
 		}
 	},

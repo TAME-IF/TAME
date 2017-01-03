@@ -86,7 +86,7 @@ TLogic.commandToString = function(cmdObject)
  */
 TLogic.elementToString = function(elemObject)
 {
-	return elemObject.type + "[" + elemObject.identity + "]";
+	return elemObject.tameType + "[" + elemObject.identity + "]";
 };
 
 /**
