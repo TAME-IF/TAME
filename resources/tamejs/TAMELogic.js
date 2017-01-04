@@ -171,6 +171,83 @@ TLogic.callConditional = function(commandName, request, response, blockLocal, co
 	return result;
 }
 
+
+/**
+ * Enqueues an action based on how it is interpreted.
+ * @param request the request object.
+ * @param response the response object.
+ * @param interpreterContext the interpreter context (left after interpretation).
+ * @throws TAMEInterrupt if an uncaught interrupt occurs.
+ * @throws TAMEError if something goes wrong during execution.
+ */
+TLogic.enqueueInterpretedAction = function(request, response, interpreterContext) 
+{
+	// TODO: Finish this.
+};
+
+
+/**
+ * Does an action loop: this keeps processing queued actions 
+ * until there is nothing left to process.
+ * @param request the request context.
+ * @param response the response object.
+ * @throws TAMEInterrupt if an uncaught interrupt occurs.
+ * @throws TAMEError if something goes wrong during execution.
+ */
+TLogic.processActionLoop = function(request, response) 
+{
+	var initial = true;
+
+	var context = request.moduleContext;
+	
+	while (request.hasActionItems())
+	{
+		var tameAction = request.nextActionItem();
+		
+		var action = context.resolveAction(tameAction.actionIdentity);
+
+		try {
+			
+			switch (action.type)
+			{
+				default:
+				case TAMEConstants.ActionType.GENERAL:
+					TLogic.doActionGeneral(request, response, action);
+					break;
+				case TAMEConstants.ActionType.OPEN:
+					TLogic.doActionOpen(request, response, action, tameAction.getTarget());
+					break;
+				case TAMEConstants.ActionType.MODAL:
+					TLogic.doActionModal(request, response, action, tameAction.getTarget());
+					break;
+				case TAMEConstants.ActionType.TRANSITIVE:
+					TLogic.doActionTransitive(request, response, action, tameAction.getObject1());
+					break;
+				case TAMEConstants.ActionType.DITRANSITIVE:
+					if (tameAction.getObject2() == null)
+						TLogic.doActionTransitive(request, response, action, tameAction.getObject1());
+					else
+						TLogic.doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
+					break;
+			}
+			
+			request.checkStackClear();
+			
+		} catch (err) {
+			// catch end interrupt, throw everything else.
+			if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.End)
+				throw err;
+		}
+		
+		if (!request.hasActionItems() && initial)
+		{
+			initial = false;
+			TLogic.doAfterRequest(request, response);
+		}
+	}
+};
+
+
 /**
  * Handles initializing a context. Must be called after a new context and game is started.
  * @param context the module context.
@@ -183,7 +260,7 @@ TLogic.handleInit = function(context, tracing)
 	var response = new TResponse();
 	
 	response.interpretNanos = 0;
-	var time = Date.now();
+	var time = Util.nanoTime();
 
 	try 
 	{
@@ -203,10 +280,7 @@ TLogic.handleInit = function(context, tracing)
 			response.addCue(TAMEConstants.Cue.FATAL, err);
 	}
 
-	time = (Date.now() - time) * 1000000; // ms to ns
-	
-	response.requestNanos = time;
-
+	response.requestNanos = Util.nanoTime() - time;
 	return response;
 };
 
@@ -222,11 +296,11 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 	var request = new TRequest(context, inputMessage, tracing);
 	var response = new TResponse();
 
-	var time = Date.now();
+	var time = Util.nanoTime();
 	var interpreterContext = TLogic.interpret(request);
-	response.interpretNanos = (Date.now() - time) * 1000000; 
+	response.interpretNanos = (Util.nanoTime() - time) * 1000000; 
 
-	time = Date.now();
+	time = Util.nanoTime();
 	
 	try 
 	{
@@ -246,7 +320,7 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 			response.addCue(TAMEConstants.Cue.FATAL, err);
 	}
 	
-	response.requestNanos = (Date.now() - time) * 1000000;
+	response.requestNanos = Util.nanoTime() - time;
 	return response;
 };
 
@@ -699,7 +773,7 @@ TLogic.doBrowse = function(request, response, blockEntryTypeName, elementIdentit
 		
 		var objtostr = TLogic.elementToString(object);
 		response.trace(request, "Check "+objtostr+" for browse block.");
-		var block = context.resolveBlock(objectIdentity, blockEntryTypeName, []);
+		var block = context.resolveBlock(objectIdentity, blockEntryTypeName);
 		if (block != null)
 		{
 			response.trace(request, "Calling "+objtostr+" browse block.");
@@ -716,7 +790,7 @@ TLogic.callAfterModuleInitBlock = function(request, response)
 	var context = request.moduleContext;
 	var worldContext = context.getElementContext('world');
 
-	if ((initBlock = context.resolveBlock('world', "AFTERMODULEINIT", [])) != null)
+	if ((initBlock = context.resolveBlock('world', "AFTERMODULEINIT")) != null)
 	{
 		response.trace(request, "Calling after module init block from Context:"+worldContext.identity+".");
 		TLogic.callBlock(request, response, worldContext, initBlock);
@@ -736,7 +810,7 @@ TLogic.callInitBlock = function(request, response, context)
 	response.trace(request, "Attempt init from Context:"+elementIdentity+".");
 	var element = request.moduleContext.resolveElement(elementIdentity);
 	
-	var initBlock = request.moduleContext.resolveBlock(elementIdentity, "INIT", []);
+	var initBlock = request.moduleContext.resolveBlock(elementIdentity, "INIT");
 	if (initBlock != null)
 	{
 		response.trace(request, "Calling init block from Context:"+elementIdentity+".");
@@ -800,43 +874,18 @@ TLogic.initializeContext = function(request, response)
 };
 
 /**
- * Attempts to call the ambiguous action blocks.
+ * Calls the appropriate action fail blocks if they exist on the world.
  * @param request the request object.
  * @param response the response object.
- * @param action the action used.
+ * @param action the action attempted.
+ * @param worldContext the world context.
+ * @return true if a fail block was called, false if not.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.callAmbiguousAction = function(request, response, action)
+TLogic.callWorldAmbiguousActionBlock = function(request, response, action, worldContext)
 {
-	response.trace(request, "Finding ambiguous action blocks...");
-
 	var context = request.moduleContext;
-	var currentPlayerContext = context.getCurrentPlayerContext();
 	var blockToCall = null;
-
-	if (currentPlayerContext != null)
-	{
-		var currentPlayer = context.getElement(currentPlayerContext.identity);
-		response.trace(request, "For current player "+TLogic.elementToString(currentPlayer)+"...");
-
-		// get specific block on player.
-		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONAMBIGUOUSACTION", [TValue.createAction(action.identity)])) != null)
-		{
-			response.trace(request, "Found specific ambiguous action block in player "+currentPlayer.identity+" lineage for action "+action.identity+".");
-			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
-			return true;
-		}
-
-		// get block on player.
-		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONAMBIGUOUSACTION", [])) != null)
-		{
-			response.trace(request, "Found default ambiguous action block in player "+currentPlayer.identity+" lineage.");
-			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
-			return true;
-		}
-	}
-
-	var worldContext = context.getElementContext('world');
 
 	// get specific block on world.
 	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONAMBIGUOUSACTION", [TValue.createAction(action.identity)])) != null)
@@ -847,7 +896,7 @@ TLogic.callAmbiguousAction = function(request, response, action)
 	}
 
 	// get block on world.
-	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONAMBIGUOUSACTION", [])) != null)
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONAMBIGUOUSACTION")) != null)
 	{
 		response.trace(request, "Found default ambiguous action block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -855,6 +904,60 @@ TLogic.callAmbiguousAction = function(request, response, action)
 	}
 
 	return false;
+};
+
+/**
+ * Calls the appropriate action fail blocks if they exist on a player.
+ * @param request the request object.
+ * @param response the response object.
+ * @param action the action attempted.
+ * @param playerContext the player context.
+ * @return true if a fail block was called, false if not.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
+TLogic.callPlayerAmbiguousActionBlock = function(request, response, action, playerContext)
+{
+	var context = request.moduleContext;
+	var blockToCall = null;
+	
+	// get specific block on player.
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONAMBIGUOUSACTION", [TValue.createAction(action.identity)])) != null)
+	{
+		response.trace(request, "Found specific ambiguous action block in player "+playerContext.identity+" lineage for action "+action.identity+".");
+		TLogic.callBlock(request, response, playerContext, blockToCall);
+		return true;
+	}
+
+	// get block on player.
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONAMBIGUOUSACTION")) != null)
+	{
+		response.trace(request, "Found default ambiguous action block in player "+playerContext.identity+" lineage.");
+		TLogic.callBlock(request, response, playerContext, blockToCall);
+		return true;
+	}
+	
+	return false;
+};
+
+/**
+ * Attempts to call the ambiguous action blocks.
+ * @param request the request object.
+ * @param response the response object.
+ * @param action the action used.
+ * @return true if a block was called, false if not.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
+TLogic.callAmbiguousAction = function(request, response, action)
+{
+	var context = request.moduleContext;
+	var currentPlayerContext = context.getCurrentPlayerContext();
+
+	if (currentPlayerContext != null && TLogic.callPlayerBadActionBlock(request, response, action, currentPlayerContext))
+		return true;
+
+	var worldContext = context.getElementContext('world');
+
+	return TLogic.callWorldAmbiguousActionBlock(request, response, action, worldContext);
 };
 
 /**
@@ -881,7 +984,7 @@ TLogic.callWorldBadActionBlock = function(request, response, action, worldContex
 		return true;
 	}
 
-	if ((blockToCall = context.resolveBlock('world', "ONBADACTION", [])) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONBADACTION")) != null)
 	{
 		response.trace(request, "Found default bad action block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -897,13 +1000,33 @@ TLogic.callWorldBadActionBlock = function(request, response, action, worldContex
  * @param request the request object.
  * @param response the response object.
  * @param action the action attempted.
- * @param context the player context.
+ * @param playerContext the player context.
  * @return true if a block was called, false if not.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
 TLogic.callPlayerBadActionBlock = function(request, response, action, playerContext)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	var player = context.getElement(playerContext.identity);
+
+	var blockToCall = null;
+	
+	if ((blockToCall = context.resolveBlock(player.identity, "ONBADACTION", [TValue.createAction(action.identity)])) != null)
+	{
+		response.trace(request, "Found specific bad action block in player "+player.identity+" lineage, action "+action.identity+".");
+		TLogic.callBlock(request, response, playerContext, blockToCall);
+		return true;
+	}
+
+	if ((blockToCall = context.resolveBlock(player.identity, "ONBADACTION")) != null)
+	{
+		response.trace(request, "Found default bad action block on player "+player.identity+".");
+		TLogic.callBlock(request, response, playerContext, blockToCall);
+		return true;
+	}
+
+	response.trace(request, "No bad action block on player.");
+	return false;
 };
 
 /**
@@ -917,7 +1040,17 @@ TLogic.callPlayerBadActionBlock = function(request, response, action, playerCont
  */
 TLogic.callBadAction = function(request, response, action)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	var currentPlayerContext = context.getCurrentPlayerContext();
+
+	// try bad action on player.
+	if (currentPlayerContext != null && TLogic.callPlayerBadActionBlock(request, response, action, currentPlayerContext))
+		return true;
+
+	var worldContext = context.getElementContext('world');
+
+	// try bad action on world.
+	return TLogic.callWorldBadActionBlock(request, response, action, worldContext);
 };
 
 /**
@@ -926,24 +1059,66 @@ TLogic.callBadAction = function(request, response, action)
  * @param response the response object.
  * @param action the action attempted.
  * @param context the player context.
+ * @return true if handled by this block, false if not.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
 TLogic.callPlayerActionForbiddenBlock = function(request, response, action, playerContext)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+
+	// get forbid block.
+	var forbidBlock = null;
+
+	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONFORBIDDENACTION", TValue.createAction(action.identity))) != null)
+	{
+		response.trace(request, "Got specific forbid block in player "+playerContext.identity+" lineage, action "+action.identity);
+		TLogic.callBlock(request, response, playerContext, forbidBlock);
+		return true;
+	}
+	
+	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONFORBIDDENACTION")) != null)
+	{
+		response.trace(request, "Got default forbid block in player "+playerContext.identity+" lineage.");
+		TLogic.callBlock(request, response, playerContext, forbidBlock);
+		return true;
+	}
+	
+	response.trace(request, "No forbid block on player.");
+	return false;
 };
 
 /**
- * Calls the appropriate action forbidden block on a room.
+ * Calls the appropriate room action forbidden block on a player.
  * @param request the request object.
  * @param response the response object.
  * @param action the action attempted.
  * @param context the room context.
+ * @return true if handled by this block, false if not.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.callRoomActionForbiddenBlock = function(request, response, action, roomContext)
+TLogic.callRoomActionForbiddenBlock = function(request, response, action, playerContext)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+
+	// get forbid block.
+	var forbidBlock = null;
+
+	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONROOMFORBIDDENACTION", TValue.createAction(action.identity))) != null)
+	{
+		response.trace(request, "Calling specific room forbid block in player "+playerContext.identity+" lineage, action "+action.identity);
+		TLogic.callBlock(request, response, playerContext, forbidBlock);
+		return true;
+	}
+	
+	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONROOMFORBIDDENACTION")) != null)
+	{
+		response.trace(request, "Calling default room forbid block in player "+playerContext.identity+" lineage.");
+		TLogic.callBlock(request, response, playerContext, forbidBlock);
+		return true;
+	}
+	
+	response.trace(request, "No room forbid block on player to call.");
+	return false;
 };
 
 /**
@@ -951,12 +1126,22 @@ TLogic.callRoomActionForbiddenBlock = function(request, response, action, roomCo
  * @param request the request object.
  * @param response the response object.
  * @param action the action attempted.
- * @return true if a forbidden block was called, false if not.
+ * @return true if an action is forbidden and steps were taken to call a forbidden block, or false otherwise.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
 TLogic.callCheckActionForbidden = function(request, response, action)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	var currentPlayerContext = context.getCurrentPlayerContext();
+
+	// try forbidden on player.
+	if (currentPlayerContext != null && TLogic.callPlayerAmbiguousActionBlock(request, response, action, currentPlayerContext))
+		return true;
+	
+	var worldContext = context.getElementContext('world');
+
+	// try forbidden on world.
+	return TLogic.callWorldAmbiguousActionBlock(request, response, action, worldContext);
 };
 
 /**
@@ -970,7 +1155,26 @@ TLogic.callCheckActionForbidden = function(request, response, action)
  */
 TLogic.callWorldActionIncompleteBlock = function(request, response, action, worldContext)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	
+	var blockToCall = null;
+	
+	if ((blockToCall = context.resolveBlock('world', "ONINCOMPLETEACTION", TValue.createAction(action.identity))) != null)
+	{
+		response.trace(request, "Found specific action incomplete block on world, action "+action.identity+".");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+		return true;
+	}
+
+	if ((blockToCall = context.resolveBlock('world', "ONINCOMPLETEACTION")) != null)
+	{
+		response.trace(request, "Found default action incomplete block on world.");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+		return true;
+	}
+
+	response.trace(request, "No action incomplete block on world.");
+	return false;
 };
 
 /**
@@ -984,7 +1188,26 @@ TLogic.callWorldActionIncompleteBlock = function(request, response, action, worl
  */
 TLogic.callPlayerActionIncompleteBlock = function(request, response, action, playerContext)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	
+	var blockToCall = null;
+	
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETEACTION", TValue.createAction(action.identity))) != null)
+	{
+		response.trace(request, "Found specific action incomplete block in player "+player.identity+" lineage, action "+action.identity+".");
+		TLogic.callBlock(request, response, playerContext, blockToCall);
+		return true;
+	}
+
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETEACTION")) != null)
+	{
+		response.trace(request, "Found default action incomplete block in player "+player.identity+" lineage.");
+		TLogic.callBlock(request, response, playerContext, blockToCall);
+		return true;
+	}
+
+	response.trace(request, "No action incomplete block on player.");
+	return false;
 };
 
 /**
@@ -997,36 +1220,83 @@ TLogic.callPlayerActionIncompleteBlock = function(request, response, action, pla
  */
 TLogic.callActionIncomplete = function(request, response, action)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	var currentPlayerContext = context.getCurrentPlayerContext();
+
+	// try incomplete on player.
+	if (currentPlayerContext != null && TLogic.callPlayerActionIncompleteBlock(request, response, action, currentPlayerContext))
+		return true;
+
+	var worldContext = context.getElementContext('world');
+
+	// try incomplete on world.
+	return TLogic.callWorldActionIncompleteBlock(request, response, action, worldContext);
 };
 
 /**
- * Calls the appropriate bad action block on the world if it exists.
- * Bad actions are actions with mismatched conjugates, unknown modal parts, or unknown object references. 
+ * Calls the appropriate action fail block on the world if it exists.
  * @param request the request object.
  * @param response the response object.
  * @param action the action attempted.
  * @param worldContext the world context.
- * @return true if a block was called, false if not.
+ * @return true if a fail block was called, false if not.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
 TLogic.callWorldActionFailBlock = function(request, response, action, worldContext)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+	
+	var blockToCall = null;
+	
+	if ((blockToCall = context.resolveBlock('world', "ONFAILEDACTION", TValue.createAction(action.identity))) != null)
+	{
+		response.trace(request, "Found specific action failure block on world, action "+action.identity+".");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+		return true;
+	}
+
+	if ((blockToCall = context.resolveBlock('world', "ONFAILEDACTION")) != null)
+	{
+		response.trace(request, "Found default action failure block on world.");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+		return true;
+	}
+
+	response.trace(request, "No action failure block on world.");
+	return false;
 };
 
 /**
- * Calls the appropriate bad action block on a player if it exists.
+ * Calls the appropriate action fail block on a player if it exists.
  * @param request the request object.
  * @param response the response object.
  * @param action the action attempted.
  * @param context the player context.
- * @return true if a block was called, false if not.
+ * @return true if a fail block was called, false if not.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.callPlayerActionFailBlock = function(request, response, TAction, playerContext)
+TLogic.callPlayerActionFailBlock = function(request, response, action, playerContext)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+
+	var blockToCall = null;
+	
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONFAILEDACTION", TValue.createAction(action.identity))) != null)
+	{
+		response.trace(request, "Found specific action failure block in player "+player.identity+" lineage, action "+action.identity+".");
+		TLogic.callBlock(request, response, playerContext, blockToCall);
+		return true;
+	}
+
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONFAILEDACTION")) != null)
+	{
+		response.trace(request, "Found default action failure block in player "+player.identity+" lineage.");
+		TLogic.callBlock(request, response, playerContext, blockToCall);
+		return true;
+	}
+
+	response.trace(request, "No action failure block on player.");
+	return false;
 };
 
 /**
@@ -1039,7 +1309,18 @@ TLogic.callPlayerActionFailBlock = function(request, response, TAction, playerCo
  */
 TLogic.callActionFailed = function(request, response, action)
 {
-	// TODO: Finish this.
+	var context = request.moduleContext;
+
+	var currentPlayerContext = context.getCurrentPlayerContext();
+
+	// try fail on player.
+	if (currentPlayerContext != null && TLogic.callPlayerActionFailBlock(request, response, action, currentPlayerContext))
+		return true;
+
+	var worldContext = context.getElementContext('world');
+
+	// try fail on world.
+	return TLogic.callWorldActionFailBlock(request, response, action, worldContext);
 };
 
 
@@ -1058,7 +1339,7 @@ TLogic.doAfterRequest = function(request, response)
 	// get block on world.
 	var blockToCall;
 
-	if ((blockToCall = context.resolveBlock('world', 'AFTERREQUEST', [])) != null)
+	if ((blockToCall = context.resolveBlock('world', 'AFTERREQUEST')) != null)
 	{
 		var worldContext = context.getElementContext('world');
 		response.trace(request, "Found after request block on world.");
@@ -1089,7 +1370,7 @@ TLogic.doUnknownAction = function(request, response)
 
 		// get block on player.
 		// find via inheritance.
-		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONUNKNOWNACTION", []))  != null)
+		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONUNKNOWNACTION"))  != null)
 		{
 			response.trace(request, "Found unknown action block on player.");
 			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
@@ -1100,7 +1381,7 @@ TLogic.doUnknownAction = function(request, response)
 	var worldContext = context.getElementContext('world');
 
 	// get block on world.
-	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONUNKNOWNACTION", []))  != null)
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONUNKNOWNACTION"))  != null)
 	{
 		response.trace(request, "Found unknown action block on player.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1150,7 +1431,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 			var currentRoom = context.getCurrentRoom();
 
 			// get general action on room.
-			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTION", TValue.createAction(action.identity))) != null)
+			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
 			{
 				response.trace(request, "Found general action block on room.");
 				if (openTarget != null)
@@ -1169,7 +1450,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 		}
 		
 		// get general action on player.
-		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTION", TValue.createAction(action.identity))) != null)
+		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
 		{
 			response.trace(request, "Found general action block on player.");
 			if (openTarget != null)
@@ -1191,7 +1472,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 	var world = context.getElement('world');
 
 	// get general action on world.
-	if ((blockToCall = context.resolveBlock(world.identity, "ONACTION", TValue.createAction(action.identity))) != null)
+	if ((blockToCall = context.resolveBlock(world.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Found general action block on world.");
 		if (openTarget != null)
@@ -1297,7 +1578,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 		return;
 
 	// call action on object.
-	if ((blockToCall = TLogic.resolveBlock(object.identity, "ONACTION", TValue.createAction(action.identity))) != null)
+	if ((blockToCall = TLogic.resolveBlock(object.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Found action block on object.");
 		TLogic.callBlock(request, response, currentObjectContext, blockToCall);
@@ -1372,23 +1653,6 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	}
 };
 
-TLogic.enqueueInterpretedAction = function(request, response, interpreterContext) 
-{
-	// TODO: Finish this.
-};
-
-/**
- * Does an action loop: this keeps processing queued actions 
- * until there is nothing left to process.
- * @param request the request context.
- * @param response the response object.
- * @throws TAMEInterrupt if an uncaught interrupt occurs.
- * @throws TAMEError if something goes wrong during execution.
- */
-TLogic.processActionLoop = function(request, response) 
-{
-	// TODO: Finish this.
-};
 
 //##[[CONTENT-END
 

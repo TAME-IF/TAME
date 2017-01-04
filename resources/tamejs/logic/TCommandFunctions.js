@@ -1703,7 +1703,7 @@ var TCommandFunctions =
 			if (action.type != TAMEConstants.ActionType.GENERAL)
 				throw TAMEInterrupt.Error(action.identity + " is not a general action.");
 			else
-				request.addActionItem(TAction.create(action.identity));
+				request.addActionItem(TAction.create(action));
 		}
 	},
 
@@ -1725,7 +1725,7 @@ var TCommandFunctions =
 			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
 				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
 			else
-				request.addActionItem(TAction.createModal(action.identity, TValue.asString(varTarget)));
+				request.addActionItem(TAction.createModal(action, TValue.asString(varTarget)));
 		}
 	},
 
@@ -1748,7 +1748,7 @@ var TCommandFunctions =
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
 			else
-				request.addActionItem(TAction.createObject(action.identity, object.identity));
+				request.addActionItem(TAction.createObject(action, object));
 		}
 	},
 
@@ -1776,7 +1776,7 @@ var TCommandFunctions =
 			if (action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEInterrupt.Error(action.identity + " is not a ditransitive action.");
 			else
-				request.addActionItem(TAction.createObject2(action.identity, object.identity, object2.identity));
+				request.addActionItem(TAction.createObject2(action, object, object2));
 		}
 	},
 

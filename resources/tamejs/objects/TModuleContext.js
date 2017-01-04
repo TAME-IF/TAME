@@ -734,7 +734,7 @@ TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blockValues)
 {
 	var blockname =	blockType + "(";
-	for (var i = 0; i < blockValues.length; i++)
+	if (blockValues) for (var i = 0; i < blockValues.length; i++)
 	{
 		blockname += TValue.toString(values[i]);
 		if (i < blockValues.length - 1)

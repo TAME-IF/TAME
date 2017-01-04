@@ -11,25 +11,25 @@
 /****************************************************
  See net.mtrop.tame.TAMEAction
  ****************************************************/
-var TAction = function(initial, actionIdentity, target, object1Identity, object2Identity)
+var TAction = function(initial, action, target, object1, object2)
 {
 	this.initial = initial;
-	this.actionIdentity = actionIdentity; 
+	this.action = action; 
 	this.target = target; 
-	this.object1Identity = object1Identity; 
-	this.object2Identity = object2Identity;
+	this.object1 = object1; 
+	this.object2 = object2;
 };
 
 // Convenience constructors.
 
-TAction.create = function(actionIdentity) { return new TAction(false, actionIdentity); };
-TAction.createModal = function(actionIdentity, target) { return new TAction(false, actionIdentity, target); };
-TAction.createObject = function(actionIdentity, object1Identity) { return new TAction(false, actionIdentity, null, object1Identity); };
-TAction.createObject2 = function(actionIdentity, object1Identity, object2Identity) { return new TAction(false, actionIdentity, null, object1Identity, object2Identity); };
-TAction.createInitial = function(actionIdentity) { return new TAction(true, actionIdentity); };
-TAction.createInitialModal = function(actionIdentity, target) { return new TAction(true, actionIdentity, target); };
-TAction.createInitialObject = function(actionIdentity, object1Identity) { return new TAction(true, actionIdentity, null, object1Identity); };
-TAction.createInitialObject2 = function(actionIdentity, object1Identity, object2Identity) { return new TAction(true, actionIdentity, null, object1Identity, object2Identity); };
+TAction.create = function(action) { return new TAction(false, action); };
+TAction.createModal = function(action, target) { return new TAction(false, action, target); };
+TAction.createObject = function(action, object1) { return new TAction(false, action, null, object1); };
+TAction.createObject2 = function(action, object1, object2) { return new TAction(false, action, null, object1, object2); };
+TAction.createInitial = function(action) { return new TAction(true, action); };
+TAction.createInitialModal = function(action, target) { return new TAction(true, action, target); };
+TAction.createInitialObject = function(action, object1) { return new TAction(true, action, null, object1); };
+TAction.createInitialObject2 = function(action, object1, object2) { return new TAction(true, action, null, object1, object2); };
 
 TAction.prototype.toString = function()
 {
@@ -38,20 +38,20 @@ TAction.prototype.toString = function()
 		out += "INITIAL ";
 	
 	out += "[";
-	if (this.actionIdentity)
-		out += this.actionIdentity + ", ";
+	if (this.action)
+		out += this.action.identity + ", ";
 
 	if (this.target)
 		out += this.target;
 
-	if (this.object1Identity)
-		out += this.object1Identity;
+	if (this.object1)
+		out += this.object1.identity;
 
-	if (this.object2Identity)
+	if (this.object2)
 	{
-		if (this.object1Identity)
+		if (this.object1.identity)
 			out += ", ";
-		out += this.object2Identity;
+		out += this.object2.identity;
 	}
 	
 	out += "]";

@@ -461,7 +461,7 @@ public final class TAMELogic implements TAMEConstants
 	/**
 	 * Does an action loop: this keeps processing queued actions 
 	 * until there is nothing left to process.
-	 * @param request the request context.
+	 * @param request the request object.
 	 * @param response the response object.
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
 	 * @throws TAMEFatalException if something goes wrong during execution.
@@ -516,6 +516,14 @@ public final class TAMELogic implements TAMEConstants
 		
 	}
 
+	/**
+	 * Enqueues an action based on how it is interpreted.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param interpreterContext the interpreter context (left after interpretation).
+	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
+	 * @throws TAMEFatalException if something goes wrong during execution.
+	 */
 	private static void enqueueInterpretedAction(TAMERequest request, TAMEResponse response, TAMEInterpreterContext interpreterContext) throws TAMEInterrupt 
 	{
 		TAction action = interpreterContext.getAction();
@@ -529,6 +537,7 @@ public final class TAMELogic implements TAMEConstants
 				case GENERAL:
 					request.addActionItem(TAMEAction.createInitial(action));
 					break;
+
 				case OPEN:
 				{
 					if (!interpreterContext.isTargetLookedUp())
@@ -539,8 +548,9 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else
 						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getTarget()));
-					break;
 				}
+				break;
+
 				case MODAL:
 				{
 					if (!interpreterContext.isModeLookedUp())
@@ -557,8 +567,9 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else
 						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getMode()));
-					break;
 				}
+				break;
+
 				case TRANSITIVE:
 				{
 					if (interpreterContext.isObjectAmbiguous())
@@ -581,15 +592,16 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else
 						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1()));
-					break;
 				}
+				break;
+
 				case DITRANSITIVE:
 				{
 					if (interpreterContext.isObjectAmbiguous())
 					{
 						response.trace(request, "Object is ambiguous for action %s.", action);
 						if (!callAmbiguousAction(request, response, action))
-							response.addCue(CUE_ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
+							response.addCue(CUE_ERROR, "ONE OR MORE OBJECTS ARE AMBIGUOUS (make a better in-universe handler!).");
 					}
 					else if (!interpreterContext.isObject1LookedUp())
 					{
@@ -628,8 +640,8 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else
 						request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1(), interpreterContext.getObject2()));
-					break;
 				}
+				break;
 			}
 		}
 	}
@@ -993,70 +1005,83 @@ public final class TAMELogic implements TAMEConstants
 	}
 	
 	/**
-	 * Attempts to call the ambiguous action blocks.
+	 * Checks and calls the action forbidden blocks.
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param action the action used.
+	 * @param action the action attempted.
+	 * @return true if an action is forbidden and steps were taken to call a forbidden block, or false otherwise.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	private static boolean callAmbiguousAction(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
+	private static boolean callCheckActionForbidden(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt 
 	{
-		response.trace(request, "Finding ambiguous action blocks...");
-	
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		Block blockToCall = null;
-	
-		BlockEntry actionEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION, Value.createAction(action.getIdentity()));
-		BlockEntry generalEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION);
 		
 		if (currentPlayerContext != null)
 		{
 			TPlayer currentPlayer = currentPlayerContext.getElement();
-			response.trace(request, "For current player %s...", currentPlayer);
+			response.trace(request, "Checking current player %s for action permission.", currentPlayer);
+	
+			// check if the action is disallowed by the player.
+			if (!currentPlayer.allowsAction(action))
+			{
+				response.trace(request, "Action is forbidden.");
+				if (!callPlayerActionForbiddenBlock(request, response, action, currentPlayerContext))
+				{
+					response.addCue(CUE_ERROR, "ACTION IS FORBIDDEN (make a better in-universe handler!).");
+					return true;
+				}
+	
+			}
 			
-			// get specific block on player.
-			if ((blockToCall = currentPlayer.resolveBlock(actionEntry)) != null)
+			// try current room.
+			TRoomContext currentRoomContext = moduleContext.getCurrentRoomContext();
+			if (currentRoomContext != null)
 			{
-				response.trace(request, "Found specific ambiguous action block in player %s lineage for action %s.", currentPlayer.getIdentity(), action.getIdentity());
-				callBlock(request, response, currentPlayerContext, blockToCall);
-				return true;
-			}
+				TRoom currentRoom = currentRoomContext.getElement();
+				
+				response.trace(request, "Checking current room %s for action permission.", currentRoom);
 	
-			// get block on player.
-			if ((blockToCall = currentPlayer.resolveBlock(generalEntry)) != null)
-			{
-				response.trace(request, "Found default ambiguous action block in player %s lineage.", currentPlayer.getIdentity());
-				callBlock(request, response, currentPlayerContext, blockToCall);
-				return true;
+				// check if the action is disallowed by the room.
+				if (!currentRoom.allowsAction(action))
+				{
+					response.trace(request, "Action is forbidden.");
+					if (!callRoomActionForbiddenBlock(request, response, action, currentPlayerContext))
+					{
+						response.addCue(CUE_ERROR, "ACTION IS FORBIDDEN IN THIS ROOM (make a better in-universe handler!).");
+						return true;
+					}
+				}
 			}
-	
 		}
-	
-		TWorldContext worldContext = moduleContext.getWorldContext();
 		
-		// get specific block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(actionEntry)) != null)
-		{
-			response.trace(request, "Found specific ambiguous action block on world for action %s.", action.getIdentity());
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-	
-		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(generalEntry)) != null)
-		{
-			response.trace(request, "Found default ambiguous action block on world.");
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-	
 		return false;
 	}
 
 	/**
+	 * Attempts to call the ambiguous action blocks.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action used.
+	 * @return true if a block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callAmbiguousAction(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+	
+		if (currentPlayerContext != null && callPlayerAmbiguousActionBlock(request, response, action, currentPlayerContext))
+			return true;
+	
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		
+		return callWorldAmbiguousActionBlock(request, response, action, worldContext);
+	}
+
+	/**
 	 * Calls the appropriate bad action blocks if they exist.
-	 * Bad actions are actions with mismatched conjugates, unknown modal parts, or unknown object references. 
+	 * "Bad" actions are actions with mismatched conjugates, unknown modal parts, or unknown object references. 
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param action the action attempted.
@@ -1078,8 +1103,125 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
+	 * Calls the appropriate action incomplete blocks if they exist.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action attempted.
+	 * @return true if a fail block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callActionIncomplete(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		
+		// try incomplete on player.
+		if (currentPlayerContext != null && callPlayerActionIncompleteBlock(request, response, action, currentPlayerContext))
+			return true;
+	
+		TWorldContext worldContext = moduleContext.getWorldContext();
+
+		// try incomplete on world.
+		return callWorldActionIncompleteBlock(request, response, action, worldContext);
+	}
+
+	/**
+	 * Calls the appropriate action fail blocks if they exist.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action attempted.
+	 * @return true if a fail block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callActionFailed(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
+	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		
+		// try fail on player.
+		if (currentPlayerContext != null && callPlayerActionFailBlock(request, response, action, currentPlayerContext))
+			return true;
+	
+		TWorldContext worldContext = moduleContext.getWorldContext();
+
+		// try fail on world.
+		return callWorldActionFailBlock(request, response, action, worldContext);
+	}
+
+	/**
+	 * Calls the appropriate action fail blocks if they exist on the world.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action attempted.
+	 * @param worldContext the world context.
+	 * @return true if a fail block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callWorldAmbiguousActionBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext worldContext) throws TAMEInterrupt
+	{
+		Block blockToCall = null;
+		BlockEntry actionEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION, Value.createAction(action.getIdentity()));
+		BlockEntry generalEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION);
+		
+		// get specific block on world.
+		if ((blockToCall = worldContext.getElement().resolveBlock(actionEntry)) != null)
+		{
+			response.trace(request, "Found specific ambiguous action block on world for action %s.", action.getIdentity());
+			callBlock(request, response, worldContext, blockToCall);
+			return true;
+		}
+	
+		// get block on world.
+		if ((blockToCall = worldContext.getElement().resolveBlock(generalEntry)) != null)
+		{
+			response.trace(request, "Found default ambiguous action block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return true;
+		}
+	
+		return false;
+	}
+
+	/**
+	 * Calls the appropriate action fail blocks if they exist on a player.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param action the action attempted.
+	 * @param playerContext the player context.
+	 * @return true if a fail block was called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callPlayerAmbiguousActionBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext playerContext) throws TAMEInterrupt 
+	{
+		TPlayer currentPlayer = playerContext.getElement();
+	
+		Block blockToCall = null;
+		BlockEntry actionEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION, Value.createAction(action.getIdentity()));
+		BlockEntry generalEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION);
+		
+		// get specific block on player.
+		if ((blockToCall = currentPlayer.resolveBlock(actionEntry)) != null)
+		{
+			response.trace(request, "Found specific ambiguous action block in player %s lineage for action %s.", currentPlayer.getIdentity(), action.getIdentity());
+			callBlock(request, response, playerContext, blockToCall);
+			return true;
+		}
+	
+		// get block on player.
+		if ((blockToCall = currentPlayer.resolveBlock(generalEntry)) != null)
+		{
+			response.trace(request, "Found default ambiguous action block in player %s lineage.", currentPlayer.getIdentity());
+			callBlock(request, response, playerContext, blockToCall);
+			return true;
+		}
+		
+		response.trace(request, "No ambiguous action block on player.");
+		return false;
+	}
+
+	/**
 	 * Calls the appropriate bad action block on the world if it exists.
-	 * Bad actions are actions with mismatched conjugates, unknown modal parts, or unknown object references. 
+	 * "Bad" actions are actions with mismatched conjugates, unknown modal parts, or unknown object references. 
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param action the action attempted.
@@ -1113,6 +1255,7 @@ public final class TAMELogic implements TAMEConstants
 
 	/**
 	 * Calls the appropriate bad action block on a player if it exists.
+	 * "Bad" actions are actions with mismatched conjugates, unknown modal parts, or unknown object references. 
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param action the action attempted.
@@ -1145,61 +1288,15 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
-	 * Checks and calls the action forbidden blocks.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @return true if a forbidden block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callCheckActionForbidden(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		
-		if (currentPlayerContext != null)
-		{
-			TPlayer currentPlayer = currentPlayerContext.getElement();
-			response.trace(request, "Checking current player %s for action permission.", currentPlayer);
-	
-			// check if the action is disallowed by the player.
-			if (!currentPlayer.allowsAction(action))
-			{
-				response.trace(request, "Action is forbidden.");
-				callPlayerActionForbiddenBlock(request, response, action, currentPlayerContext);
-				return true;
-			}
-			
-			// try current room.
-			TRoomContext currentRoomContext = moduleContext.getCurrentRoomContext();
-			if (currentRoomContext != null)
-			{
-				TRoom currentRoom = currentRoomContext.getElement();
-				
-				response.trace(request, "Checking current room %s for action permission.", currentRoom);
-	
-				// check if the action is disallowed by the room.
-				if (!currentRoom.allowsAction(action))
-				{
-					response.trace(request, "Action is forbidden.");
-					callRoomActionForbiddenBlock(request, response, action, currentPlayerContext);
-					return true;
-				}
-			}
-		}
-		
-		return false;
-	}
-
-	/**
 	 * Calls the appropriate action forbidden block on a player.
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param action the action attempted.
 	 * @param context the player context.
+	 * @return true if handled by this block, false if not.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	private static void callPlayerActionForbiddenBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext context) throws TAMEInterrupt 
+	private static boolean callPlayerActionForbiddenBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext context) throws TAMEInterrupt 
 	{
 		TPlayer player = context.getElement();
 	
@@ -1210,71 +1307,52 @@ public final class TAMELogic implements TAMEConstants
 		{
 			response.trace(request, "Got specific forbid block in player %s lineage, action %s", player.getIdentity(), action.getIdentity());
 			callBlock(request, response, context, forbidBlock);
+			return true;
 		}
-		else if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION))) != null)
+		
+		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION))) != null)
 		{
 			response.trace(request, "Got default forbid block in player %s lineage.", player.getIdentity());
 			callBlock(request, response, context, forbidBlock);
+			return true;
 		}
-		else
-		{
-			response.trace(request, "No forbid block on player to call. Sending error.");
-			response.addCue(CUE_ERROR, "ACTION IS FORBIDDEN (make a better in-universe handler!).");
-		}
+		
+		response.trace(request, "No forbid block on player to call.");
+		return false;
 	}
 
 	/**
-	 * Calls the appropriate action room forbidden block on a player.
+	 * Calls the appropriate room action forbidden block on a player.
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param action the action attempted.
 	 * @param context the room context.
+	 * @return true if handled by this block, false if not.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	private static void callRoomActionForbiddenBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext context) throws TAMEInterrupt 
+	private static boolean callRoomActionForbiddenBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext context) throws TAMEInterrupt 
 	{
 		TPlayer player = context.getElement();
 		
 		// get forbid block.
 		Block forbidBlock = null;
 		
-		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION, Value.createAction(action.getIdentity())))) != null)
+		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONROOMFORBIDDENACTION, Value.createAction(action.getIdentity())))) != null)
 		{
-			response.trace(request, "Calling specific forbid block in player %s lineage, action %s.", player.getIdentity(), action.getIdentity());
+			response.trace(request, "Calling specific room forbid block in player %s lineage, action %s.", player.getIdentity(), action.getIdentity());
 			callBlock(request, response, context, forbidBlock);
-		}
-		else if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION))) != null)
-		{
-			response.trace(request, "Calling default forbid block in player %s lineage.", player.getIdentity());
-			callBlock(request, response, context, forbidBlock);
-		}
-		else
-		{
-			response.trace(request, "No forbid block on player to call. Sending error.");
-			response.addCue(CUE_ERROR, "ACTION IS FORBIDDEN IN THIS ROOM (make a better in-universe handler!).");
-		}
-	}
-
-	/**
-	 * Calls the appropriate action incomplete blocks if they exist.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @return true if a fail block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callActionIncomplete(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		
-		// try incomplete on player.
-		if (currentPlayerContext != null && callPlayerActionIncompleteBlock(request, response, action, currentPlayerContext))
 			return true;
-	
-		// try incomplete on world.
-		return callWorldActionIncompleteBlock(request, response, action, worldContext);
+		}
+
+		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONROOMFORBIDDENACTION))) != null)
+		{
+			response.trace(request, "Calling default room forbid block in player %s lineage.", player.getIdentity());
+			callBlock(request, response, context, forbidBlock);
+			return true;
+		}
+
+		response.trace(request, "No room forbid block on player.");
+		return false;
 	}
 
 	/**
@@ -1341,28 +1419,6 @@ public final class TAMELogic implements TAMEConstants
 	
 		response.trace(request, "No action incomplete block on player.");
 		return false;
-	}
-
-	/**
-	 * Calls the appropriate action fail blocks if they exist.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @return true if a fail block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callActionFailed(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		
-		// try fail on player.
-		if (currentPlayerContext != null && callPlayerActionFailBlock(request, response, action, currentPlayerContext))
-			return true;
-	
-		// try fail on world.
-		return callWorldActionFailBlock(request, response, action, worldContext);
 	}
 
 	/**
