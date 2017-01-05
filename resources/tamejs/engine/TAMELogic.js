@@ -16,12 +16,12 @@ var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefi
 var TCommandFunctions = TCommandFunctions || ((typeof require) !== 'undefined' ? require('./logic/TCommandFunctions.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 var TLogic = {};
 
-//##[[CONTENT-INCLUDE logic/TArithmeticFunctions.js
-//##[[CONTENT-INCLUDE logic/TCommandFunctions.js
+//##[[EXPORTJS-INCLUDE logic/TArithmeticFunctions.js
+//##[[EXPORTJS-INCLUDE logic/TCommandFunctions.js
 
 /****************************************************************************
  * Main logic junk.
@@ -182,7 +182,124 @@ TLogic.callConditional = function(commandName, request, response, blockLocal, co
  */
 TLogic.enqueueInterpretedAction = function(request, response, interpreterContext) 
 {
-	// TODO: Finish this.
+	var action = interpreterContext.action;
+	if (action == null)
+		TLogic.doUnknownAction(request, response);
+	else
+	{
+		switch (action.type)
+		{
+			default:
+			case TAMEConstants.ActionType.GENERAL:
+				request.addActionItem(TAction.createInitial(action));
+				break;
+
+			case TAMEConstants.ActionType.OPEN:
+			{
+				if (!interpreterContext.targetLookedUp)
+				{
+					response.trace(request, "Performing open action "+action.identity+" with no target (incomplete)!");
+					if (!TLogic.callActionIncomplete(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+				}
+				else
+					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.target));
+			}
+			break;
+
+			case TAMEConstants.ActionType.MODAL:
+			{
+				if (!interpreterContext.modeLookedUp)
+				{
+					response.trace(request, "Performing modal action "+action.identity+" with no mode (incomplete)!");
+					if (!TLogic.callActionIncomplete(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+				}
+				else if (interpreterContext.mode == null)
+				{
+					response.trace(request, "Performing modal action "+action.identity+" with an unknown mode!");
+					if (!TLogic.callBadAction(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+				}
+				else
+					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.mode));
+			}
+			break;
+
+			case TAMEConstants.ActionType.TRANSITIVE:
+			{
+				if (interpreterContext.objectAmbiguous)
+				{
+					response.trace(request, "Object is ambiguous for action "+action.identity+".");
+					if (!TLogic.callAmbiguousAction(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
+				}
+				else if (!interpreterContext.isObject1LookedUp())
+				{
+					response.trace(request, "Performing transitive action "+action.identity+" with no object (incomplete)!");
+					if (!TLogic.callActionIncomplete(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+				}
+				else if (interpreterContext.getObject1() == null)
+				{
+					response.trace(request, "Performing transitive action "+action.identity+" with an unknown object!");
+					if (!TLogic.callBadAction(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+				}
+				else
+					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1));
+			}
+			break;
+	
+			case TAMEConstants.ActionType.DITRANSITIVE:
+			{
+				if (interpreterContext.objectAmbiguous)
+				{
+					response.trace(request, "Object is ambiguous for action "+action.identity+".");
+					if (!TLogic.callAmbiguousAction(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "ONE OR MORE OBJECTS ARE AMBIGUOUS (make a better in-universe handler!).");
+				}
+				else if (!interpreterContext.object1LookedUp)
+				{
+					response.trace(request, "Performing ditransitive action "+action.identity+" with no first object (incomplete)!");
+					if (!TLogic.callActionIncomplete(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+				}
+				else if (interpreterContext.object1 == null)
+				{
+					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown first object!");
+					if (!TLogic.callBadAction(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+				}
+				else if (!interpreterContext.conjugateLookedUp)
+				{
+					response.trace(request, "Performing ditransitive action "+action.identity+" as a transitive one...");
+					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1()));
+				}
+				else if (!interpreterContext.conjugateFound)
+				{
+					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown conjugate!");
+					if (!TLogic.callBadAction(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+				}
+				else if (!interpreterContext.object2LookedUp)
+				{
+					response.trace(request, "Performing ditransitive action "+action.identity+" with no second object (incomplete)!");
+					if (!TLogic.callActionIncomplete(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+				}
+				else if (interpreterContext.object2 == null)
+				{
+					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown second object!");
+					if (!TLogic.callBadAction(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+				}
+				else
+					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1, interpreterContext.object2));
+			}
+			break;
+		}
+	}
 };
 
 
@@ -203,31 +320,29 @@ TLogic.processActionLoop = function(request, response)
 	while (request.hasActionItems())
 	{
 		var tameAction = request.nextActionItem();
-		
-		var action = context.resolveAction(tameAction.actionIdentity);
 
 		try {
 			
-			switch (action.type)
+			switch (tameAction.action.type)
 			{
 				default:
 				case TAMEConstants.ActionType.GENERAL:
-					TLogic.doActionGeneral(request, response, action);
+					TLogic.doActionGeneral(request, response, tameAction.action);
 					break;
 				case TAMEConstants.ActionType.OPEN:
-					TLogic.doActionOpen(request, response, action, tameAction.getTarget());
+					TLogic.doActionOpen(request, response, tameAction.action, tameAction.target);
 					break;
 				case TAMEConstants.ActionType.MODAL:
-					TLogic.doActionModal(request, response, action, tameAction.getTarget());
+					TLogic.doActionModal(request, response, tameAction.action, tameAction.target);
 					break;
 				case TAMEConstants.ActionType.TRANSITIVE:
-					TLogic.doActionTransitive(request, response, action, tameAction.getObject1());
+					TLogic.doActionTransitive(request, response, tameAction.action, tameAction.object1);
 					break;
 				case TAMEConstants.ActionType.DITRANSITIVE:
-					if (tameAction.getObject2() == null)
-						TLogic.doActionTransitive(request, response, action, tameAction.getObject1());
+					if (tameAction.object2 == null)
+						TLogic.doActionTransitive(request, response, tameAction.action, tameAction.object1);
 					else
-						TLogic.doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
+						TLogic.doActionDitransitive(request, response, tameAction.action, tameAction.object1, tameAction.object2);
 					break;
 			}
 			
@@ -298,7 +413,7 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 
 	var time = Util.nanoTime();
 	var interpreterContext = TLogic.interpret(request);
-	response.interpretNanos = (Util.nanoTime() - time) * 1000000; 
+	response.interpretNanos = Util.nanoTime() - time; 
 
 	time = Util.nanoTime();
 	
@@ -1414,7 +1529,7 @@ TLogic.doActionGeneral = function(request, response, action)
  */
 TLogic.doActionOpen = function(request, response, action, openTarget)
 {
-	var context = request.getModuleContext();
+	var context = request.moduleContext;
 	response.trace(request, "Performing general/open action "+TLogic.elementToString(action));
 
 	var currentPlayerContext = context.getCurrentPlayerContext();
@@ -1505,7 +1620,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
  */
 TLogic.doActionModal = function(request, response, action, mode)
 {
-	var context = request.getModuleContext();
+	var context = request.moduleContext;
 	response.trace(request, "Performing modal action "+TLogic.elementToString(action)+", \""+mode+"\"");
 
 	var currentPlayerContext = context.getCurrentPlayerContext();
@@ -1654,7 +1769,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 };
 
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

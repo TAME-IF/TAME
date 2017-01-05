@@ -7,27 +7,27 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
-var TModule = TModule || ((typeof require) !== 'undefined' ? require('./objects/TModule.js') : null);
-var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('./TAMELogic.js') : null);
+var TModule = TModule || ((typeof require) !== 'undefined' ? require('./engine/objects/TModule.js') : null);
+var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('./engine/TAMELogic.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 var TAME = new (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers){
 
-//##[[CONTENT-GENERATE version
+//##[[EXPORTJS-GENERATE version
 
-//##[[CONTENT-INCLUDE Util.js
-//##[[CONTENT-INCLUDE TAMEConstants.js
-//##[[CONTENT-INCLUDE TAMEError.js
-//##[[CONTENT-INCLUDE TAMEInterrupt.js
-//##[[CONTENT-INCLUDE objects/TValue.js
-//##[[CONTENT-INCLUDE objects/TRequest.js
-//##[[CONTENT-INCLUDE objects/TResponse.js
-//##[[CONTENT-INCLUDE objects/TAction.js
-//##[[CONTENT-INCLUDE objects/TModule.js
-//##[[CONTENT-INCLUDE objects/TModuleContext.js
-//##[[CONTENT-INCLUDE TAMELogic.js
+//##[[EXPORTJS-INCLUDE engine/Util.js
+//##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
+//##[[EXPORTJS-INCLUDE engine/TAMEError.js
+//##[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
+//##[[EXPORTJS-INCLUDE engine/objects/TValue.js
+//##[[EXPORTJS-INCLUDE engine/objects/TRequest.js
+//##[[EXPORTJS-INCLUDE engine/objects/TResponse.js
+//##[[EXPORTJS-INCLUDE engine/objects/TAction.js
+//##[[EXPORTJS-INCLUDE engine/objects/TModule.js
+//##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
+//##[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	var tameModule = new TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers);
 
@@ -65,10 +65,10 @@ var TAME = new (function(theader, tactions, tworld, tobjects, tplayers, trooms, 
 	return this;
 	
 })(
-//##[[CONTENT-GENERATE header, actions, world, objects, players, rooms, containers
+//##[[EXPORTJS-GENERATE header, actions, world, objects, players, rooms, containers
 );
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TAME;

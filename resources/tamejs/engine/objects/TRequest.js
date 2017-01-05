@@ -10,7 +10,7 @@
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /*****************************************************************************
  See net.mtrop.tame.TAMERequest
@@ -133,7 +133,7 @@ TRequest.prototype.checkStackClear = function()
 };
 
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 // If testing with NODEJS ==================================================

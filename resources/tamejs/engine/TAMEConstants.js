@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 var TAMEConstants = {};
 TAMEConstants.ActionType = {};
@@ -41,7 +41,7 @@ TAMEConstants.Identity.WORLD = "world";
 TAMEConstants.RUNAWAY_THRESHOLD = 100000;
 TAMEConstants.OPEN_TARGET_VARIABLE = "_target";
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TAMEConstants;

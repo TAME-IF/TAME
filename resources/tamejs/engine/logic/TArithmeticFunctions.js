@@ -10,7 +10,7 @@
 var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/TValue.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /*****************************************************************************
  Arithmetic function entry points.
@@ -269,7 +269,7 @@ TArithmeticFunctions.Type =
 
 TArithmeticFunctions.COUNT = TArithmeticFunctions.Type.length; 
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

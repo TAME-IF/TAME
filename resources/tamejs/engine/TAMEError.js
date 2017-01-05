@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /*****************************************************************************
  Exception handling.
@@ -45,7 +45,7 @@ TAMEError.RunawayRequest = function(message) {return new TAMEError(TAMEError.Typ
 TAMEError.UnexpectedValue = function(message) {return new TAMEError(TAMEError.Type.UnexpectedValue, message);};
 TAMEError.UnexpectedValueType = function(message) {return new TAMEError(TAMEError.Type.UnexpectedValueType, message);};
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

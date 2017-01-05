@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /*****************************************************************************
  Interrupt handling.
@@ -39,7 +39,7 @@ TAMEInterrupt.prototype.toString = function()
 	return "TAMEInterrupt: "+ this.type + ": " + this.message;
 };
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

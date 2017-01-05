@@ -10,7 +10,7 @@
 var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /****************************************************
  See net.mtrop.tame.TAMEModuleContext
@@ -89,7 +89,7 @@ TModuleContext.prototype.setCurrentPlayer = function(playerIdentity)
 	playerIdentity = playerIdentity.toLowerCase();
 	
 	if (!contextState.elements[playerIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	
 	contextState.player = playerIdentity;
 };
@@ -108,7 +108,7 @@ TModuleContext.prototype.removePlayer = function(playerIdentity)
 	if(!contextState.elements)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
 	if (!contextState.elements[playerIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	delete contextState.roomStacks[playerIdentity];
 };
 
@@ -131,9 +131,9 @@ TModuleContext.prototype.pushRoomOntoPlayer = function(playerIdentity, roomIdent
 	roomIdentity = roomIdentity.toLowerCase();
 
 	if (!contextState.elements[playerIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	if (!contextState.elements[roomIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+roomIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+roomIdentity);
 	
 	if (!contextState.roomStacks[playerIdentity])
 		contextState.roomStacks[playerIdentity] = [];
@@ -157,7 +157,7 @@ TModuleContext.prototype.popRoomFromPlayer = function(playerIdentity)
 	playerIdentity = playerIdentity.toLowerCase();
 
 	if (!contextState.elements[playerIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	if (!contextState.roomStacks[playerIdentity])
 		return;
 
@@ -186,9 +186,9 @@ TModuleContext.prototype.checkPlayerIsInRoom = function(playerIdentity, roomIden
 	roomIdentity = roomIdentity.toLowerCase();
 
 	if (!contextState.elements[playerIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	if (!contextState.elements[roomIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+roomIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+roomIdentity);
 	
 	var roomstack = contextState.roomStacks[playerIdentity];
 	if (!roomstack)
@@ -216,7 +216,7 @@ TModuleContext.prototype.removeObject = function(objectIdentity)
 	objectIdentity = objectIdentity.toLowerCase();
 	
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
 	var elementIdentity = contextState.objectOwners[objectIdentity];
 	if (!elementIdentity)
@@ -247,9 +247,9 @@ TModuleContext.prototype.addObjectToElement = function(elementIdentity, objectId
 	objectIdentity = objectIdentity.toLowerCase();
 	
 	if (!contextState.elements[elementIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+elementIdentity);
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
 	this.removeObject(objectIdentity);
 	contextState.objectOwners[objectIdentity] = elementIdentity;
@@ -279,9 +279,9 @@ TModuleContext.prototype.checkElementHasObject = function(elementIdentity, objec
 	objectIdentity = objectIdentity.toLowerCase();
 
 	if (!contextState.elements[elementIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+elementIdentity);
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
 	return contextState.objectOwners[objectIdentity] == elementIdentity;
 };
@@ -305,7 +305,7 @@ TModuleContext.prototype.checkObjectHasNoOwner = function(objectIdentity)
 	objectIdentity = objectIdentity.toLowerCase();
 	
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
 	return !contextState.objectOwners[objectIdentity];
 };
@@ -329,7 +329,7 @@ TModuleContext.prototype.getObjectsOwnedByElement = function(elementIdentity)
 	elementIdentity = elementIdentity.toLowerCase();
 	
 	if (!contextState.elements[elementIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+elementIdentity);
 	
 	var arr = contextState.owners[elementIdentity];
 	if (!arr)
@@ -357,7 +357,7 @@ TModuleContext.prototype.getObjectsOwnedByElementCount = function(elementIdentit
 	elementIdentity = elementIdentity.toLowerCase();
 
 	if (!contextState.elements[elementIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+elementIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+elementIdentity);
 	
 	var arr = contextState.owners[elementIdentity];
 	if (!arr)
@@ -387,7 +387,7 @@ TModuleContext.prototype.addObjectName = function(objectIdentity, name)
 	objectIdentity = objectIdentity.toLowerCase();
 	
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
 	var n = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
 	var arr = contextState.names[objectIdentity];
@@ -417,7 +417,7 @@ TModuleContext.prototype.removeObjectName = function(objectIdentity, name)
 	objectIdentity = objectIdentity.toLowerCase();
 
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
 	var n = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
 	var arr = contextState.names[objectIdentity];
@@ -446,7 +446,7 @@ TModuleContext.prototype.checkObjectHasName = function(objectIdentity, name)
 	objectIdentity = objectIdentity.toLowerCase();
 
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
 	name = name.toLowerCase();
 	var arr = contextState.names[objectIdentity];
@@ -473,7 +473,7 @@ TModuleContext.prototype.addObjectTag = function(objectIdentity, tag)
 	objectIdentity = objectIdentity.toLowerCase();
 
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
 	tag = tag.toLowerCase();
 	var arr = contextState.tags[objectIdentity];
@@ -503,7 +503,7 @@ TModuleContext.prototype.removeObjectTag = function(objectIdentity, tag)
 	objectIdentity = objectIdentity.toLowerCase();
 
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
 	tag = tag.toLowerCase();
 	var arr = contextState.tags[objectIdentity];
@@ -533,7 +533,7 @@ TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, tag)
 	objectIdentity = objectIdentity.toLowerCase();
 
 	if (!contextState.elements[objectIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+objectIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
 	tag = tag.toLowerCase();
 	var arr = contextState.tags[objectIdentity];
@@ -619,7 +619,7 @@ TModuleContext.prototype.getCurrentRoom = function(playerIdentity)
 		return null;
 
 	if (!contextState.elements[playerIdentity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+playerIdentity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+playerIdentity);
 
 	var stack = contextState.roomStacks[playerIdentity];
 
@@ -653,7 +653,7 @@ TModuleContext.prototype.resolveAction = function(actionIdentity)
 {	
 	var out = this.module.actions[actionIdentity];
 	if (!out)
-		throw TAMEModule.ModuleExecution("Action is missing from module: "+actionIdentity);		
+		throw TAMEError.ModuleExecution("Action is missing from module: "+actionIdentity);		
 	return this.module.actions[actionIdentity];
 };
 
@@ -694,7 +694,7 @@ TModuleContext.prototype.resolveElement = function(elementIdentity)
 	{
 		element = this.getElement(elementIdentity);
 		if (!element)
-			throw TAMEModule.ModuleExecution("Expected element '"+elementIdentity+"' in module!");
+			throw TAMEError.ModuleExecution("Expected element '"+elementIdentity+"' in module!");
 		return element;
 	}
 };
@@ -717,7 +717,7 @@ TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 	var element = this.resolveElement(elementIdentity);
 
 	if (!contextState.elements[element.identity])
-		throw TAMEModule.ModuleExecution("Element is missing from context state: "+element.identity);
+		throw TAMEError.ModuleExecution("Element is missing from context state: "+element.identity);
 	
 	return contextState.elements[element.identity];
 };
@@ -736,7 +736,7 @@ TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blo
 	var blockname =	blockType + "(";
 	if (blockValues) for (var i = 0; i < blockValues.length; i++)
 	{
-		blockname += TValue.toString(values[i]);
+		blockname += TValue.toString(blockValues[i]);
 		if (i < blockValues.length - 1)
 			blockname += ",";
 	}
@@ -794,7 +794,7 @@ TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray
 };
 
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 // If testing with NODEJS ==================================================

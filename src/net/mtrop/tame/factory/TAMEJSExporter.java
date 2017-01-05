@@ -39,15 +39,15 @@ public final class TAMEJSExporter
 	private static final String JS_ROOT_RESOURCE = "tamejs/";
 	
 	/** Reader directive prefix. */
-	private static final String JS_DIRECTIVE_PREFIX = "//##[[";
+	private static final String JS_DIRECTIVE_PREFIX = "//##[[EXPORTJS-";
 	/** Reader directive - START */
-	private static final String JS_DIRECTIVE_START = JS_DIRECTIVE_PREFIX + "CONTENT-START";
+	private static final String JS_DIRECTIVE_START = JS_DIRECTIVE_PREFIX + "START";
 	/** Reader directive - GENERATE */
-	private static final String JS_DIRECTIVE_GENERATE = JS_DIRECTIVE_PREFIX + "CONTENT-GENERATE";
+	private static final String JS_DIRECTIVE_GENERATE = JS_DIRECTIVE_PREFIX + "GENERATE";
 	/** Reader directive - INCLUDE */
-	private static final String JS_DIRECTIVE_INCLUDE = JS_DIRECTIVE_PREFIX + "CONTENT-INCLUDE";
+	private static final String JS_DIRECTIVE_INCLUDE = JS_DIRECTIVE_PREFIX + "INCLUDE";
 	/** Reader directive - END */
-	private static final String JS_DIRECTIVE_END = JS_DIRECTIVE_PREFIX + "CONTENT-END";
+	private static final String JS_DIRECTIVE_END = JS_DIRECTIVE_PREFIX + "END";
 	
 	/** Generate version. */
 	private static final String GENERATE_VERSION = "version";

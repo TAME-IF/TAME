@@ -6,7 +6,11 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
 
-//##[[CONTENT-START
+// If testing with NODEJS ==================================================
+var window = null;
+// =========================================================================
+
+//##[[EXPORTJS-START
 
 /*****************************************************************************
  Utilities
@@ -48,7 +52,7 @@ Util.nanoTime = (function(){
 // Smarter foreach.
 Util.each = function(obj, func)
 {
-	for (x in obj) 
+	for (var x in obj) 
 		if (obj.hasOwnProperty(x)) 
 			func(obj[x], x, obj.length);
 };
@@ -70,7 +74,7 @@ Util.arrayRemove = function(arr, obj)
 Util.mapify = function(objlist, memberKey, multi) 
 {
 	var out = {}; 
-	for (x in objlist) 
+	for (var x in objlist) 
 		if (objlist.hasOwnProperty(x))
 		{				
 			var chain = out[objlist[x][memberKey]];
@@ -91,7 +95,7 @@ Util.mapify = function(objlist, memberKey, multi)
 Util.pairify = function(objlist, memberKey, memberValue, multi) 
 {
 	var out = {}; 
-	for (x in objlist) 
+	for (var x in objlist) 
 		if (objlist.hasOwnProperty(x))
 		{				
 			var chain = out[objlist[x][memberKey]];
@@ -307,7 +311,7 @@ Util.formatDate = function(date, formatstring, utc)
 	return out;
 };
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 // If testing with NODEJS ==================================================

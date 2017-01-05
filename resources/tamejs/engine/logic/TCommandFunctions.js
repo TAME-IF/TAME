@@ -16,7 +16,7 @@ var TAMEInterrupt = TAMEInterrupt || ((typeof require) !== 'undefined' ? require
 var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /*****************************************************************************
 Command entry points.
@@ -1797,7 +1797,7 @@ var TCommandFunctions =
 
 ];
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 // If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TCommandFunctions;

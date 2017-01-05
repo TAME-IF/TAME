@@ -11,7 +11,7 @@ var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAM
 var TAMEConstants = TAMEConstants || (typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null;
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /*****************************************************************************
  See net.mtrop.tame.TAMEResponse
@@ -60,7 +60,7 @@ TResponse.prototype.incrementAndCheckCommandsExecuted = function()
 		throw TAMEError.RunawayRequest("Too many commands executed - possible infinite loop.");
 };
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

@@ -11,7 +11,7 @@ var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : n
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /****************************************************
  Constructor for the TAME Module.
@@ -58,7 +58,7 @@ TModule.prototype.getActionByName = function(name)
 	return this.actions[identity];
 }
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 // If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TModule;

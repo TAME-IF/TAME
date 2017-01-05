@@ -10,7 +10,7 @@
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
 // ======================================================================================================
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /*****************************************************************************
  See net.mtrop.tame.lang.Value
@@ -1017,7 +1017,7 @@ TValue.toString = function(value)
 	return value.type + "[" + TValue.asString(value) + "]";
 };
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 // If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TValue;

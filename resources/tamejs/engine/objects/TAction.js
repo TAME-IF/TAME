@@ -6,7 +6,7 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  ******************************************************************************/
 
-//##[[CONTENT-START
+//##[[EXPORTJS-START
 
 /****************************************************
  See net.mtrop.tame.TAMEAction
@@ -60,7 +60,7 @@ TAction.prototype.toString = function()
 };
 
 
-//##[[CONTENT-END
+//##[[EXPORTJS-END
 
 
 // If testing with NODEJS ==================================================
