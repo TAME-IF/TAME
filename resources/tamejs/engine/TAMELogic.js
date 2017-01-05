@@ -236,13 +236,13 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					if (!TLogic.callAmbiguousAction(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
 				}
-				else if (!interpreterContext.isObject1LookedUp())
+				else if (!interpreterContext.object1LookedUp)
 				{
 					response.trace(request, "Performing transitive action "+action.identity+" with no object (incomplete)!");
 					if (!TLogic.callActionIncomplete(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
 				}
-				else if (interpreterContext.getObject1() == null)
+				else if (interpreterContext.object1 == null)
 				{
 					response.trace(request, "Performing transitive action "+action.identity+" with an unknown object!");
 					if (!TLogic.callBadAction(request, response, action))
@@ -556,7 +556,7 @@ TLogic.interpretAction = function(moduleContext, interpreterContext)
 		var next = module.getActionByName(sb);
 		if (next != null)
 		{
-			interpreterContext.action = next.identity;
+			interpreterContext.action = next;
 			interpreterContext.tokenOffset = index;
 		}
 	
@@ -969,9 +969,9 @@ TLogic.initializeContext = function(request, response)
 	var roomContexts = [];
 	var playerContexts = [];
 	
-	Util.each(context.module.elements, function(element)
+	Util.each(context.state.elements, function(elementContext)
 	{
-		var elementContext = context.resolveElementContext(element.identity);
+		var element = context.resolveElement(elementContext.identity);
 		if (element.tameType === 'TContainer')
 			containerContexts.push(elementContext);
 		else if (element.tameType === 'TObject')
@@ -1695,7 +1695,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 		return;
 
 	// call action on object.
-	if ((blockToCall = TLogic.resolveBlock(object.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(object.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Found action block on object.");
 		TLogic.callBlock(request, response, currentObjectContext, blockToCall);

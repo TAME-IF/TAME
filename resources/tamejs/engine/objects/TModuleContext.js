@@ -753,7 +753,7 @@ TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blo
 		if (out)
 			return out;
 		if (element.parent)
-			element = this.resolveElement(elementIdentity);
+			element = this.resolveElement(element.parent);
 		else
 			element = null;
 	}
@@ -780,7 +780,7 @@ TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray
 	{
 		if (this.checkObjectHasName(objectIdentity, name))
 		{
-			outputArray[arrayOffset++] = obj;
+			outputArray[arrayOffset++] = this.getElement(objectIdentity);
 			if (arrayOffset == outputArray.length)
 				return arrayOffset - start;
 		}

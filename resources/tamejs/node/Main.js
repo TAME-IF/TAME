@@ -7,3 +7,60 @@
  * 
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
+
+const readline = require('readline');
+
+var debug = false;
+var trace = false;
+
+// Read commandline.
+var args = process.argv;
+
+for (var x in argv) if (argv.hasOwnProperty(x))
+{
+	var arg = argv[x];
+	
+	if (arg == '--debug')
+		debug = true;
+	else if (arg == '--trace')
+		trace = true;
+}
+
+// Create context.
+var tamectx = TAME.newContext();
+
+const rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout,
+	prompt: '> '
+});
+
+var stop = false;
+
+/**
+ * Handles a TAME response.
+ * @param response the TAME response object.
+ */
+function handleResponse(response) 
+{
+	
+}
+
+// Initialize.
+handleResponse(TAME.initialize(tamectx, trace));
+
+// Loop.
+rl.on('line', function(line){
+	handleResponse(TAME.interpret(tamectx, line.trim(), trace));
+	if (stop)
+		rl.close();
+	else
+		rl.prompt();
+}).on('close', function(){
+	process.exit(0);
+});
+
+// start loop.
+if (!stop)
+	rl.prompt();
+

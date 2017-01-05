@@ -26,17 +26,6 @@ Util.nanoTime = (function(){
 			return parseInt(window.performance.now() * 1e6);
 		};	
 	}
-	// NodeJS
-	else if (process && process.hrtime)
-	{
-		return function()
-		{
-			// s,ns to ns (ns res)
-			var t = process.hrtime();
-			return t[0] * 1e9 + t[1];
-		};
-	}
-	// Unknown
 	else
 	{
 		return function()

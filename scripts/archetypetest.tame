@@ -58,8 +58,6 @@ world
 {
 	init()
 	{
-		giveObject(world, o_reddoor);
-		giveObject(world, o_bluedoor);
 	}
 
 	onUnknownAction()
@@ -71,5 +69,12 @@ world
 	{
 		quit;
 	}
+	
+	afterModuleInit()
+	{
+		giveObject(world, o_reddoor);
+		giveObject(world, o_bluedoor);
+	}
+	
 }
 

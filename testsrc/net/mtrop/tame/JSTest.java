@@ -22,7 +22,7 @@ public final class JSTest
 
 	public static void main(String[] args) throws Exception
 	{
-		String out = TAMEJSExporter.exportToString(TAMEScriptReader.read(new File("./scripts/test.tame")));
+		String out = TAMEJSExporter.exportToString(TAMEScriptReader.read(new File("./scripts/archetypetest.tame")));
 		String outProperty = System.getProperty("jstest.outfile.path");
 		if (outProperty != null)
 		{

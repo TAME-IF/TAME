@@ -175,7 +175,10 @@ public final class TAMEJSExporter
 	 */
 	public static void export(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
-		processResource(writer, module, JS_ROOT_RESOURCE + "TAME.js");
+		if ("node".equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, JS_ROOT_RESOURCE + "NodeJS.js");
+		else
+			processResource(writer, module, JS_ROOT_RESOURCE + "TAME.js");
 	}
 
 	/**
