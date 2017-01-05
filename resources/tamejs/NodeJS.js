@@ -15,39 +15,14 @@ var TAME = new (function(theader, tactions, tworld, tobjects, tplayers, trooms, 
 //##[[EXPORTJS-GENERATE version
 
 //##[[EXPORTJS-INCLUDE engine/Util.js
-	
-Util.nanoTime = (function(){
-	// Webkit Browser
-	if (window && window.performance)
-	{
-		return function() 
-		{
-			// ms to ns (us res)
-			return parseInt(window.performance.now() * 1e6);
-		};	
-	}
-	// NodeJS
-	else if (process && process.hrtime)
-	{
-		return function()
-		{
-			// s,ns to ns (ns res)
-			var t = process.hrtime();
-			return t[0] * 1e9 + t[1];
-		};
-	}
-	// Unknown
-	else
-	{
-		return function()
-		{
-			// ms to ns (ms res)
-			return Date.now() * 1e6;
-		};
-	}
-})();
 
-	
+Util.nanoTime = function()
+{
+	// s,ns to ns (ns res)
+	var t = process.hrtime();
+	return t[0] * 1e9 + t[1];
+};
+
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
 //##[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
@@ -98,8 +73,6 @@ Util.nanoTime = (function(){
 //##[[EXPORTJS-GENERATE header, actions, world, objects, players, rooms, containers
 );
 
-//##[[EXPORTJS-END
+//##[[EXPORTJS-INCLUDE node/Main.js
 
-//If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TAME;
-// =========================================================================
+//##[[EXPORTJS-END

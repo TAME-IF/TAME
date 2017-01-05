@@ -7,24 +7,3 @@
  * 
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
-package net.mtrop.tame;
-
-/**
- * A special throwable that interrupts a code block execution.
- * @author Matthew Tropiano
- */
-public class TAMEInterrupt extends Throwable
-{
-	private static final long serialVersionUID = -2283138977009468353L;
-
-	public TAMEInterrupt()
-	{
-		super("A generic game interrupt was thrown.");
-	}
-	
-	public TAMEInterrupt(String message)
-	{
-		super(message);
-	}
-
-}

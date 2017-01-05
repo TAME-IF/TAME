@@ -1,9 +1,11 @@
 /*******************************************************************************
- * Copyright (c) 2016 Matt Tropiano
+ * Copyright (c) 2016-2017 Matt Tropiano
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ * 
+ * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
 // If testing with NODEJS ==================================================
@@ -18,36 +20,8 @@ var window = null;
 var Util = {};
 
 // Nanosecond time (for timing stuff). Resolution varies by environment.
-Util.nanoTime = (function(){
-	// Webkit Browser
-	if (window && window.performance)
-	{
-		return function() 
-		{
-			// ms to ns (us res)
-			return parseInt(window.performance.now() * 1e6);
-		};	
-	}
-	// NodeJS
-	else if (process && process.hrtime)
-	{
-		return function()
-		{
-			// s,ns to ns (ns res)
-			var t = process.hrtime();
-			return t[0] * 1e9 + t[1];
-		};
-	}
-	// Unknown
-	else
-	{
-		return function()
-		{
-			// ms to ns (ms res)
-			return Date.now() * 1e6;
-		};
-	}
-})();
+// Stub here.
+Util.nanoTime = null;
 
 // Smarter foreach.
 Util.each = function(obj, func)
