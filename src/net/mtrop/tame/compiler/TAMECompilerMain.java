@@ -47,7 +47,7 @@ public final class TAMECompilerMain
 	private static final String SWITCH_DEFINE1 = "-d"; 
 
 	/** Switch - JS export. */
-	private static final String SWITCH_JS0 = "--js-outfile"; 
+	private static final String SWITCH_JS0 = "--js-out"; 
 	private static final String SWITCH_JS1 = "-jo"; 
 
 	/** Switch - JS export, add wrapper. */
@@ -99,7 +99,6 @@ public final class TAMECompilerMain
 					else
 					{
 						options.fileOutPath = arg;
-						options.fileJSOutPath = arg + ".js";
 						state = STATE_SWITCHES;
 					}
 					break;
@@ -163,6 +162,7 @@ public final class TAMECompilerMain
 					else if (arg.equals(SWITCH_JS0) || arg.equals(SWITCH_JS1))
 					{
 						options.jsOut = true;
+						options.fileJSOutPath = options.fileOutPath + ".js";
 						state = STATE_JSOUTPATH;
 					}
 					else if (arg.equals(SWITCH_NOOPTIMIZE0) || arg.equals(SWITCH_NOOPTIMIZE1))
@@ -177,7 +177,7 @@ public final class TAMECompilerMain
 					}
 					else
 					{
-						out.println("ERROR: Internal error.");
+						out.println("ERROR: Unknown switch: "+arg);
 						return false;
 					}
 					break;
