@@ -195,7 +195,7 @@ public abstract class TElement implements Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		setIdentity(sr.readString("UTF-8"));
+		identity = sr.readString("UTF-8");
 		blockTable = BlockTable.create(in);
 		archetype = sr.readBoolean();
 	}
