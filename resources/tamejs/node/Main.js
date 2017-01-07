@@ -10,7 +10,19 @@
 
 //##[[EXPORTJS-START
 
+//##[[EXPORTJS-INCLUDE Libs.js
+
 const readline = require('readline');
+
+function print(text)
+{
+	process.stdout.write(text);
+}
+
+function println(text)
+{
+	process.stdout.write(text + '\n');
+}
 
 var debug = false;
 var trace = false;
@@ -31,79 +43,126 @@ for (var x in args) if (args.hasOwnProperty(x))
 // Create context.
 var tamectx = TAME.newContext();
 
-const rl = readline.createInterface
-({
+const rl = readline.createInterface ({
 	input: process.stdin,
 	output: process.stdout,
 	prompt: '] '
 });
 
 var stop = false;
-var wait = null;
+var pause = false;
 var currentResponse = null;
 var currentCue = 0;
+var textBuffer = '';
 
 /**
  * Handles a TAME cue (for debugging).
  * @return true to continue handling, false to halt.
  */
-function debugCue(cue)
-{
+function debugCue(cue) {
 	var content = cue.content;
 	var type = cue.type.toLowerCase();
 	
-	console.log('['+cue.type+'] '+content);
+	println('['+cue.type+'] '+content);
 	if (type === 'quit' || type === 'fatal')
 		stop = true;
 		
 	return true;
 }
 
+
+function startFormatTag(tag) {
+	// Nothing
+}
+
+function endFormatTag(tag) {
+	// Nothing
+}
+
+function formatText(text) {
+	textBuffer += text;
+}
+
 /**
  * Handles a TAME cue (for debugging).
  * @return true to continue handling, false to halt.
  */
-function doCue(cue)
-{
-	// TODO: Change this.
+function doCue(cue) {
+	
 	var content = cue.content;
 	var type = cue.type.toLowerCase();
 	
-	console.log('['+cue.type+'] '+content);
-	if (type === 'quit' || type === 'fatal')
-		stop = true;
+	if (type !== 'text' && type !== 'textf') {
+		print(textBuffer);
+		textBuffer = '';
+	}
+	
+	switch (type) {
+	
+		case 'quit':
+			stop = true;
+			return false;
 		
-	return true;
+		case 'text':
+			textBuffer += content;
+			return true;
+		
+		case 'textf':
+			(new FormatParser(startFormatTag, endFormatTag, formatText)).parse(context);
+			return true;
+			
+		case 'wait':
+			sleep(parseInt(content, 10));
+			return true;
+
+		case 'pause':
+			pause = true;
+			return false;
+
+		case 'trace':
+			// Ignore trace.
+			return true;
+
+		case 'tip':	
+			println('(TIP: '+content+')');
+			return true;
+
+		case 'info':	
+			println('INFO: '+content);
+			return true;
+
+		case 'error':	
+			println('\n!ERROR! '+content);
+			return true;
+
+		case 'fatal':
+			println('\n!!FATAL!! '+content);
+			stop = true;
+			return false;
+	}
+	
 }
 
 var handleCueFunc = debug ? debugCue : doCue;
 
-/**
- * Resumes handling a TAME response.
- * @param response the TAME response object.
- */
-function resumeResponse() 
-{
-	responseLoop();
-}
-
-function responseLoop()
-{
-	while (currentCue < currentResponse.responseCues.length && handleCueFunc(currentResponse.responseCues[currentCue++]))
-		/* Do nothing. */;
+function responseLoop() {
 	
-	if (wait)
-		setTimeout(resumeResponse, wait);
-	else if (currentCue == currentResponse.responseCues.length)
-	{
+	while (currentCue < currentResponse.responseCues.length && handleCueFunc(currentResponse.responseCues[currentCue++])) {
+		/* Do nothing. */
+	}
+	
+	if (stop)
+		rl.close();
+	else if (pause) {
+		rl.setPrompt('(Enter to CONTINUE)');
+		rl.prompt();
+	} else if (currentCue == currentResponse.responseCues.length) {
 		currentResponse = null;
 		currentCue = 0;
-		if (!stop)
-		{
+		if (!stop) {
 			rl.setPrompt('] ');
 			rl.prompt();
-		}
-		else
+		} else
 			rl.close();
 	}
 }
@@ -114,34 +173,36 @@ function responseLoop()
  */
 function handleResponse(response) 
 {
-	if (debug)
-	{
-		console.log('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
-		console.log('Request time: '+(response.requestNanos/1000000.0)+' ms');
-		console.log('Commands: '+response.commandsExecuted);
-		console.log('Cues: '+response.responseCues.length);
+	if (debug) {
+		println('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
+		println('Request time: '+(response.requestNanos/1000000.0)+' ms');
+		println('Commands: '+response.commandsExecuted);
+		println('Cues: '+response.responseCues.length);
 	}
 	currentResponse = response;
 	currentCue = 0;
 	responseLoop();
 }
 
-
-// Initialize.
-handleResponse(TAME.initialize(tamectx, trace));
-
 // Loop.
 rl.on('line', function(line){
-	handleResponse(TAME.interpret(tamectx, line.trim(), trace));
-	if (stop)
-		rl.close();
+	if (pause) {
+		pause = false;
+		responseLoop();
+	} else
+		handleResponse(TAME.interpret(tamectx, line.trim(), trace));
 }).on('close', function(){
 	process.exit(0);
 });
 
-// start loop.
-if (!stop)
-	rl.prompt();
+setImmediate(function(){
+	//Initialize.
+	handleResponse(TAME.initialize(tamectx, trace));
+
+	// start loop.
+	if (!stop)
+		rl.prompt();
+});
 
 //##[[EXPORTJS-END
 

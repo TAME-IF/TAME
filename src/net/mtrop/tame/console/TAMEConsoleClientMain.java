@@ -415,7 +415,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		{
 			if (!cue.getType().equals(CUE_TEXT) && !cue.getType().equals(CUE_TEXTF) && textBuffer.length() > 0)
 			{
-				context.out.println(textBuffer.toString());
+				context.out.print(textBuffer.toString());
 				textBuffer.delete(0, textBuffer.length());
 			}
 			

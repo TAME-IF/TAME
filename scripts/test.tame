@@ -73,6 +73,7 @@ world
 		wait(500);
 		for (x = 0; x < 10; x = x + 1)
 		{
+			wait(500);
 			text(x);
 			if (x < 3)
 				continue;
