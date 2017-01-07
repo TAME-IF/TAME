@@ -337,7 +337,7 @@ TModuleContext.prototype.getObjectsOwnedByElement = function(elementIdentity)
 	if (!arr)
 		return [];
 	else
-		return arr.splice(); // return copy of full array.
+		return arr.slice(); // return copy of full array.
 };
 
 /**
@@ -452,7 +452,7 @@ TModuleContext.prototype.checkObjectHasName = function(objectIdentity, name)
 
 	name = name.toLowerCase();
 	var arr = contextState.names[objectIdentity];
-	return (!arr && arr[name]);
+	return (arr && arr[name]);
 };
 
 /**
@@ -539,7 +539,7 @@ TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, tag)
 
 	tag = tag.toLowerCase();
 	var arr = contextState.tags[objectIdentity];
-	return (!arr && arr[tag]);
+	return (arr && arr[tag]);
 };
 
 /**
@@ -776,22 +776,49 @@ TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray
 	var worldContext = this.getElementContext("world");
 
 	var start = arrayOffset;
-	var NAMECHECK = function(objectIdentity)
+	var arr = null;
+	
+	if (playerContext != null)
 	{
+		arr = this.getObjectsOwnedByElement(playerContext.identity);
+		for (var x in arr) if (arr.hasOwnProperty(x))
+		{
+			var objectIdentity = arr[x];
+			if (this.checkObjectHasName(objectIdentity, name))
+			{
+				outputArray[arrayOffset++] = this.getElement(objectIdentity);
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+	}
+	if (roomContext != null) 
+	{
+		arr = this.getObjectsOwnedByElement(roomContext.identity);
+		for (var x in arr) if (arr.hasOwnProperty(x))
+		{
+			var objectIdentity = arr[x];
+			if (this.checkObjectHasName(objectIdentity, name))
+			{
+				outputArray[arrayOffset++] = this.getElement(objectIdentity);
+				if (arrayOffset == outputArray.length)
+					return arrayOffset - start;
+			}
+		}
+	}
+	
+	arr = this.getObjectsOwnedByElement(worldContext.identity);
+	for (var x in arr) if (arr.hasOwnProperty(x))
+	{
+		var objectIdentity = arr[x];
 		if (this.checkObjectHasName(objectIdentity, name))
 		{
 			outputArray[arrayOffset++] = this.getElement(objectIdentity);
 			if (arrayOffset == outputArray.length)
 				return arrayOffset - start;
 		}
-	};
+	}
 	
-	if (playerContext != null) 
-		Util.each(this.getObjectsOwnedByElement(playerContext.identity), NAMECHECK);
-	if (roomContext != null) 
-		Util.each(this.getObjectsOwnedByElement(roomContext.identity), NAMECHECK);
-	Util.each(this.getObjectsOwnedByElement(worldContext.identity), NAMECHECK);
-
 	return arrayOffset - start;
 };
 

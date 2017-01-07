@@ -20,4 +20,11 @@ public interface TAMEJSExporterOptions
 	 * @return the wrapper name, or null for no wrapper.
 	 */
 	public String getWrapperName();
+	
+	/**
+	 * Checks if this enables include path output in JS code.
+	 * @return true if so, false if not.
+	 */
+	public boolean isPathOutputEnabled();
+	
 }

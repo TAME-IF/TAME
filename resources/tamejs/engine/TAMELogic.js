@@ -205,7 +205,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
 				}
 				else
-					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.target));
+					request.addActionItem(TAction.createInitialModal(action, interpreterContext.target));
 			}
 			break;
 
@@ -224,7 +224,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
 				}
 				else
-					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.mode));
+					request.addActionItem(TAction.createInitialModal(action, interpreterContext.mode));
 			}
 			break;
 
@@ -249,7 +249,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
 				}
 				else
-					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1));
+					request.addActionItem(TAction.createInitialObject(action, interpreterContext.object1));
 			}
 			break;
 	
@@ -276,7 +276,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				else if (!interpreterContext.conjugateLookedUp)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" as a transitive one...");
-					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.getObject1()));
+					request.addActionItem(TAction.createInitialObject(action, interpreterContext.object1));
 				}
 				else if (!interpreterContext.conjugateFound)
 				{
@@ -297,7 +297,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
 				}
 				else
-					request.addActionItem(TAMEAction.createInitial(action, interpreterContext.object1, interpreterContext.object2));
+					request.addActionItem(TAction.createInitialObject2(action, interpreterContext.object1, interpreterContext.object2));
 			}
 			break;
 		}
@@ -489,7 +489,7 @@ TLogic.interpret = function(request)
 	{
 		"tokens": tokens,
 		"tokenOffset": 0,
-		"objects": [],
+		"objects": [null, null],
 		"action": null,
 		"modeLookedUp": false,
 		"mode": null,
@@ -504,10 +504,10 @@ TLogic.interpret = function(request)
 		"objectAmbiguous": false
 	};
 
-	var moduleContext = request.moduleContext;
-	TLogic.interpretAction(moduleContext, interpreterContext);
+	var context = request.moduleContext;
+	TLogic.interpretAction(context, interpreterContext);
 
-	var action = moduleContext.module.actions[interpreterContext.action];
+	var action = interpreterContext.action;
 	if (action == null)
 		return interpreterContext;
 
@@ -523,12 +523,12 @@ TLogic.interpret = function(request)
 			TLogic.interpretMode(action, interpreterContext);
 			return interpreterContext;
 		case TAMEConstants.ActionType.TRANSITIVE:
-			TLogic.interpretObject1(moduleContext, interpreterContext);
+			TLogic.interpretObject1(context, interpreterContext);
 			return interpreterContext;
 		case TAMEConstants.ActionType.DITRANSITIVE:
-			if (TLogic.interpretObject1(moduleContext, interpreterContext))
+			if (TLogic.interpretObject1(context, interpreterContext))
 				if (TLogic.interpretConjugate(action, interpreterContext))
-					TLogic.interpretObject2(moduleContext, interpreterContext);
+					TLogic.interpretObject2(context, interpreterContext);
 			return interpreterContext;
 	}
 	
@@ -1069,7 +1069,7 @@ TLogic.callAmbiguousAction = function(request, response, action)
 	var context = request.moduleContext;
 	var currentPlayerContext = context.getCurrentPlayerContext();
 
-	if (currentPlayerContext != null && TLogic.callPlayerBadActionBlock(request, response, action, currentPlayerContext))
+	if (currentPlayerContext != null && TLogic.callPlayerAmbiguousActionBlock(request, response, action, currentPlayerContext))
 		return true;
 
 	var worldContext = context.getElementContext('world');
@@ -1250,15 +1250,45 @@ TLogic.callCheckActionForbidden = function(request, response, action)
 {
 	var context = request.moduleContext;
 	var currentPlayerContext = context.getCurrentPlayerContext();
+	var currentPlayer = context.getCurrentPlayer();
 
-	// try forbidden on player.
-	if (currentPlayerContext != null && TLogic.callPlayerAmbiguousActionBlock(request, response, action, currentPlayerContext))
-		return true;
+	if (currentPlayerContext != null)
+	{
+		response.trace(request, "Checking current player "+TLogic.elementToString(currentPlayer)+" for action permission.");
+
+		// check if the action is disallowed by the player.
+		if (!TLogic.allowsAction(currentPlayer, action))
+		{
+			response.trace(request, "Action is forbidden.");
+			if (!TLogic.callPlayerActionForbiddenBlock(request, response, action, currentPlayerContext))
+			{
+				response.addCue(TAMEConstants.Cue.ERROR, "ACTION IS FORBIDDEN (make a better in-universe handler!).");
+				return true;
+			}
+		}
+
+		// try current room.
+		var currentRoomContext = context.getCurrentRoomContext();
+		var currentRoom = contex.getCurrentRoom();
+
+		if (currentRoomContext != null)
+		{
+			response.trace(request, "Checking current room "+TLogic.elementToString(currentRoom)+" for action permission.");
+
+			// check if the action is disallowed by the room.
+			if (!TLogic.allowsAction(currentRoom, action))
+			{
+				response.trace(request, "Action is forbidden.");
+				if (!TLogic.callRoomActionForbiddenBlock(request, response, action, currentPlayerContext))
+				{
+					response.addCue(TAMEConstants.Cue.ERROR, "ACTION IS FORBIDDEN IN THIS ROOM (make a better in-universe handler!).");
+					return true;
+				}
+			}
+		}
+	}
 	
-	var worldContext = context.getElementContext('world');
-
-	// try forbidden on world.
-	return TLogic.callWorldAmbiguousActionBlock(request, response, action, worldContext);
+	return false;
 };
 
 /**

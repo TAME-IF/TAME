@@ -21,5 +21,11 @@ public class DefaultJSExporterOptions implements TAMEJSExporterOptions
 	{
 		return null;
 	}
+	
+	@Override
+	public boolean isPathOutputEnabled() 
+	{
+		return false;
+	}
 
 }

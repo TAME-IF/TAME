@@ -312,6 +312,7 @@ public final class TAMECompilerMain
 	private static class JSOptions implements TAMEJSExporterOptions
 	{
 		private String wrapperName;
+		private boolean pathOutputEnabled;
 		
 		JSOptions()
 		{
@@ -323,6 +324,13 @@ public final class TAMECompilerMain
 		{
 			return wrapperName;
 		}
+		
+		@Override
+		public boolean isPathOutputEnabled() 
+		{
+			return pathOutputEnabled;
+		}
+		
 	}
 	
 	private static class Options implements TAMEScriptReaderOptions

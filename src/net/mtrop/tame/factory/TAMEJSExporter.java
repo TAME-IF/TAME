@@ -176,9 +176,9 @@ public final class TAMEJSExporter
 	public static void export(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
 		if ("node".equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, JS_ROOT_RESOURCE + "NodeJS.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeJS.js");
 		else
-			processResource(writer, module, JS_ROOT_RESOURCE + "TAME.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "TAME.js");
 	}
 
 	/**
@@ -186,9 +186,10 @@ public final class TAMEJSExporter
 	 * Reads directives to determine reading behavior. 
 	 * @param writer the writer to write to.
 	 * @param module the module to eventually write to.
+	 * @param options the exporter options.
 	 * @param path the import path.
 	 */
-	private static void processResource(Writer writer, TAMEModule module, String path) throws IOException
+	private static void processResource(Writer writer, TAMEModule module, TAMEJSExporterOptions options, String path) throws IOException
 	{
 		String parentPath = path.substring(0, path.lastIndexOf('/') + 1);
 		
@@ -198,6 +199,8 @@ public final class TAMEJSExporter
 			if (in == null)
 				throw new IOException("Resource \""+path+"\" cannot be found! Internal error!");
 			
+			if (options.isPathOutputEnabled())
+				writer.append("// ---- "+path);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 			String line = null;
 			boolean startWrite = false;
@@ -220,7 +223,7 @@ public final class TAMEJSExporter
 				else if (trimline.startsWith(JS_DIRECTIVE_INCLUDE))
 				{
 					String nextPath = parentPath + trimline.substring(JS_DIRECTIVE_INCLUDE.length() + 1).trim();
-					processResource(writer, module, nextPath);
+					processResource(writer, module, options, nextPath);
 				}
 				else if (trimline.startsWith(JS_DIRECTIVE_END))
 				{
