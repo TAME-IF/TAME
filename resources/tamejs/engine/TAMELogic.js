@@ -100,7 +100,9 @@ TLogic.elementToString = function(elemObject)
  */
 TLogic.allowsAction = function(element, action)
 {
-	if (element.permissionType == TAMEConstants.RestrictionType.ALLOW)
+	if (!element.permittedActionList)
+		return true;
+	else if (element.permissionType == TAMEConstants.RestrictionType.ALLOW)
 		return element.permittedActionList.indexOf(action.identity) >= 0;
 	else if (action.restricted)
 		return false;
@@ -460,7 +462,7 @@ TLogic.callBlock = function(request, response, elementContext, block, localValue
 	// set locals
 	Util.each(localValues, function(value, key){
 		response.trace(request, "Setting local variable \""+key+"\" to \""+value+"\"");
-		blockLocal.put(key, value);
+		TLogic.setValue(blockLocal, key, value);
 	});
 
 	try {
@@ -885,8 +887,8 @@ TLogic.doBrowse = function(request, response, blockEntryTypeName, elementIdentit
 
 	Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity)
 	{
-		var object = moduleContext.getElement(objectIdentity);
-		var objectContext = moduleContext.getElementContext(objectIdentity);
+		var object = context.getElement(objectIdentity);
+		var objectContext = context.getElementContext(objectIdentity);
 		
 		var objtostr = TLogic.elementToString(object);
 		response.trace(request, "Check "+objtostr+" for browse block.");
@@ -1269,7 +1271,7 @@ TLogic.callCheckActionForbidden = function(request, response, action)
 
 		// try current room.
 		var currentRoomContext = context.getCurrentRoomContext();
-		var currentRoom = contex.getCurrentRoom();
+		var currentRoom = context.getCurrentRoom();
 
 		if (currentRoomContext != null)
 		{
@@ -1777,13 +1779,13 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	// attempt action with other on both objects.
 	if (!success)
 	{
-		if ((blockToCall = context.resolveBlock(object1, "ONACTIONWITHOTHER", [actionValue])) != null)
+		if ((blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
 		{
 			response.trace(request, "Found action with other block in object "+TLogic.elementToString(object1)+" lineage.");
 			TLogic.callBlock(request, response, currentObject1Context, blockToCall);
 			success = true;
 		}
-		if ((blockToCall = context.resolveBlock(object2, "ONACTIONWITHOTHER", [actionValue])) != null)
+		if ((blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
 		{
 			response.trace(request, "Found action with other block in object "+TLogic.elementToString(object2)+" lineage.");
 			TLogic.callBlock(request, response, currentObject2Context, blockToCall);

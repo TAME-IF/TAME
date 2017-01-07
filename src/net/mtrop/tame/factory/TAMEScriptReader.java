@@ -2227,7 +2227,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isAction())
 						{
-							addErrorMessage("Command requires an ACTION. \""+currentToken().getLexeme()+"\" is not an action type.");
+							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
 							return false;
 						}
 						
@@ -2239,7 +2239,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isObject(false))
 						{
-							addErrorMessage("Command requires a non-archetype OBJECT. \""+currentToken().getLexeme()+"\" is not a viable object type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
 							return false;
 						}
 						
@@ -2251,7 +2251,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isPlayer(false))
 						{
-							addErrorMessage("Command requires a non-archetype PLAYER. \""+currentToken().getLexeme()+"\" is not a viable player type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type.");
 							return false;
 						}
 						
@@ -2263,7 +2263,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isRoom(false))
 						{
-							addErrorMessage("Command requires a non-archetype ROOM. \""+currentToken().getLexeme()+"\" is not a viable room type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type.");
 							return false;
 						}
 						
@@ -2275,7 +2275,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isContainer(false))
 						{
-							addErrorMessage("Command requires a non-archetype CONTAINER. \""+currentToken().getLexeme()+"\" is not a viable container type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable container type.");
 							return false;
 						}
 						
@@ -2287,7 +2287,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isObjectContainer(false))
 						{
-							addErrorMessage("Command requires a non-archetype OBJECT-CONTAINER. \""+currentToken().getLexeme()+"\" is not an object container type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type.");
 							return false;
 						}
 						
@@ -2299,7 +2299,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isElement(false))
 						{
-							addErrorMessage("Command requires a non-archetype ELEMENT. \""+currentToken().getLexeme()+"\" is not an element type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type.");
 							return false;
 						}
 						

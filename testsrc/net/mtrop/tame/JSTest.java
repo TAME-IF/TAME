@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import com.blackrook.commons.Common;
 
 import net.mtrop.tame.factory.TAMEJSExporter;
+import net.mtrop.tame.factory.TAMEJSExporterOptions;
 import net.mtrop.tame.factory.TAMEScriptReader;
 
 public final class JSTest 
@@ -22,8 +23,22 @@ public final class JSTest
 
 	public static void main(String[] args) throws Exception
 	{
-		String out = TAMEJSExporter.exportToString(TAMEScriptReader.read(new File("./scripts/archetypetest.tame")));
+		String inProperty = System.getProperty("jstest.infile.path");
 		String outProperty = System.getProperty("jstest.outfile.path");
+		String out = TAMEJSExporter.exportToString(TAMEScriptReader.read(new File(inProperty)), new TAMEJSExporterOptions() {
+			
+			@Override
+			public boolean isPathOutputEnabled() {
+				return true;
+			}
+			
+			@Override
+			public String getWrapperName() {
+				return "node";
+				//return null;
+			}
+		});
+		
 		if (outProperty != null)
 		{
 			PrintWriter pw = new PrintWriter(new File(outProperty));

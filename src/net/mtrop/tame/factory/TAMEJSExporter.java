@@ -79,10 +79,9 @@ public final class TAMEJSExporter
 	private static final TAMEJSExporterOptions DEFAULT_OPTIONS = new DefaultJSExporterOptions();
 	
 	/**
-	 * Exports a TAME Module to a stand-alone JavaScript module.
+	 * Exports a TAME Module to a stand-alone JavaScript module with default options.
 	 * @param file the output file.
 	 * @param module the module to export.
-	 * @param options the exporter options.
 	 * @throws IOException if a write error occurs.
 	 */
 	public static String exportToString(TAMEModule module) throws IOException
@@ -94,6 +93,20 @@ public final class TAMEJSExporter
 	
 	/**
 	 * Exports a TAME Module to a stand-alone JavaScript module.
+	 * @param file the output file.
+	 * @param module the module to export.
+	 * @param options the exporter options.
+	 * @throws IOException if a write error occurs.
+	 */
+	public static String exportToString(TAMEModule module, TAMEJSExporterOptions options) throws IOException
+	{
+		StringWriter sw = new StringWriter();
+		export(sw, module, options);
+		return sw.toString();
+	}
+	
+	/**
+	 * Exports a TAME Module to a stand-alone JavaScript module with default options.
 	 * @param file the output file.
 	 * @param module the module to export.
 	 * @throws IOException if a write error occurs.
@@ -158,7 +171,6 @@ public final class TAMEJSExporter
 	 * Exports a TAME Module to a stand-alone JavaScript module.
 	 * @param writer the output writer.
 	 * @param module the module to export.
-	 * @param options the exporter options.
 	 * @throws IOException if a write error occurs.
 	 */
 	public static void export(Writer writer, TAMEModule module) throws IOException
@@ -187,7 +199,7 @@ public final class TAMEJSExporter
 	 * @param writer the writer to write to.
 	 * @param module the module to eventually write to.
 	 * @param options the exporter options.
-	 * @param path the import path.
+	 * @param path the import resource path.
 	 */
 	private static void processResource(Writer writer, TAMEModule module, TAMEJSExporterOptions options, String path) throws IOException
 	{

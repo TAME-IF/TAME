@@ -8,6 +8,8 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
+//##[[EXPORTJS-START
+
 const readline = require('readline');
 
 var debug = false;
@@ -16,9 +18,9 @@ var trace = false;
 // Read commandline.
 var args = process.argv;
 
-for (var x in argv) if (argv.hasOwnProperty(x))
+for (var x in args) if (args.hasOwnProperty(x))
 {
-	var arg = argv[x];
+	var arg = args[x];
 	
 	if (arg == '--debug')
 		debug = true;
@@ -29,22 +31,84 @@ for (var x in argv) if (argv.hasOwnProperty(x))
 // Create context.
 var tamectx = TAME.newContext();
 
-const rl = readline.createInterface({
+const rl = readline.createInterface
+({
 	input: process.stdin,
 	output: process.stdout,
-	prompt: '> '
+	prompt: '] '
 });
 
 var stop = false;
+var wait = null;
+var currentResponse = null;
+var currentCue = 0;
 
 /**
- * Handles a TAME response.
+ * Handles a TAME cue (for debugging).
+ * @return true to continue handling, false to halt.
+ */
+function debugCue(cue)
+{
+	var content = cue.content;
+	var type = cue.type.toLowerCase();
+	
+	console.log('['+cue.type+'] '+content);
+	if (type === 'quit' || type === 'fatal')
+		stop = true;
+		
+	return true;
+}
+
+var handleCueFunc = debug ? debugCue : debugCue;
+
+/**
+ * Resumes handling a TAME response.
+ * @param response the TAME response object.
+ */
+function resumeResponse() 
+{
+	responseLoop();
+}
+
+function responseLoop()
+{
+	while (currentCue < currentResponse.responseCues.length && handleCueFunc(currentResponse.responseCues[currentCue++]))
+		/* Do nothing. */;
+	
+	if (wait)
+		setTimeout(resumeResponse, wait);
+	else if (currentCue == currentResponse.responseCues.length)
+	{
+		currentResponse = null;
+		currentCue = 0;
+		if (!stop)
+		{
+			rl.setPrompt('] ');
+			rl.prompt();
+		}
+		else
+			rl.close();
+	}
+}
+
+/**
+ * Handles a new TAME response.
  * @param response the TAME response object.
  */
 function handleResponse(response) 
 {
-	
+	if (debug)
+	{
+		console.log('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
+		console.log('Request time: '+(response.requestNanos/1000000.0)+' ms');
+		console.log('Commands: '+response.commandsExecuted);
+		console.log('Cues: '+response.responseCues.length);
+	}
+	currentResponse = response;
+	currentCue = 0;
+	responseLoop();
 }
+
 
 // Initialize.
 handleResponse(TAME.initialize(tamectx, trace));
@@ -54,8 +118,6 @@ rl.on('line', function(line){
 	handleResponse(TAME.interpret(tamectx, line.trim(), trace));
 	if (stop)
 		rl.close();
-	else
-		rl.prompt();
 }).on('close', function(){
 	process.exit(0);
 });
@@ -63,4 +125,6 @@ rl.on('line', function(line){
 // start loop.
 if (!stop)
 	rl.prompt();
+
+//##[[EXPORTJS-END
 

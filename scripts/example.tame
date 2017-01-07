@@ -207,7 +207,7 @@ world
 	init()
 	{
 		setplayer(p_default);
-		setroom(r_room);
+		setroom(p_default, r_room);
 		counter = 0;
 	}
 	

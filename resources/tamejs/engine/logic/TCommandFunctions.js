@@ -534,15 +534,15 @@ var TCommandFunctions =
 		}
 	},
 
-	/* STRLEN */
+	/* STRLENGTH */
 	{
-		"name": 'STRLEN', 
+		"name": 'STRLENGTH', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRLEN call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRLENGTH call.");
 
 			request.pushValue(TValue.createInteger(TValue.asString(value).length));
 		}

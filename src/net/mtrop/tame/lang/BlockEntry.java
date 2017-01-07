@@ -90,7 +90,7 @@ public class BlockEntry implements Saveable
 	
 	/**
 	 * Returns a string representation of this entry.
-	 * Useful for languages that cannot use objects as keys.
+	 * Useful for export to languages that cannot use objects as lookup keys.
 	 * @return a string representation of this entry.
 	 */
 	public String getEntryString()
@@ -104,7 +104,7 @@ public class BlockEntry implements Saveable
 		{
 			sb.append(values[i].toString());
 			if (i < values.length - 1)
-				sb.append(", ");
+				sb.append(",");
 		}
 		sb.append(')');
 		entryString = sb.toString();

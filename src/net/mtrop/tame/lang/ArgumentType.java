@@ -15,10 +15,10 @@ package net.mtrop.tame.lang;
  */
 public enum ArgumentType
 {
-	/** Argument accepts an action. */
-	ACTION,
 	/** Argument accepts a single literal value, can be anything. */
 	VALUE,
+	/** Argument accepts an action. */
+	ACTION,
 	/** Argument must accept a player. */
 	PLAYER,
 	/** Argument must accept a room. */

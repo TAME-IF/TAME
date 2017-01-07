@@ -856,7 +856,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the value, cast to a string. 
 	 * Returns integer. 
 	 */
-	STRLEN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	STRLENGTH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
