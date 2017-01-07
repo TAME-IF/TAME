@@ -548,6 +548,23 @@ var TCommandFunctions =
 		}
 	},
 
+	/* STRCONCAT */
+	{
+		"name": 'STRCONCAT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+			
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONCAT call.");
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONCAT call.");
+
+			request.pushValue(TValue.createString(TValue.asString(value1) + TValue.asString(value2)));
+		}
+	},
+
 	/* STRREPLACE */
 	{
 		"name": 'STRREPLACE', 
@@ -713,8 +730,8 @@ var TCommandFunctions =
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSTOKEN call.");
 			
-			var token = TValue.asString(value2);
-			var str = TValue.asString(value1);
+			var token = TValue.asString(value2).toLowerCase();
+			var str = TValue.asString(value1).toLowerCase();
 
 			request.pushValue(TValue.createBoolean(str.split(/\s+/).indexOf(token) >= 0));
 		}
@@ -736,7 +753,7 @@ var TCommandFunctions =
 			var sequence = TValue.asString(value2);
 			var str = TValue.asString(value1);
 
-			request.pushValue(TValue.createBoolean(str.startsWith(sequence)));
+			request.pushValue(TValue.createBoolean(str.substring(0, sequence.length) === sequence));
 		}
 	},
 
@@ -756,13 +773,13 @@ var TCommandFunctions =
 			var sequence = TValue.asString(value2);
 			var str = TValue.asString(value1);
 
-			request.pushValue(TValue.createBoolean(str.endsWith(sequence)));
+			request.pushValue(TValue.createBoolean(str.substring(str.length - sequence.length) === sequence));
 		}
 	},
 
-	/* SUBSTR */
+	/* SUBSTRING */
 	{
-		"name": 'SUBSTR', 
+		"name": 'SUBSTRING', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var value3 = request.popValue();
@@ -770,11 +787,11 @@ var TCommandFunctions =
 			var value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
-				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTR call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTRING call.");
 			if (!TValue.isLiteral(value2))
-				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTR call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTRING call.");
 			if (!TValue.isLiteral(value3))
-				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTR call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTRING call.");
 
 			var end = TValue.asLong(value3);
 			var start = TValue.asLong(value2);
@@ -1658,7 +1675,7 @@ var TCommandFunctions =
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var currentPlayer = request.moduleContext.getCurrentPlayer();
-			request.pushValue(TValue.createBoolean(currentPlayer != null));
+			request.pushValue(TValue.createBoolean(currentPlayer == null));
 		}
 	},
 
@@ -1686,7 +1703,7 @@ var TCommandFunctions =
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var currentRoom = request.moduleContext.getCurrentRoom();
-			request.pushValue(TValue.createBoolean(currentRoom != null));
+			request.pushValue(TValue.createBoolean(currentRoom == null));
 		}
 	},
 

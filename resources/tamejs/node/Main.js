@@ -59,7 +59,24 @@ function debugCue(cue)
 	return true;
 }
 
-var handleCueFunc = debug ? debugCue : debugCue;
+/**
+ * Handles a TAME cue (for debugging).
+ * @return true to continue handling, false to halt.
+ */
+function doCue(cue)
+{
+	// TODO: Change this.
+	var content = cue.content;
+	var type = cue.type.toLowerCase();
+	
+	console.log('['+cue.type+'] '+content);
+	if (type === 'quit' || type === 'fatal')
+		stop = true;
+		
+	return true;
+}
+
+var handleCueFunc = debug ? debugCue : doCue;
 
 /**
  * Resumes handling a TAME response.

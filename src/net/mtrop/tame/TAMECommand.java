@@ -864,9 +864,33 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRLEN call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRLENGTH call.");
 
 			request.pushValue(Value.create(value.asString().length()));
+		}
+		
+	},
+	
+	/**
+	 * Concatenates two strings together.
+	 * POP is the second value, cast to a string. 
+	 * POP is the first value, cast to a string. 
+	 * Returns integer. 
+	 */
+	STRCONCAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRCONCAT call.");
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRCONCAT call.");
+
+			request.pushValue(Value.create(value1.asString() + value2.asString()));
 		}
 		
 	},
@@ -1178,7 +1202,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Third POP is the string to divide. 
 	 * Returns string. 
 	 */
-	SUBSTR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	SUBSTRING (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
