@@ -51,7 +51,7 @@ TValue.create = function(type, value)
 
 // Convenience constructors.
 TValue.createBoolean = function(value) {return TValue.create(TValue.Type.BOOLEAN, Boolean(value));}
-TValue.createInteger = function(value) {return TValue.create(TValue.Type.INTEGER, parseInt(value));}
+TValue.createInteger = function(value) {return TValue.create(TValue.Type.INTEGER, parseInt(value, 10));}
 TValue.createFloat = function(value) {return TValue.create(TValue.Type.FLOAT, parseFloat(value));}
 TValue.createString = function(value) {return TValue.create(TValue.Type.STRING, String(value));}
 TValue.createWorld = function() {return TValue.create(TValue.Type.WORLD, "world");}
@@ -906,9 +906,9 @@ TValue.asLong = function(value)
 	else if (TValue.isInteger(value))
 		return value.value;
 	else if (TValue.isFloatingPoint(value))
-		return parseInt(value.value);
+		return parseInt(value.value, 10);
 	else if (TValue.isString(value))
-		return parseInt(TValue.asString(value).toLowerCase());
+		return parseInt(TValue.asString(value).toLowerCase(), 10);
 	else
 		return 0;
 };

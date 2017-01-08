@@ -131,7 +131,6 @@ public final class TAMECompilerMain
 					{
 						jsOptions.wrapperName = arg;
 						state = STATE_SWITCHES;
-						i--;
 					}
 					break;
 				}
@@ -271,23 +270,6 @@ public final class TAMECompilerMain
 			return;
 		}
 
-		// Write serialized file.
-		FileOutputStream fos = null;
-		File outFile = new File(options.fileOutPath);
-		try {
-			fos = new FileOutputStream(new File(options.fileOutPath));
-			module.writeBytes(fos);
-		} catch (IOException e) {
-			out.println("ERROR: Could not write output file: "+outFile.getPath());
-			return;
-		} catch (SecurityException e) {
-			out.println("ERROR: Could not write output file: "+outFile.getPath());
-			out.println("You may not have permission to write a file there.");
-			return;
-		} finally {
-			Common.close(fos);
-		}
-		
 		// Write JS standalone file.
 		if (options.jsOut)
 		{
@@ -305,8 +287,27 @@ public final class TAMECompilerMain
 				return;
 			}
 		}
+		else
+		{
+			// Write serialized file.
+			FileOutputStream fos = null;
+			File outFile = new File(options.fileOutPath);
+			try {
+				fos = new FileOutputStream(new File(options.fileOutPath));
+				module.writeBytes(fos);
+				out.println("Wrote "+outFile.getPath()+" successfully.");
+			} catch (IOException e) {
+				out.println("ERROR: Could not write output file: "+outFile.getPath());
+				return;
+			} catch (SecurityException e) {
+				out.println("ERROR: Could not write output file: "+outFile.getPath());
+				out.println("You may not have permission to write a file there.");
+				return;
+			} finally {
+				Common.close(fos);
+			}
+		}
 		
-		out.println("Wrote "+outFile.getPath()+" successfully.");
 	}
 
 	private static class JSOptions implements TAMEJSExporterOptions

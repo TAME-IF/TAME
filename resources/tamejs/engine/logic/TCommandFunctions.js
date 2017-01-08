@@ -93,7 +93,7 @@ var TCommandFunctions =
 
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in POPELEMENTVALUE call.");
-			if (!TValue.isVariable(varvalue))
+			if (!TValue.isVariable(variable))
 				throw TAMEError.UnexpectedValueType("Expected variable type in POPELEMENTVALUE call.");
 			if (!TValue.isElement(varObject))
 				throw TAMEError.UnexpectedValueType("Expected element type in POPELEMENTVALUE call.");

@@ -16,12 +16,16 @@ const readline = require('readline');
 
 function print(text)
 {
-	process.stdout.write(text);
+	if (text)
+		process.stdout.write(text);
 }
 
 function println(text)
 {
-	process.stdout.write(text + '\n');
+	if (!text)
+		process.stdout.write('\n');
+	else
+		process.stdout.write(text + '\n');
 }
 
 var debug = false;
@@ -108,7 +112,7 @@ function doCue(cue) {
 			return true;
 		
 		case 'textf':
-			(new FormatParser(startFormatTag, endFormatTag, formatText)).parse(context);
+			(new FormatParser(startFormatTag, endFormatTag, formatText)).parse(content);
 			return true;
 			
 		case 'wait':
@@ -150,7 +154,13 @@ function responseLoop() {
 	while (currentCue < currentResponse.responseCues.length && handleCueFunc(currentResponse.responseCues[currentCue++])) {
 		/* Do nothing. */
 	}
-	
+
+	if (textBuffer.length > 0)
+	{
+		print(textBuffer);
+		textBuffer = '';
+	}
+
 	if (stop)
 		rl.close();
 	else if (pause) {
@@ -161,6 +171,7 @@ function responseLoop() {
 		currentCue = 0;
 		if (!stop) {
 			rl.setPrompt('] ');
+			println();
 			rl.prompt();
 		} else
 			rl.close();
@@ -179,6 +190,7 @@ function handleResponse(response)
 		println('Commands: '+response.commandsExecuted);
 		println('Cues: '+response.responseCues.length);
 	}
+	println();
 	currentResponse = response;
 	currentCue = 0;
 	responseLoop();
@@ -195,14 +207,12 @@ rl.on('line', function(line){
 	process.exit(0);
 });
 
-setImmediate(function(){
-	//Initialize.
-	handleResponse(TAME.initialize(tamectx, trace));
+//Initialize.
+handleResponse(TAME.initialize(tamectx, trace));
 
-	// start loop.
-	if (!stop)
-		rl.prompt();
-});
+// start loop.
+if (!stop)
+	rl.prompt();
 
 //##[[EXPORTJS-END
 

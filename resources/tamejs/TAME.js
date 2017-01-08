@@ -23,7 +23,7 @@ Util.nanoTime = (function(){
 		return function() 
 		{
 			// ms to ns (us res)
-			return parseInt(window.performance.now() * 1e6);
+			return parseInt(window.performance.now() * 1e6, 10);
 		};	
 	}
 	else

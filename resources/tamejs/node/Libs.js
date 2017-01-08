@@ -13,7 +13,7 @@
 /* Class */ function FormatParser(tagStartFunc, tagEndFunc, textFunc)
 {
 	this.builder = '';
-	this.tagStack = '';
+	this.tagStack = [];
 	this.tagStartFunc = tagStartFunc; 
 	this.tagEndFunc = tagEndFunc; 
 	this.textFunc = textFunc;

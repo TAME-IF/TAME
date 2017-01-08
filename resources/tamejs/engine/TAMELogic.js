@@ -1126,20 +1126,19 @@ TLogic.callWorldBadActionBlock = function(request, response, action, worldContex
 TLogic.callPlayerBadActionBlock = function(request, response, action, playerContext)
 {
 	var context = request.moduleContext;
-	var player = context.getElement(playerContext.identity);
 
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock(player.identity, "ONBADACTION", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONBADACTION", [TValue.createAction(action.identity)])) != null)
 	{
-		response.trace(request, "Found specific bad action block in player "+player.identity+" lineage, action "+action.identity+".");
+		response.trace(request, "Found specific bad action block in player "+playerContext.identity+" lineage, action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
 
-	if ((blockToCall = context.resolveBlock(player.identity, "ONBADACTION")) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONBADACTION")) != null)
 	{
-		response.trace(request, "Found default bad action block on player "+player.identity+".");
+		response.trace(request, "Found default bad action block on player "+playerContext.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
@@ -1343,14 +1342,14 @@ TLogic.callPlayerActionIncompleteBlock = function(request, response, action, pla
 	
 	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETEACTION", TValue.createAction(action.identity))) != null)
 	{
-		response.trace(request, "Found specific action incomplete block in player "+player.identity+" lineage, action "+action.identity+".");
+		response.trace(request, "Found specific action incomplete block in player "+playerContext.identity+" lineage, action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
 
 	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETEACTION")) != null)
 	{
-		response.trace(request, "Found default action incomplete block in player "+player.identity+" lineage.");
+		response.trace(request, "Found default action incomplete block in player "+playerContext.identity+" lineage.");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
@@ -1432,14 +1431,14 @@ TLogic.callPlayerActionFailBlock = function(request, response, action, playerCon
 	
 	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONFAILEDACTION", TValue.createAction(action.identity))) != null)
 	{
-		response.trace(request, "Found specific action failure block in player "+player.identity+" lineage, action "+action.identity+".");
+		response.trace(request, "Found specific action failure block in player "+playerContext.identity+" lineage, action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
 
 	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONFAILEDACTION")) != null)
 	{
-		response.trace(request, "Found default action failure block in player "+player.identity+" lineage.");
+		response.trace(request, "Found default action failure block in player "+playerContext.identity+" lineage.");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
@@ -1753,7 +1752,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	response.trace(request, "Performing ditransitive action "+TLogic.elementToString(action)+" on "+TLogic.elementToString(object1)+" with "+TLogic.elementToString(object2));
 
 	var currentObject1Context = context.getElementContext(object1.identity);
-	var currentObject2Context = context.getElementContext(object1.identity);
+	var currentObject2Context = context.getElementContext(object2.identity);
 	var blockToCall = null;
 
 	if (TLogic.callCheckActionForbidden(request, response, action))
