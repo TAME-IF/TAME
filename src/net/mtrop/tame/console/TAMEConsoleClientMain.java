@@ -309,11 +309,16 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	{
 		if (context.debug)
 		{
+			context.out.println("Interpret time: "+(response.getInterpretNanos()/1000000.0)+" ms");
+			context.out.println("Request time: "+(response.getRequestNanos()/1000000.0)+" ms");
+			context.out.println("Commands: "+response.getCommandsExecuted());
+			context.out.println("Cues: "+response.getCues().size());
+			context.out.println();
 			for (Cue cue : response.getCues())
 			{
 				if (cue.getType().equals(CUE_FATAL) || cue.getType().equals(CUE_QUIT))
 					context.quit = true;
-				context.out.println("[" + cue.getType() + "]:" + Common.withEscChars(cue.getContent()));
+				context.out.println("[" + cue.getType() + "] " + Common.withEscChars(cue.getContent()));
 			}
 		}
 		else
@@ -401,6 +406,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		ConsoleFormatter formatter;
 		StringBuilder textBuffer;
 		Context context;
+		int lastColumn;
 
 		CueHandler(TAMEResponse response, Context context) 
 		{
@@ -415,7 +421,10 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		{
 			if (!cue.getType().equals(CUE_TEXT) && !cue.getType().equals(CUE_TEXTF) && textBuffer.length() > 0)
 			{
-				context.out.print(textBuffer.toString());
+				if (Common.isWindows())
+					lastColumn = Common.printWrapped(context.out, textBuffer.toString(), lastColumn, 80); // windows terminal
+				else
+					context.out.print(textBuffer.toString());
 				textBuffer.delete(0, textBuffer.length());
 			}
 			
@@ -438,19 +447,24 @@ public class TAMEConsoleClientMain implements TAMEConstants
 					return true;
 				case CUE_PAUSE:
 					context.paused = true;
+					lastColumn = 0;
 					return false;
 				case CUE_TIP:
 					context.out.println("(TIP: " + cue.getContent() + ")");
+					lastColumn = 0;
 					return true;
 				case CUE_INFO:
 					context.out.println("INFO: " + cue.getContent());
+					lastColumn = 0;
 					return true;
 				case CUE_ERROR:
 					context.out.println("ERROR: " + cue.getContent());
+					lastColumn = 0;
 					return true;
 				case CUE_FATAL:
 					context.out.println("!!FATAL!! " + cue.getContent());
 					context.quit = true;
+					lastColumn = 0;
 					return false;
 			}
 		}

@@ -13,20 +13,7 @@
 //##[[EXPORTJS-INCLUDE Libs.js
 
 const readline = require('readline');
-
-function print(text)
-{
-	if (text)
-		process.stdout.write(text);
-}
-
-function println(text)
-{
-	if (!text)
-		process.stdout.write('\n');
-	else
-		process.stdout.write(text + '\n');
-}
+const fs = require('fs');
 
 var debug = false;
 var trace = false;
@@ -58,6 +45,7 @@ var pause = false;
 var currentResponse = null;
 var currentCue = 0;
 var textBuffer = '';
+var lastColumn = 0;
 
 /**
  * Handles a TAME cue (for debugging).
@@ -67,7 +55,7 @@ function debugCue(cue) {
 	var content = cue.content;
 	var type = cue.type.toLowerCase();
 	
-	println('['+cue.type+'] '+content);
+	println('['+cue.type+'] '+withEscChars(content));
 	if (type === 'quit' || type === 'fatal')
 		stop = true;
 		
@@ -97,7 +85,7 @@ function doCue(cue) {
 	var type = cue.type.toLowerCase();
 	
 	if (type !== 'text' && type !== 'textf') {
-		print(textBuffer);
+		lastColumn = printWrapped(textBuffer, lastColumn, process.stdout.columns);
 		textBuffer = '';
 	}
 	
@@ -121,6 +109,7 @@ function doCue(cue) {
 
 		case 'pause':
 			pause = true;
+			lastColumn = 0;
 			return false;
 
 		case 'trace':
@@ -129,18 +118,22 @@ function doCue(cue) {
 
 		case 'tip':	
 			println('(TIP: '+content+')');
+			lastColumn = 0;
 			return true;
 
 		case 'info':	
 			println('INFO: '+content);
+			lastColumn = 0;
 			return true;
 
 		case 'error':	
 			println('\n!ERROR! '+content);
+			lastColumn = 0;
 			return true;
 
 		case 'fatal':
 			println('\n!!FATAL!! '+content);
+			lastColumn = 0;
 			stop = true;
 			return false;
 	}
@@ -155,16 +148,16 @@ function responseLoop() {
 		/* Do nothing. */
 	}
 
-	if (textBuffer.length > 0)
-	{
-		print(textBuffer);
+	if (textBuffer.length > 0) {
+		printWrapped(textBuffer, lastColumn, process.stdout.columns);
+		lastColumn = 0;
 		textBuffer = '';
 	}
 
 	if (stop)
 		rl.close();
 	else if (pause) {
-		rl.setPrompt('(Enter to CONTINUE)');
+		rl.setPrompt('(CONTINUE) ');
 		rl.prompt();
 	} else if (currentCue == currentResponse.responseCues.length) {
 		currentResponse = null;
@@ -196,13 +189,42 @@ function handleResponse(response)
 	responseLoop();
 }
 
+const COMMAND_SAVE = '!save';
+const COMMAND_LOAD = '!load';
+
 // Loop.
 rl.on('line', function(line){
+	line = line.trim();
 	if (pause) {
 		pause = false;
 		responseLoop();
-	} else
-		handleResponse(TAME.interpret(tamectx, line.trim(), trace));
+	} else {
+		if (COMMAND_SAVE == line.substring(0, COMMAND_SAVE.length))
+		{
+			var name = line.substring(COMMAND_SAVE.length).trim();
+			try {
+				fs.writeFileSync(name+'.json', JSON.stringify(tamectx.state), {"encoding": 'utf8'});
+				println("State saved: "+name+'.json');
+			} catch (err) {
+				println(err);
+			}
+			rl.prompt();
+		}
+		else if (COMMAND_LOAD == line.substring(0, COMMAND_LOAD.length))
+		{
+			var name = line.substring(COMMAND_LOAD.length).trim();
+			try {
+				var stateData = fs.readFileSync(name+'.json', {"encoding": 'utf8'});
+				tamectx.state = JSON.parse(stateData);
+				println("State loaded: "+name+'.json');
+			} catch (err) {
+				println(err);
+			}
+			rl.prompt();
+		}
+		else
+			handleResponse(TAME.interpret(tamectx, line.trim(), trace));
+	}
 }).on('close', function(){
 	process.exit(0);
 });

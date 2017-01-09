@@ -1290,7 +1290,7 @@ var TCommandFunctions =
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in ADDOBJECTTAG call.");
 
-			request.pushValue(TValue.createBoolean(request.moduleContext.addObjectTag(TValue.asString(varObject), TValue.asString(tagValue))));
+			request.moduleContext.addObjectTag(TValue.asString(varObject), TValue.asString(tagValue));
 		}
 	},
 
@@ -1307,11 +1307,12 @@ var TCommandFunctions =
 			if (!TValue.isObjectContainer(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in ADDOBJECTTAGTOALLIN call.");
 
-			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
+			var context = request.moduleContext;
+			var element = context.resolveElement(TValue.asString(elementValue));
 			
 			var tag = TValue.asString(tagValue);
-			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity), function(objectIdentity){
-				request.moduleContext.addObjectTag(objectIdentity, tag);
+			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
+				context.addObjectTag(objectIdentity, tag);
 			});
 		}
 	},
@@ -1329,7 +1330,7 @@ var TCommandFunctions =
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in REMOVEOBJECTNAME call.");
 
-			request.pushValue(TValue.createBoolean(request.moduleContext.removeObjectName(TValue.asString(varObject), TValue.asString(nameValue))));
+			request.moduleContext.removeObjectName(TValue.asString(varObject), TValue.asString(nameValue));
 		}
 	},
 
@@ -1346,7 +1347,7 @@ var TCommandFunctions =
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in REMOVEOBJECTTAG call.");
 
-			request.pushValue(TValue.createBoolean(request.moduleContext.removeObjectTag(TValue.asString(varObject), TValue.asString(tagValue))));
+			request.moduleContext.removeObjectTag(TValue.asString(varObject), TValue.asString(tagValue));
 		}
 	},
 
@@ -1363,11 +1364,12 @@ var TCommandFunctions =
 			if (!TValue.isObjectContainer(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in REMOVEOBJECTTAGFROMALLIN call.");
 
-			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
+			var context = request.moduleContext;
+			var element = context.resolveElement(TValue.asString(elementValue));
 			
 			var tag = TValue.asString(tagValue);
-			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity), function(objectIdentity){
-				request.moduleContext.removeObjectTag(objectIdentity, tag);
+			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
+				context.removeObjectTag(objectIdentity, tag);
 			});
 		}
 	},
@@ -1411,18 +1413,24 @@ var TCommandFunctions =
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var tagValue = request.popValue();
-			var elementValue = request.popValue();
+			var varObjectContainerDest = request.popValue();
+			var varObjectContainerSource = request.popValue();
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in MOVEOBJECTSWITHTAG call.");
-			if (!TValue.isObjectContainer(elementValue))
+			if (!TValue.isObjectContainer(varObjectContainerDest))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in MOVEOBJECTSWITHTAG call.");
+			if (!TValue.isObjectContainer(varObjectContainerSource))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in MOVEOBJECTSWITHTAG call.");
 
-			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
-			
+			var context = request.moduleContext;
+			var destination = context.resolveElement(TValue.asString(varObjectContainerDest));
+			var source = context.resolveElement(TValue.asString(varObjectContainerSource));
 			var tag = TValue.asString(tagValue);
-			Util.each(request.moduleContext.getObjectsOwnedByElement(element.identity), function(objectIdentity){
-				request.moduleContext.addObjectToElement(objectIdentity, element.identity);
+			
+			Util.each(context.getObjectsOwnedByElement(source.identity), function(objectIdentity){
+				if (context.checkObjectHasTag(objectIdentity, tag))
+					context.addObjectToElement(destination.identity, objectIdentity);
 			});
 		}
 	},
