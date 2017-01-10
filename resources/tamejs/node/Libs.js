@@ -24,7 +24,7 @@ FormatParser.prototype.parse = function(sequence)
 {
 	var self = this;
 	
-	function emitText()
+	var emitText = function()
 	{
 		if (self.builder.length == 0)
 			return;
@@ -33,7 +33,7 @@ FormatParser.prototype.parse = function(sequence)
 		self.builder = '';
 	}
 
-	function emitTag()
+	var emitTag = function()
 	{
 		if (self.builder.length == 0)
 			return;

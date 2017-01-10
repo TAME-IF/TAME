@@ -277,9 +277,10 @@ var TCommandFunctions =
 				throw TAMEError.ModuleExecution("Attempted CALL call without a context!");
 
 			var elementContext = request.peekContext();
-			var element = request.moduleContext.resolveElement(elementContext.identity);
+			var context = request.moduleContext;
+			var element = context.resolveElement(elementContext.identity);
 
-			var block = request.moduleContext.resolveBlock(element.identity, 'PROCEDURE', [procedureName]);
+			var block = context.resolveBlock(element.identity, 'PROCEDURE', [procedureName]);
 			if (block)
 				TLogic.executeBlock(block, request, response, elementContext);
 			else
@@ -301,11 +302,12 @@ var TCommandFunctions =
 				throw TAMEError.UnexpectedValueType("Expected element type in CALLFROM call.");
 
 			var id = TValue.asString(elementValue);
+			var context = request.moduleContext;
 			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
-			var elementContext = request.moduleContext.resolveElementContext(id);
-			var element = request.moduleContext.resolveElement(id);
+			var elementContext = context.resolveElementContext(id);
+			var element = context.resolveElement(id);
 
-			var block = request.moduleContext.resolveBlock(element.identity, 'PROCEDURE', [procedureName]);
+			var block = context.resolveBlock(element.identity, 'PROCEDURE', [procedureName]);
 			if (block)
 				TLogic.executeBlock(block, request, response, elementContext);
 			else
