@@ -54,6 +54,13 @@ public final class TAMECompilerMain
 	private static final String SWITCH_JSWRAPPER0 = "--js-wrapper"; 
 	private static final String SWITCH_JSWRAPPER1 = "-w"; 
 
+	/** Special options. */
+	private static final String SWITCH_JSENGINE = "--js-engine"; 
+	private static final String SWITCH_JSNODEENGINE = "--js-engine-node"; 
+
+	private static boolean exportJSEngine = false;
+	private static boolean exportJSEngineNode = false;
+	
 	// Scan options.
 	private static boolean scanOptions(Options options, JSOptions jsOptions, String[] args)
 	{
@@ -77,7 +84,15 @@ public final class TAMECompilerMain
 				default:
 				case STATE_INPATH:
 				{
-					if (arg.startsWith("-"))
+					if (arg.equals(SWITCH_JSENGINE))
+					{
+						exportJSEngine = true;
+					}
+					else if (arg.equals(SWITCH_JSNODEENGINE))
+					{
+						exportJSEngineNode = true;
+					}
+					else if (arg.startsWith("-"))
 					{
 						state = STATE_SWITCHES;
 						i--;
@@ -194,7 +209,7 @@ public final class TAMECompilerMain
 		PrintStream out = System.out;
 		
 		out.println("TAME Compiler v"+TAMELogic.getVersion()+" by Matt Tropiano");
-		out.println("tamec [infile] [switches]");
+		out.println("tamec [infile] [switches] | --js-engine | --js-engine-node");
 		out.println("[infile]: The input file.");
 		out.println();
 		out.println("[switches]:");
@@ -215,7 +230,17 @@ public final class TAMECompilerMain
 		out.println();
 		out.println("    -w [name]            Declare a wrapper to use for the JavaScript exporter.");
 		out.println("    --js-wrapper [name]");
-		
+		out.println();
+		out.println("                         (default) - Exports an embedded version suitable for");
+		out.println("                                     ECMAScript 5 capable browsers.");
+		out.println("                         node      - Exports an embedded NodeJS program.");
+		out.println("                         module    - Exports just module data to feed into a");
+		out.println("                                     JS engine.");
+		out.println();
+		out.println("    --js-engine          Can be run by itself: export just TAME's engine to JS.");
+		out.println();
+		out.println("    --js-engine-node     Can be run by itself: export just TAME's engine as a");
+		out.println("                         NodeJS library (for 'require').");
 	}
 	
 	// Main entry.
@@ -234,6 +259,44 @@ public final class TAMECompilerMain
 		
 		if (!scanOptions(options, jsOptions, args))
 			return;
+		
+		if (exportJSEngine)
+		{
+			File outJSFile = new File("TAME.js");
+			try {
+				jsOptions.wrapperName = "engine";
+				TAMEJSExporter.export(outJSFile, null, jsOptions);
+				out.println("Wrote "+outJSFile.getPath()+" successfully.");
+			} catch (IOException e) {
+				out.println("ERROR: Could not export JS file: "+outJSFile.getPath());
+				out.println(e.getMessage());
+				return;
+			} catch (SecurityException e) {
+				out.println("ERROR: Could not write JS file: "+outJSFile.getPath());
+				out.println("Writing the file was denied by the OS.");
+				return;
+			}
+			return;
+		}
+			
+		if (exportJSEngineNode)
+		{
+			File outJSFile = new File("TAME.js");
+			try {
+				jsOptions.wrapperName = "nodeengine";
+				TAMEJSExporter.export(outJSFile, null, jsOptions);
+				out.println("Wrote "+outJSFile.getPath()+" successfully.");
+			} catch (IOException e) {
+				out.println("ERROR: Could not export JS file: "+outJSFile.getPath());
+				out.println(e.getMessage());
+				return;
+			} catch (SecurityException e) {
+				out.println("ERROR: Could not write JS file: "+outJSFile.getPath());
+				out.println("Writing the file was denied by the OS.");
+				return;
+			}
+			return;
+		}
 		
 		if (Common.isEmpty(options.fileInPath))
 		{

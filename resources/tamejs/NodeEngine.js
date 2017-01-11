@@ -10,18 +10,24 @@
 
 //##[[EXPORTJS-START
 
-var TAME = new (function(theader, tactions, telements){
+/********************************************
+ * TAME (Text Adventure Module Engine)
+ * (C) Matt Tropiano 2016-2017
+ * Standalone Module Library for NodeJS
+ ********************************************/
+module.exports = new (function()
+{
 
 //##[[EXPORTJS-GENERATE version
 
 //##[[EXPORTJS-INCLUDE engine/Util.js
-
-Util.nanoTime = function()
-{
-	// s,ns to ns (ns res)
-	var t = process.hrtime();
-	return t[0] * 1e9 + t[1];
-};
+	
+	Util.nanoTime = function()
+	{
+		// s,ns to ns (ns res)
+		var t = process.hrtime();
+		return t[0] * 1e9 + t[1];
+	};
 
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
@@ -34,14 +40,23 @@ Util.nanoTime = function()
 //##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
 //##[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
-	var tameModule = new TModule(theader, tactions, telements);
+	/**
+	 * Constructs a new module.
+	 * @param moduleData the module data (header, actions, elements).
+	 * @return a module object to use for context creation.
+	 */
+	this.createModule = function(moduleData)
+	{
+		return new TModule(moduleData.header, moduleData.actions, moduleData.elements);
+	};
 
 	/**
-	 * Creates a new context for the embedded module.
+	 * Creates a new context for a constructed module.
+	 * @param tmodule the TAME module to create a context for.
 	 */
-	this.newContext = function() 
+	this.newContext = function(tmodule) 
 	{
-		return new TModuleContext(tameModule);
+		return new TModuleContext(tmodule);
 	};
 
 	/**
@@ -69,10 +84,6 @@ Util.nanoTime = function()
 
 	return this;
 	
-})(
-//##[[EXPORTJS-GENERATE header, actions, elements
-);
-
-//##[[EXPORTJS-INCLUDE node/Main.js
+})();
 
 //##[[EXPORTJS-END

@@ -10,7 +10,7 @@
 
 //##[[EXPORTJS-START
 
-var TAME = new (function(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers){
+var TAME = new (function(theader, tactions, telements){
 
 //##[[EXPORTJS-GENERATE version
 
@@ -35,7 +35,6 @@ Util.nanoTime = (function(){
 		};
 	}
 })();
-
 	
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
@@ -48,7 +47,7 @@ Util.nanoTime = (function(){
 //##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
 //##[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
-	var tameModule = new TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers);
+	var tameModule = new TModule(theader, tactions, telements);
 
 	/**
 	 * Creates a new context for the embedded module.
@@ -84,7 +83,7 @@ Util.nanoTime = (function(){
 	return this;
 	
 })(
-//##[[EXPORTJS-GENERATE header, actions, world, objects, players, rooms, containers
+//##[[EXPORTJS-GENERATE header, actions, elements
 );
 
 //##[[EXPORTJS-END

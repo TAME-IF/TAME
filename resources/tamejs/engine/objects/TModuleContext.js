@@ -60,7 +60,7 @@ var TModuleContext = function(module)
 			s.tags[identity] = {};
 			Util.each(element.names, function(name)
 			{
-				name = name.toLowerCase();
+				name = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
 				s.names[identity][name] = true;
 			});
 			Util.each(element.tags, function(tag)

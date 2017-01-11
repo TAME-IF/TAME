@@ -10,18 +10,37 @@
 
 //##[[EXPORTJS-START
 
-var TAME = new (function(theader, tactions, telements){
+/********************************************
+ * TAME (Text Adventure Module Engine)
+ * (C) Matt Tropiano 2016-2017
+ * Standalone Class for Internet Browsers
+ ********************************************/
+var TAME = new (function()
+{
 
 //##[[EXPORTJS-GENERATE version
 
 //##[[EXPORTJS-INCLUDE engine/Util.js
-
-Util.nanoTime = function()
-{
-	// s,ns to ns (ns res)
-	var t = process.hrtime();
-	return t[0] * 1e9 + t[1];
-};
+	
+Util.nanoTime = (function(){
+	// Webkit Browser
+	if (window && window.performance)
+	{
+		return function() 
+		{
+			// ms to ns (us res)
+			return parseInt(window.performance.now() * 1e6, 10);
+		};	
+	}
+	else
+	{
+		return function()
+		{
+			// ms to ns (ms res)
+			return Date.now() * 1e6;
+		};
+	}
+})();
 
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
@@ -34,14 +53,24 @@ Util.nanoTime = function()
 //##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
 //##[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
-	var tameModule = new TModule(theader, tactions, telements);
-
 	/**
-	 * Creates a new context for the embedded module.
+	 * Constructs a new module.
+	 * @param moduleData the module data (header, actions, elements).
+	 * @return a module object to use for context creation.
 	 */
-	this.newContext = function() 
+	this.createModule = function(moduleData)
 	{
-		return new TModuleContext(tameModule);
+		return new TModule(moduleData.header, moduleData.actions, moduleData.elements);
+	};
+	
+	/**
+	 * Creates a new context for a constructed module.
+	 * @param tmodule the TAME module to create a context for.
+	 * @return a new module context.
+	 */
+	this.newContext = function(tmodule) 
+	{
+		return new TModuleContext(tmodule);
 	};
 
 	/**
@@ -69,10 +98,10 @@ Util.nanoTime = function()
 
 	return this;
 	
-})(
-//##[[EXPORTJS-GENERATE header, actions, elements
-);
-
-//##[[EXPORTJS-INCLUDE node/Main.js
+})();
 
 //##[[EXPORTJS-END
+
+//If testing with NODEJS ==================================================
+if ((typeof module.exports) !== 'undefined') module.exports = TAME;
+// =========================================================================

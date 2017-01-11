@@ -19,7 +19,7 @@ var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAM
  Constructor for the TAME Module.
  ****************************************************/
 
-function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontainers)
+function TModule(theader, tactions, telements)
 {	
 	// Fields --------------------
 	this.header = theader;
@@ -31,25 +31,34 @@ function TModule(theader, tactions, tworld, tobjects, tplayers, trooms, tcontain
 	var act = this.actions;
 	var antbl = this.actionNameTable;
 
-	var ELEMACCUM = function(element, identity) 
-	{
+	var typeHash = {
+		"TAction": true, 
+		"TObject": true, 
+		"TRoom": true, 
+		"TPlayer": true, 
+		"TContainer": true, 
+		"TWorld": true
+	};
+	
+	Util.each(Util.mapify(telements, "identity"), function(element, identity) {
+		if (!typeHash[element.tameType])
+			throw TAMEError.Module("Unknown element type: "+element.tameType);
 		if (elem[identity] || act[identity])
 			throw TAMEError.Module("Another element already has the identity "+identity);
 		elem[identity] = element;
-	};
-	
-	Util.each(Util.mapify(tobjects, "identity"), ELEMACCUM);
-	Util.each(Util.mapify(tplayers, "identity"), ELEMACCUM);
-	Util.each(Util.mapify(trooms, "identity"), ELEMACCUM);
-	Util.each(Util.mapify(tcontainers, "identity"), ELEMACCUM);
-	ELEMACCUM(tworld, tworld.identity);
-	
-	Util.each(this.actions, function(action){
-		Util.each(action.names, function(name){
-			antbl[name.toLowerCase()] = action.identity;
+	});
+
+	Util.each(this.actions, function(action) {
+		if (!typeHash[element.tameType])
+			throw TAMEError.Module("Unknown element type: "+action.tameType);
+		Util.each(action.names, function(name) {
+			antbl[Util.replaceAll(name.toLowerCase(), "\\s+", " ")] = action.identity;
 		});
 	});
 
+	if (!this.elements['world'])
+		throw TAMEError.Module('No world element!');
+	
 };
 
 TModule.prototype.getActionByName = function(name)

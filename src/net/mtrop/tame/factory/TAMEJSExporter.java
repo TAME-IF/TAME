@@ -34,6 +34,7 @@ import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
+import net.mtrop.tame.exception.JSExportException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.Command;
@@ -65,15 +66,7 @@ public final class TAMEJSExporter
 	/** Generate actions. */
 	private static final String GENERATE_ACTIONS = "actions";
 	/** Generate world. */
-	private static final String GENERATE_WORLD = "world";
-	/** Generate objects. */
-	private static final String GENERATE_OBJECTS = "objects";
-	/** Generate players. */
-	private static final String GENERATE_PLAYERS = "players";
-	/** Generate rooms. */
-	private static final String GENERATE_ROOMS = "rooms";
-	/** Generate containers. */
-	private static final String GENERATE_CONTAINERS = "containers";
+	private static final String GENERATE_ELEMENTS = "elements";
 	
 	/** Default writer options. */
 	private static final TAMEJSExporterOptions DEFAULT_OPTIONS = new DefaultJSExporterOptions();
@@ -189,8 +182,14 @@ public final class TAMEJSExporter
 	{
 		if ("node".equalsIgnoreCase(options.getWrapperName()))
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeJS.js");
+		else if ("module".equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Module.js");
+		else if ("engine".equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Engine.js");
+		else if ("nodeengine".equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeEngine.js");
 		else
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "TAME.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js");
 	}
 
 	/**
@@ -324,16 +323,10 @@ public final class TAMEJSExporter
 				generateResourceHeader(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_ACTIONS))
 				generateResourceActions(writer, module);
-			else if (type.equalsIgnoreCase(GENERATE_WORLD))
-				generateResourceWorld(writer, module);
-			else if (type.equalsIgnoreCase(GENERATE_OBJECTS))
-				generateResourceObjects(writer, module);
-			else if (type.equalsIgnoreCase(GENERATE_PLAYERS))
-				generateResourcePlayers(writer, module);
-			else if (type.equalsIgnoreCase(GENERATE_ROOMS))
-				generateResourceRooms(writer, module);
-			else if (type.equalsIgnoreCase(GENERATE_CONTAINERS))
-				generateResourceContainers(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_ELEMENTS))
+				generateResourceElements(writer, module);
+			else
+				throw new JSExportException("Unexpected generate type: "+type);
 			
 			if (i < parts.length - 1)
 				writer.write(',');
@@ -398,10 +391,77 @@ public final class TAMEJSExporter
 	 * @param writer the writer to write to.
 	 * @param module the source module.
 	 */
-	private static void generateResourceWorld(Writer writer, TAMEModule module) throws IOException
+	private static void generateResourceElements(Writer writer, TAMEModule module) throws IOException
+	{
+		writer.append('[');
+
+		// export world
+		generateResourceWorld(writer, module, module.getWorld());
+
+		if (module.getObjectCount() > 0)
+		{
+			writer.append(',');
+			// export objects
+			Iterator<ObjectPair<String, TObject>> ito = module.getObjectList().iterator();
+			while (ito.hasNext())
+			{
+				generateResourceObject(writer, module, ito.next().getValue());
+				if (ito.hasNext())
+					writer.append(',');
+			}
+		}
+
+		if (module.getRoomCount() > 0)
+		{
+			writer.append(',');
+			// export rooms
+			Iterator<ObjectPair<String, TRoom>> itr = module.getRoomList().iterator();
+			while (itr.hasNext())
+			{
+				generateResourceRoom(writer, module, itr.next().getValue());
+				if (itr.hasNext())
+					writer.append(',');
+			}
+		}
+		
+		if (module.getPlayerCount() > 0)
+		{
+			writer.append(',');
+			// export players
+			Iterator<ObjectPair<String, TPlayer>> itp = module.getPlayerList().iterator();
+			while (itp.hasNext())
+			{
+				generateResourcePlayer(writer, module, itp.next().getValue());
+				if (itp.hasNext())
+					writer.append(',');
+			}
+		}
+		
+		if (module.getContainerCount() > 0)
+		{
+			writer.append(',');
+			// export rooms
+			Iterator<ObjectPair<String, TContainer>> itc = module.getContainerList().iterator();
+			while (itc.hasNext())
+			{
+				generateResourceContainer(writer, module, itc.next().getValue());
+				if (itc.hasNext())
+					writer.append(',');
+			}
+		}
+		
+		writer.append(']');
+	}
+	
+	/**
+	 * Generates the world object in JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 * @param world the world element.
+	 */
+	private static void generateResourceWorld(Writer writer, TAMEModule module, TWorld world) throws IOException
 	{
 		JSONObject out = JSONObject.createEmptyObject();
-		TWorld world = module.getWorld();
 		out.addMember("tameType", TWorld.class.getSimpleName());
 		out.addMember("identity", world.getIdentity());
 		out.addMember("blockTable", convertBlockTable(world.getBlockEntries()));
@@ -413,133 +473,99 @@ public final class TAMEJSExporter
 	 * @param writer the writer to write to.
 	 * @param module the source module.
 	 */
-	private static void generateResourceObjects(Writer writer, TAMEModule module) throws IOException
+	private static void generateResourceObject(Writer writer, TAMEModule module, TObject object) throws IOException
 	{
-		Iterator<ObjectPair<String, TObject>> it = module.getObjectList().iterator();
-		writer.append('[');
-		while (it.hasNext())
-		{
-			TObject object = it.next().getValue();
-			JSONObject out = JSONObject.createEmptyObject();
-			JSONObject arr;
-			
-			out.addMember("tameType", TObject.class.getSimpleName());
-			out.addMember("identity", object.getIdentity());
-			if (object.getParent() != null)
-				out.addMember("parent", object.getParent().getIdentity());
-			if (object.isArchetype())
-				out.addMember("archetype", true);
+		JSONObject out = JSONObject.createEmptyObject();
+		JSONObject arr;
+		
+		out.addMember("tameType", TObject.class.getSimpleName());
+		out.addMember("identity", object.getIdentity());
+		if (object.getParent() != null)
+			out.addMember("parent", object.getParent().getIdentity());
+		if (object.isArchetype())
+			out.addMember("archetype", true);
 
-			if ((arr = JSONObject.create(object.getNames())).length() > 0)
-				out.addMember("names", arr);
-			if ((arr = JSONObject.create(object.getTags())).length() > 0)
-				out.addMember("tags", arr);
+		if ((arr = JSONObject.create(object.getNames())).length() > 0)
+			out.addMember("names", arr);
+		if ((arr = JSONObject.create(object.getTags())).length() > 0)
+			out.addMember("tags", arr);
 
-			out.addMember("blockTable", convertBlockTable(object.getBlockEntries()));
-
-			JSONWriter.writeJSON(out, writer);
-			if (it.hasNext())
-				writer.append(',');
-		}
-		writer.append(']');
+		out.addMember("blockTable", convertBlockTable(object.getBlockEntries()));
+		JSONWriter.writeJSON(out, writer);
 	}
 	
 	/**
 	 * Generates the player list in JS.
 	 * @param writer the writer to write to.
 	 * @param module the source module.
+	 * @param player the player to export.
 	 */
-	private static void generateResourcePlayers(Writer writer, TAMEModule module) throws IOException
+	private static void generateResourcePlayer(Writer writer, TAMEModule module, TPlayer player) throws IOException
 	{
-		Iterator<ObjectPair<String, TPlayer>> it = module.getPlayerList().iterator();
-		writer.append('[');
-		while (it.hasNext())
-		{
-			TPlayer player = it.next().getValue();
-			JSONObject out = JSONObject.createEmptyObject();
-			JSONObject arr;
-			
-			out.addMember("tameType", TPlayer.class.getSimpleName());
-			out.addMember("identity", player.getIdentity());
-			if (player.getParent() != null)
-				out.addMember("parent", player.getParent().getIdentity());
-			if (player.isArchetype())
-				out.addMember("archetype", true);
+		JSONObject out = JSONObject.createEmptyObject();
+		JSONObject arr;
+		
+		out.addMember("tameType", TPlayer.class.getSimpleName());
+		out.addMember("identity", player.getIdentity());
+		if (player.getParent() != null)
+			out.addMember("parent", player.getParent().getIdentity());
+		if (player.isArchetype())
+			out.addMember("archetype", true);
 
-			out.addMember("permissionType", player.getPermissionType().ordinal());
-			if ((arr = JSONObject.create(player.getPermissionActions())).length() > 0)
-				out.addMember("permittedActionList", arr);
+		out.addMember("permissionType", player.getPermissionType().ordinal());
+		if ((arr = JSONObject.create(player.getPermissionActions())).length() > 0)
+			out.addMember("permittedActionList", arr);
 
-			out.addMember("blockTable", convertBlockTable(player.getBlockEntries()));
+		out.addMember("blockTable", convertBlockTable(player.getBlockEntries()));
 
-			JSONWriter.writeJSON(out, writer);
-			if (it.hasNext())
-				writer.append(',');
-		}
-		writer.append(']');
+		JSONWriter.writeJSON(out, writer);
 	}
 	
 	/**
 	 * Generates the room list in JS.
 	 * @param writer the writer to write to.
 	 * @param module the source module.
+	 * @param room the room to export.
 	 */
-	private static void generateResourceRooms(Writer writer, TAMEModule module) throws IOException
+	private static void generateResourceRoom(Writer writer, TAMEModule module, TRoom room) throws IOException
 	{
-		Iterator<ObjectPair<String, TRoom>> it = module.getRoomList().iterator();
-		writer.append('[');
-		while (it.hasNext())
-		{
-			TRoom room = it.next().getValue();
-			JSONObject out = JSONObject.createEmptyObject();
-			JSONObject arr;
-			
-			out.addMember("tameType", TRoom.class.getSimpleName());
-			out.addMember("identity", room.getIdentity());
-			if (room.getParent() != null)
-				out.addMember("parent", room.getParent().getIdentity());
-			if (room.isArchetype())
-				out.addMember("archetype", true);
+		JSONObject out = JSONObject.createEmptyObject();
+		JSONObject arr;
+		
+		out.addMember("tameType", TRoom.class.getSimpleName());
+		out.addMember("identity", room.getIdentity());
+		if (room.getParent() != null)
+			out.addMember("parent", room.getParent().getIdentity());
+		if (room.isArchetype())
+			out.addMember("archetype", true);
 
-			out.addMember("permissionType", room.getPermissionType().ordinal());
-			if ((arr = JSONObject.create(room.getPermissionActions())).length() > 0)
-				out.addMember("permittedActionList", arr);
+		out.addMember("permissionType", room.getPermissionType().ordinal());
+		if ((arr = JSONObject.create(room.getPermissionActions())).length() > 0)
+			out.addMember("permittedActionList", arr);
 
-			out.addMember("blockTable", convertBlockTable(room.getBlockEntries()));
+		out.addMember("blockTable", convertBlockTable(room.getBlockEntries()));
 
-			JSONWriter.writeJSON(out, writer);
-			if (it.hasNext())
-				writer.append(',');
-		}
-		writer.append(']');
+		JSONWriter.writeJSON(out, writer);
 	}
 	
 	/**
 	 * Generates the containers list in JS.
 	 * @param writer the writer to write to.
 	 * @param module the source module.
+	 * @param container the container to export.
 	 */
-	private static void generateResourceContainers(Writer writer, TAMEModule module) throws IOException
+	private static void generateResourceContainer(Writer writer, TAMEModule module, TContainer container) throws IOException
 	{
-		Iterator<ObjectPair<String, TContainer>> it = module.getContainerList().iterator();
-		writer.append('[');
-		while (it.hasNext())
-		{
-			TContainer container = it.next().getValue();
-			JSONObject out = JSONObject.createEmptyObject();
-			
-			out.addMember("tameType", TContainer.class.getSimpleName());
-			out.addMember("identity", container.getIdentity());
-			if (container.getParent() != null)
-				out.addMember("parent", container.getParent().getIdentity());
+		JSONObject out = JSONObject.createEmptyObject();
+		
+		out.addMember("tameType", TContainer.class.getSimpleName());
+		out.addMember("identity", container.getIdentity());
+		if (container.getParent() != null)
+			out.addMember("parent", container.getParent().getIdentity());
 
-			out.addMember("blockTable", convertBlockTable(container.getBlockEntries()));
+		out.addMember("blockTable", convertBlockTable(container.getBlockEntries()));
 
-			JSONWriter.writeJSON(out, writer);
-			if (it.hasNext())
-				writer.append(',');
-		}
-		writer.append(']');
+		JSONWriter.writeJSON(out, writer);
 	}
 	
 }
