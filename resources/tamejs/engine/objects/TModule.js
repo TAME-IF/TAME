@@ -49,7 +49,7 @@ function TModule(theader, tactions, telements)
 	});
 
 	Util.each(this.actions, function(action) {
-		if (!typeHash[element.tameType])
+		if (!typeHash[action.tameType])
 			throw TAMEError.Module("Unknown element type: "+action.tameType);
 		Util.each(action.names, function(name) {
 			antbl[Util.replaceAll(name.toLowerCase(), "\\s+", " ")] = action.identity;
