@@ -83,7 +83,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static TAMEResponse handleInit(TAMEModuleContext moduleContext, boolean tracing)
 	{
-		TAMERequest request = TAMERequest.create(moduleContext, "[INITIALIZE]", tracing);
+		TAMERequest request = TAMERequest.create(moduleContext, tracing);
 		TAMEResponse response = new TAMEResponse();
 
 		response.setInterpretNanos(0L);
@@ -141,6 +141,78 @@ public final class TAMELogic implements TAMEConstants
 	
 		response.setRequestNanos(System.nanoTime() - nanos);
 		return response;
+	}
+
+	/**
+	 * Handles a full request.
+	 * @param moduleContext the module context.
+	 * @param action the action to enqueue.
+	 * @param tracing if true, this does tracing.
+	 * @return a TAMERequest a new request.
+	 */
+	public static TAMEResponse handleAction(TAMEModuleContext moduleContext, TAMEAction action, boolean tracing)
+	{
+		TAMERequest request = TAMERequest.create(moduleContext, tracing);
+		TAMEResponse response = new TAMEResponse();
+		long nanos = System.nanoTime();
+		
+		try {
+			request.addActionItem(action);
+			processActionLoop(request, response);
+		} catch (TAMEFatalException exception) {
+			response.addCue(CUE_FATAL, exception.getMessage());
+		} catch (QuitInterrupt end) {
+			// Catches quit.
+		} catch (TAMEInterrupt interrupt) {
+			response.addCue(CUE_ERROR, interrupt.getMessage());
+		}
+	
+		response.setRequestNanos(System.nanoTime() - nanos);
+		return response;		
+	}
+	
+	/**
+	 * Processes a single action. 
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param tameAction the action to process.
+	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
+	 * @throws TAMEFatalException if something goes wrong during execution.
+	 */
+	public static void processAction(TAMERequest request, TAMEResponse response, TAMEAction tameAction) throws TAMEInterrupt 
+	{
+		TAction action = tameAction.getAction();
+		
+		try {
+		
+			switch (action.getType())
+			{
+				default:
+				case GENERAL:
+					doActionGeneral(request, response, action);
+					break;
+				case OPEN:
+					doActionOpen(request, response, action, tameAction.getTarget());
+					break;
+				case MODAL:
+					doActionModal(request, response, action, tameAction.getTarget());
+					break;
+				case TRANSITIVE:
+					doActionTransitive(request, response, action, tameAction.getObject1());
+					break;
+				case DITRANSITIVE:
+					if (tameAction.getObject2() == null)
+						doActionTransitive(request, response, action, tameAction.getObject1());
+					else
+						doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
+					break;
+			}
+			
+			request.checkStackClear();
+			
+		} catch (EndInterrupt end) {
+			// Catches end.
+		}
 	}
 
 	/**
@@ -474,38 +546,7 @@ public final class TAMELogic implements TAMEConstants
 		while (request.hasActionItems())
 		{
 			TAMEAction tameAction = request.nextActionItem();
-			TAction action = tameAction.getAction();
-			
-			try {
-			
-				switch (action.getType())
-				{
-					default:
-					case GENERAL:
-						doActionGeneral(request, response, action);
-						break;
-					case OPEN:
-						doActionOpen(request, response, action, tameAction.getTarget());
-						break;
-					case MODAL:
-						doActionModal(request, response, action, tameAction.getTarget());
-						break;
-					case TRANSITIVE:
-						doActionTransitive(request, response, action, tameAction.getObject1());
-						break;
-					case DITRANSITIVE:
-						if (tameAction.getObject2() == null)
-							doActionTransitive(request, response, action, tameAction.getObject1());
-						else
-							doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
-						break;
-				}
-				
-				request.checkStackClear();
-				
-			} catch (EndInterrupt end) {
-				// Catches end.
-			}
+			processAction(request, response, tameAction);
 			
 			// do the "after" stuff.
 			if (!request.hasActionItems() && initial)

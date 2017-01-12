@@ -43,14 +43,6 @@ var TArithmeticFunctions =
 		"doOperation": TValue.logicalNot
 	},
 	
- 	/* NOT */
-	{
-		"name": 'NOT',
-		"symbol": '~',
-		"binary": false,
-		"doOperation": TValue.not
-	},
-	
  	/* ADD */
 	{
 		"name": 'ADD',
@@ -99,58 +91,10 @@ var TArithmeticFunctions =
 		"doOperation": TValue.power
 	},
 	
- 	/* AND */
-	{
-		"name": 'AND',
-		"symbol": '&',
-		"binary": true,
-		"doOperation": TValue.and
-	},
-	
- 	/* OR */
-	{
-		"name": 'OR',
-		"symbol": '|',
-		"binary": true,
-		"doOperation": TValue.or
-	},
-	
- 	/* XOR */
-	{
-		"name": 'XOR',
-		"symbol": '^',
-		"binary": true,
-		"doOperation": TValue.xor
-	},
-	
- 	/* LSHIFT */
-	{
-		"name": 'LSHIFT',
-		"symbol": '<<',
-		"binary": true,
-		"doOperation": TValue.leftShift
-	},
-	
- 	/* RSHIFT */
-	{
-		"name": 'RSHIFT',
-		"symbol": '>>',
-		"binary": true,
-		"doOperation": TValue.rightShift
-	},
-	
- 	/* RSHIFTPAD */
-	{
-		"name": 'RSHIFTPAD',
-		"symbol": '>>>',
-		"binary": true,
-		"doOperation": TValue.rightShiftPadded
-	},
-	
  	/* LOGICAL AND */
 	{
 		"name": 'LOGICAL_AND',
-		"symbol": '&&',
+		"symbol": '&',
 		"binary": true,
 		"doOperation": TValue.logicalAnd
 	},
@@ -158,7 +102,7 @@ var TArithmeticFunctions =
  	/* LOGICAL OR */
 	{
 		"name": 'LOGICAL_OR',
-		"symbol": '||',
+		"symbol": '|',
 		"binary": true,
 		"doOperation": TValue.logicalOr
 	},
@@ -166,7 +110,7 @@ var TArithmeticFunctions =
  	/* LOGICAL XOR */
 	{
 		"name": 'LOGICAL_XOR',
-		"symbol": '^^',
+		"symbol": '^',
 		"binary": true,
 		"doOperation": TValue.logicalXOr
 	},
@@ -243,30 +187,23 @@ TArithmeticFunctions.Type =
 	"ABSOLUTE": 0,
 	"NEGATE": 1,
 	"LOGICAL_NOT": 2,
-	"NOT": 3,
-	"ADD": 4,
-	"SUBTRACT": 5,
-	"MULTIPLY": 6,
-	"DIVIDE": 7,
-	"MODULO": 8,
-	"POWER": 9,
-	"AND": 10,
-	"OR": 11,
-	"XOR": 12,
-	"LSHIFT": 13,
-	"RSHIFT": 14,
-	"RSHIFTPAD": 15,
-	"LOGICAL_AND": 16,
-	"LOGICAL_OR": 17,
-	"LOGICAL_XOR": 18,
-	"EQUALS": 19,
-	"NOT_EQUALS": 20,
-	"STRICT_EQUALS": 21,
-	"STRICT_NOT_EQUALS": 22,
-	"LESS": 23,
-	"LESS_OR_EQUAL": 24,
-	"GREATER": 25,
-	"GREATER_OR_EQUAL": 26
+	"ADD": 3,
+	"SUBTRACT": 4,
+	"MULTIPLY": 5,
+	"DIVIDE": 6,
+	"MODULO": 7,
+	"POWER": 8,
+	"LOGICAL_AND": 9,
+	"LOGICAL_OR": 10,
+	"LOGICAL_XOR": 11,
+	"EQUALS": 12,
+	"NOT_EQUALS": 13,
+	"STRICT_EQUALS": 14,
+	"STRICT_NOT_EQUALS": 15,
+	"LESS": 16,
+	"LESS_OR_EQUAL": 17,
+	"GREATER": 18,
+	"GREATER_OR_EQUAL": 19
 };
 
 TArithmeticFunctions.COUNT = TArithmeticFunctions.Type.length; 

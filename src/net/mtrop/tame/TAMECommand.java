@@ -532,6 +532,128 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 
 	/**
+	 * Enqueues an general action to perform after the current one finishes.
+	 * POP is the action.
+	 * Returns nothing.
+	 */
+	QUEUEACTION (/*Return: */ null, /*Args: */ ArgumentType.ACTION)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varAction = request.popValue();
+			
+			if (varAction.getType() != ValueType.ACTION)
+				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTION call.");
+
+			TAction action = request.getModuleContext().resolveAction(varAction.asString());
+			
+			if (action.getType() != Type.GENERAL)
+				throw new ErrorInterrupt(action.getIdentity() + " is not a general action.");
+			else
+				request.addActionItem(TAMEAction.create(action));
+		}
+
+	},
+
+	/**
+	 * Enqueues a open/modal action to perform after the current one finishes.
+	 * First POP is the modal or open target.
+	 * Second POP is the action.
+	 * Returns nothing.
+	 */
+	QUEUEACTIONSTRING (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varTarget = request.popValue();
+			Value varAction = request.popValue();
+			
+			if (!varTarget.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in QUEUEACTIONSTRING call.");
+			if (varAction.getType() != ValueType.ACTION)
+				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONSTRING call.");
+
+			TAction action = request.getModuleContext().resolveAction(varAction.asString());
+			String target = varTarget.asString();
+			
+			if (action.getType() != Type.MODAL && action.getType() != Type.OPEN)
+				throw new ErrorInterrupt(action.getIdentity() + " is not a modal nor open action.");
+			else
+				request.addActionItem(TAMEAction.create(action, target));
+		}
+
+	},
+	
+	/**
+	 * Enqueues a transitive action to perform after the current one finishes.
+	 * First POP is the object.
+	 * Second POP is the action.
+	 * Returns nothing.
+	 */
+	QUEUEACTIONOBJECT (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varObject = request.popValue();
+			Value varAction = request.popValue();
+			
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT call.");
+			if (varAction.getType() != ValueType.ACTION)
+				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONOBJECT call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TAction action = moduleContext.resolveAction(varAction.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			
+			if (action.getType() != Type.TRANSITIVE && action.getType() != Type.DITRANSITIVE)
+				throw new ErrorInterrupt(action.getIdentity() + " is not a transitive nor ditransitive action.");
+			else
+				request.addActionItem(TAMEAction.create(action, object));
+		}
+
+	},
+	
+	/**
+	 * Enqueues a ditransitive action to perform after the current one finishes.
+	 * First POP is the second object.
+	 * Second POP is the object.
+	 * Third POP is the action.
+	 * Returns nothing.
+	 */
+	QUEUEACTIONOBJECT2 (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varObject2 = request.popValue();
+			Value varObject = request.popValue();
+			Value varAction = request.popValue();
+			
+			if (varObject2.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT2 call.");
+			if (varObject.getType() != ValueType.OBJECT)
+				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT2 call.");
+			if (varAction.getType() != ValueType.ACTION)
+				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONOBJECT2 call.");
+
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TAction action = moduleContext.resolveAction(varAction.asString());
+			TObject object = moduleContext.resolveObject(varObject.asString());
+			TObject object2 = moduleContext.resolveObject(varObject2.asString());
+			
+			if (action.getType() != Type.DITRANSITIVE)
+				throw new ErrorInterrupt(action.getIdentity() + " is not a ditransitive action.");
+			else
+				request.addActionItem(TAMEAction.create(action, object, object2));
+		}
+
+	},
+
+	/**
 	 * Throws a BREAK interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
@@ -2616,128 +2738,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	},
 	
-	/**
-	 * Enqueues an general action to perform after the current one finishes.
-	 * POP is the action.
-	 * Returns nothing.
-	 */
-	QUEUEACTION (/*Return: */ null, /*Args: */ ArgumentType.ACTION)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			Value varAction = request.popValue();
-			
-			if (varAction.getType() != ValueType.ACTION)
-				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTION call.");
-
-			TAction action = request.getModuleContext().resolveAction(varAction.asString());
-			
-			if (action.getType() != Type.GENERAL)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a general action.");
-			else
-				request.addActionItem(TAMEAction.create(action));
-		}
-
-	},
-
-	/**
-	 * Enqueues a open/modal action to perform after the current one finishes.
-	 * First POP is the modal or open target.
-	 * Second POP is the action.
-	 * Returns nothing.
-	 */
-	QUEUEACTIONSTRING (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.VALUE)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			Value varTarget = request.popValue();
-			Value varAction = request.popValue();
-			
-			if (!varTarget.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in QUEUEACTIONSTRING call.");
-			if (varAction.getType() != ValueType.ACTION)
-				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONSTRING call.");
-
-			TAction action = request.getModuleContext().resolveAction(varAction.asString());
-			String target = varTarget.asString();
-			
-			if (action.getType() != Type.MODAL && action.getType() != Type.OPEN)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a modal nor open action.");
-			else
-				request.addActionItem(TAMEAction.create(action, target));
-		}
-
-	},
-	
-	/**
-	 * Enqueues a transitive action to perform after the current one finishes.
-	 * First POP is the object.
-	 * Second POP is the action.
-	 * Returns nothing.
-	 */
-	QUEUEACTIONOBJECT (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			Value varObject = request.popValue();
-			Value varAction = request.popValue();
-			
-			if (varObject.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT call.");
-			if (varAction.getType() != ValueType.ACTION)
-				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONOBJECT call.");
-
-			TAMEModuleContext moduleContext = request.getModuleContext();
-			TAction action = moduleContext.resolveAction(varAction.asString());
-			TObject object = moduleContext.resolveObject(varObject.asString());
-			
-			if (action.getType() != Type.TRANSITIVE && action.getType() != Type.DITRANSITIVE)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a transitive nor ditransitive action.");
-			else
-				request.addActionItem(TAMEAction.create(action, object));
-		}
-
-	},
-	
-	/**
-	 * Enqueues a ditransitive action to perform after the current one finishes.
-	 * First POP is the second object.
-	 * Second POP is the object.
-	 * Third POP is the action.
-	 * Returns nothing.
-	 */
-	QUEUEACTIONOBJECT2 (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			Value varObject2 = request.popValue();
-			Value varObject = request.popValue();
-			Value varAction = request.popValue();
-			
-			if (varObject2.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT2 call.");
-			if (varObject.getType() != ValueType.OBJECT)
-				throw new UnexpectedValueTypeException("Expected object type in QUEUEACTIONOBJECT2 call.");
-			if (varAction.getType() != ValueType.ACTION)
-				throw new UnexpectedValueTypeException("Expected action type in QUEUEACTIONOBJECT2 call.");
-
-			TAMEModuleContext moduleContext = request.getModuleContext();
-			TAction action = moduleContext.resolveAction(varAction.asString());
-			TObject object = moduleContext.resolveObject(varObject.asString());
-			TObject object2 = moduleContext.resolveObject(varObject2.asString());
-			
-			if (action.getType() != Type.DITRANSITIVE)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a ditransitive action.");
-			else
-				request.addActionItem(TAMEAction.create(action, object, object2));
-		}
-
-	},
-
 	/**
 	 * Pushes the identity of an element onto the stack.
 	 * POP is the element.

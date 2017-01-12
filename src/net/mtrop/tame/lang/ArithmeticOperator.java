@@ -42,15 +42,6 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	NOT ("~", 13, false, true)
-	{  
-		@Override
-		public Value doOperation(Value value1) 
-		{
-			return Value.not(value1);
-		}
-	},
-	
 	ADD ("+", 10, true, false)
 	{  
 		@Override
@@ -105,61 +96,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	AND ("&", 6, true, false)
-	{  
-		@Override
-		public Value doOperation(Value value1, Value value2) 
-		{
-			return Value.and(value1, value2);
-		}
-	},
-	
-	OR ("|", 4, true, false)
-	{  
-		@Override
-		public Value doOperation(Value value1, Value value2) 
-		{
-			return Value.or(value1, value2);
-		}
-	},
-	
-	XOR ("^", 5, true, false)
-	{  
-		@Override
-		public Value doOperation(Value value1, Value value2) 
-		{
-			return Value.xor(value1, value2);
-		}
-	},
-	
-	LSHIFT ("<<", 9, true, false)
-	{  
-		@Override
-		public Value doOperation(Value value1, Value value2) 
-		{
-			return Value.leftShift(value1, value2);
-		}
-	},
-	
-	RSHIFT (">>", 9, true, false)
-	{  
-		@Override
-		public Value doOperation(Value value1, Value value2) 
-		{
-			return Value.rightShift(value1, value2);
-		}
-	},
-	
-	RSHIFTPAD (">>>", 9, true, false)
-	{  
-		@Override
-		public Value doOperation(Value value1, Value value2) 
-		{
-			return Value.rightShiftPadded(value1, value2);
-		}
-	},
-	
-	LOGICAL_AND ("&&", 3, true, false)
+	LOGICAL_AND ("&", 3, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -168,7 +105,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LOGICAL_OR ("||", 1, true, false)
+	LOGICAL_OR ("|", 1, true, false)
 	{ 
 		@Override
 		public Value doOperation(Value value1, Value value2) 
@@ -177,7 +114,7 @@ public enum ArithmeticOperator
 		}
 	},
 	
-	LOGICAL_XOR ("^^", 2, true, false)
+	LOGICAL_XOR ("^", 2, true, false)
 	{  
 		@Override
 		public Value doOperation(Value value1, Value value2) 

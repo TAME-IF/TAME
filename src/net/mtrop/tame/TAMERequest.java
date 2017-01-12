@@ -56,6 +56,21 @@ public class TAMERequest
 	/**
 	 * Creates the request object.
 	 * @param moduleContext the module context.
+	 * @param tracing if true, this does tracing.
+	 * @return a TAMERequest a new request.
+	 */
+	static TAMERequest create(TAMEModuleContext moduleContext, boolean tracing)
+	{
+		TAMERequest out = new TAMERequest();
+		out.moduleContext = moduleContext;
+		out.inputMessage = null;
+		out.tracing = tracing;
+		return out;
+	}
+	
+	/**
+	 * Creates the request object.
+	 * @param moduleContext the module context.
 	 * @param input the client input query.
 	 * @param tracing if true, this does tracing.
 	 * @return a TAMERequest a new request.
@@ -63,22 +78,12 @@ public class TAMERequest
 	static TAMERequest create(TAMEModuleContext moduleContext, String input, boolean tracing)
 	{
 		TAMERequest out = new TAMERequest();
-		out.setInputMessage(input);
-		out.setModuleContext(moduleContext);
-		out.setTracing(tracing);
+		out.moduleContext = moduleContext;
+		out.inputMessage = input;
+		out.tracing = tracing;
 		return out;
 	}
 	
-	/**
-	 * Sets the request's input message.
-	 * This gets interpreted by the TAME virtual machine.
-	 * @param inputMessage the input message that was interpreted.
-	 */
-	void setInputMessage(String inputMessage)
-	{
-		this.inputMessage = inputMessage;
-	}
-
 	/**
 	 * Gets the request's input message.
 	 * This gets interpreted by the TAME virtual machine.
@@ -98,15 +103,6 @@ public class TAMERequest
 		return tracing;
 	}
 
-	/**
-	 * Sets if trace is enabled.
-	 * @param trace true if so, false if not.
-	 */
-	public void setTracing(boolean trace)
-	{
-		this.tracing = trace;
-	}
-	
 	/**
 	 * Adds an action item to the queue to be processed later.
 	 * @param item the action item to add.
@@ -143,15 +139,6 @@ public class TAMERequest
 		return actionQueue.dequeue();
 	}
 
-	/**
-	 * Sets the module to be affected in this request.
-	 * @param moduleContext the module context.
-	 */
-	void setModuleContext(TAMEModuleContext moduleContext)
-	{
-		this.moduleContext = moduleContext;
-	}
-	
 	/**
 	 * Pushes an element context value onto the context stack.
 	 * @param context the context to push.

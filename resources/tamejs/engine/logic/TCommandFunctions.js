@@ -315,6 +315,98 @@ var TCommandFunctions =
 		}
 	},
 
+	/* QUEUEACTION */
+	{
+		"name": 'QUEUEACTION', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varAction = request.popValue();
+
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTION call.");
+
+			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
+
+			if (action.type != TAMEConstants.ActionType.GENERAL)
+				throw TAMEInterrupt.Error(action.identity + " is not a general action.");
+			else
+				request.addActionItem(TAction.create(action));
+		}
+	},
+
+	/* QUEUEACTIONSTRING */
+	{
+		"name": 'QUEUEACTIONSTRING', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varTarget = request.popValue();
+			var varAction = request.popValue();
+
+			if (!TValue.isLiteral(varTarget))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONSTRING call.");
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONSTRING call.");
+
+			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
+
+			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
+				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
+			else
+				request.addActionItem(TAction.createModal(action, TValue.asString(varTarget)));
+		}
+	},
+
+	/* QUEUEACTIONOBJECT */
+	{
+		"name": 'QUEUEACTIONOBJECT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varObject = request.popValue();
+			var varAction = request.popValue();
+
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT call.");
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONOBJECT call.");
+
+			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
+			var object = request.moduleContext.resolveElement(TValue.asString(varObject));
+
+			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
+				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
+			else
+				request.addActionItem(TAction.createObject(action, object));
+		}
+	},
+
+	/* QUEUEACTIONOBJECT2 */
+	{
+		"name": 'QUEUEACTIONOBJECT2', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varObject2 = request.popValue();
+			var varObject = request.popValue();
+			var varAction = request.popValue();
+
+			if (!TValue.isObject(varObject2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT2 call.");
+			if (!TValue.isObject(varObject))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT2 call.");
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONOBJECT2 call.");
+
+			var context = request.moduleContext;
+			var action = context.resolveAction(TValue.asString(varAction));
+			var object = context.resolveElement(TValue.asString(varObject));
+			var object2 = context.resolveElement(TValue.asString(varObject2));
+
+			if (action.type != TAMEConstants.ActionType.DITRANSITIVE)
+				throw TAMEInterrupt.Error(action.identity + " is not a ditransitive action.");
+			else
+				request.addActionItem(TAction.createObject2(action, object, object2));
+		}
+	},
+
 	/* BREAK */
 	{
 		"name": 'BREAK', 
@@ -1714,98 +1806,6 @@ var TCommandFunctions =
 		{
 			var currentRoom = request.moduleContext.getCurrentRoom();
 			request.pushValue(TValue.createBoolean(currentRoom == null));
-		}
-	},
-
-	/* QUEUEACTION */
-	{
-		"name": 'QUEUEACTION', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			var varAction = request.popValue();
-
-			if (!TValue.isAction(varAction))
-				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTION call.");
-
-			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
-
-			if (action.type != TAMEConstants.ActionType.GENERAL)
-				throw TAMEInterrupt.Error(action.identity + " is not a general action.");
-			else
-				request.addActionItem(TAction.create(action));
-		}
-	},
-
-	/* QUEUEACTIONSTRING */
-	{
-		"name": 'QUEUEACTIONSTRING', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			var varTarget = request.popValue();
-			var varAction = request.popValue();
-
-			if (!TValue.isLiteral(varTarget))
-				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONSTRING call.");
-			if (!TValue.isAction(varAction))
-				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONSTRING call.");
-
-			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
-
-			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
-				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
-			else
-				request.addActionItem(TAction.createModal(action, TValue.asString(varTarget)));
-		}
-	},
-
-	/* QUEUEACTIONOBJECT */
-	{
-		"name": 'QUEUEACTIONOBJECT', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			var varObject = request.popValue();
-			var varAction = request.popValue();
-
-			if (!TValue.isObject(varObject))
-				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT call.");
-			if (!TValue.isAction(varAction))
-				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONOBJECT call.");
-
-			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
-			var object = request.moduleContext.resolveElement(TValue.asString(varObject));
-
-			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
-				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
-			else
-				request.addActionItem(TAction.createObject(action, object));
-		}
-	},
-
-	/* QUEUEACTIONOBJECT2 */
-	{
-		"name": 'QUEUEACTIONOBJECT2', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			var varObject2 = request.popValue();
-			var varObject = request.popValue();
-			var varAction = request.popValue();
-
-			if (!TValue.isObject(varObject2))
-				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT2 call.");
-			if (!TValue.isObject(varObject))
-				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT2 call.");
-			if (!TValue.isAction(varAction))
-				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONOBJECT2 call.");
-
-			var context = request.moduleContext;
-			var action = context.resolveAction(TValue.asString(varAction));
-			var object = context.resolveElement(TValue.asString(varObject));
-			var object2 = context.resolveElement(TValue.asString(varObject2));
-
-			if (action.type != TAMEConstants.ActionType.DITRANSITIVE)
-				throw TAMEInterrupt.Error(action.identity + " is not a ditransitive action.");
-			else
-				request.addActionItem(TAction.createObject2(action, object, object2));
 		}
 	},
 

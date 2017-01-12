@@ -92,30 +92,23 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_DOT = 			29;
 		static final int TYPE_PLUS =			30;
 		static final int TYPE_MINUS =			41;
-		static final int TYPE_TILDE =			42;
-		static final int TYPE_EXCLAMATION =		43;
-		static final int TYPE_STAR = 			44;
-		static final int TYPE_STARSTAR = 		45;
-		static final int TYPE_SLASH = 			46;
-		static final int TYPE_PERCENT = 		47;
-		static final int TYPE_AMPERSAND = 		48;
-		static final int TYPE_AMPERSAND2 = 		49;
-		static final int TYPE_PIPE = 			50;
-		static final int TYPE_PIPE2 = 			51;
-		static final int TYPE_CARAT = 			52;
-		static final int TYPE_CARAT2 = 			53;	
-		static final int TYPE_LESS = 			54;
-		static final int TYPE_LESS2 = 			55;
-		static final int TYPE_LESSEQUAL = 		56;
-		static final int TYPE_GREATER =			57;
-		static final int TYPE_GREATER2 = 		58;
-		static final int TYPE_GREATER3 = 		59;
-		static final int TYPE_GREATEREQUAL = 	60;
-		static final int TYPE_EQUAL = 			61;
-		static final int TYPE_EQUAL2 = 			62;
-		static final int TYPE_EQUAL3 = 			63;
-		static final int TYPE_NOTEQUAL = 		64;
-		static final int TYPE_NOTEQUALEQUAL =	65;
+		static final int TYPE_EXCLAMATION =		42;
+		static final int TYPE_STAR = 			43;
+		static final int TYPE_STARSTAR = 		44;
+		static final int TYPE_SLASH = 			45;
+		static final int TYPE_PERCENT = 		46;
+		static final int TYPE_AMPERSAND = 		47;
+		static final int TYPE_PIPE = 			48;
+		static final int TYPE_CARAT = 			49;
+		static final int TYPE_LESS = 			50;
+		static final int TYPE_LESSEQUAL = 		51;
+		static final int TYPE_GREATER =			52;
+		static final int TYPE_GREATEREQUAL = 	53;
+		static final int TYPE_EQUAL = 			54;
+		static final int TYPE_EQUAL2 = 			55;
+		static final int TYPE_EQUAL3 = 			56;
+		static final int TYPE_NOTEQUAL = 		57;
+		static final int TYPE_NOTEQUALEQUAL =	58;
 
 		static final int TYPE_MODULE = 			70;
 		static final int TYPE_WORLD = 			71;
@@ -177,23 +170,16 @@ public final class TAMEScriptReader implements TAMEConstants
 			addDelimiter("+", TYPE_PLUS);
 			addDelimiter("-", TYPE_MINUS);
 			addDelimiter("!", TYPE_EXCLAMATION);
-			addDelimiter("~", TYPE_TILDE);
 			addDelimiter("*", TYPE_STAR);
 			addDelimiter("**", TYPE_STARSTAR);
 			addDelimiter("/", TYPE_SLASH);
 			addDelimiter("%", TYPE_PERCENT);
 			addDelimiter("&", TYPE_AMPERSAND);
-			addDelimiter("&&", TYPE_AMPERSAND2);
 			addDelimiter("|", TYPE_PIPE);
-			addDelimiter("||", TYPE_PIPE2);
 			addDelimiter("^", TYPE_CARAT);
-			addDelimiter("^^", TYPE_CARAT2);
 			addDelimiter("<", TYPE_LESS);
-			addDelimiter("<<", TYPE_LESS2);
 			addDelimiter("<=", TYPE_LESSEQUAL);
 			addDelimiter(">", TYPE_GREATER);
-			addDelimiter(">>", TYPE_GREATER2);
-			addDelimiter(">>>", TYPE_GREATER3);
 			addDelimiter(">=", TYPE_GREATEREQUAL);
 			addDelimiter("=", TYPE_EQUAL);
 			addDelimiter("==", TYPE_EQUAL2);
@@ -2484,40 +2470,22 @@ public final class TAMEScriptReader implements TAMEConstants
 								nextOperator = ArithmeticOperator.POWER;
 								break;
 							case TSKernel.TYPE_AMPERSAND:
-								nextOperator = ArithmeticOperator.AND;
-								break;
-							case TSKernel.TYPE_AMPERSAND2:
 								nextOperator = ArithmeticOperator.LOGICAL_AND;
 								break;
 							case TSKernel.TYPE_PIPE:
-								nextOperator = ArithmeticOperator.OR;
-								break;
-							case TSKernel.TYPE_PIPE2:
 								nextOperator = ArithmeticOperator.LOGICAL_OR;
 								break;
 							case TSKernel.TYPE_CARAT:
-								nextOperator = ArithmeticOperator.XOR;
-								break;
-							case TSKernel.TYPE_CARAT2:
 								nextOperator = ArithmeticOperator.LOGICAL_XOR;
 								break;
 							case TSKernel.TYPE_LESS:
 								nextOperator = ArithmeticOperator.LESS;
-								break;
-							case TSKernel.TYPE_LESS2:
-								nextOperator = ArithmeticOperator.LSHIFT;
 								break;
 							case TSKernel.TYPE_LESSEQUAL:
 								nextOperator = ArithmeticOperator.LESS_OR_EQUAL;
 								break;
 							case TSKernel.TYPE_GREATER:
 								nextOperator = ArithmeticOperator.GREATER;
-								break;
-							case TSKernel.TYPE_GREATER2:
-								nextOperator = ArithmeticOperator.RSHIFT;
-								break;
-							case TSKernel.TYPE_GREATER3:
-								nextOperator = ArithmeticOperator.RSHIFTPAD;
 								break;
 							case TSKernel.TYPE_GREATEREQUAL:
 								nextOperator = ArithmeticOperator.GREATER_OR_EQUAL;
@@ -2560,9 +2528,6 @@ public final class TAMEScriptReader implements TAMEConstants
 							break;
 						case TSKernel.TYPE_PLUS:
 							expressionOperators.push(ArithmeticOperator.ABSOLUTE);
-							break;
-						case TSKernel.TYPE_TILDE:
-							expressionOperators.push(ArithmeticOperator.NOT);
 							break;
 						case TSKernel.TYPE_EXCLAMATION:
 							expressionOperators.push(ArithmeticOperator.LOGICAL_NOT);
@@ -2822,7 +2787,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				case TSKernel.TYPE_MINUS:
 				case TSKernel.TYPE_PLUS:
-				case TSKernel.TYPE_TILDE:
 				case TSKernel.TYPE_EXCLAMATION:
 					return true;
 				default:
@@ -2844,17 +2808,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				case TSKernel.TYPE_SLASH:
 				case TSKernel.TYPE_PERCENT:
 				case TSKernel.TYPE_AMPERSAND:
-				case TSKernel.TYPE_AMPERSAND2:
 				case TSKernel.TYPE_PIPE:
-				case TSKernel.TYPE_PIPE2:
 				case TSKernel.TYPE_CARAT:
-				case TSKernel.TYPE_CARAT2:
 				case TSKernel.TYPE_GREATER:
-				case TSKernel.TYPE_GREATER2:
-				case TSKernel.TYPE_GREATER3:
 				case TSKernel.TYPE_GREATEREQUAL:
 				case TSKernel.TYPE_LESS:
-				case TSKernel.TYPE_LESS2:
 				case TSKernel.TYPE_LESSEQUAL:
 				case TSKernel.TYPE_EQUAL:
 				case TSKernel.TYPE_EQUAL2:
