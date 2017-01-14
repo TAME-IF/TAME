@@ -18,6 +18,7 @@ import com.blackrook.commons.CommonTokenizer;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.linkedlist.Queue;
 
+import net.mtrop.tame.element.ObjectContainer;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
@@ -266,14 +267,14 @@ public final class TAMELogic implements TAMEConstants
 		TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
 		
 		response.trace(request, "Check world for %s...", object);
-		if (ownershipMap.checkWorldHasObject(world, object))
+		if (ownershipMap.checkElementHasObject(world, object))
 		{
 			response.trace(request, "Found.");
 			return true;
 		}
 	
 		response.trace(request, "Check %s for %s...", player, object);
-		if (ownershipMap.checkPlayerHasObject(player, object))
+		if (ownershipMap.checkElementHasObject(player, object))
 		{
 			response.trace(request, "Found.");
 			return true;
@@ -282,7 +283,7 @@ public final class TAMELogic implements TAMEConstants
 		TRoom currentRoom = ownershipMap.getCurrentRoom(player);
 		
 		response.trace(request, "Check %s for %s...", currentRoom, object);
-		if (currentRoom != null && ownershipMap.checkRoomHasObject(currentRoom, object))
+		if (currentRoom != null && ownershipMap.checkElementHasObject(currentRoom, object))
 		{
 			response.trace(request, "Found.");
 			return true;
@@ -385,124 +386,58 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
-	 * Attempts to perform a world browse.
+	 * Attempts to perform an element browse.
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param world the world to browse.
+	 * @param element the element to browse.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public static void doWorldBrowse(TAMERequest request, TAMEResponse response, TWorld world) throws TAMEInterrupt 
+	public static void doBrowse(TAMERequest request, TAMEResponse response, ObjectContainer element) throws TAMEInterrupt 
 	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
-		response.trace(request, "Start browse %s.", world);
-		
-		for (TObject object : ownership.getObjectsOwnedByWorld(world))
-		{
-			TObjectContext objectContext = moduleContext.getObjectContext(object);
-	
-			// find via inheritance.
-			response.trace(request, "Check %s for browse block.", object);
-			Block block = object.resolveBlock(blockEntry);
-			if (block != null)
-			{
-				response.trace(request, "Calling world browse block.");
-				callBlock(request, response, objectContext, block);
-			}
-			
-		}
-	
+		doBrowse(request, response, element, null);
 	}
-
+	
 	/**
-	 * Attempts to perform a player browse.
+	 * Attempts to perform an element browse.
+	 * TODO: ADD IN JS!!
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param player the player to browse.
+	 * @param element the element to browse.
+	 * @param tag the tag name to search for, if any (null for no tag filter).
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public static void doPlayerBrowse(TAMERequest request, TAMEResponse response, TPlayer player) throws TAMEInterrupt 
+	public static void doBrowse(TAMERequest request, TAMEResponse response, ObjectContainer element, String tag) throws TAMEInterrupt 
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
-		response.trace(request, "Start browse %s.", player);
+		BlockEntry blockEntry = null; 
+				
+		if (element instanceof TContainer)
+			blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
+		else if (element instanceof TRoom)
+			blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
+		else if (element instanceof TPlayer)
+			blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
+		else if (element instanceof TWorld)
+			blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
+		else
+			return;
+	
+		response.trace(request, "Start browse %s.", element);
 		
-		for (TObject object : ownership.getObjectsOwnedByPlayer(player))
+		for (TObject object : ownership.getObjectsOwnedByElement(element))
 		{
 			TObjectContext objectContext = moduleContext.getObjectContext(object);
-	
-			// find via inheritance.
-			response.trace(request, "Check %s for browse block.", object);
-			Block block = object.resolveBlock(blockEntry);
-			if (block != null)
-			{
-				response.trace(request, "Calling player browse block.");
-				callBlock(request, response, objectContext, block);
-			}
 			
-		}
-	
-	}
-
-	/**
-	 * Attempts to perform a room browse.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param room the room to browse.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	public static void doRoomBrowse(TAMERequest request, TAMEResponse response, TRoom room) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
-		
-		response.trace(request, "Start browse %s.", room);
-		
-		for (TObject object : ownership.getObjectsOwnedByRoom(room))
-		{
-			TObjectContext objectContext = moduleContext.getObjectContext(object);
+			if (tag != null && !moduleContext.getOwnershipMap().checkObjectHasTag(object, tag))
+				continue;
 	
 			// find via inheritance.
 			response.trace(request, "Check %s for browse block.", object);
 			Block block = object.resolveBlock(blockEntry);
 			if (block != null)
 			{
-				response.trace(request, "Calling room browse block.");
-				callBlock(request, response, objectContext, block);
-			}
-			
-		}
-	
-	}
-
-	/**
-	 * Attempts to perform a container browse.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param container the container to browse.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	public static void doContainerBrowse(TAMERequest request, TAMEResponse response, TContainer container) throws TAMEInterrupt 
-	{
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
-	
-		response.trace(request, "Start browse %s.", container);
-		
-		for (TObject object : ownership.getObjectsOwnedByContainer(container))
-		{
-			TObjectContext objectContext = moduleContext.getObjectContext(object);
-	
-			// find via inheritance.
-			response.trace(request, "Check %s for browse block.", object);
-			Block block = object.resolveBlock(blockEntry);
-			if (block != null)
-			{
-				response.trace(request, "Calling container browse block.");
+				response.trace(request, "Found! Calling %s block.", blockEntry.getEntryType().name());
 				callBlock(request, response, objectContext, block);
 			}
 			

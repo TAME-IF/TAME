@@ -22,7 +22,7 @@ import net.mtrop.tame.lang.BlockEntryType;
  * Contains immutable World data. 
  * @author Matthew Tropiano
  */
-public class TWorld extends TElement implements Inheritable<TWorld>
+public class TWorld extends TElement implements Inheritable<TWorld>, ObjectContainer
 {
 	/**
 	 * Constructs an instance of a game world.

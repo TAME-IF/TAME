@@ -895,7 +895,7 @@ TLogic.doBrowse = function(request, response, blockEntryTypeName, elementIdentit
 		var block = context.resolveBlock(objectIdentity, blockEntryTypeName);
 		if (block != null)
 		{
-			response.trace(request, "Calling "+objtostr+" browse block.");
+			response.trace(request, "Found! Calling browse block.");
 			TLogic.callBlock(request, response, objectContext, block);
 		}
 	});

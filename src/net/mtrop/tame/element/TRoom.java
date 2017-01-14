@@ -30,7 +30,7 @@ import com.blackrook.io.SuperWriter;
  * Players can travel from room to room freely, provided that the world allows them to.
  * @author Matthew Tropiano
  */
-public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRoom>
+public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRoom>, ObjectContainer
 {
 	/** The parent room. */
 	private TRoom parent;

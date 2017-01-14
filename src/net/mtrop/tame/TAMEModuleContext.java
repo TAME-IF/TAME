@@ -331,7 +331,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		TWorldContext worldContext = getWorldContext();
 		int start = arrayOffset;
 		
-		if (playerContext != null) for (TObject obj : ownershipMap.getObjectsOwnedByPlayer(playerContext.getElement()))
+		if (playerContext != null) for (TObject obj : ownershipMap.getObjectsOwnedByElement(playerContext.getElement()))
 		{
 			if (ownershipMap.checkObjectHasName(obj, name))
 			{
@@ -341,7 +341,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			}
 		}
 		
-		if (roomContext != null) for (TObject obj : ownershipMap.getObjectsOwnedByRoom(roomContext.getElement()))
+		if (roomContext != null) for (TObject obj : ownershipMap.getObjectsOwnedByElement(roomContext.getElement()))
 		{
 			if (ownershipMap.checkObjectHasName(obj, name))
 			{
@@ -351,7 +351,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			}
 		}
 	
-		for (TObject obj : ownershipMap.getObjectsOwnedByWorld(worldContext.getElement()))
+		for (TObject obj : ownershipMap.getObjectsOwnedByElement(worldContext.getElement()))
 		{
 			if (ownershipMap.checkObjectHasName(obj, name))
 			{

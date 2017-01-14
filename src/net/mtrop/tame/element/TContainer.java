@@ -21,7 +21,7 @@ import net.mtrop.tame.lang.BlockEntryType;
  * Container that just holds objects. It cannot be actioned on.
  * @author Matthew Tropiano
  */
-public class TContainer extends TElement implements Inheritable<TContainer> 
+public class TContainer extends TElement implements Inheritable<TContainer>, ObjectContainer
 {
 	/** The parent container. */
 	private TContainer parent;	

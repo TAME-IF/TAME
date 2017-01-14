@@ -17,6 +17,7 @@ import java.io.OutputStream;
 
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.element.ObjectContainer;
 import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
@@ -42,45 +43,34 @@ import com.blackrook.io.SuperWriter;
  */
 public class TOwnershipMap implements StateSaveable, TAMEConstants
 {
-	// These must be queues - order added should be reflected in retrieval and presentation.
-	
-	/** Ownership map - objects owned by world. */
-	protected HashedQueueMap<TWorld, TObject> objectsOwnedByWorld;
-	/** Ownership map - objects owned by room. */
-	protected HashedQueueMap<TRoom, TObject> objectsOwnedByRoom;
-	/** Ownership map - objects owned by player. */
-	protected HashedQueueMap<TPlayer, TObject> objectsOwnedByPlayer;
-	/** Ownership map - objects owned by container. */
-	protected HashedQueueMap<TContainer, TObject> objectsOwnedByContainer;
-
 	/** Current player. */
 	private TPlayer currentPlayer;
 	/** Room stack. */
 	protected HashMap<TPlayer, Stack<TRoom>> playerToRoomStack;
 	
+	// This must be a queue - order added should be reflected in retrieval and presentation.
+	/** Ownership map - objects owned by elements. */
+	protected HashedQueueMap<ObjectContainer, TObject> objectsOwnedByElements;
+
 	/** Map of object to its current names. */
 	protected HashMap<TObject, CaseInsensitiveHash> objectCurrentNames;
 	/** Map of object to its current tags. */
 	protected HashMap<TObject, CaseInsensitiveHash> objectCurrentTags;
 
 	/** Reverse lookup object - not saved. */
-	protected HashMap<TObject, TElement> objectToElement;
+	protected HashMap<TObject, ObjectContainer> objectsToElement;
 
 	/**
 	 * Creates a new ownership.
 	 */
 	public TOwnershipMap()
 	{
-		objectsOwnedByWorld = new HashedQueueMap<TWorld, TObject>(1);
-		objectsOwnedByRoom = new HashedQueueMap<TRoom, TObject>(10);
-		objectsOwnedByPlayer = new HashedQueueMap<TPlayer, TObject>(4);
-		objectsOwnedByContainer = new HashedQueueMap<TContainer, TObject>(3);
 		currentPlayer = null;
 		playerToRoomStack = new HashMap<TPlayer, Stack<TRoom>>(3);
+		objectsOwnedByElements =  new HashedQueueMap<ObjectContainer, TObject>(20);
 		objectCurrentNames = new HashMap<TObject, CaseInsensitiveHash>();
 		objectCurrentTags = new HashMap<TObject, CaseInsensitiveHash>();
-		
-		objectToElement = new HashMap<TObject, TElement>(20);
+		objectsToElement = new HashMap<TObject, ObjectContainer>(20);
 	}
 	
 	/**
@@ -88,16 +78,12 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public void reset()
 	{
-		objectsOwnedByWorld.clear();
-		objectsOwnedByRoom.clear();
-		objectsOwnedByPlayer.clear();
-		objectsOwnedByContainer.clear();
 		currentPlayer = null;
 		playerToRoomStack.clear();
+		objectsOwnedByElements.clear();
 		objectCurrentNames.clear();
 		objectCurrentTags.clear();
-
-		objectToElement.clear();
+		objectsToElement.clear();
 	}
 	
 	/**
@@ -106,18 +92,11 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public void removeObject(TObject object)
 	{
-		TElement element = objectToElement.removeUsingKey(object);
+		ObjectContainer element = objectsToElement.removeUsingKey(object);
 		if (element == null)
 			return;
 		
-		if (element instanceof TWorld)
-			objectsOwnedByWorld.removeValue((TWorld)element, object);
-		else if (element instanceof TPlayer)
-			objectsOwnedByPlayer.removeValue((TPlayer)element, object);
-		else if (element instanceof TRoom)
-			objectsOwnedByRoom.removeValue((TRoom)element, object);
-		else if (element instanceof TContainer)
-			objectsOwnedByContainer.removeValue((TContainer)element, object);
+		objectsOwnedByElements.removeValue(element, object);
 	}
 	
 	/**
@@ -130,55 +109,16 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	/**
-	 * Adds an object to a container.
+	 * Adds an object to an element that can hold objects.
 	 * The object is first removed from its owners before it is bound to another. 
 	 * @param object the object to add.
-	 * @param container the target container.
+	 * @param element the target element.
 	 */
-	public void addObjectToContainer(TObject object, TContainer container)
+	public void addObjectToElement(TObject object, ObjectContainer element)
 	{
 		removeObject(object);
-		objectToElement.put(object, container);
-		objectsOwnedByContainer.enqueue(container, object);
-	}
-	
-	/**
-	 * Adds an object to a room.
-	 * The object is first removed from its owners before it is bound to another. 
-	 * @param object the object to add.
-	 * @param room the target room.
-	 */
-	public void addObjectToRoom(TObject object, TRoom room)
-	{
-		removeObject(object);
-		objectToElement.put(object, room);
-		objectsOwnedByRoom.enqueue(room, object);
-	}
-	
-	/**
-	 * Adds an object to a player.
-	 * The object is first removed from its owners before it is bound to another. 
-	 * @param object the object to add.
-	 * @param player the target player.
-	 */
-	public void addObjectToPlayer(TObject object, TPlayer player)
-	{
-		removeObject(object);
-		objectToElement.put(object, player);
-		objectsOwnedByPlayer.enqueue(player, object);
-	}
-	
-	/**
-	 * Adds an object to a world.
-	 * The object is first removed from its owners before it is bound to another. 
-	 * @param object the object to add.
-	 * @param world the target world.
-	 */
-	public void addObjectToWorld(TObject object, TWorld world)
-	{
-		removeObject(object);
-		objectToElement.put(object, world);
-		objectsOwnedByWorld.enqueue(world, object);
+		objectsToElement.put(object, element);
+		objectsOwnedByElements.enqueue(element, object);
 	}
 	
 	/**
@@ -234,57 +174,18 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	/**
-	 * Checks if a world possesses an object.
-	 * @param world the world to use.
+	 * Checks if an element possesses an object.
+	 * @param element the element to use.
 	 * @param object the object in question.
 	 * @return true if so, false if not.
 	 */
-	public boolean checkWorldHasObject(TWorld world, TObject object)
+	public boolean checkElementHasObject(ObjectContainer element, TObject object)
 	{
-		if (objectsOwnedByWorld.containsKey(world))
-			return objectsOwnedByWorld.get(world).contains(object);
-		return false;
-	}
-
-	/**
-	 * Checks if a room possesses an object.
-	 * @param room the room to use.
-	 * @param object the object in question.
-	 * @return true if so, false if not.
-	 */
-	public boolean checkRoomHasObject(TRoom room, TObject object)
-	{
-		if (objectsOwnedByRoom.containsKey(room))
-			return objectsOwnedByRoom.get(room).contains(object);
+		if (objectsOwnedByElements.containsKey(element))
+			return objectsOwnedByElements.get(element).contains(object);
 		return false;
 	}
 	
-	/**
-	 * Checks if a container possesses an object.
-	 * @param container the container to use.
-	 * @param object the object in question.
-	 * @return true if so, false if not.
-	 */
-	public boolean checkContainerHasObject(TContainer container, TObject object)
-	{
-		if (objectsOwnedByContainer.containsKey(container))
-			return objectsOwnedByContainer.get(container).contains(object);
-		return false;
-	}
-	
-	/**
-	 * Checks if a player possesses an object.
-	 * @param player the player to use.
-	 * @param object the object in question.
-	 * @return true if so, false if not.
-	 */
-	public boolean checkPlayerHasObject(TPlayer player, TObject object)
-	{
-		if (objectsOwnedByPlayer.containsKey(player))
-			return objectsOwnedByPlayer.get(player).contains(object);
-		return false;
-	}
-
 	/**
 	 * Checks if an object has no owner.
 	 * @param object the object in question.
@@ -292,7 +193,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public boolean checkObjectHasNoOwner(TObject object)
 	{
-		return !objectToElement.containsKey(object);
+		return !objectsToElement.containsKey(object);
 	}
 	
 	/**
@@ -347,83 +248,23 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	/**
-	 * Gets the list of objects owned by a world.
-	 * @param world the world in question.
-	 * @return the list of all objects owned by the world.
+	 * Gets the list of objects owned by an element.
+	 * @param element the element in question.
+	 * @return the list of all objects owned by the element.
 	 */
-	public Iterable<TObject> getObjectsOwnedByWorld(TWorld world)
+	public Iterable<TObject> getObjectsOwnedByElement(ObjectContainer element)
 	{
-		return getObjectsInQueue(objectsOwnedByWorld.get(world));
+		return getObjectsInQueue(objectsOwnedByElements.get(element));
 	}
 
 	/**
-	 * Gets the list of objects owned by a room.
-	 * @param room the room in question.
-	 * @return the list of all objects owned by the room.
+	 * Gets the count of objects owned by an element.
+	 * @param element the element in question.
+	 * @return the amount of objects owned by the element.
 	 */
-	public Iterable<TObject> getObjectsOwnedByRoom(TRoom room)
+	public int getObjectsOwnedByElementCount(ObjectContainer element)
 	{
-		return getObjectsInQueue(objectsOwnedByRoom.get(room)); 
-	}
-
-	/**
-	 * Gets the list of objects owned by a player.
-	 * @param player the player in question.
-	 * @return the list of all objects owned by the player.
-	 */
-	public Iterable<TObject> getObjectsOwnedByPlayer(TPlayer player)
-	{
-		return getObjectsInQueue(objectsOwnedByPlayer.get(player)); 
-	}
-
-	/**
-	 * Gets the list of objects owned by a container.
-	 * @param container the container in question.
-	 * @return the list of all objects owned by the container.
-	 */
-	public Iterable<TObject> getObjectsOwnedByContainer(TContainer container)
-	{
-		return getObjectsInQueue(objectsOwnedByContainer.get(container)); 
-	}
-
-	/**
-	 * Gets the count of objects owned by a world.
-	 * @param world the world in question.
-	 * @return the amount of objects owned by the world.
-	 */
-	public int getObjectsOwnedByWorldCount(TWorld world)
-	{
-		return getObjectsInQueueCount(objectsOwnedByWorld.get(world));
-	}
-
-	/**
-	 * Gets the count of objects owned by a room.
-	 * @param room the room in question.
-	 * @return the amount of objects owned by the room.
-	 */
-	public int getObjectsOwnedByRoomCount(TRoom room)
-	{
-		return getObjectsInQueueCount(objectsOwnedByRoom.get(room)); 
-	}
-
-	/**
-	 * Gets the count of objects owned by a player.
-	 * @param player the player in question.
-	 * @return the amount of objects owned by the player.
-	 */
-	public int getObjectsOwnedByPlayerCount(TPlayer player)
-	{
-		return getObjectsInQueueCount(objectsOwnedByPlayer.get(player)); 
-	}
-
-	/**
-	 * Gets the count of objects owned by a container.
-	 * @param container the container in question.
-	 * @return the amount of objects owned by the container.
-	 */
-	public int getObjectsOwnedByContainerCount(TContainer container)
-	{
-		return getObjectsInQueueCount(objectsOwnedByContainer.get(container)); 
+		return getObjectsInQueueCount(objectsOwnedByElements.get(element));
 	}
 
 	/** 
@@ -547,10 +388,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 
-		writeQueueMap(sw, objectsOwnedByWorld);
-		writeQueueMap(sw, objectsOwnedByRoom);
-		writeQueueMap(sw, objectsOwnedByPlayer);
-		writeQueueMap(sw, objectsOwnedByContainer);
+		writeQueueMap(sw, objectsOwnedByElements);
 		
 		sw.writeBoolean(currentPlayer != null);
 		if (currentPlayer != null)
@@ -573,15 +411,15 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	// Writes a map.
-	private void writeQueueMap(SuperWriter sw, HashedQueueMap<? extends TElement, TObject> map) throws IOException 
+	private void writeQueueMap(SuperWriter sw, HashedQueueMap<? extends ObjectContainer, TObject> map) throws IOException 
 	{
 		sw.writeInt(map.size());
-		for (ObjectPair<? extends TElement, Queue<TObject>> elementPair : map)
+		for (ObjectPair<? extends ObjectContainer, Queue<TObject>> elementPair : map)
 		{
-			TElement element = elementPair.getKey();
+			ObjectContainer element = elementPair.getKey();
 			Queue<TObject> objectList = elementPair.getValue();
 			
-			sw.writeString(element.getIdentity(), "UTF-8");
+			sw.writeString(((TElement)element).getIdentity(), "UTF-8");
 			sw.writeInt(objectList.size());
 			for (TObject object : objectList)
 				sw.writeString(object.getIdentity(), "UTF-8");
@@ -605,6 +443,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	@Override
+	// FIXME: Must be re-written: state composition has changed!!!!
 	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
@@ -626,7 +465,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 				TObject object = module.getObjectByIdentity(id);
 				if (object == null)
 					throw new ModuleStateException("Object %s cannot be found!", id);
-				addObjectToWorld(object, world);
+				addObjectToElement(object, world);
 			}
 		}
 		
@@ -645,7 +484,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 				TObject object = module.getObjectByIdentity(id);
 				if (object == null)
 					throw new ModuleStateException("Object %s cannot be found!", id);
-				addObjectToRoom(object, room);
+				addObjectToElement(object, room);
 			}
 		}
 		
@@ -664,7 +503,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 				TObject object = module.getObjectByIdentity(id);
 				if (object == null)
 					throw new ModuleStateException("Object %s cannot be found!", id);
-				addObjectToPlayer(object, player);
+				addObjectToElement(object, player);
 			}
 		}
 
@@ -683,7 +522,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 				TObject object = module.getObjectByIdentity(id);
 				if (object == null)
 					throw new ModuleStateException("Object %s cannot be found!", id);
-				addObjectToContainer(object, container);
+				addObjectToElement(object, container);
 			}
 		}
 

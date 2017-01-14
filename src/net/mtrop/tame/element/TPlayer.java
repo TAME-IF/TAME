@@ -28,7 +28,7 @@ import com.blackrook.io.SuperWriter;
  * The viewpoint can travel to different rooms, changing view aspects.
  * @author Matthew Tropiano
  */
-public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<TPlayer>
+public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<TPlayer>, ObjectContainer
 {
 	/** The parent player. */
 	private TPlayer parent;
