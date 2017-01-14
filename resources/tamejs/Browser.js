@@ -36,9 +36,9 @@ Util.nanoTime = (function(){
 	}
 })();
 
-Util.toBase64 = window.atob;
+Util.toBase64 = window.btoa;
 
-Util.fromBase64 = window.btoa;
+Util.fromBase64 = window.atob;
 
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
