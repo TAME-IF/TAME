@@ -3,32 +3,59 @@ module
 	title = "object test";
 }
 
-object o_apple named "apple", "green apple" tagged "food", "fruit"
+action transitive a_mash;
+action transitive a_shred;
+
+object archetype o_food
 {
+	init()
+	{
+		name = "((FOOD))";
+	}
+	
+	onAction(a_mash)
+	{
+		textln("Mashed "+name);
+	}
+
+	onAction(a_shred)
+	{
+		textln("Shredded "+name);
+	}
+
 	onContainerBrowse()
 	{
-		textln("An apple.");
+		textln(name);
+	}
+	
+}
+
+object o_apple : o_food named "apple", "green apple" tagged "food", "fruit"
+{
+	init()
+	{
+		name = "apple";
 	}
 }
-object o_banana named "banana" tagged "food", "fruit"
+object o_banana : o_food named "banana" tagged "food", "fruit"
 {
-	onContainerBrowse()
+	init()
 	{
-		textln("A banana.");
+		name = "banana";
 	}
 }
-object o_cucumber named "cucumber" tagged "food", "vegetable"
+object o_cucumber : o_food named "cucumber" tagged "food", "vegetable"
 {
-	onContainerBrowse()
+	init()
 	{
-		textln("A cucumber.");
+		name = "cucumber";
 	}
 }
-object o_eggplant named "eggplant", "aubergine" tagged "food", "vegetable"
+object o_eggplant : o_food named "eggplant", "aubergine" tagged "food", "vegetable"
 {
-	onContainerBrowse()
+	init()
 	{
-		textln("An eggplant.");
+		name = "eggplant";
 	}
 }
 
@@ -47,6 +74,12 @@ world
 
 		textln("In the basket, I have:");
 		browse(c_basket);
+
+		textln("The fruits are:");
+		browsetagged(c_basket, "fruit");
+		textln("The vegetables are:");
+		browsetagged(c_basket, "vegetable");
+
 	
 		textln("Moving fruits...");
 		moveobjectswithtag(c_basket, c_shelf, "fruit");
@@ -64,7 +97,6 @@ world
 		browse(c_garbage);
 
 		textln("Resetting...");
-
 		giveobject(c_basket, o_apple);
 		giveobject(c_basket, o_banana);
 		giveobject(c_basket, o_cucumber);
@@ -92,6 +124,14 @@ world
 		textln("In the garbage, I have:");
 		browse(c_garbage);
 
-		quit;
+		textln("Resetting...");
+		giveobject(c_basket, o_apple);
+		giveobject(c_basket, o_banana);
+		giveobject(c_basket, o_cucumber);
+		giveobject(c_basket, o_eggplant);
+
+		queueActionForObjectsIn(a_mash, c_basket);
+		queueActionForTaggedObjectsIn(a_shred, c_basket, "fruit");
 	}
+	
 }

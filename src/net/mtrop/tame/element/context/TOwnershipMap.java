@@ -18,12 +18,10 @@ import java.io.OutputStream;
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.ObjectContainer;
-import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
-import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.lang.StateSaveable;
 
@@ -443,20 +441,18 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	@Override
-	// FIXME: Must be re-written: state composition has changed!!!!
 	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		reset();
 		
-		int oobwsize = sr.readInt();
-		while (oobwsize-- > 0)
+		int elementsize = sr.readInt();
+		while (elementsize-- > 0)
 		{
-			String worldIdentity = sr.readString("UTF-8");
-			if (!worldIdentity.equals(IDENTITY_CURRENT_WORLD))
-				throw new ModuleStateException("World is not named 'world'.");
-			
-			TWorld world = module.getWorld();
+			String identity = sr.readString("UTF-8");
+			TElement element = module.getElementByIdentity(identity);
+			if (element == null)
+				throw new ModuleStateException("Element %s cannot be found!", identity);
 			
 			int size = sr.readInt();
 			while (size-- > 0)
@@ -465,67 +461,10 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 				TObject object = module.getObjectByIdentity(id);
 				if (object == null)
 					throw new ModuleStateException("Object %s cannot be found!", id);
-				addObjectToElement(object, world);
+				addObjectToElement(object, (ObjectContainer)element);
 			}
 		}
 		
-		int oobrsize = sr.readInt();
-		while (oobrsize-- > 0)
-		{
-			String roomIdentity = sr.readString("UTF-8");
-			TRoom room = module.getRoomByIdentity(roomIdentity);
-			if (room == null)
-				throw new ModuleStateException("Room %s cannot be found!", roomIdentity);
-			
-			int size = sr.readInt();
-			while (size-- > 0)
-			{
-				String id = sr.readString("UTF-8");
-				TObject object = module.getObjectByIdentity(id);
-				if (object == null)
-					throw new ModuleStateException("Object %s cannot be found!", id);
-				addObjectToElement(object, room);
-			}
-		}
-		
-		int oobpsize = sr.readInt();
-		while (oobpsize-- > 0)
-		{
-			String playerIdentity = sr.readString("UTF-8");
-			TPlayer player = module.getPlayerByIdentity(playerIdentity);
-			if (player == null)
-				throw new ModuleStateException("Player %s cannot be found!", playerIdentity);
-			
-			int size = sr.readInt();
-			while (size-- > 0)
-			{
-				String id = sr.readString("UTF-8");
-				TObject object = module.getObjectByIdentity(id);
-				if (object == null)
-					throw new ModuleStateException("Object %s cannot be found!", id);
-				addObjectToElement(object, player);
-			}
-		}
-
-		int oobcsize = sr.readInt();
-		while (oobcsize-- > 0)
-		{
-			String containerIdentity = sr.readString("UTF-8");
-			TContainer container = module.getContainerByIdentity(containerIdentity);
-			if (container == null)
-				throw new ModuleStateException("Container %s cannot be found!", containerIdentity);
-			
-			int size = sr.readInt();
-			while (size-- > 0)
-			{
-				String id = sr.readString("UTF-8");
-				TObject object = module.getObjectByIdentity(id);
-				if (object == null)
-					throw new ModuleStateException("Object %s cannot be found!", id);
-				addObjectToElement(object, container);
-			}
-		}
-
 		// has current player.
 		if (sr.readBoolean())
 		{

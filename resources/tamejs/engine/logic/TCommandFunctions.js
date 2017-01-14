@@ -329,8 +329,8 @@ var TCommandFunctions =
 
 			if (action.type != TAMEConstants.ActionType.GENERAL)
 				throw TAMEInterrupt.Error(action.identity + " is not a general action.");
-			else
-				request.addActionItem(TAction.create(action));
+
+			request.addActionItem(TAction.create(action));
 		}
 	},
 
@@ -351,8 +351,8 @@ var TCommandFunctions =
 
 			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
 				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
-			else
-				request.addActionItem(TAction.createModal(action, TValue.asString(varTarget)));
+
+			request.addActionItem(TAction.createModal(action, TValue.asString(varTarget)));
 		}
 	},
 
@@ -374,11 +374,74 @@ var TCommandFunctions =
 
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
-			else
-				request.addActionItem(TAction.createObject(action, object));
+
+			request.addActionItem(TAction.createObject(action, object));
 		}
 	},
 
+	/* QUEUEACTIONFOROBJECTSIN */
+	{
+		"name": 'QUEUEACTIONFOROBJECTSIN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varObjectContainer = request.popValue();
+			var varAction = request.popValue();
+
+			if (!TValue.isObjectContainer(varObjectContainer))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in QUEUEACTIONFOROBJECTSIN call.");
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONFOROBJECTSIN call.");
+
+			var context = request.moduleContext;
+			var action = context.resolveAction(TValue.asString(varAction));
+
+			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
+				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
+
+			var element = context.resolveElement(TValue.asString(varObjectContainer));
+			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
+				var object = context.resolveElement(objectIdentity);
+				request.addActionItem(TAction.createObject(action, object));
+			});
+		}
+
+	},
+	
+	/* QUEUEACTIONFORTAGGEDOBJECTSIN */
+	{
+		"name": 'QUEUEACTIONFORTAGGEDOBJECTSIN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varTag = request.popValue();
+			var varObjectContainer = request.popValue();
+			var varAction = request.popValue();
+
+			if (!TValue.isLiteral(varTag))
+				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONFORTAGGEDOBJECTSIN call.");
+			if (!TValue.isObjectContainer(varObjectContainer))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in QUEUEACTIONFORTAGGEDOBJECTSIN call.");
+			if (!TValue.isAction(varAction))
+				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONFORTAGGEDOBJECTSIN call.");
+
+			var context = request.moduleContext;
+			var action = context.resolveAction(TValue.asString(varAction));
+
+			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
+				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
+
+			var tagName = TValue.asString(varTag);
+			var element = context.resolveElement(TValue.asString(varObjectContainer));
+			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
+				if (!context.checkObjectHasTag(objectIdentity, tagName))
+					return;
+				
+				var object = context.resolveElement(objectIdentity);
+				request.addActionItem(TAction.createObject(action, object));
+			});
+		}
+
+	},
+	
 	/* QUEUEACTIONOBJECT2 */
 	{
 		"name": 'QUEUEACTIONOBJECT2', 
@@ -1630,16 +1693,27 @@ var TCommandFunctions =
 
 			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
 
-			if (element.tameType === 'TContainer')
-				TLogic.doBrowse(request, response, 'ONCONTAINERBROWSE', element.identity);
-			else if (element.tameType === 'TPlayer')
-				TLogic.doBrowse(request, response, 'ONPLAYERBROWSE', element.identity);
-			else if (element.tameType === 'TRoom')
-				TLogic.doBrowse(request, response, 'ONROOMBROWSE', element.identity);
-			else if (element.tameType === 'TWorld')
-				TLogic.doBrowse(request, response, 'ONWORLDBROWSE', element.identity);
-			else
-				throw TAMEError.UnexpectedValueType("INTERNAL ERROR IN BROWSE.");
+			TLogic.doBrowse(request, response, element.identity);
+		}
+	},
+
+	/* BROWSETAGGED */
+	{
+		"name": 'BROWSETAGGED', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varTag = request.popValue();
+			var varObjectContainer = request.popValue();
+
+			if (!TValue.isLiteral(varTag))
+				throw TAMEError.UnexpectedValueType("Expected literal type in BROWSETAGGED call.");
+			if (!TValue.isObjectContainer(varObjectContainer))
+				throw TAMEError.UnexpectedValueType("Expected object-container type in BROWSETAGGED call.");
+
+			var tagName = TValue.asString(varTag);
+			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
+
+			TLogic.doBrowse(request, response, element.identity, tagName);
 		}
 	},
 

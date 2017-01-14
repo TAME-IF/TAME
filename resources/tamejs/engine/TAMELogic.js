@@ -876,13 +876,27 @@ TLogic.doRoomSwitch = function(request, response, playerIdentity, roomIdentity)
  * @param response the response object.
  * @param blockEntryTypeName the block entry type name.
  * @param elementIdentity the element identity to browse through.
+ * @param tag the tag to filter by.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.doBrowse = function(request, response, blockEntryTypeName, elementIdentity)
+TLogic.doBrowse = function(request, response, elementIdentity, tag)
 {
 	var context = request.moduleContext;
 	
 	var element = context.resolveElement(elementIdentity);
+	var blockEntryTypeName = null;
+	
+	if (element.tameType === 'TContainer')
+		blockEntryTypeName = 'ONCONTAINERBROWSE';
+	else if (element.tameType === 'TPlayer')
+		blockEntryTypeName = 'ONPLAYERBROWSE';
+	else if (element.tameType === 'TRoom')
+		blockEntryTypeName = 'ONROOMBROWSE';
+	else if (element.tameType === 'TWorld')
+		blockEntryTypeName = 'ONWORLDBROWSE';
+	else
+		throw TAMEError.UnexpectedValueType("INTERNAL ERROR IN BROWSE.");
+
 	response.trace(request, "Start browse "+TLogic.elementToString(element)+".");
 
 	Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity)
@@ -890,12 +904,15 @@ TLogic.doBrowse = function(request, response, blockEntryTypeName, elementIdentit
 		var object = context.getElement(objectIdentity);
 		var objectContext = context.getElementContext(objectIdentity);
 		
+		if (tag != null && !context.checkObjectHasTag(objectIdentity, tag))
+			return;
+		
 		var objtostr = TLogic.elementToString(object);
 		response.trace(request, "Check "+objtostr+" for browse block.");
 		var block = context.resolveBlock(objectIdentity, blockEntryTypeName);
 		if (block != null)
 		{
-			response.trace(request, "Found! Calling browse block.");
+			response.trace(request, "Found! Calling "+blockEntryTypeName+" block.");
 			TLogic.callBlock(request, response, objectContext, block);
 		}
 	});

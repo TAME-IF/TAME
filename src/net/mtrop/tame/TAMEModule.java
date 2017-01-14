@@ -19,6 +19,7 @@ import java.util.Iterator;
 
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TContainer;
+import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
@@ -139,24 +140,6 @@ public class TAMEModule implements Saveable
 	}
 	
 	/**
-	 * Gets the module's world.
-	 * @return the world.
-	 */
-	public TWorld getWorld() 
-	{
-		return world;
-	}
-
-	/**
-	 * Sets the module's world.
-	 * @param world the world to set.
-	 */
-	public void setWorld(TWorld world) 
-	{
-		this.world = world;
-	}
-
-	/**
 	 * Add an action to this world. World loaders will use this.
 	 * @param a	the Action to add.
 	 */
@@ -186,6 +169,24 @@ public class TAMEModule implements Saveable
 	public TAction getActionByIdentity(String identity)
 	{
 		return actions.get(identity);
+	}
+
+	/**
+	 * Sets the module's world.
+	 * @param world the world to set.
+	 */
+	public void setWorld(TWorld world) 
+	{
+		this.world = world;
+	}
+
+	/**
+	 * Gets the module's world.
+	 * @return the world.
+	 */
+	public TWorld getWorld() 
+	{
+		return world;
 	}
 
 	/**
@@ -266,6 +267,28 @@ public class TAMEModule implements Saveable
 	public TPlayer getPlayerByIdentity(String identity)
 	{
 		return players.get(identity);
+	}
+
+	/**
+	 * Retrieves an element by identity.
+	 * @param identity the element's identity.
+	 * @return the corresponding element, or null if not found.
+	 */
+	public TElement getElementByIdentity(String identity)
+	{
+		TElement out;
+		if (TAMEConstants.IDENTITY_CURRENT_WORLD.equalsIgnoreCase(identity))
+			return world;
+		else if ((out = objects.get(identity)) != null)
+			return out;
+		else if ((out = containers.get(identity)) != null)
+			return out;
+		else if ((out = rooms.get(identity)) != null)
+			return out;
+		else if ((out = players.get(identity)) != null)
+			return out;
+		else
+			return null;
 	}
 
 	// Check if we saw the identity before. If so, throw exception.

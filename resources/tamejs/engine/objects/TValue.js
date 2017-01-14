@@ -9,6 +9,7 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
+var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
 // ======================================================================================================
 
@@ -1016,7 +1017,7 @@ TValue.isTrue = function(value)
  */
 TValue.toString = function(value)
 {
-	return value.type + "[" + TValue.asString(value) + "]";
+	return value.type + "[" + Util.withEscChars(TValue.asString(value)) + "]";
 };
 
 //##[[EXPORTJS-END

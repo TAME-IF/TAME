@@ -399,7 +399,6 @@ public final class TAMELogic implements TAMEConstants
 	
 	/**
 	 * Attempts to perform an element browse.
-	 * TODO: ADD IN JS!!
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param element the element to browse.

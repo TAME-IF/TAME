@@ -92,6 +92,14 @@ Util.replaceAll = function(inputstr, expression, replacement)
 	return inputstr.replace(new RegExp(expression, 'g'), replacement);
 };
 
+// withEscChars - Return a string that includes its escape characters.
+Util.withEscChars = function(text) 
+{
+	var t = JSON.stringify(text);
+	return t.substring(1, t.length - 1);
+};
+
+
 // formatDate - Return a string that is a formatted date. Similar to SimpleDateFormat in Java.
 Util.formatDate = function(date, formatstring, utc) 
 {

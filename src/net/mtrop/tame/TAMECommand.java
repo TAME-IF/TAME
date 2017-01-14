@@ -17,14 +17,13 @@ import java.util.regex.PatternSyntaxException;
 
 import com.blackrook.commons.math.RMath;
 
+import net.mtrop.tame.element.ObjectContainer;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TAction.Type;
-import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
-import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.exception.ModuleExecutionException;
@@ -144,7 +143,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
 		{
-			Value varObject = command.getOperand0();
+			Value varElement = command.getOperand0();
 			Value variable = command.getOperand1();
 			Value value = request.popValue();
 			
@@ -152,32 +151,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in POPELEMENTVALUE call.");
 			if (!variable.isVariable())
 				throw new UnexpectedValueTypeException("Expected variable type in POPELEMENTVALUE call.");
-			if (!varObject.isElement())
+			if (!varElement.isElement())
 				throw new UnexpectedValueTypeException("Expected element type in POPELEMENTVALUE call.");
 			
 			String variableName = variable.asString();
-			String objectName = varObject.asString();
-
-			switch (varObject.getType())
-			{
-				default:
-					throw new UnexpectedValueTypeException("INTERNAL ERROR IN POPELEMENTVALUE.");
-				case OBJECT:
-					request.getModuleContext().resolveObjectContext(objectName).setValue(variableName, value);
-					break;
-				case ROOM:
-					request.getModuleContext().resolveRoomContext(objectName).setValue(variableName, value);
-					break;
-				case PLAYER:
-					request.getModuleContext().resolvePlayerContext(objectName).setValue(variableName, value);
-					break;
-				case CONTAINER:
-					request.getModuleContext().resolveContainerContext(objectName).setValue(variableName, value);
-					break;
-				case WORLD:
-					request.getModuleContext().resolveWorldContext().setValue(variableName, value);
-					break;
-			}
+			TElementContext<?> context = resolveElementContext(request.getModuleContext(), varElement); 
+			context.setValue(variableName, value);
 		}
 		
 	},
@@ -223,40 +202,17 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
 		{
-			Value varObject = command.getOperand0();
+			Value varElement = command.getOperand0();
 			Value variable = command.getOperand1();
 
 			if (!variable.isVariable())
 				throw new UnexpectedValueTypeException("Expected variable type in PUSHELEMENTVALUE call.");
-			if (!varObject.isElement())
+			if (!varElement.isElement())
 				throw new UnexpectedValueTypeException("Expected element type in PUSHELEMENTVALUE call.");
 
-			String elementName = varObject.asString();
 			String variableName = variable.asString();
+			TElementContext<?> context = resolveElementContext(request.getModuleContext(), varElement); 
 
-			TElementContext<?> context = null; 
-			
-			switch (varObject.getType())
-			{
-				default:
-					throw new UnexpectedValueTypeException("INTERNAL ERROR IN PUSHELEMENTVALUE.");
-				case OBJECT:
-					context = request.getModuleContext().resolveObjectContext(elementName);
-					break;
-				case ROOM:
-					context = request.getModuleContext().resolveRoomContext(elementName);
-					break;
-				case PLAYER:
-					context = request.getModuleContext().resolvePlayerContext(elementName);
-					break;
-				case CONTAINER:
-					context = request.getModuleContext().resolveContainerContext(elementName);
-					break;
-				case WORLD:
-					context = request.getModuleContext().resolveWorldContext();
-					break;
-			}
-			
 			request.pushValue(context.getValue(variableName));
 		}
 		
@@ -488,45 +444,23 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value procedureName = request.popValue();
-			Value elementValue = request.popValue();
+			Value varProcedureName = request.popValue();
+			Value varElement = request.popValue();
 
-			if (!procedureName.isLiteral())
+			if (!varProcedureName.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in CALLFROM call.");
+			if (!varElement.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in CALLFROM call.");
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TElementContext<?> elementContext = null;
-			
-			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
-			
-			switch (elementValue.getType())
-			{
-				case CONTAINER:
-					elementContext = moduleContext.resolveContainerContext(elementValue.asString());
-					break;
-				case ROOM:
-					elementContext = moduleContext.resolveRoomContext(elementValue.asString());
-					break;
-				case PLAYER:
-					elementContext = moduleContext.resolvePlayerContext(elementValue.asString());
-					break;
-				case OBJECT:
-					elementContext = moduleContext.resolveObjectContext(elementValue.asString());
-					break;
-				case WORLD:
-					elementContext = moduleContext.resolveWorldContext();
-					break;
-				default:
-					throw new UnexpectedValueTypeException("Expected element type in CALLFROM call.");
-			}
-
+			TElementContext<?> elementContext = resolveElementContext(moduleContext, varElement);
 			TElement element = elementContext.getElement();
 			
-			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, procedureName));
+			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, varProcedureName));
 			if (block != null)
 				TAMELogic.callBlock(request, response, elementContext, block);
 			else
-				response.addCue(CUE_ERROR, "No such procedure ("+procedureName.asString()+") in lineage of element " + element);
+				response.addCue(CUE_ERROR, "No such procedure ("+varProcedureName.asString()+") in lineage of element " + element);
 		}
 		
 	},
@@ -622,7 +556,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * First POP is the object-container.
 	 * Second POP is the action.
 	 * Returns nothing.
-	 * TODO: ADD TO JS!!
 	 */
 	QUEUEACTIONFOROBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT_CONTAINER)
 	{
@@ -660,7 +593,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the object-container.
 	 * Third POP is the action.
 	 * Returns nothing.
-	 * TODO: ADD TO JS!!
 	 */
 	QUEUEACTIONFORTAGGEDOBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
@@ -2266,24 +2198,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			
-			switch (varObjectContainer.getType())
-			{
-				default:
-					throw new UnexpectedValueTypeException("INTERNAL ERROR IN GIVEOBJECT.");
-				case ROOM:
-					moduleContext.getOwnershipMap().addObjectToElement(object, moduleContext.resolveRoom(varObjectContainer.asString()));
-					break;
-				case PLAYER:
-					moduleContext.getOwnershipMap().addObjectToElement(object, moduleContext.resolvePlayer(varObjectContainer.asString()));
-					break;
-				case CONTAINER:
-					moduleContext.getOwnershipMap().addObjectToElement(object, moduleContext.resolveContainer(varObjectContainer.asString()));
-					break;
-				case WORLD:
-					moduleContext.getOwnershipMap().addObjectToElement(object, moduleContext.resolveWorld());
-					break;
-			}
-			
+			ObjectContainer element = (ObjectContainer)resolveElement(moduleContext, varObjectContainer);
+			moduleContext.getOwnershipMap().addObjectToElement(object, element);
 		}
 		
 	},
@@ -2342,46 +2258,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			String tag = tagValue.asString();
 			TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
-			
-			switch (varObjectContainerDest.getType())
-			{
-				default:
-					throw new UnexpectedValueTypeException("INTERNAL ERROR IN MOVEOBJECTSWITHTAG.");
-				
-				case ROOM:
-				{
-					TRoom room = moduleContext.resolveRoom(varObjectContainerDest.asString());
-					for (TObject object : objectList) if (ownershipMap.checkObjectHasTag(object, tag)) 
-						ownershipMap.addObjectToElement(object, room);
-				}
-				break;
-				
-				case PLAYER:
-				{
-					TPlayer player = moduleContext.resolvePlayer(varObjectContainerDest.asString());
-					for (TObject object : objectList) if (ownershipMap.checkObjectHasTag(object, tag)) 
-						ownershipMap.addObjectToElement(object, player);
-				}
-				break;
-				
-				case CONTAINER:
-				{
-					TContainer container = moduleContext.resolveContainer(varObjectContainerDest.asString());
-					for (TObject object : objectList) if (ownershipMap.checkObjectHasTag(object, tag)) 
-						ownershipMap.addObjectToElement(object, container);
-				}
-				break;
-
-				case WORLD:
-				{
-					TWorld world = moduleContext.resolveWorld();
-					for (TObject object : objectList) if (ownershipMap.checkObjectHasTag(object, tag)) 
-						ownershipMap.addObjectToElement(object, world);
-				}
-				break;
-				
-			}
-			
+			ObjectContainer element = (ObjectContainer)resolveElement(moduleContext, varObjectContainerDest);
+			for (TObject object : objectList) if (ownershipMap.checkObjectHasTag(object, tag)) 
+				ownershipMap.addObjectToElement(object, element);
 		}
 		
 	},
@@ -2402,28 +2281,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected object-container type in OBJECTCOUNT call.");
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			
-			int count = 0;
-			
-			switch (varObjectContainer.getType())
-			{
-				default:
-					throw new UnexpectedValueTypeException("INTERNAL ERROR IN OBJECTCOUNT.");
-				case ROOM:
-					count = moduleContext.getOwnershipMap().getObjectsOwnedByElementCount(moduleContext.resolveRoom(varObjectContainer.asString()));
-					break;
-				case PLAYER:
-					count = moduleContext.getOwnershipMap().getObjectsOwnedByElementCount(moduleContext.resolvePlayer(varObjectContainer.asString()));
-					break;
-				case CONTAINER:
-					count = moduleContext.getOwnershipMap().getObjectsOwnedByElementCount(moduleContext.resolveContainer(varObjectContainer.asString()));
-					break;
-				case WORLD:
-					count = moduleContext.getOwnershipMap().getObjectsOwnedByElementCount(moduleContext.resolveWorld());
-					break;
-			}
-
-			request.pushValue(Value.create(count));
+			ObjectContainer element = (ObjectContainer)resolveElement(moduleContext, varObjectContainer);
+			request.pushValue(Value.create(moduleContext.getOwnershipMap().getObjectsOwnedByElementCount(element)));
 		}
 		
 	},
@@ -2449,28 +2308,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
-			
-			boolean contained = false; 
-			
-			switch (varObjectContainer.getType())
-			{
-				default:
-					throw new UnexpectedValueTypeException("INTERNAL ERROR IN HASOBJECT.");
-				case ROOM:
-					contained = moduleContext.getOwnershipMap().checkElementHasObject(moduleContext.resolveRoom(varObjectContainer.asString()), object);
-					break;
-				case PLAYER:
-					contained = moduleContext.getOwnershipMap().checkElementHasObject(moduleContext.resolvePlayer(varObjectContainer.asString()), object);
-					break;
-				case CONTAINER:
-					contained = moduleContext.getOwnershipMap().checkElementHasObject(moduleContext.resolveContainer(varObjectContainer.asString()), object);
-					break;
-				case WORLD:
-					contained = moduleContext.getOwnershipMap().checkElementHasObject(moduleContext.resolveWorld(), object);
-					break;
-			}
-
-			request.pushValue(Value.create(contained));
+			ObjectContainer element = (ObjectContainer)resolveElement(moduleContext, varObjectContainer);
+			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkElementHasObject(element, object)));
 		}
 		
 	},
@@ -2569,25 +2408,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected object-container type in BROWSE call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			
-			switch (varObjectContainer.getType())
-			{
-				default:
-					throw new UnexpectedValueTypeException("INTERNAL ERROR IN BROWSE.");
-				case ROOM:
-					TAMELogic.doBrowse(request, response, moduleContext.resolveRoom(varObjectContainer.asString()));
-					break;
-				case PLAYER:
-					TAMELogic.doBrowse(request, response, moduleContext.resolvePlayer(varObjectContainer.asString()));
-					break;
-				case CONTAINER:
-					TAMELogic.doBrowse(request, response, moduleContext.resolveContainer(varObjectContainer.asString()));
-					break;
-				case WORLD:
-					TAMELogic.doBrowse(request, response, moduleContext.resolveWorld());
-					break;
-			}
-			
+			ObjectContainer element = (ObjectContainer)resolveElement(moduleContext, varObjectContainer);
+			TAMELogic.doBrowse(request, response, element);
 		}
 		
 	},
@@ -2597,7 +2419,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * First POP is tag name. 
 	 * Second POP is object container. 
 	 * Returns nothing.
-	 * TODO: ADD IN JS!!
 	 */
 	BROWSETAGGED (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
@@ -2614,25 +2435,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			String tagName = varTag.asString(); 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			
-			switch (varObjectContainer.getType())
-			{
-				default:
-					throw new UnexpectedValueTypeException("INTERNAL ERROR IN BROWSE.");
-				case ROOM:
-					TAMELogic.doBrowse(request, response, moduleContext.resolveRoom(varObjectContainer.asString()), tagName);
-					break;
-				case PLAYER:
-					TAMELogic.doBrowse(request, response, moduleContext.resolvePlayer(varObjectContainer.asString()), tagName);
-					break;
-				case CONTAINER:
-					TAMELogic.doBrowse(request, response, moduleContext.resolveContainer(varObjectContainer.asString()), tagName);
-					break;
-				case WORLD:
-					TAMELogic.doBrowse(request, response, moduleContext.resolveWorld(), tagName);
-					break;
-			}
-			
+			ObjectContainer element = (ObjectContainer)resolveElement(moduleContext, varObjectContainer);
+			TAMELogic.doBrowse(request, response, element, tagName);
 		}
 		
 	},
@@ -2873,33 +2677,14 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value element = request.popValue();
+			Value varElement = request.popValue();
+
+			if (!varElement.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in IDENTITY call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			
-			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
-			
-			switch (element.getType())
-			{
-				case CONTAINER:
-					request.pushValue(Value.create(moduleContext.resolveContainer(element.asString()).getIdentity()));
-					break;
-				case ROOM:
-					request.pushValue(Value.create(moduleContext.resolveRoom(element.asString()).getIdentity()));
-					break;
-				case PLAYER:
-					request.pushValue(Value.create(moduleContext.resolvePlayer(element.asString()).getIdentity()));
-					break;
-				case OBJECT:
-					request.pushValue(Value.create(moduleContext.resolveObject(element.asString()).getIdentity()));
-					break;
-				case WORLD:
-					request.pushValue(Value.create(moduleContext.resolveWorld().getIdentity()));
-					break;
-				default:
-					throw new UnexpectedValueTypeException("Expected element type in IDENTITY call.");
-			}
-
+			TElement element = resolveElement(moduleContext, varElement);
+			request.pushValue(Value.create(element.getIdentity()));
 		}
 		
 	}
@@ -3002,18 +2787,59 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 */
 	private static Iterable<TObject> resolveObjectList(TAMEModuleContext moduleContext, Value varObjectContainer) throws ErrorInterrupt 
 	{
-		switch (varObjectContainer.getType())
+		return moduleContext.getOwnershipMap().getObjectsOwnedByElement((ObjectContainer)resolveElement(moduleContext, varObjectContainer));
+	}
+	
+	/**
+	 * Resolves an element by a value.
+	 * @param moduleContext the module context.
+	 * @param varElement the value to resolve via module context.
+	 * @return the corresponding element, or null if the value does not refer to an object container.
+	 * @throws ErrorInterrupt if a major error occurs.
+	 */
+	private static TElement resolveElement(TAMEModuleContext moduleContext, Value varElement) throws ErrorInterrupt 
+	{
+		switch (varElement.getType())
 		{
 			default:
 				return null;
+			case OBJECT:
+				return moduleContext.resolveObject(varElement.asString());
 			case ROOM:
-				return moduleContext.getOwnershipMap().getObjectsOwnedByElement(moduleContext.resolveRoom(varObjectContainer.asString()));
+				return moduleContext.resolveRoom(varElement.asString());
 			case PLAYER:
-				return moduleContext.getOwnershipMap().getObjectsOwnedByElement(moduleContext.resolvePlayer(varObjectContainer.asString()));
+				return moduleContext.resolvePlayer(varElement.asString());
 			case CONTAINER:
-				return moduleContext.getOwnershipMap().getObjectsOwnedByElement(moduleContext.resolveContainer(varObjectContainer.asString()));
+				return moduleContext.resolveContainer(varElement.asString());
 			case WORLD:
-				return moduleContext.getOwnershipMap().getObjectsOwnedByElement(moduleContext.resolveWorld());
+				return moduleContext.resolveWorld();
+		}
+		
+	}
+	
+	/**
+	 * Resolves an element context by a value.
+	 * @param moduleContext the module context.
+	 * @param varElement the value to resolve via module context.
+	 * @return the corresponding element context, or null if the value does not refer to an object container.
+	 * @throws ErrorInterrupt if a major error occurs.
+	 */
+	private static TElementContext<?> resolveElementContext(TAMEModuleContext moduleContext, Value varElement) throws ErrorInterrupt 
+	{
+		switch (varElement.getType())
+		{
+			default:
+				return null;
+			case OBJECT:
+				return moduleContext.resolveObjectContext(varElement.asString());
+			case ROOM:
+				return moduleContext.resolveRoomContext(varElement.asString());
+			case PLAYER:
+				return moduleContext.resolvePlayerContext(varElement.asString());
+			case CONTAINER:
+				return moduleContext.resolveContainerContext(varElement.asString());
+			case WORLD:
+				return moduleContext.resolveWorldContext();
 		}
 		
 	}
