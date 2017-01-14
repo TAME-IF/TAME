@@ -12,6 +12,44 @@
 var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
 // ======================================================================================================
+Util.nanoTime = function()
+{
+	// s,ns to ns (ns res)
+	var t = process.hrtime();
+	return t[0] * 1e9 + t[1];
+};
+
+Util.toBase64 = (function()
+{
+	if (Buffer.from)
+	{
+		return function(text) {
+			return Buffer.from(text).toString('base64');
+		};
+	}
+	else
+	{
+		return function(text) {
+			return (new Buffer(text)).toString('base64');
+		};
+	}
+})();
+
+Util.fromBase64 = (function()
+{
+	if (Buffer.from)
+	{
+		return function(data) {
+			return Buffer.from(data, 'base64').toString('utf8');
+		};
+	}
+	else
+	{
+		return function(data) {
+			return (new Buffer(data, 'base64')).toString('utf8');
+		};
+	}
+})();
 
 //##[[EXPORTJS-START
 
@@ -54,14 +92,14 @@ TValue.create = function(type, value)
 TValue.createBoolean = function(value) {return TValue.create(TValue.Type.BOOLEAN, Boolean(value));}
 TValue.createInteger = function(value) {return TValue.create(TValue.Type.INTEGER, parseInt(value, 10));}
 TValue.createFloat = function(value) {return TValue.create(TValue.Type.FLOAT, parseFloat(value));}
-TValue.createString = function(value) {return TValue.create(TValue.Type.STRING, String(value));}
-TValue.createWorld = function() {return TValue.create(TValue.Type.WORLD, "world");}
-TValue.createObject = function(value) {return TValue.create(TValue.Type.OBJECT, String(value));}
-TValue.createContainer = function(value) {return TValue.create(TValue.Type.CONTAINER, String(value));}
-TValue.createPlayer = function(value) {return TValue.create(TValue.Type.PLAYER, String(value));}
-TValue.createRoom = function(value) {return TValue.create(TValue.Type.ROOM, String(value));}
-TValue.createAction = function(value) {return TValue.create(TValue.Type.ACTION, String(value));}
-TValue.createVariable = function(value) {return TValue.create(TValue.Type.VARIABLE, String(value));}
+TValue.createString = function(value) {return TValue.create(TValue.Type.STRING, Util.toBase64(String(value)));}
+TValue.createWorld = function() {return TValue.create(TValue.Type.WORLD, Util.toBase64("world"));}
+TValue.createObject = function(value) {return TValue.create(TValue.Type.OBJECT, Util.toBase64(String(value)));}
+TValue.createContainer = function(value) {return TValue.create(TValue.Type.CONTAINER, Util.toBase64(String(value)));}
+TValue.createPlayer = function(value) {return TValue.create(TValue.Type.PLAYER, Util.toBase64(String(value)));}
+TValue.createRoom = function(value) {return TValue.create(TValue.Type.ROOM, Util.toBase64(String(value)));}
+TValue.createAction = function(value) {return TValue.create(TValue.Type.ACTION, Util.toBase64(String(value)));}
+TValue.createVariable = function(value) {return TValue.create(TValue.Type.VARIABLE, Util.toBase64(String(value)));}
 TValue.createNaN = function() {return TValue.create(TValue.Type.FLOAT, NaN);}
 TValue.createInfinity = function() {return TValue.create(TValue.Type.FLOAT, Infinity);}
 TValue.createNegativeInfinity = function() {return TValue.create(TValue.Type.FLOAT, -Infinity);}
@@ -928,7 +966,7 @@ TValue.asDouble = function(value)
 		return value.value;
 	else if (TValue.isString(value))
 	{
-		var vlower = value.value.toLowerCase();
+		var vlower = Util.fromBase64(value.value).toLowerCase();
 		if (vlower === "nan")
 			return NaN;
 		else if (vlower === "infinity")
@@ -948,8 +986,8 @@ TValue.asDouble = function(value)
  */
 TValue.asString = function(value)
 {
-	if (TValue.isString(value))
-		return value.value;
+	if (TValue.isString(value) || TValue.isElement(value) || TValue.isVariable(value) || TValue.isAction(value))
+		return Util.fromBase64(value.value);
 	else if (TValue.isInfinite(value) || TValue.isNaN(value))
 		return ""+value.value;
 	else if (TValue.isFloatingPoint(value))
@@ -998,7 +1036,7 @@ TValue.asBoolean = function(value)
 	else if (TValue.isInteger(value))
 		return TValue.asLong(value) != 0;
 	else if (TValue.isString(value))
-		return value.value.length !== 0;
+		return Util.fromBase64(value.value).length !== 0;
 	else
 		return true; // all objects are true
 };

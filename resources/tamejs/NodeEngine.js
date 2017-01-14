@@ -29,6 +29,38 @@ module.exports = new (function()
 		return t[0] * 1e9 + t[1];
 	};
 
+	Util.toBase64 = (function()
+	{
+		if (Buffer.from)
+		{
+			return function(text) {
+				return Buffer.from(text).toString('base64');
+			};
+		}
+		else
+		{
+			return function(text) {
+				return (new Buffer(text)).toString('base64');
+			};
+		}
+	})();
+
+	Util.fromBase64 = (function()
+	{
+		if (Buffer.from)
+		{
+			return function(data) {
+				return Buffer.from(data, 'base64').toString('utf8');
+			};
+		}
+		else
+		{
+			return function(data) {
+				return (new Buffer(data, 'base64')).toString('utf8');
+			};
+		}
+	})();
+
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
 //##[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js

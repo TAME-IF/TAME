@@ -10,6 +10,7 @@
 package net.mtrop.tame.factory;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import net.mtrop.tame.exception.JSExportException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.Command;
+import net.mtrop.tame.lang.Value;
 
 /**
  * The JavaScript exporter for TAME.
@@ -282,15 +284,40 @@ public final class TAMEJSExporter
 	 * @param writer the writer to write to.
 	 * @param block the block.
 	 */
+	private static JSONObject convertValue(Value value) throws IOException
+	{
+		JSONObject out = JSONObject.createEmptyObject();
+		out.addMember("type", value.getType());
+		switch (value.getType())
+		{
+			case INTEGER:
+			case BOOLEAN:
+			case FLOAT:
+				out.addMember("value", value.getValue());
+			break;
+			
+			default:
+				out.addMember("value", Common.asBase64(new ByteArrayInputStream(value.getValue().toString().getBytes("utf-8"))));
+			break;
+		
+		}
+		return out;
+	}
+
+	/**
+	 * Generates a command object in JS.
+	 * @param writer the writer to write to.
+	 * @param block the block.
+	 */
 	private static JSONObject convertCommand(Command command) throws IOException
 	{
 		JSONObject out = JSONObject.createEmptyObject();
 		
 		out.addMember("opcode", command.getOperation().ordinal());
 		if (command.getOperand0() != null)
-			out.addMember("operand0", command.getOperand0());
+			out.addMember("operand0", convertValue(command.getOperand0()));
 		if (command.getOperand1() != null)
-			out.addMember("operand1", command.getOperand1());
+			out.addMember("operand1", convertValue(command.getOperand1()));
 		if (command.getInitBlock() != null)
 			out.addMember("initBlock", convertBlock(command.getInitBlock()));
 		if (command.getConditionalBlock() != null)

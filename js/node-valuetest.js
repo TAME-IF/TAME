@@ -1,4 +1,4 @@
-var TValue = require("../resources/tamejs/objects/TValue.js");
+var TValue = require("../resources/tamejs/engine/objects/TValue.js");
 /*****************************************************************************
 Arithmetic function entry points.
 *****************************************************************************/
