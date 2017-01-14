@@ -36,9 +36,9 @@ Util.nanoTime = (function(){
 	}
 })();
 
-Util.toBase64 = window.btoa;
-
-Util.fromBase64 = window.atob;
+//Must be like this in order to avoid Illegal Invocation errors.
+Util.toBase64 = function(text){return btoa(text);};
+Util.fromBase64 = function(data){return atob(data);};
 
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
