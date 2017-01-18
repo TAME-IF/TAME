@@ -130,7 +130,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_ALLOWS = 			87;
 		static final int TYPE_RESTRICTED = 		88;
 		static final int TYPE_LOCAL = 			89;
-		static final int TYPE_ARCHETYPE = 		90;
+		static final int TYPE_CLEAR = 			90;
+		static final int TYPE_ARCHETYPE = 		91;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -207,6 +208,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("forbids", TYPE_FORBIDS);
 			addCaseInsensitiveKeyword("allows", TYPE_ALLOWS);
 			addCaseInsensitiveKeyword("local", TYPE_LOCAL);
+			addCaseInsensitiveKeyword("clear", TYPE_CLEAR);
 			addCaseInsensitiveKeyword("archetype", TYPE_ARCHETYPE);
 
 			for (BlockEntryType entryType : BlockEntryType.values())
@@ -1810,6 +1812,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		[IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		"local" [IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
+		 * 		"clear" [IDENTIFIER];
 		 * 		[COMMANDEXPRESSION]
 		 *		[e]
 		 */
@@ -1938,6 +1941,46 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 
 			}
+			else if (matchType(TSKernel.TYPE_CLEAR))
+			{
+				if (!currentType(TSKernel.TYPE_IDENTIFIER))
+				{
+					addErrorMessage("Statement error - expected element reference or variable after \"clear\".");
+					return false;
+				}
+				
+				Value identToken = tokenToValue();
+				nextToken();
+
+				if (identToken.isElement())
+				{
+
+					// must have a dot if an element type.
+					if (!matchType(TSKernel.TYPE_DOT))
+					{
+						addErrorMessage("Statement error - expected '.' to dereference an element.");
+						return false;
+					}
+
+					if (!isVariable())
+					{
+						addErrorMessage("Statement error - expected variable.");
+						return false;
+					}
+					
+					Value variable = tokenToValue();
+					nextToken();
+					
+					emit(Command.create(TAMECommand.CLEARELEMENTVALUE, identToken, variable));
+					return true;
+				}
+				else
+				{
+					emit(Command.create(TAMECommand.CLEARVALUE, identToken));
+					return true;
+				}
+				
+			}
 
 			return true;
 		}
@@ -1954,6 +1997,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					TSKernel.TYPE_SEMICOLON, 
 					TSKernel.TYPE_IDENTIFIER,
 					TSKernel.TYPE_LOCAL,
+					TSKernel.TYPE_CLEAR,
 					TSKernel.TYPE_WORLD,
 					TSKernel.TYPE_PLAYER,
 					TSKernel.TYPE_ROOM,

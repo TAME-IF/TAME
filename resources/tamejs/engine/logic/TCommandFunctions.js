@@ -145,6 +145,48 @@ var TCommandFunctions =
 		}
 	},
 
+	/* CLEARVALUE */
+	{
+		"name": 'CLEARVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value = command.operand0;
+
+			if (!TValue.isVariable(value))
+				throw TAMEError.UnexpectedValueType("Expected variable type in CLEARVALUE call.");
+			
+			var variableName = TValue.asString(value).toLowerCase();
+			if (blockLocal[variableName])
+				TLogic.clearValue(blockLocal, variableName);
+			else
+				TLogic.clearValue(request.peekContext().variables, variableName);
+		}
+	},
+
+	/* CLEARELEMENTVALUE */
+	{
+		"name": 'CLEARELEMENTVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varElement = command.operand0;
+			var variable = command.operand1;
+
+			if (!TValue.isVariable(variable))
+				throw TAMEError.UnexpectedValueType("Expected variable type in CLEARELEMENTVALUE call.");
+			if (!TValue.isElement(varElement))
+				throw TAMEError.UnexpectedValueType("Expected element type in CLEARELEMENTVALUE call.");
+
+			var variableName = TValue.asString(variable).toLowerCase();
+			if (blockLocal[variableName])
+				TLogic.clearValue(blockLocal, TValue.asString(variable));
+			else
+			{
+				var element = request.moduleContext.resolveElementContext(TValue.asString(varElement));
+				TLogic.clearValue(element.variables, TValue.asString(variable))
+			}
+		}
+	},
+
 	/* ARITHMETICFUNC */
 	{
 		"name": 'ARITHMETICFUNC', 

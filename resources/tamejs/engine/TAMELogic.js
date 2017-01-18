@@ -45,6 +45,7 @@ TLogic.setValue = function(valueHash, variableName, value)
  * Sets a value on a variable hash.
  * @param valueHash the hash that contains the variables.
  * @param variableName the variable name.
+ * @return the corresponding value or TValue.createBoolean(false) if no value.
  */
 TLogic.getValue = function(valueHash, variableName)
 {
@@ -53,6 +54,17 @@ TLogic.getValue = function(valueHash, variableName)
 		return TValue.createBoolean(false);
 	else
 		return valueHash[variableName];
+};
+
+/**
+ * Clears a value on a variable hash.
+ * @param valueHash the hash that contains the variables.
+ * @param variableName the variable name.
+ */
+TLogic.clearValue = function(valueHash, variableName)
+{
+	variableName = variableName.toLowerCase();
+	delete valueHash[variableName];
 };
 
 /**

@@ -5,6 +5,10 @@ module
 	title = "local variable test";
 }
 
+object o_junk
+{
+}
+
 world
 {
 	init()
@@ -12,16 +16,28 @@ world
 		queueAction(a_test);
 	}
 
-	routine(0)
-	{
-		textln(y);
-	}
-	
 	onAction(a_test)
 	{
+		y = 4;
 		local y = 5;
-		call(y);
 		textln("butt " + y);
+		clear Y;
+		textln("butt " + y);
+		clear Y;
+		textln("butt " + y);
+		
+		x = 6;
+		textln(x);
+		textln("butt " + x);
+		clear X;
+		textln("butt " + x);
+		
+		o_junk.Z = 5;		
+		textln("butt " + o_junk.z);
+		clear o_junk.z;
+		textln("butt " + o_junk.z);
+		
+		
 		quit;
 	}
 	

@@ -74,7 +74,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 
 	/**
-	 * Sets a persistent value on this context.
+	 * Sets a variable's value on this context.
 	 * @param variableName the variable name.
 	 * @param value the variable value.
 	 */
@@ -84,7 +84,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 
 	/**
-	 * Gets a persistent variable's value on this context.
+	 * Gets a variable's value on this context.
 	 * @param variableName the variable name.
 	 * @return the corresponding value, or a value that represents "false" if no value.
 	 */
@@ -93,6 +93,16 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 		if (variables.containsKey(variableName))
 			return variables.get(variableName);
 		return Value.create(false);
+	}
+
+	/**
+	 * Clears a variable's value on this context.
+	 * @param variableName the variable name.
+	 */
+	public void clearValue(String variableName)
+	{
+		if (variables.containsKey(variableName))
+			variables.removeUsingKey(variableName);
 	}
 
 	@Override

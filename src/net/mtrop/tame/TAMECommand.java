@@ -193,7 +193,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	
 	/**
 	 * [INTERNAL] Resolves value of a variable on an object and pushes the value.
-	 * Operand0 is the object. 
+	 * Operand0 is the element. 
 	 * Operand1 is the variable. 
 	 * Pushes the resolved value. 
 	 */
@@ -214,6 +214,62 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TElementContext<?> context = resolveElementContext(request.getModuleContext(), varElement); 
 
 			request.pushValue(context.getValue(variableName));
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Clears a variable from blocklocal or object member.
+	 * Operand0 is the variable. 
+	 * Returns nothing.
+	 */
+	CLEARVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			Value variable = command.getOperand0();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in CLEARVALUE call.");
+
+			String variableName = variable.asString();
+			if (blockLocal.containsKey(variableName))
+				blockLocal.removeUsingKey(variableName);
+			else
+				request.peekContext().clearValue(variableName);
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Clears a variable from blocklocal or object member.
+	 * Operand0 is the element. 
+	 * Operand1 is the variable. 
+	 * Returns nothing.
+	 */
+	CLEARELEMENTVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			Value varElement = command.getOperand0();
+			Value variable = command.getOperand1();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in CLEARELEMENTVALUE call.");
+			if (!varElement.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in CLEARELEMENTVALUE call.");
+
+			String variableName = variable.asString();
+			if (blockLocal.containsKey(variableName))
+				blockLocal.removeUsingKey(variableName);
+			else
+			{
+				TElementContext<?> context = resolveElementContext(request.getModuleContext(), varElement);
+				context.clearValue(variableName);
+			}
+				
 		}
 		
 	},
