@@ -10,11 +10,7 @@
 
 //##[[EXPORTJS-START
 
-/********************************************
- * TAME (Text Adventure Module Engine)
- * (C) Matt Tropiano 2016-2017
- * Standalone Module Library for NodeJS
- ********************************************/
+//##[[EXPORTJS-GENERATE jsheader
 module.exports = new (function()
 {
 

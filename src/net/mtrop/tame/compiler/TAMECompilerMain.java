@@ -48,7 +48,7 @@ public final class TAMECompilerMain
 
 	/** Switch - JS export. */
 	private static final String SWITCH_JS0 = "--js-out"; 
-	private static final String SWITCH_JS1 = "-jo"; 
+	private static final String SWITCH_JS1 = "-js"; 
 
 	/** Switch - JS export, add wrapper. */
 	private static final String SWITCH_JSWRAPPER0 = "--js-wrapper"; 
@@ -225,7 +225,7 @@ public final class TAMECompilerMain
 		out.println("    -n                   Does not optimize blocks. DEBUG ONLY");
 		out.println("    --no-optimize");
 		out.println();
-		out.println("    -jo                  Exports to a standalone JavaScript file.");
+		out.println("    -js                  Exports to a standalone JavaScript file.");
 		out.println("    --js-out");
 		out.println();
 		out.println("    -w [name]            Declare a wrapper to use for the JavaScript exporter.");
@@ -262,7 +262,7 @@ public final class TAMECompilerMain
 		
 		if (exportJSEngine)
 		{
-			File outJSFile = new File("TAME.js");
+			File outJSFile = new File("TAME-"+TAMELogic.getVersion()+".js");
 			try {
 				jsOptions.wrapperName = "engine";
 				TAMEJSExporter.export(outJSFile, null, jsOptions);

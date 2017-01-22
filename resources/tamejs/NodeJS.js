@@ -10,6 +10,7 @@
 
 //##[[EXPORTJS-START
 
+//##[[EXPORTJS-GENERATE jsheader
 var TAME = new (function(theader, tactions, telements){
 
 //##[[EXPORTJS-GENERATE version
@@ -104,6 +105,10 @@ Util.fromBase64 = (function()
 })(
 //##[[EXPORTJS-GENERATE header, actions, elements
 );
+
+/****************************************
+ * NodeJS Shell
+ ****************************************/
 
 //##[[EXPORTJS-INCLUDE node/Main.js
 

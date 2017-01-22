@@ -10,11 +10,7 @@
 
 //##[[EXPORTJS-START
 
-/********************************************
- * TAME (Text Adventure Module Engine)
- * (C) Matt Tropiano 2016-2017
- * Standalone Class for Internet Browsers
- ********************************************/
+//##[[EXPORTJS-GENERATE jsheader
 var TAME = new (function()
 {
 

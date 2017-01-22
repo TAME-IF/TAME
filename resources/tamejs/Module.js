@@ -10,6 +10,7 @@
 
 //##[[EXPORTJS-START
 
+//##[[EXPORTJS-GENERATE jsmoduleheader
 var ModuleData = 
 {
 	"header":

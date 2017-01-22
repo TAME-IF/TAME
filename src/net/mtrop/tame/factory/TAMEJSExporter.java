@@ -29,6 +29,7 @@ import com.blackrook.lang.json.JSONWriter;
 
 import net.mtrop.tame.TAMELogic;
 import net.mtrop.tame.TAMEModule;
+import net.mtrop.tame.TAMEModule.Header;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TObject;
@@ -61,6 +62,10 @@ public final class TAMEJSExporter
 	/** Reader directive - END */
 	private static final String JS_DIRECTIVE_END = JS_DIRECTIVE_PREFIX + "END";
 	
+	/** Generate JS header. */
+	private static final String GENERATE_JSHEADER = "jsheader";
+	/** Generate JS module header. */
+	private static final String GENERATE_JSMODULEHEADER = "jsmoduleheader";
 	/** Generate version. */
 	private static final String GENERATE_VERSION = "version";
 	/** Generate header. */
@@ -344,7 +349,11 @@ public final class TAMEJSExporter
 		for (int i = 0; i < parts.length; i++)
 		{
 			String type = parts[i];
-			if (type.equalsIgnoreCase(GENERATE_VERSION))
+			if (type.equalsIgnoreCase(GENERATE_JSHEADER))
+				generateResourceJSHeader(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_JSMODULEHEADER))
+				generateResourceJSModuleHeader(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_VERSION))
 				generateResourceVersion(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_HEADER))
 				generateResourceHeader(writer, module);
@@ -358,6 +367,7 @@ public final class TAMEJSExporter
 			if (i < parts.length - 1)
 				writer.write(',');
 		}
+		writer.write('\n');
 	}
 	
 	/**
@@ -367,7 +377,55 @@ public final class TAMEJSExporter
 	 */
 	private static void generateResourceVersion(Writer writer, TAMEModule module) throws IOException
 	{
-		writer.append("this.version = "+JSONWriter.writeJSONString(TAMELogic.getVersion())+";\n");
+		writer.append("this.version = "+JSONWriter.writeJSONString(TAMELogic.getVersion())+";");
+	}
+	
+	/**
+	 * Generates the JS engine comment header.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceJSHeader(Writer writer, TAMEModule module) throws IOException
+	{
+		writer.append("/*************************************************************************\n");
+		if (module == null)
+			writer.append(" * TAME Engine v"+TAMELogic.getVersion()+"\n");
+		else
+			writer.append(" * TAME v"+TAMELogic.getVersion()+" with Embedded Module\n");
+		writer.append(" * (C) 2016-2017 Matthew Tropiano\n");
+		writer.append(" * https://tame-if.com\n");
+		if (module != null)
+		{
+			Header header = module.getHeader();
+			writer.append(" *\n");
+			writer.append(" * Module Information:\n");
+			for (String entry : header.getAllAttributes())
+			{
+				writer.append(" * "+Character.toUpperCase(entry.charAt(0))+entry.substring(1)+": "+header.getAttribute(entry)+"\n");
+			}
+		}
+
+		writer.append(" *************************************************************************/\n");
+	}
+	
+	/**
+	 * Generates the JS module comment header.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceJSModuleHeader(Writer writer, TAMEModule module) throws IOException
+	{
+		if (module == null)
+			return;
+		
+		writer.append("/*************************************************************************\n");
+		Header header = module.getHeader();
+		writer.append(" * Module Information:\n");
+		for (String entry : header.getAllAttributes())
+		{
+			writer.append(" * "+Character.toUpperCase(entry.charAt(0))+entry.substring(1)+": "+header.getAttribute(entry)+"\n");
+		}
+		writer.append(" *************************************************************************/\n");
 	}
 	
 	/**

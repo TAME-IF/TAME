@@ -10,6 +10,7 @@
 
 //##[[EXPORTJS-START
 
+//##[[EXPORTJS-GENERATE jsheader
 var TAME = new (function(theader, tactions, telements){
 
 //##[[EXPORTJS-GENERATE version

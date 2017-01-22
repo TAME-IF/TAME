@@ -46,4 +46,23 @@ public interface TAMEConstants
 	/** Hardcoded runaway max. */
 	public static final int RUNAWAY_THRESHOLD = 100000;
 
+	/* ========= Known or suggested headers. ========= */
+	
+	/** Header - Module title. */
+	public static final String HEADER_TITLE = "title";
+	/** Header - Author Name, Pen Name, or Pseudonym. */
+	public static final String HEADER_AUTHOR = "author";
+	/** Header - Author E-mail. */
+	public static final String HEADER_EMAIL = "email";
+	/** Header - Author Twitter. */
+	public static final String HEADER_TWITTER = "twitter";
+	/** Header - Author Website. */
+	public static final String HEADER_WEBSITE = "website";
+	/** Header - Origin country. */
+	public static final String HEADER_COUNTRY = "country";
+	/** Header - Module language (ISO 639 alpha-2 or alpha-3 language code). */
+	public static final String HEADER_LANGUAGE = "language";
+	/** Header - Module version or revision. */
+	public static final String HEADER_VERSION = "version";
+
 }
