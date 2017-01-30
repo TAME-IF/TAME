@@ -42,6 +42,8 @@ var TModuleContext = function(module)
 		};
 	};
 	
+	var mc = this;
+	
 	// create element contexts.
 	Util.each(m.elements, function(element, identity)
 	{
@@ -60,13 +62,11 @@ var TModuleContext = function(module)
 			s.tags[identity] = {};
 			Util.each(element.names, function(name)
 			{
-				name = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
-				s.names[identity][name] = true;
+				mc.addObjectName(element.identity, name);
 			});
 			Util.each(element.tags, function(tag)
 			{
-				tag = tag.toLowerCase();
-				s.tags[identity][tag] = true;
+				mc.addObjectTag(element.identity, tag);
 			});		
 		}
 		
@@ -391,12 +391,15 @@ TModuleContext.prototype.addObjectName = function(objectIdentity, name)
 	if (!contextState.elements[objectIdentity])
 		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
-	var n = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
-	var arr = contextState.names[objectIdentity];
-	if (!arr)
-		arr = contextState.names[objectIdentity] = {};
-	if (!arr[n])
-		arr[n] = true;
+	var object = this.getElement(objectIdentity);
+	
+	name = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
+	Util.objectStringAdd(contextState.names, objectIdentity, name);
+	Util.each(object.determiners, function(determiner)
+	{
+		determiner = Util.replaceAll(determiner.toLowerCase(), "\\s+", " ");
+		Util.objectStringAdd(contextState.names, objectIdentity, determiner + ' ' + name);
+	});
 };
 
 /**
@@ -421,12 +424,15 @@ TModuleContext.prototype.removeObjectName = function(objectIdentity, name)
 	if (!contextState.elements[objectIdentity])
 		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
-	var n = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
-	var arr = contextState.names[objectIdentity];
-	if (!arr)
-		return;
-	if (arr[n])
-		delete arr[n];
+	var object = this.getElement(objectIdentity);
+	
+	name = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
+	Util.objectStringRemove(contextState.names, objectIdentity, name);
+	Util.each(object.determiners, function(determiner)
+	{
+		determiner = Util.replaceAll(determiner.toLowerCase(), "\\s+", " ");
+		Util.objectStringRemove(contextState.names, objectIdentity, determiner + ' ' + name);
+	});
 };
 
 /**
@@ -451,8 +457,7 @@ TModuleContext.prototype.checkObjectHasName = function(objectIdentity, name)
 		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
 	name = name.toLowerCase();
-	var arr = contextState.names[objectIdentity];
-	return (arr && arr[name]);
+	return Util.objectStringContains(contextState.names, objectIdentity, name);
 };
 
 /**
@@ -478,11 +483,7 @@ TModuleContext.prototype.addObjectTag = function(objectIdentity, tag)
 		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 	
 	tag = tag.toLowerCase();
-	var arr = contextState.tags[objectIdentity];
-	if (!arr)
-		arr = contextState.tags[objectIdentity] = {};
-	if (!arr[tag])
-		arr[tag] = true;
+	Util.objectStringAdd(contextState.tags, objectIdentity, tag);
 };
 
 /**
@@ -508,11 +509,7 @@ TModuleContext.prototype.removeObjectTag = function(objectIdentity, tag)
 		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
 	tag = tag.toLowerCase();
-	var arr = contextState.tags[objectIdentity];
-	if (!arr)
-		return;
-	if (arr[tag])
-		delete arr[tag];
+	Util.objectStringRemove(contextState.tags, objectIdentity, tag);
 };
 
 /**
@@ -538,8 +535,7 @@ TModuleContext.prototype.checkObjectHasTag = function(objectIdentity, tag)
 		throw TAMEError.ModuleExecution("Element is missing from context state: "+objectIdentity);
 
 	tag = tag.toLowerCase();
-	var arr = contextState.tags[objectIdentity];
-	return (arr && arr[tag]);
+	return Util.objectStringContains(contextState.tags, objectIdentity, tag);
 };
 
 /**

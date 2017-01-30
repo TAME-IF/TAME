@@ -34,6 +34,8 @@ public class TObject extends TElement implements Inheritable<TObject>
 	private TObject parent;
 	/** Element's names. */
 	protected CaseInsensitiveHash names;
+	/** Element's determiners (name token affixes). */
+	protected CaseInsensitiveHash determiners;
 	/** Element's names. */
 	protected CaseInsensitiveHash tags;
 
@@ -42,6 +44,7 @@ public class TObject extends TElement implements Inheritable<TObject>
 		super();
 		this.parent = null;
 		this.names = new CaseInsensitiveHash(3);
+		this.determiners = new CaseInsensitiveHash(2);
 		this.tags = new CaseInsensitiveHash(2);
 	}
 	
@@ -110,6 +113,27 @@ public class TObject extends TElement implements Inheritable<TObject>
 	public Iterable<String> getNames()
 	{
 		return names;
+	}
+
+	/**
+	 * Adds a name determiner to this object.
+	 * These are prepended to names when they are added/removed in contexts.  
+	 * @param determiner the name to add.
+	 */
+	public void addDeterminer(String determiner)
+	{
+		if (isArchetype())
+			throw new ModuleException("Object that are archetypes cannot have name determiners.");
+		determiners.put(determiner);
+	}
+	
+	/**
+	 * Gets the name determiners on this object as an iterable structure.
+	 * @return the case-insensitive hash containing the determiners.
+	 */
+	public Iterable<String> getDeterminers()
+	{
+		return determiners;
 	}
 
 	/**

@@ -572,6 +572,8 @@ public final class TAMEJSExporter
 
 		if ((arr = JSONObject.create(object.getNames())).length() > 0)
 			out.addMember("names", arr);
+		if ((arr = JSONObject.create(object.getDeterminers())).length() > 0)
+			out.addMember("determiners", arr);
 		if ((arr = JSONObject.create(object.getTags())).length() > 0)
 			out.addMember("tags", arr);
 

@@ -125,13 +125,15 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_NAMED = 			82;
 		static final int TYPE_TAGGED = 			83;
 		static final int TYPE_MODES = 			84;
-		static final int TYPE_CONJOINS = 		85;
-		static final int TYPE_FORBIDS = 		86;
-		static final int TYPE_ALLOWS = 			87;
-		static final int TYPE_RESTRICTED = 		88;
-		static final int TYPE_LOCAL = 			89;
-		static final int TYPE_CLEAR = 			90;
-		static final int TYPE_ARCHETYPE = 		91;
+		static final int TYPE_USES = 			85;
+		static final int TYPE_CONJUNCTIONS = 	86;
+		static final int TYPE_DETERMINERS = 	87;
+		static final int TYPE_FORBIDS = 		88;
+		static final int TYPE_ALLOWS = 			89;
+		static final int TYPE_RESTRICTED = 		90;
+		static final int TYPE_LOCAL = 			91;
+		static final int TYPE_CLEAR = 			92;
+		static final int TYPE_ARCHETYPE = 		93;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -204,7 +206,9 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("named", TYPE_NAMED);
 			addCaseInsensitiveKeyword("tagged", TYPE_TAGGED);
 			addCaseInsensitiveKeyword("modes", TYPE_MODES);
-			addCaseInsensitiveKeyword("conjoins", TYPE_CONJOINS);
+			addCaseInsensitiveKeyword("uses", TYPE_USES);
+			addCaseInsensitiveKeyword("conjuntions", TYPE_CONJUNCTIONS);
+			addCaseInsensitiveKeyword("determiners", TYPE_DETERMINERS);
 			addCaseInsensitiveKeyword("forbids", TYPE_FORBIDS);
 			addCaseInsensitiveKeyword("allows", TYPE_ALLOWS);
 			addCaseInsensitiveKeyword("local", TYPE_LOCAL);
@@ -1359,8 +1363,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				if (!parseActionNames(action))
 					return false;
 				
-				if (!parseActionAdditionalNames(action, TSKernel.TYPE_MODES))
-					return false;
+				if (matchType(TSKernel.TYPE_MODES))
+				{
+					if (!parseActionAdditionalNames(action))
+						return false;
+				}
 				
 				currentModule.addAction(action);
 				return true;
@@ -1412,8 +1419,17 @@ public final class TAMEScriptReader implements TAMEConstants
 				if (!parseActionNames(action))
 					return false;
 
-				if (!parseActionAdditionalNames(action, TSKernel.TYPE_CONJOINS))
-					return false;
+				if (matchType(TSKernel.TYPE_USES))
+				{
+					if (!matchType(TSKernel.TYPE_CONJUNCTIONS))
+					{
+						addErrorMessage("Expected 'conjuctions' after 'uses'.");
+						return false;
+					}
+
+					if (!parseActionAdditionalNames(action))
+						return false;
+				}
 
 				currentModule.addAction(action);
 				return true;
@@ -1481,23 +1497,18 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[CONJOINS] [STRING] [ActionAdditionalNameList]
 		 * 		[e]
 		 */
-		private boolean parseActionAdditionalNames(TAction action, int expectedKeywordType)
+		private boolean parseActionAdditionalNames(TAction action)
 		{
-			if (matchType(expectedKeywordType))
+			if (!currentType(TSKernel.TYPE_STRING))
 			{
-				if (!currentType(TSKernel.TYPE_STRING))
-				{
-					addErrorMessage("Expected name (must be string).");
-					return false;
-				}
-				
-				action.addExtraStrings(currentToken().getLexeme());
-				nextToken();
-				
-				return parseActionAdditionalNameList(action);
+				addErrorMessage("Expected string.");
+				return false;
 			}
 			
-			return true;
+			action.addExtraStrings(currentToken().getLexeme());
+			nextToken();
+			
+			return parseActionAdditionalNameList(action);
 		}
 		
 		/**
@@ -1619,7 +1630,10 @@ public final class TAMEScriptReader implements TAMEConstants
 				object.addName(currentToken().getLexeme());
 				nextToken();
 				
-				return parseObjectNameList(object);
+				if (!parseObjectNameList(object))
+					return false;
+				
+				return parseObjectDeterminers(object);
 			}
 			
 			return true;
@@ -1649,7 +1663,69 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			return true;
 		}
+
+		/**
+		 * Parses object determiners.
+		 * [ObjectNames] := 
+		 * 		[USES] [DETERMINERS] [STRING] [ObjectDeterminerList]
+		 * 		[e]
+		 */
+		private boolean parseObjectDeterminers(TObject object)
+		{
+			if (matchType(TSKernel.TYPE_USES))
+			{
+				if (!matchType(TSKernel.TYPE_DETERMINERS))
+				{
+					addErrorMessage("Expected 'determiners' after 'uses'.");
+					return false;
+				}
+
+				if (object.isArchetype())
+				{
+					addErrorMessage("Object archetypes cannot have determiners!");
+					return false;
+				}
+				
+				if (!currentType(TSKernel.TYPE_STRING))
+				{
+					addErrorMessage("Expected object name determiner (must be string).");
+					return false;
+				}
+				
+				object.addDeterminer(currentToken().getLexeme());
+				nextToken();
+				
+				return parseObjectDeterminerList(object);
+			}
+
+			return true;
+		}
 		
+		/**
+		 * Parses object determiner list.
+		 * [ObjectDeterminerList] :=
+		 * 		"," [STRING] [ObjectDeterminerList]
+		 * 		[e]
+		 */
+		private boolean parseObjectDeterminerList(TObject object)
+		{
+			if (matchType(TSKernel.TYPE_COMMA))
+			{
+				if (!currentType(TSKernel.TYPE_STRING))
+				{
+					addErrorMessage("Expected object name determiner (must be string).");
+					return false;
+				}
+				
+				object.addDeterminer(currentToken().getLexeme());
+				nextToken();
+				
+				return parseObjectDeterminerList(object);
+			}
+			
+			return true;
+		}
+
 		/**
 		 * Parses object tags.
 		 * [ObjectTags] := 

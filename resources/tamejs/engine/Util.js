@@ -52,6 +52,34 @@ Util.arrayRemove = function(arr, obj)
 	return false;
 };
 
+// Adds a string to a lookup hash.
+Util.objectStringAdd = function(hash, identity, str)
+{
+	var arr = hash[identity];
+	if (!arr)
+		arr = hash[identity] = {};
+	if (!arr[str])
+		arr[str] = true;
+};
+
+// Remove a string from a lookup hash.
+Util.objectStringRemove = function(hash, identity, str)
+{
+	var arr = hash[identity];
+	if (!arr)
+		return;
+	if (arr[str])
+		delete arr[str];
+};
+
+// Checks if a string is in a lookup hash.
+// True if contained, false if not.
+Util.objectStringContains = function(hash, identity, str)
+{
+	var arr = hash[identity];
+	return (arr && arr[str]);
+};
+
 // Mapify - [object, ...] to {object.memberKey -> object, ...}
 Util.mapify = function(objlist, memberKey, multi) 
 {

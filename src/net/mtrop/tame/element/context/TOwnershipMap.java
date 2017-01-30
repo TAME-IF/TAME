@@ -274,7 +274,13 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public void addObjectName(TObject object, String name) 
 	{
-		addStringToObjectMap(objectCurrentNames, object, name.toLowerCase().replaceAll("\\s+", " "));
+		name = name.replaceAll("\\s+", " ");
+		addStringToObjectMap(objectCurrentNames, object, name);
+		for (String determiner : object.getDeterminers())
+		{
+			determiner = determiner.replaceAll("\\s+", " ");
+			addStringToObjectMap(objectCurrentNames, object, determiner + " " + name);
+		}
 	}
 
 	/** 
@@ -286,7 +292,13 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public void removeObjectName(TObject object, String name) 
 	{
-		removeStringFromObjectMap(objectCurrentNames, object, name.toLowerCase().replaceAll("\\s+", " "));
+		name = name.replaceAll("\\s+", " ");
+		removeStringFromObjectMap(objectCurrentNames, object, name);
+		for (String determiner : object.getDeterminers())
+		{
+			determiner = determiner.replaceAll("\\s+", " ");
+			removeStringFromObjectMap(objectCurrentNames, object, determiner + " " + name);
+		}
 	}
 
 	/**
