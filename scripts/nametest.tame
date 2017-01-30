@@ -3,7 +3,7 @@ module
 	title = "name test";
 }
 
-object o_test named "apple", "green apple" tagged "food", "fruit";
+object o_test named "apple", "green apple" uses determiners "the    " tagged "food", "fruit";
 object o_test2;
 
 world
@@ -19,7 +19,9 @@ world
 		removeObjectTag(o_test2, "butt");
 
 		textln(objectHasName(o_test, "apple"));
-		textln(objectHasName(o_test, "green apple"));
+		textln(objectHasName(o_test, "the apple"));
+		textln(objectHasName(o_test, "apple"));
+		textln(objectHasName(o_test, "the green apple"));
 		textln(objectHasName(o_test, "APPLE"));
 		textln(objectHasName(o_test, "butt"));
 		addObjectName(o_test, "butt");

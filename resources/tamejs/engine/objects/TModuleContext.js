@@ -393,11 +393,11 @@ TModuleContext.prototype.addObjectName = function(objectIdentity, name)
 	
 	var object = this.getElement(objectIdentity);
 	
-	name = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
+	name = Util.replaceAll(name.trim().toLowerCase(), "\\s+", " ");
 	Util.objectStringAdd(contextState.names, objectIdentity, name);
 	Util.each(object.determiners, function(determiner)
 	{
-		determiner = Util.replaceAll(determiner.toLowerCase(), "\\s+", " ");
+		determiner = Util.replaceAll(determiner.trim().toLowerCase(), "\\s+", " ");
 		Util.objectStringAdd(contextState.names, objectIdentity, determiner + ' ' + name);
 	});
 };
@@ -426,11 +426,11 @@ TModuleContext.prototype.removeObjectName = function(objectIdentity, name)
 
 	var object = this.getElement(objectIdentity);
 	
-	name = Util.replaceAll(name.toLowerCase(), "\\s+", " ");
+	name = Util.replaceAll(name.trim().toLowerCase(), "\\s+", " ");
 	Util.objectStringRemove(contextState.names, objectIdentity, name);
 	Util.each(object.determiners, function(determiner)
 	{
-		determiner = Util.replaceAll(determiner.toLowerCase(), "\\s+", " ");
+		determiner = Util.replaceAll(determiner.trim().toLowerCase(), "\\s+", " ");
 		Util.objectStringRemove(contextState.names, objectIdentity, determiner + ' ' + name);
 	});
 };

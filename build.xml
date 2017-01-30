@@ -52,6 +52,8 @@
 	<import file="build-import.xml" />
 
 	<!-- Folders and File Names -->
+	<property name="src.test.dir" value="testsrc" />
+	<property name="src.util.dir" value="utilsrc" />
 	<property name="package.base.dir" value="net/mtrop/tame" />
 	<property name="resource.dir" value="resources" />
 	<property name="replace.dir" value="${build.dir}/replace" />
@@ -103,6 +105,17 @@
 	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.exe"  description="Cleans up everything.">
 	</target>
 	
+	<target name="compile.all" depends="init.compile" description="Compiles the project, including test classes.">
+		<javac 
+			source="1.8"
+			srcdir="${src.dir}${S}${src.test.dir}${S}${src.util.dir}" 
+			destdir="${bin.dir}"
+            includeAntRuntime="false"
+			classpath="${project.classpath}"
+			debug="off" 
+			/>
+	</target>
+
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
         <javadoc access="protected" 
         	additionalparam="-J-Xmx512m  " author="true" 

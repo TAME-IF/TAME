@@ -22,7 +22,6 @@
 	<property name="build.version" value="${build.version.number}-${build.version.appendix}" />
 
 	<property name="src.dir" value="src" />
-	<property name="src.test.dir" value="testsrc" />
 	<property name="examples.dir" value="examples" />
 	<property name="bin.dir" value="bin" />
 
@@ -115,17 +114,6 @@
 		<javac 
 			source="1.8"
 			srcdir="${src.dir}" 
-			destdir="${bin.dir}"
-            includeAntRuntime="false"
-			classpath="${project.classpath}"
-			debug="off" 
-			/>
-	</target>
-
-	<target name="compile.all" depends="init.compile" description="Compiles the project, including test classes">
-		<javac 
-			source="1.8"
-			srcdir="${src.dir}${S}${src.test.dir}" 
 			destdir="${bin.dir}"
             includeAntRuntime="false"
 			classpath="${project.classpath}"
