@@ -186,6 +186,9 @@ public class TObject extends TElement implements Inheritable<TObject>
 		sw.writeInt(names.size());
 		for (String name : names)
 			sw.writeString(name.toLowerCase(), "UTF-8");
+		sw.writeInt(determiners.size());
+		for (String determiner : determiners)
+			sw.writeString(determiner.toLowerCase(), "UTF-8");
 		sw.writeInt(tags.size());
 		for (String tag : tags)
 			sw.writeString(tag.toLowerCase(), "UTF-8");
@@ -203,6 +206,11 @@ public class TObject extends TElement implements Inheritable<TObject>
 		size = sr.readInt();
 		while (size-- > 0)
 			names.put(sr.readString("UTF-8"));
+
+		determiners.clear();
+		size = sr.readInt();
+		while (size-- > 0)
+			determiners.put(sr.readString("UTF-8"));
 
 		tags.clear();
 		size = sr.readInt();

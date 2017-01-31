@@ -207,7 +207,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("tagged", TYPE_TAGGED);
 			addCaseInsensitiveKeyword("modes", TYPE_MODES);
 			addCaseInsensitiveKeyword("uses", TYPE_USES);
-			addCaseInsensitiveKeyword("conjuntions", TYPE_CONJUNCTIONS);
+			addCaseInsensitiveKeyword("conjunctions", TYPE_CONJUNCTIONS);
 			addCaseInsensitiveKeyword("determiners", TYPE_DETERMINERS);
 			addCaseInsensitiveKeyword("forbids", TYPE_FORBIDS);
 			addCaseInsensitiveKeyword("allows", TYPE_ALLOWS);
@@ -1423,7 +1423,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				{
 					if (!matchType(TSKernel.TYPE_CONJUNCTIONS))
 					{
-						addErrorMessage("Expected 'conjuctions' after 'uses'.");
+						addErrorMessage("Expected 'conjunctions' after 'uses'.");
 						return false;
 					}
 
