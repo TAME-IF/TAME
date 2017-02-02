@@ -215,7 +215,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("clear", TYPE_CLEAR);
 			addCaseInsensitiveKeyword("archetype", TYPE_ARCHETYPE);
 
-			for (BlockEntryType entryType : BlockEntryType.values())
+			for (BlockEntryType entryType : BlockEntryType.VALUES)
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
 
 		}
@@ -1322,9 +1322,15 @@ public final class TAMEScriptReader implements TAMEConstants
 				if (!parseActionNames(action))
 					return false;
 
+				if (!matchType(TSKernel.TYPE_USES))
+				{
+					addErrorMessage("Expected \"uses local\", to declare the target variable.");
+					return false;
+				}
+
 				if (!matchType(TSKernel.TYPE_LOCAL))
 				{
-					addErrorMessage("Expected \"local\", to declare the target variable.");
+					addErrorMessage("Expected \"local\" after \"uses\", to declare the target variable.");
 					return false;
 				}
 

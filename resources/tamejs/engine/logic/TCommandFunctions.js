@@ -306,6 +306,47 @@ var TCommandFunctions =
 		}
 	},
 
+	/* BREAK */
+	{
+		"name": 'BREAK', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			response.trace(request, "Throwing break interrupt...");
+			throw TAMEInterrupt.Break();
+		}
+	},
+
+	/* CONTINUE */
+	{
+		"name": 'CONTINUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			response.trace(request, "Throwing continue interrupt...");
+			throw TAMEInterrupt.Continue();
+		}
+	},
+
+	/* QUIT */
+	{
+		"name": 'QUIT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			response.trace(request, "Throwing quit interrupt...");
+			response.addCue(TAMEConstants.Cue.QUIT);
+			throw TAMEInterrupt.Quit();
+		}
+	},
+
+	/* END */
+	{
+		"name": 'END', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			response.trace(request, "Throwing end interrupt...");
+			throw TAMEInterrupt.End();
+		}
+	},
+
 	/* CALL */
 	{
 		"name": 'CALL', 
@@ -509,47 +550,6 @@ var TCommandFunctions =
 				throw TAMEInterrupt.Error(action.identity + " is not a ditransitive action.");
 			else
 				request.addActionItem(TAction.createObject2(action, object, object2));
-		}
-	},
-
-	/* BREAK */
-	{
-		"name": 'BREAK', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			response.trace(request, "Throwing break interrupt...");
-			throw TAMEInterrupt.Break();
-		}
-	},
-
-	/* CONTINUE */
-	{
-		"name": 'CONTINUE', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			response.trace(request, "Throwing continue interrupt...");
-			throw TAMEInterrupt.Continue();
-		}
-	},
-
-	/* QUIT */
-	{
-		"name": 'QUIT', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			response.trace(request, "Throwing quit interrupt...");
-			response.addCue(TAMEConstants.Cue.QUIT);
-			throw TAMEInterrupt.Quit();
-		}
-	},
-
-	/* END */
-	{
-		"name": 'END', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			response.trace(request, "Throwing end interrupt...");
-			throw TAMEInterrupt.End();
 		}
 	},
 

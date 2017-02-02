@@ -461,6 +461,67 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}, 
 	
 	/**
+	 * Throws a BREAK interrupt.
+	 * Is keyword. Returns nothing. 
+	 */
+	BREAK ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			response.trace(request, "Throwing break interrupt...");
+			throw new BreakInterrupt();
+		}
+		
+	},
+	
+	/**
+	 * Throws a CONTINUE interrupt.
+	 * Is keyword. Returns nothing. 
+	 */
+	CONTINUE ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			response.trace(request, "Throwing continue interrupt...");
+			throw new ContinueInterrupt();
+		}
+		
+	},
+	
+	/**
+	 * Adds a QUIT cue to the response and throws a QUIT interrupt.
+	 * Is keyword. Returns nothing. 
+	 */
+	QUIT ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			response.trace(request, "Throwing quit interrupt...");
+			response.addCue(CUE_QUIT);
+			throw new QuitInterrupt();
+		}
+		
+	},
+	
+	/**
+	 * Throws an END interrupt.
+	 * Is keyword. Returns nothing. 
+	 */
+	END ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			response.trace(request, "Throwing end interrupt...");
+			throw new EndInterrupt();
+		}
+		
+	},
+	
+	/**
 	 * Calls a procedure local to the current context's owner's lineage.
 	 * First POP is the procedure name/value. 
 	 * Returns nothing.
@@ -721,67 +782,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	},
 
-	/**
-	 * Throws a BREAK interrupt.
-	 * Is keyword. Returns nothing. 
-	 */
-	BREAK ()
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			response.trace(request, "Throwing break interrupt...");
-			throw new BreakInterrupt();
-		}
-		
-	},
-	
-	/**
-	 * Throws a CONTINUE interrupt.
-	 * Is keyword. Returns nothing. 
-	 */
-	CONTINUE ()
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			response.trace(request, "Throwing continue interrupt...");
-			throw new ContinueInterrupt();
-		}
-		
-	},
-	
-	/**
-	 * Adds a QUIT cue to the response and throws a QUIT interrupt.
-	 * Is keyword. Returns nothing. 
-	 */
-	QUIT ()
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			response.trace(request, "Throwing quit interrupt...");
-			response.addCue(CUE_QUIT);
-			throw new QuitInterrupt();
-		}
-		
-	},
-	
-	/**
-	 * Throws an END interrupt.
-	 * Is keyword. Returns nothing. 
-	 */
-	END ()
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			response.trace(request, "Throwing end interrupt...");
-			throw new EndInterrupt();
-		}
-		
-	},
-	
 	/**
 	 * Adds a cue to the response.
 	 * First POP is the value to print. 

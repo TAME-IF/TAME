@@ -17,7 +17,7 @@ public enum ArgumentType
 {
 	/** Argument accepts a single literal value, can be anything. */
 	VALUE,
-	/** Argument accepts an action. */
+	/** Argument accepts any action. */
 	ACTION,
 	/** Argument must accept a player. */
 	PLAYER,
