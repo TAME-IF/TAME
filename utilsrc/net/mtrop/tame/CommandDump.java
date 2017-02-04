@@ -36,6 +36,16 @@ public final class CommandDump
 			if (command.isInternal() || command.isLanguage())
 				continue;
 			
+			out.println("<tamedox:command");
+		}
+
+		out.println("---------------------------");
+		
+		for (TAMECommand command : TAMECommand.values())
+		{
+			if (command.isInternal() || command.isLanguage())
+				continue;
+			
 			out.print(command.name() + " ");
 		}
 
