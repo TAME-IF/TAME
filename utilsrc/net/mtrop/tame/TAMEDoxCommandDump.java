@@ -33,7 +33,7 @@ public final class TAMEDoxCommandDump
 				continue;
 
 			out.println("<!-- Command: "+command.name()+" -->");
-			out.println("<tamedox:command name=\""+command.name()+"\" group=\"UNNAMED\" sort=\"0\"/>");
+			out.println("<tamedox:command name=\""+command.name()+"\" group=\"UNNAMED\" sort=\"0\">");
 			if (command.getArgumentTypes() != null)
 			{
 				out.println("\t<tamedox:commandargs>");
