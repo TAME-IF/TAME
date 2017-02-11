@@ -22,38 +22,37 @@ public final class TAMEDoxCommandDump
 		
 		out.println("<?xml encoding=\"UTF-8\"?>");
 		out.println();
-
-		out.println("<!-- TEMPLATES -->");
-		out.println("<!-- <tamedox:commandreturntype type=\"VALUE TYPE HERE\">REASON GOES HERE</tamedox:commandreturntype> -->");
-		out.println();
 		
+		out.println("<tamedox:commands>");
+		out.println();
+		out.println("\t<!-- TEMPLATES -->");
+		out.println("\t<!-- <tamedox:commandreturntype type=\"VALUE TYPE HERE\">REASON GOES HERE</tamedox:commandreturntype> -->");
+		out.println();
 		for (TAMECommand command : TAMECommand.values())
 		{
 			if (command.isInternal())
 				continue;
 
-			out.println("<!-- Command: "+command.name()+" -->");
-			out.println("<tamedox:command name=\""+command.name()+"\" group=\"UNNAMED\" sort=\"0\">");
+			out.println("\t<!-- Command: "+command.name()+" -->");
+			out.println("\t<tamedox:command name=\""+command.name()+"\" group=\"UNNAMED\" sort=\"0\">");
 			if (command.getArgumentTypes() != null)
 			{
-				out.println("\t<tamedox:commandargs>");
+				out.println("\t\t<tamedox:commandargs>");
 				for (ArgumentType at : command.getArgumentTypes())
-					out.println("\t\t<tamedox:commandarg type=\""+at.name()+"\"><!-- PURPOSE GOES HERE --></tamedox:commandarg>");
-				out.println("\t</tamedox:commandargs>");
+					out.println("\t\t\t<tamedox:commandarg type=\""+at.name()+"\"><!-- PURPOSE GOES HERE --></tamedox:commandarg>");
+				out.println("\t\t</tamedox:commandargs>");
 				if (command.getReturnType() != null)
 				{
-					out.println("\t<tamedox:commandreturntypes>");
-					out.println("\t\t<!--ADD SHIT HERE -->");
-					out.println("\t</tamedox:commandreturntypes>");
+					out.println("\t\t<tamedox:commandreturntypes>");
+					out.println("\t\t\t<!--ADD SHIT HERE -->");
+					out.println("\t\t</tamedox:commandreturntypes>");
 				}
-				out.println("\t<tamedox:commanddocs src=\"static/command-docs-"+command.name().toLowerCase()+".html\"/>");
-				out.println("\t<tamedox:commandexample script=\"scripts/examples/command-"+command.name().toLowerCase()+"\"/>");
-				out.println("\t<tamedox:commandtech src=\"static/command-docs-"+command.name().toLowerCase()+"-tech.html\"/>");
+				out.println("\t\t<tamedox:commanddocs src=\"included/commands/docs-"+command.name().toLowerCase()+".html\"/>");
 			}
-			out.println("</tamedox:command>");
+			out.println("\t</tamedox:command>");
 			out.println();
 		}
-	
+		out.println("</tamedox:commands>");
 		out.close();
 	}
 

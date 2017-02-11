@@ -1,0 +1,1114 @@
+<?xml encoding="UTF-8"?>
+
+<!-- TAME:Pages -->
+<tamedox:pages>
+
+</tamedox:pages>
+
+<!-- TAME:Commands -->
+<tamedox:commands>
+
+	<!-- TEMPLATES -->
+	<!-- <tamedox:commandreturntype type="VALUE TYPE HERE">REASON GOES HERE</tamedox:commandreturntype> -->
+	
+	<!-- Command: NOOP -->
+	<tamedox:command name="NOOP" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-noop.html"/>
+		<tamedox:commandexample script="scripts/examples/command-noop"/>
+		<tamedox:commandtech src="included/commands/docs-noop-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: CALL -->
+	<tamedox:command name="CALL" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-call.html"/>
+		<tamedox:commandexample script="scripts/examples/command-call"/>
+		<tamedox:commandtech src="included/commands/docs-call-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: CALLFROM -->
+	<tamedox:command name="CALLFROM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ELEMENT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-callfrom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-callfrom"/>
+		<tamedox:commandtech src="included/commands/docs-callfrom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: QUEUEACTION -->
+	<tamedox:command name="QUEUEACTION" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ACTION"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-queueaction.html"/>
+		<tamedox:commandexample script="scripts/examples/command-queueaction"/>
+		<tamedox:commandtech src="included/commands/docs-queueaction-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: QUEUEACTIONSTRING -->
+	<tamedox:command name="QUEUEACTIONSTRING" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ACTION"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-queueactionstring.html"/>
+		<tamedox:commandexample script="scripts/examples/command-queueactionstring"/>
+		<tamedox:commandtech src="included/commands/docs-queueactionstring-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: QUEUEACTIONOBJECT -->
+	<tamedox:command name="QUEUEACTIONOBJECT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ACTION"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-queueactionobject.html"/>
+		<tamedox:commandexample script="scripts/examples/command-queueactionobject"/>
+		<tamedox:commandtech src="included/commands/docs-queueactionobject-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: QUEUEACTIONFOROBJECTSIN -->
+	<tamedox:command name="QUEUEACTIONFOROBJECTSIN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ACTION"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-queueactionforobjectsin.html"/>
+		<tamedox:commandexample script="scripts/examples/command-queueactionforobjectsin"/>
+		<tamedox:commandtech src="included/commands/docs-queueactionforobjectsin-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: QUEUEACTIONFORTAGGEDOBJECTSIN -->
+	<tamedox:command name="QUEUEACTIONFORTAGGEDOBJECTSIN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ACTION"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-queueactionfortaggedobjectsin.html"/>
+		<tamedox:commandexample script="scripts/examples/command-queueactionfortaggedobjectsin"/>
+		<tamedox:commandtech src="included/commands/docs-queueactionfortaggedobjectsin-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: QUEUEACTIONOBJECT2 -->
+	<tamedox:command name="QUEUEACTIONOBJECT2" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ACTION"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-queueactionobject2.html"/>
+		<tamedox:commandexample script="scripts/examples/command-queueactionobject2"/>
+		<tamedox:commandtech src="included/commands/docs-queueactionobject2-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ADDCUE -->
+	<tamedox:command name="ADDCUE" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-addcue.html"/>
+		<tamedox:commandexample script="scripts/examples/command-addcue"/>
+		<tamedox:commandtech src="included/commands/docs-addcue-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: TEXT -->
+	<tamedox:command name="TEXT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-text.html"/>
+		<tamedox:commandexample script="scripts/examples/command-text"/>
+		<tamedox:commandtech src="included/commands/docs-text-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: TEXTLN -->
+	<tamedox:command name="TEXTLN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-textln.html"/>
+		<tamedox:commandexample script="scripts/examples/command-textln"/>
+		<tamedox:commandtech src="included/commands/docs-textln-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: TEXTF -->
+	<tamedox:command name="TEXTF" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-textf.html"/>
+		<tamedox:commandexample script="scripts/examples/command-textf"/>
+		<tamedox:commandtech src="included/commands/docs-textf-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: TEXTFLN -->
+	<tamedox:command name="TEXTFLN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-textfln.html"/>
+		<tamedox:commandexample script="scripts/examples/command-textfln"/>
+		<tamedox:commandtech src="included/commands/docs-textfln-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: PAUSE -->
+	<tamedox:command name="PAUSE" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-pause.html"/>
+		<tamedox:commandexample script="scripts/examples/command-pause"/>
+		<tamedox:commandtech src="included/commands/docs-pause-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: WAIT -->
+	<tamedox:command name="WAIT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-wait.html"/>
+		<tamedox:commandexample script="scripts/examples/command-wait"/>
+		<tamedox:commandtech src="included/commands/docs-wait-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: TIP -->
+	<tamedox:command name="TIP" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-tip.html"/>
+		<tamedox:commandexample script="scripts/examples/command-tip"/>
+		<tamedox:commandtech src="included/commands/docs-tip-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: INFO -->
+	<tamedox:command name="INFO" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-info.html"/>
+		<tamedox:commandexample script="scripts/examples/command-info"/>
+		<tamedox:commandtech src="included/commands/docs-info-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ASBOOLEAN -->
+	<tamedox:command name="ASBOOLEAN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-asboolean.html"/>
+		<tamedox:commandexample script="scripts/examples/command-asboolean"/>
+		<tamedox:commandtech src="included/commands/docs-asboolean-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ASINT -->
+	<tamedox:command name="ASINT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-asint.html"/>
+		<tamedox:commandexample script="scripts/examples/command-asint"/>
+		<tamedox:commandtech src="included/commands/docs-asint-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ASFLOAT -->
+	<tamedox:command name="ASFLOAT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-asfloat.html"/>
+		<tamedox:commandexample script="scripts/examples/command-asfloat"/>
+		<tamedox:commandtech src="included/commands/docs-asfloat-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ASSTRING -->
+	<tamedox:command name="ASSTRING" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-asstring.html"/>
+		<tamedox:commandexample script="scripts/examples/command-asstring"/>
+		<tamedox:commandtech src="included/commands/docs-asstring-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRLENGTH -->
+	<tamedox:command name="STRLENGTH" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strlength.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strlength"/>
+		<tamedox:commandtech src="included/commands/docs-strlength-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRCONCAT -->
+	<tamedox:command name="STRCONCAT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strconcat.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strconcat"/>
+		<tamedox:commandtech src="included/commands/docs-strconcat-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRREPLACE -->
+	<tamedox:command name="STRREPLACE" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strreplace.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strreplace"/>
+		<tamedox:commandtech src="included/commands/docs-strreplace-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRREPLACEPATTERN -->
+	<tamedox:command name="STRREPLACEPATTERN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strreplacepattern.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strreplacepattern"/>
+		<tamedox:commandtech src="included/commands/docs-strreplacepattern-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRREPLACEPATTERNALL -->
+	<tamedox:command name="STRREPLACEPATTERNALL" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strreplacepatternall.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strreplacepatternall"/>
+		<tamedox:commandtech src="included/commands/docs-strreplacepatternall-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRINDEX -->
+	<tamedox:command name="STRINDEX" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strindex.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strindex"/>
+		<tamedox:commandtech src="included/commands/docs-strindex-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRLASTINDEX -->
+	<tamedox:command name="STRLASTINDEX" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strlastindex.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strlastindex"/>
+		<tamedox:commandtech src="included/commands/docs-strlastindex-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRCONTAINS -->
+	<tamedox:command name="STRCONTAINS" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strcontains.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strcontains"/>
+		<tamedox:commandtech src="included/commands/docs-strcontains-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRCONTAINSPATTERN -->
+	<tamedox:command name="STRCONTAINSPATTERN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strcontainspattern.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strcontainspattern"/>
+		<tamedox:commandtech src="included/commands/docs-strcontainspattern-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRCONTAINSTOKEN -->
+	<tamedox:command name="STRCONTAINSTOKEN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strcontainstoken.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strcontainstoken"/>
+		<tamedox:commandtech src="included/commands/docs-strcontainstoken-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRSTARTSWITH -->
+	<tamedox:command name="STRSTARTSWITH" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strstartswith.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strstartswith"/>
+		<tamedox:commandtech src="included/commands/docs-strstartswith-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRENDSWITH -->
+	<tamedox:command name="STRENDSWITH" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strendswith.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strendswith"/>
+		<tamedox:commandtech src="included/commands/docs-strendswith-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: SUBSTRING -->
+	<tamedox:command name="SUBSTRING" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-substring.html"/>
+		<tamedox:commandexample script="scripts/examples/command-substring"/>
+		<tamedox:commandtech src="included/commands/docs-substring-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRLOWER -->
+	<tamedox:command name="STRLOWER" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strlower.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strlower"/>
+		<tamedox:commandtech src="included/commands/docs-strlower-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRUPPER -->
+	<tamedox:command name="STRUPPER" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strupper.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strupper"/>
+		<tamedox:commandtech src="included/commands/docs-strupper-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRCHAR -->
+	<tamedox:command name="STRCHAR" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strchar.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strchar"/>
+		<tamedox:commandtech src="included/commands/docs-strchar-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: STRTRIM -->
+	<tamedox:command name="STRTRIM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-strtrim.html"/>
+		<tamedox:commandexample script="scripts/examples/command-strtrim"/>
+		<tamedox:commandtech src="included/commands/docs-strtrim-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: FLOOR -->
+	<tamedox:command name="FLOOR" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-floor.html"/>
+		<tamedox:commandexample script="scripts/examples/command-floor"/>
+		<tamedox:commandtech src="included/commands/docs-floor-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: CEILING -->
+	<tamedox:command name="CEILING" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-ceiling.html"/>
+		<tamedox:commandexample script="scripts/examples/command-ceiling"/>
+		<tamedox:commandtech src="included/commands/docs-ceiling-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ROUND -->
+	<tamedox:command name="ROUND" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-round.html"/>
+		<tamedox:commandexample script="scripts/examples/command-round"/>
+		<tamedox:commandtech src="included/commands/docs-round-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: FIX -->
+	<tamedox:command name="FIX" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-fix.html"/>
+		<tamedox:commandexample script="scripts/examples/command-fix"/>
+		<tamedox:commandtech src="included/commands/docs-fix-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: SQRT -->
+	<tamedox:command name="SQRT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-sqrt.html"/>
+		<tamedox:commandexample script="scripts/examples/command-sqrt"/>
+		<tamedox:commandtech src="included/commands/docs-sqrt-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: PI -->
+	<tamedox:command name="PI" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-pi.html"/>
+		<tamedox:commandexample script="scripts/examples/command-pi"/>
+		<tamedox:commandtech src="included/commands/docs-pi-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: E -->
+	<tamedox:command name="E" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-e.html"/>
+		<tamedox:commandexample script="scripts/examples/command-e"/>
+		<tamedox:commandtech src="included/commands/docs-e-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: SIN -->
+	<tamedox:command name="SIN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-sin.html"/>
+		<tamedox:commandexample script="scripts/examples/command-sin"/>
+		<tamedox:commandtech src="included/commands/docs-sin-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: COS -->
+	<tamedox:command name="COS" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-cos.html"/>
+		<tamedox:commandexample script="scripts/examples/command-cos"/>
+		<tamedox:commandtech src="included/commands/docs-cos-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: TAN -->
+	<tamedox:command name="TAN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-tan.html"/>
+		<tamedox:commandexample script="scripts/examples/command-tan"/>
+		<tamedox:commandtech src="included/commands/docs-tan-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: MIN -->
+	<tamedox:command name="MIN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-min.html"/>
+		<tamedox:commandexample script="scripts/examples/command-min"/>
+		<tamedox:commandtech src="included/commands/docs-min-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: MAX -->
+	<tamedox:command name="MAX" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-max.html"/>
+		<tamedox:commandexample script="scripts/examples/command-max"/>
+		<tamedox:commandtech src="included/commands/docs-max-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: CLAMP -->
+	<tamedox:command name="CLAMP" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-clamp.html"/>
+		<tamedox:commandexample script="scripts/examples/command-clamp"/>
+		<tamedox:commandtech src="included/commands/docs-clamp-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: RANDOM -->
+	<tamedox:command name="RANDOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-random.html"/>
+		<tamedox:commandexample script="scripts/examples/command-random"/>
+		<tamedox:commandtech src="included/commands/docs-random-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: FRANDOM -->
+	<tamedox:command name="FRANDOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-frandom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-frandom"/>
+		<tamedox:commandtech src="included/commands/docs-frandom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: GRANDOM -->
+	<tamedox:command name="GRANDOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-grandom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-grandom"/>
+		<tamedox:commandtech src="included/commands/docs-grandom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: TIME -->
+	<tamedox:command name="TIME" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-time.html"/>
+		<tamedox:commandexample script="scripts/examples/command-time"/>
+		<tamedox:commandtech src="included/commands/docs-time-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: SECONDS -->
+	<tamedox:command name="SECONDS" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-seconds.html"/>
+		<tamedox:commandexample script="scripts/examples/command-seconds"/>
+		<tamedox:commandtech src="included/commands/docs-seconds-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: MINUTES -->
+	<tamedox:command name="MINUTES" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-minutes.html"/>
+		<tamedox:commandexample script="scripts/examples/command-minutes"/>
+		<tamedox:commandtech src="included/commands/docs-minutes-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: HOURS -->
+	<tamedox:command name="HOURS" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-hours.html"/>
+		<tamedox:commandexample script="scripts/examples/command-hours"/>
+		<tamedox:commandtech src="included/commands/docs-hours-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: DAYS -->
+	<tamedox:command name="DAYS" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-days.html"/>
+		<tamedox:commandexample script="scripts/examples/command-days"/>
+		<tamedox:commandtech src="included/commands/docs-days-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: FORMATTIME -->
+	<tamedox:command name="FORMATTIME" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-formattime.html"/>
+		<tamedox:commandexample script="scripts/examples/command-formattime"/>
+		<tamedox:commandtech src="included/commands/docs-formattime-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: OBJECTHASNAME -->
+	<tamedox:command name="OBJECTHASNAME" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-objecthasname.html"/>
+		<tamedox:commandexample script="scripts/examples/command-objecthasname"/>
+		<tamedox:commandtech src="included/commands/docs-objecthasname-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: OBJECTHASTAG -->
+	<tamedox:command name="OBJECTHASTAG" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-objecthastag.html"/>
+		<tamedox:commandexample script="scripts/examples/command-objecthastag"/>
+		<tamedox:commandtech src="included/commands/docs-objecthastag-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ADDOBJECTNAME -->
+	<tamedox:command name="ADDOBJECTNAME" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-addobjectname.html"/>
+		<tamedox:commandexample script="scripts/examples/command-addobjectname"/>
+		<tamedox:commandtech src="included/commands/docs-addobjectname-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ADDOBJECTTAG -->
+	<tamedox:command name="ADDOBJECTTAG" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-addobjecttag.html"/>
+		<tamedox:commandexample script="scripts/examples/command-addobjecttag"/>
+		<tamedox:commandtech src="included/commands/docs-addobjecttag-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: ADDOBJECTTAGTOALLIN -->
+	<tamedox:command name="ADDOBJECTTAGTOALLIN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-addobjecttagtoallin.html"/>
+		<tamedox:commandexample script="scripts/examples/command-addobjecttagtoallin"/>
+		<tamedox:commandtech src="included/commands/docs-addobjecttagtoallin-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: REMOVEOBJECTNAME -->
+	<tamedox:command name="REMOVEOBJECTNAME" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-removeobjectname.html"/>
+		<tamedox:commandexample script="scripts/examples/command-removeobjectname"/>
+		<tamedox:commandtech src="included/commands/docs-removeobjectname-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: REMOVEOBJECTTAG -->
+	<tamedox:command name="REMOVEOBJECTTAG" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-removeobjecttag.html"/>
+		<tamedox:commandexample script="scripts/examples/command-removeobjecttag"/>
+		<tamedox:commandtech src="included/commands/docs-removeobjecttag-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: REMOVEOBJECTTAGFROMALLIN -->
+	<tamedox:command name="REMOVEOBJECTTAGFROMALLIN" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-removeobjecttagfromallin.html"/>
+		<tamedox:commandexample script="scripts/examples/command-removeobjecttagfromallin"/>
+		<tamedox:commandtech src="included/commands/docs-removeobjecttagfromallin-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: GIVEOBJECT -->
+	<tamedox:command name="GIVEOBJECT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-giveobject.html"/>
+		<tamedox:commandexample script="scripts/examples/command-giveobject"/>
+		<tamedox:commandtech src="included/commands/docs-giveobject-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: REMOVEOBJECT -->
+	<tamedox:command name="REMOVEOBJECT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-removeobject.html"/>
+		<tamedox:commandexample script="scripts/examples/command-removeobject"/>
+		<tamedox:commandtech src="included/commands/docs-removeobject-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: MOVEOBJECTSWITHTAG -->
+	<tamedox:command name="MOVEOBJECTSWITHTAG" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-moveobjectswithtag.html"/>
+		<tamedox:commandexample script="scripts/examples/command-moveobjectswithtag"/>
+		<tamedox:commandtech src="included/commands/docs-moveobjectswithtag-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: OBJECTCOUNT -->
+	<tamedox:command name="OBJECTCOUNT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-objectcount.html"/>
+		<tamedox:commandexample script="scripts/examples/command-objectcount"/>
+		<tamedox:commandtech src="included/commands/docs-objectcount-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: HASOBJECT -->
+	<tamedox:command name="HASOBJECT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-hasobject.html"/>
+		<tamedox:commandexample script="scripts/examples/command-hasobject"/>
+		<tamedox:commandtech src="included/commands/docs-hasobject-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: OBJECTHASNOOWNER -->
+	<tamedox:command name="OBJECTHASNOOWNER" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-objecthasnoowner.html"/>
+		<tamedox:commandexample script="scripts/examples/command-objecthasnoowner"/>
+		<tamedox:commandtech src="included/commands/docs-objecthasnoowner-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: PLAYERISINROOM -->
+	<tamedox:command name="PLAYERISINROOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="PLAYER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="ROOM"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-playerisinroom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-playerisinroom"/>
+		<tamedox:commandtech src="included/commands/docs-playerisinroom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: PLAYERCANACCESSOBJECT -->
+	<tamedox:command name="PLAYERCANACCESSOBJECT" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="PLAYER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="OBJECT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-playercanaccessobject.html"/>
+		<tamedox:commandexample script="scripts/examples/command-playercanaccessobject"/>
+		<tamedox:commandtech src="included/commands/docs-playercanaccessobject-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: BROWSE -->
+	<tamedox:command name="BROWSE" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-browse.html"/>
+		<tamedox:commandexample script="scripts/examples/command-browse"/>
+		<tamedox:commandtech src="included/commands/docs-browse-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: BROWSETAGGED -->
+	<tamedox:command name="BROWSETAGGED" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="OBJECT_CONTAINER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="VALUE"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-browsetagged.html"/>
+		<tamedox:commandexample script="scripts/examples/command-browsetagged"/>
+		<tamedox:commandtech src="included/commands/docs-browsetagged-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: SETPLAYER -->
+	<tamedox:command name="SETPLAYER" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="PLAYER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-setplayer.html"/>
+		<tamedox:commandexample script="scripts/examples/command-setplayer"/>
+		<tamedox:commandtech src="included/commands/docs-setplayer-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: SETROOM -->
+	<tamedox:command name="SETROOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="PLAYER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="ROOM"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-setroom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-setroom"/>
+		<tamedox:commandtech src="included/commands/docs-setroom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: PUSHROOM -->
+	<tamedox:command name="PUSHROOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="PLAYER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="ROOM"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-pushroom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-pushroom"/>
+		<tamedox:commandtech src="included/commands/docs-pushroom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: POPROOM -->
+	<tamedox:command name="POPROOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="PLAYER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-poproom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-poproom"/>
+		<tamedox:commandtech src="included/commands/docs-poproom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: SWAPROOM -->
+	<tamedox:command name="SWAPROOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="PLAYER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+			<tamedox:commandarg type="ROOM"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commanddocs src="included/commands/docs-swaproom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-swaproom"/>
+		<tamedox:commandtech src="included/commands/docs-swaproom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: CURRENTPLAYERIS -->
+	<tamedox:command name="CURRENTPLAYERIS" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="PLAYER"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-currentplayeris.html"/>
+		<tamedox:commandexample script="scripts/examples/command-currentplayeris"/>
+		<tamedox:commandtech src="included/commands/docs-currentplayeris-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: NOCURRENTPLAYER -->
+	<tamedox:command name="NOCURRENTPLAYER" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-nocurrentplayer.html"/>
+		<tamedox:commandexample script="scripts/examples/command-nocurrentplayer"/>
+		<tamedox:commandtech src="included/commands/docs-nocurrentplayer-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: CURRENTROOMIS -->
+	<tamedox:command name="CURRENTROOMIS" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ROOM"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-currentroomis.html"/>
+		<tamedox:commandexample script="scripts/examples/command-currentroomis"/>
+		<tamedox:commandtech src="included/commands/docs-currentroomis-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: NOCURRENTROOM -->
+	<tamedox:command name="NOCURRENTROOM" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-nocurrentroom.html"/>
+		<tamedox:commandexample script="scripts/examples/command-nocurrentroom"/>
+		<tamedox:commandtech src="included/commands/docs-nocurrentroom-tech.html"/>
+	</tamedox:command>
+
+	<!-- Command: IDENTITY -->
+	<tamedox:command name="IDENTITY" group="UNNAMED" sort="0">
+		<tamedox:commandargs>
+			<tamedox:commandarg type="ELEMENT"><!-- PURPOSE GOES HERE --></tamedox:commandarg>
+		</tamedox:commandargs>
+		<tamedox:commandreturntypes>
+			<!--ADD SHIT HERE -->
+		</tamedox:commandreturntypes>
+		<tamedox:commanddocs src="included/commands/docs-identity.html"/>
+		<tamedox:commandexample script="scripts/examples/command-identity"/>
+		<tamedox:commandtech src="included/commands/docs-identity-tech.html"/>
+	</tamedox:command>
+
+</tamedox:commands>
