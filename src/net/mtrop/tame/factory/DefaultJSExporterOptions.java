@@ -28,4 +28,10 @@ public class DefaultJSExporterOptions implements TAMEJSExporterOptions
 		return false;
 	}
 
+	@Override
+	public String getModuleVariableName()
+	{
+		return null;
+	}
+
 }

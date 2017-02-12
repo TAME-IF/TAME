@@ -11,7 +11,7 @@
 //##[[EXPORTJS-START
 
 //##[[EXPORTJS-GENERATE jsmoduleheader
-var ModuleData = 
+//##[[EXPORTJS-GENERATE jsmodulevarname
 {
 	"header":
 		//##[[EXPORTJS-GENERATE header

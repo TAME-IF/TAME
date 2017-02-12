@@ -16,6 +16,12 @@ package net.mtrop.tame.factory;
 public interface TAMEJSExporterOptions 
 {
 	/**
+	 * Gets the JS variable to use if exporting to just module data.
+	 * @return the variable name, or null for default.
+	 */
+	public String getModuleVariableName();
+
+	/**
 	 * Gets the JS Wrapper name to use.
 	 * @return the wrapper name, or null for no wrapper.
 	 */

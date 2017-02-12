@@ -48,6 +48,20 @@ import net.mtrop.tame.lang.Value;
  */
 public final class TAMEJSExporter 
 {
+	/** Wrapper Type: Engine Only for Node. */
+	public static final String WRAPPER_NODEENGINE = "nodeengine";
+	/** Wrapper Type: Engine Only for Browsers. */
+	public static final String WRAPPER_ENGINE = "engine";
+	/** Wrapper Type: Module Only. */
+	public static final String WRAPPER_MODULE = "module";
+	/** Wrapper Type: NodeJS, Embedded Module. */
+	public static final String WRAPPER_NODE = "node";
+	/** Wrapper Type: Browser JS, Embedded Module (default if no wrapper specified). */
+	public static final String WRAPPER_BROWSER = "browser";
+
+	/** JS Module Default Variable Name */
+	private static final String DEFAULT_MODULE_VARNAME = "ModuleData";
+	
 	/** Root resource for JS */
 	private static final String JS_ROOT_RESOURCE = "tamejs/";
 	
@@ -66,6 +80,8 @@ public final class TAMEJSExporter
 	private static final String GENERATE_JSHEADER = "jsheader";
 	/** Generate JS module header. */
 	private static final String GENERATE_JSMODULEHEADER = "jsmoduleheader";
+	/** Generate JS module variable declaration. */
+	private static final String GENERATE_JSMODULEVARNAME = "jsmodulevarname";
 	/** Generate version. */
 	private static final String GENERATE_VERSION = "version";
 	/** Generate header. */
@@ -187,14 +203,16 @@ public final class TAMEJSExporter
 	 */
 	public static void export(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
-		if ("node".equalsIgnoreCase(options.getWrapperName()))
+		if (WRAPPER_NODE.equalsIgnoreCase(options.getWrapperName()))
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeJS.js");
-		else if ("module".equalsIgnoreCase(options.getWrapperName()))
+		else if (WRAPPER_MODULE.equalsIgnoreCase(options.getWrapperName()))
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "Module.js");
-		else if ("engine".equalsIgnoreCase(options.getWrapperName()))
+		else if (WRAPPER_ENGINE.equalsIgnoreCase(options.getWrapperName()))
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "Engine.js");
-		else if ("nodeengine".equalsIgnoreCase(options.getWrapperName()))
+		else if (WRAPPER_NODEENGINE.equalsIgnoreCase(options.getWrapperName()))
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeEngine.js");
+		else if (WRAPPER_BROWSER.equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js");
 		else
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js");
 	}
@@ -236,7 +254,7 @@ public final class TAMEJSExporter
 				
 				if (trimline.startsWith(JS_DIRECTIVE_GENERATE))
 				{
-					generateResource(writer, module, trimline.substring(JS_DIRECTIVE_GENERATE.length() + 1).trim());
+					generateResource(writer, module, options, trimline.substring(JS_DIRECTIVE_GENERATE.length() + 1).trim());
 				}
 				else if (trimline.startsWith(JS_DIRECTIVE_INCLUDE))
 				{
@@ -343,7 +361,7 @@ public final class TAMEJSExporter
 	 * @param module the source module.
 	 * @param typeList the list of types (comma/space separated).
 	 */
-	private static void generateResource(Writer writer, TAMEModule module, String typeList) throws IOException
+	private static void generateResource(Writer writer, TAMEModule module, TAMEJSExporterOptions options, String typeList) throws IOException
 	{
 		String[] parts = typeList.split("\\,\\s+");
 		for (int i = 0; i < parts.length; i++)
@@ -353,6 +371,8 @@ public final class TAMEJSExporter
 				generateResourceJSHeader(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_JSMODULEHEADER))
 				generateResourceJSModuleHeader(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_JSMODULEVARNAME))
+				generateResourceJSModuleVariableName(writer, module, options);
 			else if (type.equalsIgnoreCase(GENERATE_VERSION))
 				generateResourceVersion(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_HEADER))
@@ -426,6 +446,24 @@ public final class TAMEJSExporter
 			writer.append(" * "+Character.toUpperCase(entry.charAt(0))+entry.substring(1)+": "+header.getAttribute(entry)+"\n");
 		}
 		writer.append(" *************************************************************************/\n");
+	}
+	
+	/**
+	 * Generates the JS module comment header.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 * @param options exporter options.
+	 */
+	private static void generateResourceJSModuleVariableName(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
+	{
+		if (module == null)
+			return;
+
+		String varname = options.getModuleVariableName();
+		
+		writer.append("var ");
+		writer.append(varname != null ? varname : DEFAULT_MODULE_VARNAME);
+		writer.append(" = \n");
 	}
 	
 	/**

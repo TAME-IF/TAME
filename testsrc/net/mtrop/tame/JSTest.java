@@ -25,17 +25,25 @@ public final class JSTest
 	{
 		String inProperty = System.getProperty("jstest.infile.path");
 		String outProperty = System.getProperty("jstest.outfile.path");
-		String out = TAMEJSExporter.exportToString(TAMEScriptReader.read(new File(inProperty)), new TAMEJSExporterOptions() {
-			
+		String out = TAMEJSExporter.exportToString(TAMEScriptReader.read(new File(inProperty)), new TAMEJSExporterOptions()
+		{
 			@Override
-			public boolean isPathOutputEnabled() {
+			public boolean isPathOutputEnabled() 
+			{
 				return true;
 			}
 			
 			@Override
-			public String getWrapperName() {
+			public String getWrapperName() 
+			{
 				return "node";
 				//return null;
+			}
+
+			@Override
+			public String getModuleVariableName()
+			{
+				return null;
 			}
 		});
 		

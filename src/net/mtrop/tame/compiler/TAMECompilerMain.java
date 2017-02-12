@@ -394,6 +394,12 @@ public final class TAMECompilerMain
 		{
 			return pathOutputEnabled;
 		}
+
+		@Override
+		public String getModuleVariableName()
+		{
+			return null;
+		}
 		
 	}
 	
