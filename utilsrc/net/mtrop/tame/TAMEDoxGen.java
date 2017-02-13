@@ -52,9 +52,9 @@ public final class TAMEDoxGen
 
 	/** Parse command: include (file) */
 	static final String COMMAND_INCLUDE = "include";
-	/** Parse command: template (file:header) (file:body) (file:footer) */
-	static final String COMMAND_TEMPLATE = "template";
-	/** Parse command: tamescript (name) (file) */
+	/** Parse command: sidebar */
+	static final String COMMAND_SIDEBAR = "sidebar";
+	/** Parse command: tamescript (name) (modulevarname) (file) */
 	static final String COMMAND_TAMESCRIPT = "tamescript";
 
 	
@@ -219,6 +219,10 @@ public final class TAMEDoxGen
 			parsePageResource(outPath, parentPath + relativePath, writer);
 			return true;
 		}
+		else if (command.equalsIgnoreCase(COMMAND_SIDEBAR))
+		{
+			
+		}
 		else if (command.equalsIgnoreCase(COMMAND_TAMESCRIPT))
 		{
 			String headingName = tokenizer.nextToken();
@@ -319,20 +323,32 @@ public final class TAMEDoxGen
 	 */
 	private static class IndexXMLParser extends DefaultHandler
 	{
+		private boolean pageMode; 
 		private Queue<Page> pageList;
 		private Queue<CommandPage> commandPageList;
 		
 		@Override
 		public void startDocument() throws SAXException 
 		{
-			pageList = new Queue<>();
 			commandPageList = new Queue<>();
 		}
 		
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException 
 		{
-			super.startElement(uri, localName, qName, attributes);
+			if (qName.equals("tamedox:pages"))
+				pageList = new Queue<>();
+			else if (qName.equals("tamedox:commands"))
+				commandPageList = new Queue<>();
+			else if (qName.equals("tamedox:section"))
+			{
+				// TODO: Finish.
+			}
+			else if (qName.equals("tamedox:part"))
+			{
+				// TODO: Finish.
+			}
+			
 		}
 		
 		@Override
