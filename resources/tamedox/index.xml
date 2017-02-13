@@ -2,6 +2,8 @@
 
 <!-- TAME:Pages -->
 <tamedox:pages>
+	<tamedox:section title="Table of Contents" src="included/index.html" dest="index.html">
+	</tamedox:section>
 	<tamedox:section title="1. What is TAME?" src="included/intro.html" dest="intro.html">
 		<tamedox:part title="1.1. What is TAMEScript?" name="tamescript" />
 		<tamedox:part title="1.2. What is a &quot;Virtual Machine?&quot;" name="virtualmachine" />
@@ -16,11 +18,6 @@
 		<tamedox:part title="2.4. Containers" name="containers" />
 		<tamedox:part title="2.5. Objects" name="objects" />
 		<tamedox:part title="2.6. Actions" name="actions" />
-		<tamedox:part title="2.6.1. General Actions" name="actions-general" />
-		<tamedox:part title="2.6.2. Modal Actions" name="actions-modal" />
-		<tamedox:part title="2.6.3. Open Actions" name="actions-open" />
-		<tamedox:part title="2.6.4. Transitive Actions" name="actions-transitive" />
-		<tamedox:part title="2.6.5. Ditransitive Actions" name="actions-ditransitive" />
 	</tamedox:section>
 	<tamedox:section title="3. The Interpreter" src="included/interpreter.html" dest="interpreter.html">
 		<tamedox:part title="3.1. How TAME Parses Input" name="parsing" />
@@ -42,7 +39,7 @@
 	</tamedox:section>
 	<tamedox:section title="B. TAMEScript Element Block Types" src="included/language-elements.html" dest="language-reference.html">
 	</tamedox:section>
-	<tamedox:section title="C. TAMEScript Commands" src="included/language-commands.html" dest="language-commands.html">
+	<tamedox:section title="C. TAMEScript Commands" src="included/language-commands.html" dest="language-commands.html" commandSection="true">
 	</tamedox:section>
 	<tamedox:section title="D. TAME Execution Diagrams" src="included/diagrams.html" dest="diagrams.html">
 		<tamedox:part title="D.1. General Actions" name="general" />

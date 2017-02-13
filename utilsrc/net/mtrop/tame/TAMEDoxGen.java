@@ -303,9 +303,15 @@ public final class TAMEDoxGen
 	}
 
 	/** Each individual command (to turn into pages). */
-	private static class CommandPage
+	private static class CommandPage implements Comparable<CommandPage>
 	{
-		// TODO: Finish.
+
+		@Override
+		public int compareTo(CommandPage cp)
+		{
+			// TODO: Finish.
+			return 0;
+		}
 	}
 
 	/**
