@@ -64,6 +64,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			// Do nothing.
 		}
 		
+		@Override
+		public String getGrouping() 
+		{
+			return "Miscellaneous";
+		}
+		
 	},
 	
 	/**
@@ -76,6 +82,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command)
 		{
 			request.popValue();
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
 		}
 		
 	},
@@ -106,6 +118,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.peekContext().setValue(variableName, value);
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	},
 	
 	/**
@@ -128,6 +146,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			String variableName = varvalue.asString();
 			blockLocal.put(variableName, value);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
 		}
 		
 	},
@@ -157,6 +181,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String variableName = variable.asString();
 			TElementContext<?> context = resolveElementContext(request.getModuleContext(), varElement); 
 			context.setValue(variableName, value);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
 		}
 		
 	},
@@ -189,6 +219,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	},
 	
 	/**
@@ -216,6 +252,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(context.getValue(variableName));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	},
 	
 	/**
@@ -238,6 +280,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				blockLocal.removeUsingKey(variableName);
 			else
 				request.peekContext().clearValue(variableName);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
 		}
 		
 	},
@@ -272,6 +320,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	},
 	
 	/**
@@ -293,6 +347,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMELogic.doArithmeticStackFunction(request, response, (int)functionValue.asLong());
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	},
 	
 	/**
@@ -346,6 +406,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	},
 	
 	/**
@@ -393,6 +459,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			boolean out = value.asBoolean();
 			response.trace(request, "Result %s evaluates %b.", value, out);
 			return out; 
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
 		}
 		
 	}, 
@@ -458,6 +530,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			return out; 
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	}, 
 	
 	/**
@@ -473,6 +551,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			throw new BreakInterrupt();
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	},
 	
 	/**
@@ -486,6 +570,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		{
 			response.trace(request, "Throwing continue interrupt...");
 			throw new ContinueInterrupt();
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
 		}
 		
 	},
@@ -504,6 +594,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			throw new QuitInterrupt();
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
 	},
 	
 	/**
@@ -517,6 +613,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		{
 			response.trace(request, "Throwing end interrupt...");
 			throw new EndInterrupt();
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
 		}
 		
 	},
@@ -546,6 +648,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				TAMELogic.callBlock(request, response, elementContext, block);
 			else
 				response.addCue(CUE_ERROR, "No such procedure ("+procedureName.asString()+") in lineage of element " + element);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
 		}
 		
 	},
@@ -580,6 +688,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				response.addCue(CUE_ERROR, "No such procedure ("+varProcedureName.asString()+") in lineage of element " + element);
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
 	},
 
 	/**
@@ -605,6 +719,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.addActionItem(TAMEAction.create(action));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
 	},
 
 	/**
@@ -635,6 +755,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.addActionItem(TAMEAction.create(action, target));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
 	},
 	
 	/**
@@ -666,6 +792,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.addActionItem(TAMEAction.create(action, object));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
 	},
 	
 	/**
@@ -702,6 +834,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.addActionItem(TAMEAction.create(action, object));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
 	},
 	
 	/**
@@ -744,6 +882,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.addActionItem(TAMEAction.create(action, object));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
 	},
 	
 	/**
@@ -780,6 +924,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.addActionItem(TAMEAction.create(action, object, object2));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
 	},
 
 	/**
@@ -804,6 +954,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			response.addCue(cue.asString(), value.asString());
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
+		}
+		
 	}, 
 	
 	/**
@@ -822,6 +978,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in TEXT call.");
 
 			response.addCue(CUE_TEXT, value.asString());
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
 		}
 		
 	},
@@ -844,6 +1006,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			response.addCue(CUE_TEXT, value.asString() + '\n');
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
+		}
+		
 	},
 	
 	/**
@@ -862,6 +1030,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in TEXTF call.");
 
 			response.addCue(CUE_TEXTF, value.asString());
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
 		}
 		
 	},
@@ -884,6 +1058,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			response.addCue(CUE_TEXTF, value.asString() + '\n');
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
+		}
+		
 	},
 	
 	/**
@@ -897,6 +1077,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			response.addCue(CUE_PAUSE);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
 		}
 		
 	},
@@ -919,6 +1105,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			response.addCue(CUE_WAIT, value.asLong());
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
+		}
+		
 	},
 	
 	/**
@@ -937,6 +1129,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in TIP call.");
 
 			response.addCue(CUE_TIP, value.asString());
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
 		}
 		
 	},
@@ -959,6 +1157,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			response.addCue(CUE_INFO, value.asString());
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Cues";
+		}
+		
 	},
 	
 	/**
@@ -977,6 +1181,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in ASBOOLEAN call.");
 
 			request.pushValue(Value.create(value.asBoolean()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Values";
 		}
 		
 	},
@@ -999,6 +1209,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(value.asLong()));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Values";
+		}
+		
 	},
 	
 	/**
@@ -1017,6 +1233,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in ASFLOAT call.");
 
 			request.pushValue(Value.create(value.asDouble()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Values";
 		}
 		
 	},
@@ -1039,6 +1261,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(value.asString()));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Values";
+		}
+		
 	},
 	
 	/**
@@ -1057,6 +1285,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in STRLENGTH call.");
 
 			request.pushValue(Value.create(value.asString().length()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1081,6 +1315,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in STRCONCAT call.");
 
 			request.pushValue(Value.create(value1.asString() + value2.asString()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1115,6 +1355,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(source.replace(pattern, replacement)));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
 	},
 	
 	/**
@@ -1145,6 +1391,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String source = value1.asString();
 
 			request.pushValue(Value.create(source.replaceFirst(pattern, replacement)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1179,6 +1431,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(source.replaceAll(pattern, replacement)));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
 	},
 
 	/**
@@ -1204,6 +1462,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String str = value1.asString();
 			
 			request.pushValue(Value.create(str.indexOf(sequence)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1233,6 +1497,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(str.lastIndexOf(sequence)));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
 	},
 	
 	/**
@@ -1258,6 +1528,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String str = value1.asString();
 			
 			request.pushValue(Value.create(str.contains(sequence)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1292,6 +1568,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			}
 			
 			request.pushValue(Value.create(p.matcher(str).find()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1329,6 +1611,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(false));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
 	},
 	
 	/**
@@ -1356,6 +1644,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(str.startsWith(sequence)));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
 	},
 	
 	/**
@@ -1381,6 +1675,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String str = value1.asString();
 			
 			request.pushValue(Value.create(str.endsWith(sequence)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1415,6 +1715,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(source.substring(startIndex, endIndex)));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
 	},
 	
 	/**
@@ -1435,6 +1741,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(value.asString().toLowerCase()));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
 	},
 	
 	/**
@@ -1453,6 +1765,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in STRUPPER call.");
 
 			request.pushValue(Value.create(value.asString().toUpperCase()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1485,6 +1803,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.pushValue(Value.create(String.valueOf(str.charAt(index))));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
 	},
 	
 	/**
@@ -1503,6 +1827,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in STRTRIM call.");
 
 			request.pushValue(Value.create(value.asString().trim()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
 		}
 		
 	},
@@ -1525,6 +1855,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(Math.floor(value.asDouble())));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1545,6 +1881,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(Math.ceil(value.asDouble())));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1563,6 +1905,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in ROUND call.");
 
 			request.pushValue(Value.create((double)Math.round(value.asDouble())));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
 		}
 		
 	},
@@ -1592,6 +1940,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(Math.round(d * t) / t));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1612,6 +1966,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(Math.sqrt(number.asDouble())));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1627,6 +1987,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(Math.PI));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1640,6 +2006,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(Math.E));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
 		}
 		
 	},
@@ -1662,6 +2034,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(Math.sin(number.asDouble())));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1682,6 +2060,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(Math.cos(number.asDouble())));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1700,6 +2084,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in TAN call.");
 
 			request.pushValue(Value.create(Math.tan(number.asDouble())));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
 		}
 		
 	},
@@ -1726,6 +2116,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(first.compareTo(second) <= 0 ? first : second));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1748,6 +2144,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in MAX call.");
 
 			request.pushValue(Value.create(first.compareTo(second) > 0 ? first : second));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
 		}
 		
 	},
@@ -1780,6 +2182,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			double end = valueEnd.asDouble();
 			
 			request.pushValue(Value.create(RMath.clampValue(value, start, end)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
 		}
 		
 	},
@@ -1821,6 +2229,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1835,6 +2249,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		{
 			Random random = request.getModuleContext().getRandom();
 			request.pushValue(Value.create(random.nextDouble()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
 		}
 		
 	},
@@ -1853,6 +2273,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(random.nextGaussian()));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Mathematics";
+		}
+		
 	},
 	
 	/**
@@ -1866,6 +2292,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(System.currentTimeMillis()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Time";
 		}
 		
 	},
@@ -1896,6 +2328,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create((second - first) / 1000L));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Time";
+		}
+		
 	},
 	
 	/**
@@ -1922,6 +2360,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			long second = valueSecond.asLong();
 			
 			request.pushValue(Value.create((second - first) / (1000L * 60L)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Time";
 		}
 		
 	},
@@ -1952,6 +2396,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create((second - first) / (1000L * 60L * 60L)));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Time";
+		}
+		
 	},
 	
 	/**
@@ -1978,6 +2428,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			long second = valueSecond.asLong();
 			
 			request.pushValue(Value.create((second - first) / (1000L * 60L * 60L * 24L)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Time";
 		}
 		
 	},
@@ -2008,6 +2464,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create((new SimpleDateFormat(format)).format(new Date(date))));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Time";
+		}
+		
 	},
 	
 	/**
@@ -2032,6 +2494,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkObjectHasName(object, nameValue.asString())));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	},
@@ -2060,6 +2528,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkObjectHasTag(object, tagValue.asString())));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2086,6 +2560,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			moduleContext.getOwnershipMap().addObjectName(object, nameValue.asString());
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2110,6 +2590,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			moduleContext.getOwnershipMap().addObjectTag(object, tagValue.asString());
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	},
@@ -2145,6 +2631,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2171,6 +2663,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			moduleContext.getOwnershipMap().removeObjectName(object, nameValue.asString());
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2195,6 +2693,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			moduleContext.getOwnershipMap().removeObjectTag(object, tagValue.asString());
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	},
@@ -2230,6 +2734,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2258,6 +2768,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			moduleContext.getOwnershipMap().addObjectToElement(object, element);
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2278,6 +2794,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			request.getModuleContext().getOwnershipMap().removeObject(object);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	},
@@ -2319,6 +2841,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				ownershipMap.addObjectToElement(object, element);
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2339,6 +2867,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			ObjectContainer element = (ObjectContainer)resolveElement(moduleContext, varObjectContainer);
 			request.pushValue(Value.create(moduleContext.getOwnershipMap().getObjectsOwnedByElementCount(element)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	},
@@ -2368,6 +2902,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkElementHasObject(element, object)));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2388,6 +2928,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkObjectHasNoOwner(object)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	}, 
@@ -2415,6 +2961,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
 			TRoom room = moduleContext.resolveRoom(varRoom.asString());
 			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkPlayerIsInRoom(player, room)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	},
@@ -2446,6 +2998,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(TAMELogic.checkObjectAccessibility(request, response, player, object)));
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2466,6 +3024,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			ObjectContainer element = (ObjectContainer)resolveElement(moduleContext, varObjectContainer);
 			TAMELogic.doBrowse(request, response, element);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	},
@@ -2495,6 +3059,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMELogic.doBrowse(request, response, element, tagName);
 		}
 		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2514,6 +3084,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			TPlayer nextPlayer = request.getModuleContext().resolvePlayer(varPlayer.asString());
 			TAMELogic.doPlayerSwitch(request, response, nextPlayer);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
 		}
 		
 	},
@@ -2543,6 +3119,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMELogic.doRoomSwitch(request, response, player, nextRoom);
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 
 	/**
@@ -2572,6 +3154,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMELogic.doRoomPush(request, response, player, nextRoom);
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 
 	/**
@@ -2601,6 +3189,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMELogic.doRoomPop(request, response, player);
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 
 	/**
@@ -2639,6 +3233,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMELogic.doRoomPush(request, response, player, nextRoom);
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 
 	/**
@@ -2663,6 +3263,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(currentPlayer != null && player.equals(currentPlayer)));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 
 	/**
@@ -2680,6 +3286,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(player == null));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 
 	/**
@@ -2704,6 +3316,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(currentRoom != null && room.equals(currentRoom)));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 
 	/**
@@ -2721,6 +3339,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(Value.create(room == null));
 		}
 
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
 	},
 	
 	/**
@@ -2741,6 +3365,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TElement element = resolveElement(moduleContext, varElement);
 			request.pushValue(Value.create(element.getIdentity()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Miscellaneous";
 		}
 		
 	}
@@ -2819,6 +3449,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	{
 		throw new RuntimeException("UNIMPLEMENTED COMMAND");
 	}
+	
+	/**
+	 * Gets the grouping name for this command (for documentation sorting).
+	 * @return the grouping name.
+	 */
+	public abstract String getGrouping();
 	
 	/**
 	 * Increments the runaway command counter and calls the command.  

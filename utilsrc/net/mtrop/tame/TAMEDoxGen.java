@@ -10,13 +10,8 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
 import com.blackrook.commons.Common;
 import com.blackrook.commons.CommonTokenizer;
-import com.blackrook.commons.linkedlist.Queue;
 
 import net.mtrop.tame.factory.TAMEJSExporter;
 import net.mtrop.tame.factory.TAMEJSExporterOptions;
@@ -40,6 +35,8 @@ public final class TAMEDoxGen
 
 	/** Resource root. */
 	static final String RESOURCE_ROOT = "tamedox";
+	/** Sidebar content. */
+	static final String RESOURCE_SIDEBARHTML = RESOURCE_ROOT + "/sidebar.html";
 	/** Index XML file. */
 	static final String RESOURCE_INDEXXML = RESOURCE_ROOT + "/index.xml";
 
@@ -94,9 +91,13 @@ public final class TAMEDoxGen
 			return null;
 		}
 	};
+	
+	
+	private static String sidebarContent;
+	
 
 	// Entry point.
-	public static void main(String[] args) 
+	public static void main(String[] args) throws Exception
 	{
 		if (args.length < 1)
 		{
@@ -107,7 +108,9 @@ public final class TAMEDoxGen
 		
 		String outPath = args[0];
 		
-		// TODO Auto-generated method stub
+		// TODO Finish.
+		
+		Common.noop();
 	}
 
 	/**
@@ -300,74 +303,4 @@ public final class TAMEDoxGen
 		
 	}
 
-	/** Each individual page. */
-	private static class Page
-	{
-		// TODO: Finish.
-	}
-
-	/** Each individual command (to turn into pages). */
-	private static class CommandPage implements Comparable<CommandPage>
-	{
-
-		@Override
-		public int compareTo(CommandPage cp)
-		{
-			// TODO: Finish.
-			return 0;
-		}
-	}
-
-	/**
-	 * XML parser for the command list.
-	 */
-	private static class IndexXMLParser extends DefaultHandler
-	{
-		private boolean pageMode; 
-		private Queue<Page> pageList;
-		private Queue<CommandPage> commandPageList;
-		
-		@Override
-		public void startDocument() throws SAXException 
-		{
-			commandPageList = new Queue<>();
-		}
-		
-		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException 
-		{
-			if (qName.equals("tamedox:pages"))
-				pageList = new Queue<>();
-			else if (qName.equals("tamedox:commands"))
-				commandPageList = new Queue<>();
-			else if (qName.equals("tamedox:section"))
-			{
-				// TODO: Finish.
-			}
-			else if (qName.equals("tamedox:part"))
-			{
-				// TODO: Finish.
-			}
-			
-		}
-		
-		@Override
-		public void characters(char[] ch, int start, int length) throws SAXException 
-		{
-			super.characters(ch, start, length);
-		}
-		
-		@Override
-		public void endElement(String uri, String localName, String qName) throws SAXException 
-		{
-			super.endElement(uri, localName, qName);
-		}
-		
-		@Override
-		public void endDocument() throws SAXException
-		{
-		}
-		
-	}
-	
 }

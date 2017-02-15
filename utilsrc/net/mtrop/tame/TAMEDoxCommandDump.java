@@ -20,39 +20,13 @@ public final class TAMEDoxCommandDump
 	{
 		PrintStream out = new PrintStream(System.out, true, "UTF-8");
 		
-		out.println("<?xml encoding=\"UTF-8\"?>");
-		out.println();
-		
-		out.println("<tamedox:commands>");
-		out.println();
-		out.println("\t<!-- TEMPLATES -->");
-		out.println("\t<!-- <tamedox:commandreturntype type=\"VALUE TYPE HERE\">REASON GOES HERE</tamedox:commandreturntype> -->");
-		out.println();
 		for (TAMECommand command : TAMECommand.values())
 		{
 			if (command.isInternal())
 				continue;
 
-			out.println("\t<!-- Command: "+command.name()+" -->");
-			out.println("\t<tamedox:command name=\""+command.name()+"\" group=\"UNNAMED\" sort=\"0\">");
-			if (command.getArgumentTypes() != null)
-			{
-				out.println("\t\t<tamedox:commandargs>");
-				for (ArgumentType at : command.getArgumentTypes())
-					out.println("\t\t\t<tamedox:commandarg type=\""+at.name()+"\"><!-- PURPOSE GOES HERE --></tamedox:commandarg>");
-				out.println("\t\t</tamedox:commandargs>");
-				if (command.getReturnType() != null)
-				{
-					out.println("\t\t<tamedox:commandreturntypes>");
-					out.println("\t\t\t<!--ADD SHIT HERE -->");
-					out.println("\t\t</tamedox:commandreturntypes>");
-				}
-				out.println("\t\t<tamedox:commanddocs src=\"included/commands/docs-"+command.name().toLowerCase()+".html\"/>");
-			}
-			out.println("\t</tamedox:command>");
-			out.println();
+			out.println("\t<tamedox:part title=\""+command.name()+"\" group=\""+command.getGrouping()+"\" src=\"included/commands/"+command.name().toLowerCase()+".html\" dest=\"command-"+command.name().toLowerCase()+".html\" />");
 		}
-		out.println("</tamedox:commands>");
 		out.close();
 	}
 

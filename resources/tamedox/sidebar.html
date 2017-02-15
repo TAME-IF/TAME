@@ -1,0 +1,205 @@
+<!-- Sidebar -->
+<div class="sidebar-heading">
+	<img src="images/TAMELogo.svg" height="20%" width="20%" alt="TAME Logo"/>
+</div>
+<ul class="sidebar-list">
+	<li class="section"><a href="index.html">Table of Contents</a>
+	</li>
+	<li class="section"><a href="intro.html">1. What is TAME?</a>
+		<ul class="sidebar-list">
+			<li class="page"><a href="intro.html#tamescript">1.1. What is TAMEScript?</a></li>
+			<li class="page"><a href="intro.html#virtualmachine">1.2. What is a &quot;Virtual Machine?&quot;</a></li>
+			<li class="page"><a href="intro.html#shell">1.3. What is a &quot;Shell?&quot;</a></li>
+			<li class="page"><a href="intro.html#sample">1.4. Sample TAMEScript Program</a></li>
+			<li class="page"><a href="intro.html#diagram">1.5. A diagram of typical TAME systems.</a></li>
+		</ul>
+	</li>
+	<li class="section"><a href="module.html">2. Module Overview</a>
+		<ul class="sidebar-list">
+			<li class="page"><a href="module.html#world">2.1. World</a></li>
+			<li class="page"><a href="module.html#players">2.2. Players</a></li>
+			<li class="page"><a href="module.html#rooms">2.3. Rooms</a></li>
+			<li class="page"><a href="module.html#containers">2.4. Containers</a></li>
+			<li class="page"><a href="module.html#objects">2.5. Objects</a></li>
+			<li class="page"><a href="module.html#actions">2.6. Actions</a></li>
+		</ul>
+	</li>
+	<li class="section"><a href="interpreter.html">3. The Interpreter</a>
+		<ul class="sidebar-list">
+			<li class="page"><a href="interpreter.html#parsing">3.1. How TAME Parses Input</a></li>
+			<li class="page"><a href="interpreter.html#greedy">3.2. What is a &quot;Greedy&quot; interpreter?</a></li>
+		</ul>
+	</li>
+	<li class="section"><a href="tamescript.html">4. TAMEScript</a>
+		<ul class="sidebar-list">
+			<li class="page"><a href="tamescript.html#elements">4.1. Defining Elements</a></li>
+			<li class="page"><a href="tamescript.html#blocks">4.2. Blocks</a></li>
+			<li class="page"><a href="tamescript.html#commands">4.3. Commands</a></li>
+			<li class="page"><a href="tamescript.html#expressions">4.4. Expressions</a></li>
+		</ul>
+	</li>
+	<li class="section"><a href="language-elements.html">A. TAMEScript Module Elements</a>
+		<ul class="sidebar-list">
+			<li class="page"><a href="language-elements.html#module">A.1. module</a></li>
+			<li class="page"><a href="language-elements.html#world">A.2. world</a></li>
+			<li class="page"><a href="language-elements.html#player">A.3. player</a></li>
+			<li class="page"><a href="language-elements.html#room">A.4. room</a></li>
+			<li class="page"><a href="language-elements.html#container">A.5. container</a></li>
+			<li class="page"><a href="language-elements.html#object">A.6. object</a></li>
+		</ul>
+	</li>
+	<li class="section"><a href="language-blocks.html">B. TAMEScript Element Block Types</a>
+		<ul class="sidebar-list">
+			<li class="page"><a href="language-blocks.html#init">B.1. Init</a></li>
+			<li class="page"><a href="language-blocks.html#after-request">B.2. AfterRequest</a></li>
+			<li class="page"><a href="language-blocks.html#after-module-init">B.3. AfterModuleInit</a></li>
+			<li class="page"><a href="language-blocks.html#procedure">B.4. Procedure</a></li>
+			<li class="page"><a href="language-blocks.html#on-action">B.5. OnAction</a></li>
+			<li class="page"><a href="language-blocks.html#on-action-with">B.6. OnActionWith</a></li>
+			<li class="page"><a href="language-blocks.html#on-action-with-other">B.7. OnActionWithOther</a></li>
+			<li class="page"><a href="language-blocks.html#on-modal-action">B.8. OnModalAction</a></li>
+			<li class="page"><a href="language-blocks.html#on-world-browse">B.9. OnWorldBrowse</a></li>
+			<li class="page"><a href="language-blocks.html#on-room-browse">B.10. OnRoomBrowse</a></li>
+			<li class="page"><a href="language-blocks.html#on-player-browse">B.11. OnPlayerBrowse</a></li>
+			<li class="page"><a href="language-blocks.html#on-container-browse">B.12. OnContainerBrowse</a></li>
+			<li class="page"><a href="language-blocks.html#on-ambiguous-action">B.13. OnAmbiguousAction</a></li>
+			<li class="page"><a href="language-blocks.html#on-bad-action">B.14. OnBadAction</a></li>
+			<li class="page"><a href="language-blocks.html#on-incomplete-action">B.15. OnIncompleteAction</a></li>
+			<li class="page"><a href="language-blocks.html#on-unknown-action">B.16. OnUnknownAction</a></li>
+			<li class="page"><a href="language-blocks.html#on-failed-action">B.17. OnFailedAction</a></li>
+			<li class="page"><a href="language-blocks.html#on-forbidden-action">B.18. OnForbiddenAction</a></li>
+			<li class="page"><a href="language-blocks.html#on-room-forbidden-action">B.19. OnRoomForbiddenAction</a></li>
+		</ul>
+	</li>
+	<li class="section"><a href="language-commands.html">C. TAMEScript Commands</a>
+		<ul class="sidebar-list">
+			<li class="group">Miscellaneous
+				<ul class="sidebar-list">
+					<li class="page"><a href="command-noop.html">NoOp</a></li>
+					<li class="page"><a href="command-identity.html">Identity</a></li>
+				</ul>
+			</li>
+			<li class="group">Control
+				<ul class="sidebar-list">
+					<li class="page"><a href="command-call.html">Call</a></li>
+					<li class="page"><a href="command-callfrom.html">CallFrom</a></li>
+					<li class="page"><a href="command-queueaction.html">QueueAction</a></li>
+					<li class="page"><a href="command-queueactionstring.html">QueueActionString</a></li>
+					<li class="page"><a href="command-queueactionobject.html">QueueActionObject</a></li>
+					<li class="page"><a href="command-queueactionforobjectsin.html">QueueActionForObjectsIn</a></li>
+					<li class="page"><a href="command-queueactionfortaggedobjectsin.html">QueueActionForTaggedObjectsIn</a></li>
+					<li class="page"><a href="command-queueactionobject2.html">QueueActionObject2</a></li>
+				</ul>
+			</li>
+			<li class="group">Cues
+				<ul class="sidebar-list">
+					<li class="page"><a href="command-addcue.html">AddCue</a></li>
+					<li class="page"><a href="command-text.html">Text</a></li>
+					<li class="page"><a href="command-textln.html">Textln</a></li>
+					<li class="page"><a href="command-textf.html">Textf</a></li>
+					<li class="page"><a href="command-textfln.html">Textfln</a></li>
+					<li class="page"><a href="command-pause.html">Pause</a></li>
+					<li class="page"><a href="command-wait.html">Wait</a></li>
+					<li class="page"><a href="command-tip.html">Tip</a></li>
+					<li class="page"><a href="command-info.html">Info</a></li>
+				</ul>
+			</li>
+			<li class="group">Values
+				<ul class="sidebar-list">
+					<li class="page"><a href="command-asboolean.html">AsBoolean</a></li>
+					<li class="page"><a href="command-asint.html">AsInt</a></li>
+					<li class="page"><a href="command-asfloat.html">AsFloat</a></li>
+					<li class="page"><a href="command-asstring.html">AsString</a></li>
+				</ul>
+			</li>
+			<li class="group">String Operations
+				<ul class="sidebar-list">
+					<li class="page"><a href="command-strlength.html">StrLength</a></li>
+				</ul>
+			</li>
+		</ul>
+	</li>
+<!-- 
+<section title="C. TAMEScript Commands" src="included/language-commands.html" dest="language-commands.html" commandSection="true">
+
+	<part title="STRLENGTH" group="String Operations" src="included/commands/strlength.html" dest="command-strlength.html" />
+	<part title="STRCONCAT" group="String Operations" src="included/commands/strconcat.html" dest="command-strconcat.html" />
+	<part title="STRREPLACE" group="String Operations" src="included/commands/strreplace.html" dest="command-strreplace.html" />
+	<part title="STRREPLACEPATTERN" group="String Operations" src="included/commands/strreplacepattern.html" dest="command-strreplacepattern.html" />
+	<part title="STRREPLACEPATTERNALL" group="String Operations" src="included/commands/strreplacepatternall.html" dest="command-strreplacepatternall.html" />
+	<part title="STRINDEX" group="String Operations" src="included/commands/strindex.html" dest="command-strindex.html" />
+	<part title="STRLASTINDEX" group="String Operations" src="included/commands/strlastindex.html" dest="command-strlastindex.html" />
+	<part title="STRCONTAINS" group="String Operations" src="included/commands/strcontains.html" dest="command-strcontains.html" />
+	<part title="STRCONTAINSPATTERN" group="String Operations" src="included/commands/strcontainspattern.html" dest="command-strcontainspattern.html" />
+	<part title="STRCONTAINSTOKEN" group="String Operations" src="included/commands/strcontainstoken.html" dest="command-strcontainstoken.html" />
+	<part title="STRSTARTSWITH" group="String Operations" src="included/commands/strstartswith.html" dest="command-strstartswith.html" />
+	<part title="STRENDSWITH" group="String Operations" src="included/commands/strendswith.html" dest="command-strendswith.html" />
+	<part title="SUBSTRING" group="String Operations" src="included/commands/substring.html" dest="command-substring.html" />
+	<part title="STRLOWER" group="String Operations" src="included/commands/strlower.html" dest="command-strlower.html" />
+	<part title="STRUPPER" group="String Operations" src="included/commands/strupper.html" dest="command-strupper.html" />
+	<part title="STRCHAR" group="String Operations" src="included/commands/strchar.html" dest="command-strchar.html" />
+	<part title="STRTRIM" group="String Operations" src="included/commands/strtrim.html" dest="command-strtrim.html" />
+
+	<part title="FLOOR" group="Mathematics" src="included/commands/floor.html" dest="command-floor.html" />
+	<part title="CEILING" group="Mathematics" src="included/commands/ceiling.html" dest="command-ceiling.html" />
+	<part title="ROUND" group="Mathematics" src="included/commands/round.html" dest="command-round.html" />
+	<part title="FIX" group="Mathematics" src="included/commands/fix.html" dest="command-fix.html" />
+	<part title="SQRT" group="Mathematics" src="included/commands/sqrt.html" dest="command-sqrt.html" />
+	<part title="PI" group="Mathematics" src="included/commands/pi.html" dest="command-pi.html" />
+	<part title="E" group="Mathematics" src="included/commands/e.html" dest="command-e.html" />
+	<part title="SIN" group="Mathematics" src="included/commands/sin.html" dest="command-sin.html" />
+	<part title="COS" group="Mathematics" src="included/commands/cos.html" dest="command-cos.html" />
+	<part title="TAN" group="Mathematics" src="included/commands/tan.html" dest="command-tan.html" />
+	<part title="MIN" group="Mathematics" src="included/commands/min.html" dest="command-min.html" />
+	<part title="MAX" group="Mathematics" src="included/commands/max.html" dest="command-max.html" />
+	<part title="CLAMP" group="Mathematics" src="included/commands/clamp.html" dest="command-clamp.html" />
+	<part title="RANDOM" group="Mathematics" src="included/commands/random.html" dest="command-random.html" />
+	<part title="FRANDOM" group="Mathematics" src="included/commands/frandom.html" dest="command-frandom.html" />
+	<part title="GRANDOM" group="Mathematics" src="included/commands/grandom.html" dest="command-grandom.html" />
+	
+	<part title="TIME" group="Time" src="included/commands/time.html" dest="command-time.html" />
+	<part title="SECONDS" group="Time" src="included/commands/seconds.html" dest="command-seconds.html" />
+	<part title="MINUTES" group="Time" src="included/commands/minutes.html" dest="command-minutes.html" />
+	<part title="HOURS" group="Time" src="included/commands/hours.html" dest="command-hours.html" />
+	<part title="DAYS" group="Time" src="included/commands/days.html" dest="command-days.html" />
+	<part title="FORMATTIME" group="Time" src="included/commands/formattime.html" dest="command-formattime.html" />
+
+	<part title="OBJECTHASNAME" group="Elements" src="included/commands/objecthasname.html" dest="command-objecthasname.html" />
+	<part title="OBJECTHASTAG" group="Elements" src="included/commands/objecthastag.html" dest="command-objecthastag.html" />
+	<part title="ADDOBJECTNAME" group="Elements" src="included/commands/addobjectname.html" dest="command-addobjectname.html" />
+	<part title="ADDOBJECTTAG" group="Elements" src="included/commands/addobjecttag.html" dest="command-addobjecttag.html" />
+	<part title="ADDOBJECTTAGTOALLIN" group="Elements" src="included/commands/addobjecttagtoallin.html" dest="command-addobjecttagtoallin.html" />
+	<part title="REMOVEOBJECTNAME" group="Elements" src="included/commands/removeobjectname.html" dest="command-removeobjectname.html" />
+	<part title="REMOVEOBJECTTAG" group="Elements" src="included/commands/removeobjecttag.html" dest="command-removeobjecttag.html" />
+	<part title="REMOVEOBJECTTAGFROMALLIN" group="Elements" src="included/commands/removeobjecttagfromallin.html" dest="command-removeobjecttagfromallin.html" />
+	<part title="GIVEOBJECT" group="Elements" src="included/commands/giveobject.html" dest="command-giveobject.html" />
+	<part title="REMOVEOBJECT" group="Elements" src="included/commands/removeobject.html" dest="command-removeobject.html" />
+	<part title="MOVEOBJECTSWITHTAG" group="Elements" src="included/commands/moveobjectswithtag.html" dest="command-moveobjectswithtag.html" />
+	<part title="OBJECTCOUNT" group="Elements" src="included/commands/objectcount.html" dest="command-objectcount.html" />
+	<part title="HASOBJECT" group="Elements" src="included/commands/hasobject.html" dest="command-hasobject.html" />
+	<part title="OBJECTHASNOOWNER" group="Elements" src="included/commands/objecthasnoowner.html" dest="command-objecthasnoowner.html" />
+	<part title="PLAYERISINROOM" group="Elements" src="included/commands/playerisinroom.html" dest="command-playerisinroom.html" />
+	<part title="PLAYERCANACCESSOBJECT" group="Elements" src="included/commands/playercanaccessobject.html" dest="command-playercanaccessobject.html" />
+	<part title="BROWSE" group="Elements" src="included/commands/browse.html" dest="command-browse.html" />
+	<part title="BROWSETAGGED" group="Elements" src="included/commands/browsetagged.html" dest="command-browsetagged.html" />
+	<part title="SETPLAYER" group="Elements" src="included/commands/setplayer.html" dest="command-setplayer.html" />
+	<part title="SETROOM" group="Elements" src="included/commands/setroom.html" dest="command-setroom.html" />
+	<part title="PUSHROOM" group="Elements" src="included/commands/pushroom.html" dest="command-pushroom.html" />
+	<part title="POPROOM" group="Elements" src="included/commands/poproom.html" dest="command-poproom.html" />
+	<part title="SWAPROOM" group="Elements" src="included/commands/swaproom.html" dest="command-swaproom.html" />
+	<part title="CURRENTPLAYERIS" group="Elements" src="included/commands/currentplayeris.html" dest="command-currentplayeris.html" />
+	<part title="NOCURRENTPLAYER" group="Elements" src="included/commands/nocurrentplayer.html" dest="command-nocurrentplayer.html" />
+	<part title="CURRENTROOMIS" group="Elements" src="included/commands/currentroomis.html" dest="command-currentroomis.html" />
+	<part title="NOCURRENTROOM" group="Elements" src="included/commands/nocurrentroom.html" dest="command-nocurrentroom.html" />
+</section>
+ -->
+	<li class="section"><a href="diagrams.html">D. TAME Execution Diagrams</a>
+		<ul>
+			<li class="page"><a href="diagrams.html#general">D.1. General Actions</a></li>
+			<li class="page"><a href="diagrams.html#modal">D.2. Modal Actions</a></li>
+			<li class="page"><a href="diagrams.html#open">D.3. Open Actions</a></li>
+			<li class="page"><a href="diagrams.html#transitive">D.4. Transitive Actions</a></li>
+			<li class="page"><a href="diagrams.html#ditransitive">D.5. Ditransitive Actions</a></li>
+		</ul>
+	</li>
+</ul>
