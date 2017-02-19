@@ -2333,17 +2333,37 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Returns a Gaussian random number.
-	 * POPs nothing.
+	 * Returns a Gaussian-distribution random number using a provided mean and standard deviation.
+	 * First POP is standard deviation.
+	 * Second POP is the mean.
 	 * Returns float.
 	 */
-	GRANDOM (/*Return: */ ArgumentType.VALUE)
+	GRANDOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
+			Value valueStdDev = request.popValue();
+			Value valueMean = request.popValue();
+			
+			if (!valueStdDev.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in GRANDOM call.");
+			if (!valueMean.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in GRANDOM call.");
+
+			// Box-Muller Approximate algorithm c/o Maxwell Collard on StackOverflow
+
 			Random random = request.getModuleContext().getRandom();
-			request.pushValue(Value.create(random.nextGaussian()));
+
+			double stdDev = valueStdDev.asDouble();
+			double mean = valueMean.asDouble();
+			
+			double u = 1.0 - random.nextDouble();
+			double v = 1.0 - random.nextDouble();
+			double stdNormal = Math.sqrt(-2.0 * Math.log(u)) * Math.sin(2.0 * Math.PI * v);
+			double out = mean + stdDev * stdNormal;
+			
+			request.pushValue(Value.create(out));
 		}
 		
 		@Override

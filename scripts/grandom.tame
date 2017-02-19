@@ -1,0 +1,20 @@
+module
+{
+	title = "GRANDOM Test";
+}
+
+
+world
+{
+	init()
+	{
+		local max = 5000;
+		local x = 0;
+		while (x < max)
+		{
+			textln(grandom(0, 1));
+			x = x + 1;
+		}
+		quit;
+	}
+}

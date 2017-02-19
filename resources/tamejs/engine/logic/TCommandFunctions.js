@@ -1346,10 +1346,25 @@ var TCommandFunctions =
 		"name": 'GRANDOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
+			var value2 = request.popValue();
+			var value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in GRANDOM call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in GRANDOM call.");
+			
 			// Box-Muller Approximate algorithm c/o Maxwell Collard on StackOverflow
-		    var u = 1 - Math.random();
-		    var v = 1 - Math.random();
-			request.pushValue(TValue.createFloat(Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)));
+
+			var stdDev = TValue.asDouble(value2);
+			var mean = TValue.asDouble(value1);
+			
+		    var u = 1.0 - Math.random();
+		    var v = 1.0 - Math.random();
+		    var stdNormal = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+		    var out = mean + stdDev * stdNormal;
+
+		    request.pushValue(TValue.createFloat(out));
 		}
 	},
 
