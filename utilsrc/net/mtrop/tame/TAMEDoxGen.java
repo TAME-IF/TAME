@@ -1,10 +1,14 @@
 package net.mtrop.tame;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
@@ -12,6 +16,7 @@ import java.util.Date;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.CommonTokenizer;
+import com.blackrook.commons.linkedlist.Queue;
 
 import net.mtrop.tame.factory.TAMEJSExporter;
 import net.mtrop.tame.factory.TAMEJSExporterOptions;
@@ -30,15 +35,15 @@ public final class TAMEDoxGen
 	/** Current time. */
 	static final String NOW_STRING = (new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
 	
-	/** Input directory for content to directly copy over. */
-	static final String STATIC_WEBPATH = "site-assets";
-
 	/** Resource root. */
 	static final String RESOURCE_ROOT = "tamedox";
 	/** Sidebar content. */
 	static final String RESOURCE_SIDEBARHTML = RESOURCE_ROOT + "/sidebar.html";
-	/** Index XML file. */
-	static final String RESOURCE_INDEXXML = RESOURCE_ROOT + "/index.xml";
+	/** Pages list file. */
+	static final String RESOURCE_PAGESLIST = RESOURCE_ROOT + "/pages.txt";
+
+	/** Pages list file. */
+	static final String SOURCE_SIDEASSETS = "./site-assets/docs";
 
 	/** Output directory for generated JS. */
 	static final String OUTPATH_JS = "js/generated/";
@@ -92,8 +97,21 @@ public final class TAMEDoxGen
 		}
 	};
 	
+	/** Sidebar content. */
+	private static String SIDEBAR_CONTENT;
 	
-	private static String sidebarContent;
+	static
+	{
+		InputStream in = null;
+		try {
+			in = Common.openResource(RESOURCE_SIDEBARHTML);
+			SIDEBAR_CONTENT = Common.getTextualContents(in);
+		} catch (IOException e) {
+			SIDEBAR_CONTENT = "!!READERROR!!";
+		} finally {
+			Common.close(in);
+		}
+	}
 	
 
 	// Entry point.
@@ -101,26 +119,134 @@ public final class TAMEDoxGen
 	{
 		if (args.length < 1)
 		{
-			out.println("Error: Expected output directory path.");
-			System.exit(0);
+			out.println("ERROR: Expected output directory path.");
+			System.exit(1);
 			return;
 		}
 		
-		String outPath = args[0];
+		// Get outpath root.
+		String outPath = Common.removeEndingSequence(args[0], "/");
+		File outDir = new File(outPath);
+		if (!Common.createPath(outDir.getPath()))
+		{
+			out.println("ERROR: Could not create path for "+outDir.getPath());
+			System.exit(3);
+		}
+
+		if (!outDir.isDirectory())
+		{
+			out.println("ERROR: Provided path is not a directory.");
+			System.exit(2);
+			return;
+		}
 		
-		// TODO Finish.
+		// Copy static pages.
+		copyStaticPages(outDir);
 		
-		Common.noop();
+		// Export engine.
+		exportEngine(outPath);
+		
+		// Process pages.
+		processAllPages(outPath);
+		
+		out.println("Done!");
+	}
+
+	private static void processAllPages(String outPath) throws IOException 
+	{
+		for (String[] page : getPageList())
+		{
+			boolean error = false;
+			File outFile = new File(outPath + "/" + page[1]);
+			if (!Common.createPathForFile(outFile))
+			{
+				out.println("ERROR: Could not create path for "+outFile.getPath());
+				continue;
+			}
+			PrintWriter pw = null;
+			try {
+				pw = new PrintWriter(outFile, "UTF-8");
+				parsePageResource(outPath + "/" + page[1], pw, RESOURCE_ROOT + "/" + page[0]);
+			} catch (SecurityException e) {
+				out.println("ERROR: Could not write file "+outFile.getPath()+". Access denied.");
+				error = true;
+			} catch (IOException e) {
+				out.println("ERROR: Could not write file "+outFile.getPath()+". "+e.getLocalizedMessage());
+				error = true;
+			} finally {
+				Common.close(pw);
+				if (error)
+					outFile.delete();
+			}
+		}
+	}
+
+	private static boolean exportEngine(String outPath) throws IOException
+	{
+		File outFile = new File(outPath + "/" + OUTPATH_JS_TAMEENGINE);
+		if (!Common.createPathForFile(outFile))
+		{
+			out.println("ERROR: Could not create path for "+outFile.getPath());
+			return false;
+		}
+		
+		TAMEJSExporter.export(outFile, null, TAMESCRIPT_JSEXPORTER_OPTIONS_ENGINE);
+		return true;
+	}
+
+	private static void copyStaticPages(File outDir)
+	{
+		for (File inFile : Common.explodeFiles(new File(SOURCE_SIDEASSETS)))
+		{
+			File outFile = new File(outDir.getPath() + "/" + Common.removeStartingSequence(inFile.getPath().replaceAll("\\\\", "/"), SOURCE_SIDEASSETS));
+			if (!Common.createPathForFile(outFile))
+			{
+				out.println("ERROR: Could not create path for "+outFile.getPath());
+				continue;
+			}
+
+			FileInputStream fis = null;
+			FileOutputStream fos = null;
+			try {
+				fis = new FileInputStream(inFile);
+				fos = new FileOutputStream(outFile);
+				Common.relay(fis, fos);
+			} catch (SecurityException e) {
+				out.printf("ERROR: Could not copy \"%s\" to \"%s\". Access denied.\n", inFile.getPath(), outFile.getPath());
+			} catch (IOException e) {
+				out.printf("ERROR: Could not copy \"%s\" to \"%s\"\n", inFile.getPath(), outFile.getPath());
+			} finally {
+				Common.close(fis);
+				Common.close(fos);
+			}
+		}
+	}
+
+	private static Iterable<String[]> getPageList() throws IOException
+	{
+		Queue<String[]> out = new Queue<>();
+		InputStream in = null;
+		try {
+			String line = null;
+			BufferedReader pageReader = Common.openTextStream(in = Common.openResource(RESOURCE_PAGESLIST));
+			while ((line = pageReader.readLine()) != null)
+				out.add(line.split("\\s+"));
+		} finally {
+			Common.close(in);
+		}
+		return out;
 	}
 
 	/**
 	 * Parses a file resource (presumably HTML) looking for <code>&lt;? ... ?&gt;</code> tags to parse and interpret.
 	 * @param outPath the base output path.
-	 * @param inPath input resource path.
 	 * @param writer the output writer.
+	 * @param inPath input resource path.
 	 */
-	public static void parsePageResource(String outPath, String inPath, Writer writer) throws IOException
+	public static void parsePageResource(String outPath, Writer writer, String inPath) throws IOException
 	{
+		final String TAG_START = "<!--[";
+		final String TAG_END = "]-->";
 		final int STATE_PAGE = 0;
 		final int STATE_START_TAG_MAYBE = 1;
 		final int STATE_TAG = 2;
@@ -132,6 +258,7 @@ public final class TAMEDoxGen
 			if (in == null)
 				throw new IOException("Resource \""+inPath+"\" cannot be found! Internal error!");
 
+			StringBuilder tagPart = new StringBuilder();
 			StringBuilder tagContent = new StringBuilder();
 			Reader r = new InputStreamReader(in, "UTF-8");			
 			int state = STATE_PAGE;
@@ -144,8 +271,11 @@ public final class TAMEDoxGen
 				{
 					case STATE_PAGE: 
 					{
-						if (c == '<')
+						if (c == TAG_START.charAt(0))
+						{
+							tagPart.append(c);
 							state = STATE_START_TAG_MAYBE;
+						}
 						else
 							writer.write(c);
 					}
@@ -153,20 +283,32 @@ public final class TAMEDoxGen
 
 					case STATE_START_TAG_MAYBE: 
 					{
-						if (c == '?')
-							state = STATE_TAG;
+						if (c != TAG_START.charAt(tagPart.length()))
+						{
+							writer.write(tagPart.toString());
+							tagPart.delete(0, tagPart.length());
+							writer.write(c);
+							state = STATE_PAGE;
+						}
 						else
 						{
-							writer.write('<');
-							writer.write(c);
+							tagPart.append(c);
+							if (tagPart.length() >= TAG_START.length())
+							{
+								state = STATE_TAG;
+								tagPart.delete(0, tagPart.length());
+							}
 						}
 					}
 					break;
 					
 					case STATE_TAG: 
 					{
-						if (c == '?')
+						if (c == TAG_END.charAt(0))
+						{
+							tagPart.append(c);
 							state = STATE_END_TAG_MAYBE;
+						}
 						else
 							tagContent.append(c);
 					}
@@ -174,18 +316,25 @@ public final class TAMEDoxGen
 
 					case STATE_END_TAG_MAYBE:
 					{
-						if (c == '>')
+						if (c != TAG_END.charAt(tagPart.length()))
 						{
-							state = STATE_PAGE;
-							String content = tagContent.toString();
-							if (!interpretTag(outPath, content.trim(), inPath, writer))
-								writer.write("&lt;?"+content+"?&gt;");
-							tagContent.delete(0, tagContent.length());
+							tagContent.append(tagPart.toString());
+							tagPart.delete(0, tagPart.length());
+							tagContent.append(c);
+							state = STATE_TAG;
 						}
 						else
 						{
-							tagContent.append('?');
-							tagContent.append(c);
+							tagPart.append(c);
+							if (tagPart.length() >= TAG_END.length())
+							{
+								state = STATE_PAGE;
+								String content = tagContent.toString();
+								if (!interpretTag(outPath, content.trim(), inPath, writer))
+									writer.write(TAG_START + content + TAG_END);
+								tagContent.delete(0, tagContent.length());
+								tagPart.delete(0, tagPart.length());
+							}
 						}
 					}
 					break;
@@ -219,12 +368,13 @@ public final class TAMEDoxGen
 		if (command.equalsIgnoreCase(COMMAND_INCLUDE))
 		{
 			String relativePath = tokenizer.nextToken();
-			parsePageResource(outPath, parentPath + relativePath, writer);
+			parsePageResource(outPath, writer, parentPath + relativePath);
 			return true;
 		}
 		else if (command.equalsIgnoreCase(COMMAND_SIDEBAR))
 		{
-			
+			writer.write(SIDEBAR_CONTENT);
+			return true;
 		}
 		else if (command.equalsIgnoreCase(COMMAND_TAMESCRIPT))
 		{
