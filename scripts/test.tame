@@ -132,7 +132,7 @@ world
 
 		textln(random(10)); 
 		textln(frandom()); 
-		textln(grandom()); 
+		textln(grandom(0, 1)); 
 		
 		t = time();
 		t2 = t + (1000 * 60 * 60 * 24); 
