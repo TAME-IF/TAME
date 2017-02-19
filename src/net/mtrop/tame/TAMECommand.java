@@ -640,16 +640,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (request.peekContext() == null)
 				throw new ModuleExecutionException("Attempted CALL call without a context!");
 			
-			TElementContext<?> elementContext = request.peekContext();
-			TElement element = elementContext.getElement();
-			
-			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, procedureName));
-			if (block != null)
-				TAMELogic.callBlock(request, response, elementContext, block);
-			else
-				response.addCue(CUE_ERROR, "No such procedure ("+procedureName.asString()+") in lineage of element " + element);
+			callProcedureFrom(request, response, procedureName, request.peekContext(), false);
 		}
-		
+
 		@Override
 		public String getGrouping()
 		{
@@ -679,13 +672,67 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TElementContext<?> elementContext = resolveElementContext(moduleContext, varElement);
-			TElement element = elementContext.getElement();
+			callProcedureFrom(request, response, varProcedureName, elementContext, false);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
+	},
+
+	/**
+	 * Calls a procedure local to the current context's owner's lineage, but does not cue an error if it is not found.
+	 * First POP is the procedure name/value. 
+	 * Returns nothing.
+	 */
+	CALLMAYBE (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value procedureName = request.popValue();
+			if (!procedureName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CALLMAYBE call.");
 			
-			Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, varProcedureName));
-			if (block != null)
-				TAMELogic.callBlock(request, response, elementContext, block);
-			else
-				response.addCue(CUE_ERROR, "No such procedure ("+varProcedureName.asString()+") in lineage of element " + element);
+			if (request.peekContext() == null)
+				throw new ModuleExecutionException("Attempted CALLMAYBE call without a context!");
+			
+			callProcedureFrom(request, response, procedureName, request.peekContext(), true);
+		}
+
+		@Override
+		public String getGrouping()
+		{
+			return "Control";
+		}
+		
+	},
+
+	/**
+	 * Calls a procedure local to a specified element's lineage, but does not cue an error if it is not found.
+	 * First POP is the procedure name/value. 
+	 * Second POP is the element identity. 
+	 * Returns nothing.
+	 */
+	CALLMAYBEFROM (/*Return: */ null, /*Args: */ ArgumentType.ELEMENT, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varProcedureName = request.popValue();
+			Value varElement = request.popValue();
+
+			if (!varProcedureName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CALLMAYBEFROM call.");
+			if (!varElement.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in CALLMAYBEFROM call.");
+			
+			TAMEModuleContext moduleContext = request.getModuleContext();
+			TElementContext<?> elementContext = resolveElementContext(moduleContext, varElement);
+			callProcedureFrom(request, response, varProcedureName, elementContext, true);
 		}
 		
 		@Override
@@ -3534,6 +3581,25 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				return moduleContext.resolveWorldContext();
 		}
 		
+	}
+
+	/**
+	 * Calls a procedure from an arbitrary context, using the bound element as a lineage search point.
+	 * @param request the current request.
+	 * @param response the current response.
+	 * @param procedureName the procedure name/value.
+	 * @param originContext the origin context (and then element).
+	 * @param silent if true, do not throw an error if the procedure was not found.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static void callProcedureFrom(TAMERequest request, TAMEResponse response, Value procedureName, TElementContext<?> originContext, boolean silent) throws TAMEInterrupt 
+	{
+		TElement element = originContext.getElement();
+		Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, procedureName));
+		if (block != null)
+			TAMELogic.callBlock(request, response, originContext, block);
+		else if (!silent)
+			response.addCue(CUE_ERROR, "No such procedure ("+procedureName.asString()+") in lineage of element " + element);
 	}
 	
 }

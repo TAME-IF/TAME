@@ -356,18 +356,11 @@ var TCommandFunctions =
 			if (!TValue.isLiteral(procedureName))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CALL call.");
 			
-			if (!request.peekContext())
+			var elementContext = request.peekContext();
+			if (!elementContext)
 				throw TAMEError.ModuleExecution("Attempted CALL call without a context!");
 
-			var elementContext = request.peekContext();
-			var context = request.moduleContext;
-			var element = context.resolveElement(elementContext.identity);
-
-			var block = context.resolveBlock(element.identity, 'PROCEDURE', [procedureName]);
-			if (block)
-				TLogic.executeBlock(block, request, response, elementContext);
-			else
-				response.addCue(TAMEConstants.Cue.ERROR, "No such procedure ("+TValue.asString(procedureName)+") in lineage of element " + TLogic.elementToString(element));
+			TLogic.callProcedureFrom(request, response, procedureName, elementContext, false);
 		}
 	},
 
@@ -385,16 +378,48 @@ var TCommandFunctions =
 				throw TAMEError.UnexpectedValueType("Expected element type in CALLFROM call.");
 
 			var id = TValue.asString(elementValue);
-			var context = request.moduleContext;
-			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
-			var elementContext = context.resolveElementContext(id);
-			var element = context.resolveElement(id);
 
-			var block = context.resolveBlock(element.identity, 'PROCEDURE', [procedureName]);
-			if (block)
-				TLogic.executeBlock(block, request, response, elementContext);
-			else
-				response.addCue(TAMEConstants.Cue.ERROR, "No such procedure ("+TValue.asString(procedureName)+") in lineage of element " + TLogic.elementToString(element));
+			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
+			var elementContext = request.moduleContext.resolveElementContext(id);
+			TLogic.callProcedureFrom(request, response, procedureName, elementContext, false);
+		}
+	},
+
+	/* CALLMAYBE */
+	{
+		"name": 'CALLMAYBE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var procedureName = request.popValue();
+			if (!TValue.isLiteral(procedureName))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CALLMAYBE call.");
+			
+			var elementContext = request.peekContext();
+			if (!elementContext)
+				throw TAMEError.ModuleExecution("Attempted CALLMAYBE call without a context!");
+
+			TLogic.callProcedureFrom(request, response, procedureName, elementContext, true);
+		}
+	},
+
+	/* CALLMAYBEFROM */
+	{
+		"name": 'CALLMAYBEFROM', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var procedureName = request.popValue();
+			var elementValue = request.popValue();
+			
+			if (!TValue.isLiteral(procedureName))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CALLMAYBEFROM call.");
+			if (!TValue.isElement(elementValue))
+				throw TAMEError.UnexpectedValueType("Expected element type in CALLMAYBEFROM call.");
+
+			var id = TValue.asString(elementValue);
+
+			// IMPORTANT: Must resolve: the passed-in value could be the "current" room/player.
+			var elementContext = request.moduleContext.resolveElementContext(id);
+			TLogic.callProcedureFrom(request, response, procedureName, elementContext, true);
 		}
 	},
 
