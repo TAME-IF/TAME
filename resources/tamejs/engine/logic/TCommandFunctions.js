@@ -438,7 +438,9 @@ var TCommandFunctions =
 			if (action.type != TAMEConstants.ActionType.GENERAL)
 				throw TAMEInterrupt.Error(action.identity + " is not a general action.");
 
-			request.addActionItem(TAction.create(action));
+			var tameAction = TAction.create(action);
+			request.addActionItem(tameAction);
+			response.trace(request, "Enqueued "+tameAction.toString());
 		}
 	},
 
@@ -460,7 +462,9 @@ var TCommandFunctions =
 			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
 				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
 
-			request.addActionItem(TAction.createModal(action, TValue.asString(varTarget)));
+			var tameAction = TAction.createModal(action, TValue.asString(varTarget));
+			request.addActionItem(tameAction);
+			response.trace(request, "Enqueued "+tameAction.toString());
 		}
 	},
 
@@ -483,7 +487,9 @@ var TCommandFunctions =
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
 
-			request.addActionItem(TAction.createObject(action, object));
+			var tameAction = TAction.createObject(action, object);
+			request.addActionItem(tameAction);
+			response.trace(request, "Enqueued "+tameAction.toString());
 		}
 	},
 
@@ -509,7 +515,9 @@ var TCommandFunctions =
 			var element = context.resolveElement(TValue.asString(varObjectContainer));
 			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
 				var object = context.resolveElement(objectIdentity);
-				request.addActionItem(TAction.createObject(action, object));
+				var tameAction = TAction.createObject(action, object);
+				request.addActionItem(tameAction);
+				response.trace(request, "Enqueued "+tameAction.toString());
 			});
 		}
 
@@ -544,7 +552,9 @@ var TCommandFunctions =
 					return;
 				
 				var object = context.resolveElement(objectIdentity);
-				request.addActionItem(TAction.createObject(action, object));
+				var tameAction = TAction.createObject(action, object);
+				request.addActionItem(tameAction);
+				response.trace(request, "Enqueued "+tameAction.toString());
 			});
 		}
 
@@ -573,8 +583,10 @@ var TCommandFunctions =
 
 			if (action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEInterrupt.Error(action.identity + " is not a ditransitive action.");
-			else
-				request.addActionItem(TAction.createObject2(action, object, object2));
+			
+			var tameAction = TAction.createObject2(action, object, object2);
+			request.addActionItem(tameAction);
+			response.trace(request, "Enqueued "+tameAction.toString());
 		}
 	},
 
@@ -1796,7 +1808,7 @@ var TCommandFunctions =
 
 			var player = request.moduleContext.resolveElement(TValue.asString(varPlayer));
 
-			request.moduleContext.setCurrentPlayer(player.identity);
+			TLogic.doPlayerSwitch(request, response, player.identity);
 		}
 	},
 

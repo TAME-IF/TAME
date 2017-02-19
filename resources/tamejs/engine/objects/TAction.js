@@ -13,9 +13,8 @@
 /****************************************************
  See net.mtrop.tame.TAMEAction
  ****************************************************/
-var TAction = function(initial, action, target, object1, object2)
+var TAction = function(action, target, object1, object2)
 {
-	this.initial = initial;
 	this.action = action; 
 	this.target = target; 
 	this.object1 = object1; 
@@ -24,30 +23,24 @@ var TAction = function(initial, action, target, object1, object2)
 
 // Convenience constructors.
 
-TAction.create = function(action) { return new TAction(false, action); };
-TAction.createModal = function(action, target) { return new TAction(false, action, target); };
-TAction.createObject = function(action, object1) { return new TAction(false, action, null, object1); };
-TAction.createObject2 = function(action, object1, object2) { return new TAction(false, action, null, object1, object2); };
-TAction.createInitial = function(action) { return new TAction(true, action); };
-TAction.createInitialModal = function(action, target) { return new TAction(true, action, target); };
-TAction.createInitialObject = function(action, object1) { return new TAction(true, action, null, object1); };
-TAction.createInitialObject2 = function(action, object1, object2) { return new TAction(true, action, null, object1, object2); };
+TAction.create = function(action) { return new TAction(action); };
+TAction.createModal = function(action, target) { return new TAction(action, target); };
+TAction.createObject = function(action, object1) { return new TAction(action, null, object1); };
+TAction.createObject2 = function(action, object1, object2) { return new TAction(action, null, object1, object2); };
 
 TAction.prototype.toString = function()
 {
 	var out = "ActionItem ";
-	if (this.initial)
-		out += "INITIAL ";
 	
 	out += "[";
 	if (this.action)
-		out += this.action.identity + ", ";
+		out += this.action.identity;
 
 	if (this.target)
-		out += this.target;
+		out += ", " + this.target;
 
 	if (this.object1)
-		out += this.object1.identity;
+		out += ", " + this.object1.identity;
 
 	if (this.object2)
 	{

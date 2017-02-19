@@ -207,7 +207,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 		{
 			default:
 			case TAMEConstants.ActionType.GENERAL:
-				request.addActionItem(TAction.createInitial(action));
+				request.addActionItem(TAction.create(action));
 				break;
 
 			case TAMEConstants.ActionType.OPEN:
@@ -219,7 +219,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
 				}
 				else
-					request.addActionItem(TAction.createInitialModal(action, interpreterContext.target));
+					request.addActionItem(TAction.createModal(action, interpreterContext.target));
 			}
 			break;
 
@@ -238,7 +238,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
 				}
 				else
-					request.addActionItem(TAction.createInitialModal(action, interpreterContext.mode));
+					request.addActionItem(TAction.createModal(action, interpreterContext.mode));
 			}
 			break;
 
@@ -263,7 +263,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
 				}
 				else
-					request.addActionItem(TAction.createInitialObject(action, interpreterContext.object1));
+					request.addActionItem(TAction.createObject(action, interpreterContext.object1));
 			}
 			break;
 	
@@ -290,7 +290,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				else if (!interpreterContext.conjugateLookedUp)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" as a transitive one...");
-					request.addActionItem(TAction.createInitialObject(action, interpreterContext.object1));
+					request.addActionItem(TAction.createObject(action, interpreterContext.object1));
 				}
 				else if (!interpreterContext.conjugateFound)
 				{
@@ -311,11 +311,57 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
 				}
 				else
-					request.addActionItem(TAction.createInitialObject2(action, interpreterContext.object1, interpreterContext.object2));
+					request.addActionItem(TAction.createObject2(action, interpreterContext.object1, interpreterContext.object2));
 			}
 			break;
 		}
 	}
+};
+
+/**
+ * Does an action loop: this keeps processing queued actions 
+ * until there is nothing left to process.
+ * @param request the request context.
+ * @param response the response object.
+ * @param tameAction (TAction) the action to process.
+ * @throws TAMEInterrupt if an uncaught interrupt occurs.
+ * @throws TAMEError if something goes wrong during execution.
+ */
+TLogic.processAction = function(request, response, tameAction) 
+{
+	try {
+		
+		switch (tameAction.action.type)
+		{
+			default:
+			case TAMEConstants.ActionType.GENERAL:
+				TLogic.doActionGeneral(request, response, tameAction.action);
+				break;
+			case TAMEConstants.ActionType.OPEN:
+				TLogic.doActionOpen(request, response, tameAction.action, tameAction.target);
+				break;
+			case TAMEConstants.ActionType.MODAL:
+				TLogic.doActionModal(request, response, tameAction.action, tameAction.target);
+				break;
+			case TAMEConstants.ActionType.TRANSITIVE:
+				TLogic.doActionTransitive(request, response, tameAction.action, tameAction.object1);
+				break;
+			case TAMEConstants.ActionType.DITRANSITIVE:
+				if (tameAction.object2 == null)
+					TLogic.doActionTransitive(request, response, tameAction.action, tameAction.object1);
+				else
+					TLogic.doActionDitransitive(request, response, tameAction.action, tameAction.object1, tameAction.object2);
+				break;
+		}
+		
+	} catch (err) {
+		// catch end interrupt, throw everything else.
+		if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.End)
+			throw err;
+	} finally {
+		request.checkStackClear();			
+	}
+
 };
 
 
@@ -336,41 +382,8 @@ TLogic.processActionLoop = function(request, response)
 	while (request.hasActionItems())
 	{
 		var tameAction = request.nextActionItem();
-
-		try {
-			
-			switch (tameAction.action.type)
-			{
-				default:
-				case TAMEConstants.ActionType.GENERAL:
-					TLogic.doActionGeneral(request, response, tameAction.action);
-					break;
-				case TAMEConstants.ActionType.OPEN:
-					TLogic.doActionOpen(request, response, tameAction.action, tameAction.target);
-					break;
-				case TAMEConstants.ActionType.MODAL:
-					TLogic.doActionModal(request, response, tameAction.action, tameAction.target);
-					break;
-				case TAMEConstants.ActionType.TRANSITIVE:
-					TLogic.doActionTransitive(request, response, tameAction.action, tameAction.object1);
-					break;
-				case TAMEConstants.ActionType.DITRANSITIVE:
-					if (tameAction.object2 == null)
-						TLogic.doActionTransitive(request, response, tameAction.action, tameAction.object1);
-					else
-						TLogic.doActionDitransitive(request, response, tameAction.action, tameAction.object1, tameAction.object2);
-					break;
-			}
-			
-			request.checkStackClear();
-			
-		} catch (err) {
-			// catch end interrupt, throw everything else.
-			if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.End)
-				throw err;
-		}
-		
-		if (!request.hasActionItems() && initial)
+		TLogic.processAction(request, response, tameAction);
+		if (!request.hasActionItems())
 		{
 			initial = false;
 			TLogic.doAfterRequest(request, response);
@@ -428,7 +441,7 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 	var response = new TResponse();
 
 	var time = Util.nanoTime();
-	var interpreterContext = TLogic.interpret(request);
+	var interpreterContext = TLogic.interpret(context, inputMessage);
 	response.interpretNanos = Util.nanoTime() - time; 
 
 	time = Util.nanoTime();
@@ -513,12 +526,13 @@ TLogic.callProcedureFrom = function(request, response, procedureNameValue, origi
 
 /**
  * Interprets the input on the request.
- * @param request (TRequest) the request.
+ * @param context (TModuleContext) the module context.
+ * @param input (string) the input text.
  * @return a new interpreter context using the input.
  */
-TLogic.interpret = function(request)
+TLogic.interpret = function(context, input)
 {
-	var tokens = request.inputMessage.toLowerCase().split(/\s+/);
+	var tokens = input.toLowerCase().split(/\s+/);
 	var interpreterContext = 
 	{
 		"tokens": tokens,
@@ -538,7 +552,6 @@ TLogic.interpret = function(request)
 		"objectAmbiguous": false
 	};
 
-	var context = request.moduleContext;
 	TLogic.interpretAction(context, interpreterContext);
 
 	var action = interpreterContext.action;
@@ -956,6 +969,7 @@ TLogic.doBrowse = function(request, response, elementIdentity, tag)
 TLogic.callAfterModuleInitBlock = function(request, response)
 {
 	var context = request.moduleContext;
+	response.trace(request, "Attempt to call after module init block on world.");
 	var worldContext = context.getElementContext('world');
 
 	if ((initBlock = context.resolveBlock('world', "AFTERMODULEINIT")) != null)
@@ -1614,6 +1628,9 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 	var context = request.moduleContext;
 	response.trace(request, "Performing general/open action "+TLogic.elementToString(action));
 
+	if (TLogic.callCheckActionForbidden(request, response, action))
+		return;
+
 	var currentPlayerContext = context.getCurrentPlayerContext();
 	var blockToCall = null;
 
@@ -1705,6 +1722,9 @@ TLogic.doActionModal = function(request, response, action, mode)
 	var context = request.moduleContext;
 	response.trace(request, "Performing modal action "+TLogic.elementToString(action)+", \""+mode+"\"");
 
+	if (TLogic.callCheckActionForbidden(request, response, action))
+		return;
+
 	var currentPlayerContext = context.getCurrentPlayerContext();
 	var blockToCall = null;
 
@@ -1768,11 +1788,11 @@ TLogic.doActionTransitive = function(request, response, action, object)
 	var context = request.moduleContext;
 	response.trace(request, "Performing transitive action "+TLogic.elementToString(action)+" on "+TLogic.elementToString(object));
 	
-	var currentObjectContext = context.getElementContext(object.identity);
-	var blockToCall = null;
-
 	if (TLogic.callCheckActionForbidden(request, response, action))
 		return;
+
+	var currentObjectContext = context.getElementContext(object.identity);
+	var blockToCall = null;
 
 	// call action on object.
 	if ((blockToCall = context.resolveBlock(object.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
@@ -1800,12 +1820,12 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	var context = request.moduleContext;
 	response.trace(request, "Performing ditransitive action "+TLogic.elementToString(action)+" on "+TLogic.elementToString(object1)+" with "+TLogic.elementToString(object2));
 
+	if (TLogic.callCheckActionForbidden(request, response, action))
+		return;
+
 	var currentObject1Context = context.getElementContext(object1.identity);
 	var currentObject2Context = context.getElementContext(object2.identity);
 	var blockToCall = null;
-
-	if (TLogic.callCheckActionForbidden(request, response, action))
-		return;
 
 	var success = false;
 	var actionValue = TValue.createAction(action.identity);

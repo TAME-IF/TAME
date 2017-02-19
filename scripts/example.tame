@@ -1,12 +1,12 @@
 action transitive a_take named "take", "pick up";
 action transitive a_examine named "examine", "look at";
-action ditransitive a_use named "use" conjoins "with", "and", "on";
+action ditransitive a_use named "use" uses conjunctions "with", "and", "on";
 action general a_look named "look", "examine surroundings", "look around";
 action general a_quit named "quit";
 action general a_inv named "inv", "inventory", "view inventory", "look at the inventory", "look at inventory";
 action general a_save named "save";
 action general a_load named "load";
-action open a_say named "say" local target;
+action open a_say named "say" uses local target;
 action general a_test named "test";
 action general a_counter named "counter";
 action general a_tick;

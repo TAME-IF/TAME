@@ -19,8 +19,6 @@ import net.mtrop.tame.element.TObject;
  */
 public class TAMEAction
 {
-	/** Is this from the initial request? */
-	private boolean initial;
 	/** The action to process. */
 	private TAction action; 
 	/** The action target to process (modal, open). */
@@ -30,9 +28,8 @@ public class TAMEAction
 	/** The action second object to use. */
 	private TObject object2;
 	
-	private TAMEAction(boolean initial, TAction action, String target, TObject object1, TObject object2)
+	private TAMEAction(TAction action, String target, TObject object1, TObject object2)
 	{
-		this.initial = initial;
 		this.action = action;
 		this.target = target;
 		this.object1 = object1;
@@ -49,7 +46,7 @@ public class TAMEAction
 	{
 		if (action.getType() != TAction.Type.GENERAL)
 			throw new IllegalArgumentException("Action is not a general action.");
-		return new TAMEAction(false, action, null, null, null);
+		return new TAMEAction(action, null, null, null);
 	}
 	
 	/**
@@ -63,7 +60,7 @@ public class TAMEAction
 	{
 		if (action.getType() != TAction.Type.MODAL && action.getType() != TAction.Type.OPEN)
 			throw new IllegalArgumentException("Action is not a modal nor open action.");
-		return new TAMEAction(false, action, target, null, null);
+		return new TAMEAction(action, target, null, null);
 	}
 	
 	/**
@@ -77,7 +74,7 @@ public class TAMEAction
 	{
 		if (action.getType() != TAction.Type.TRANSITIVE && action.getType() != TAction.Type.DITRANSITIVE)
 			throw new IllegalArgumentException("Action is not a transitive nor ditransitive action.");
-		return new TAMEAction(false, action, null, object, null);
+		return new TAMEAction(action, null, object, null);
 	}
 	
 	/**
@@ -92,74 +89,9 @@ public class TAMEAction
 	{
 		if (action.getType() != TAction.Type.DITRANSITIVE)
 			throw new IllegalArgumentException("Action is not a ditransitive action.");
-		return new TAMEAction(false, action, null, object1, object2);
+		return new TAMEAction(action, null, object1, object2);
 	}
 
-	/**
-	 * Creates a general action item to execute later.
-	 * @param action the action to call.
-	 * @return a new TAME action item.
-	 * @throws IllegalArgumentException if the action provided is not a general one.
-	 */
-	public static TAMEAction createInitial(TAction action)
-	{
-		if (action.getType() != TAction.Type.GENERAL)
-			throw new IllegalArgumentException("Action is not a general action.");
-		return new TAMEAction(true, action, null, null, null);
-	}
-	
-	/**
-	 * Creates a model or open action item to execute later.
-	 * @param action the action to call.
-	 * @param target the open target.
-	 * @return a new TAME action item.
-	 * @throws IllegalArgumentException if the action provided is not a modal or open one.
-	 */
-	public static TAMEAction createInitial(TAction action, String target)
-	{
-		if (action.getType() != TAction.Type.MODAL && action.getType() != TAction.Type.OPEN)
-			throw new IllegalArgumentException("Action is not a modal nor open action.");
-		return new TAMEAction(true, action, target, null, null);
-	}
-	
-	/**
-	 * Creates a transitive action item to execute later.
-	 * @param action the action to call.
-	 * @param object the first object.
-	 * @return a new TAME action item.
-	 * @throws IllegalArgumentException if the action provided is not a transitive or ditransitive one.
-	 */
-	public static TAMEAction createInitial(TAction action, TObject object)
-	{
-		if (action.getType() != TAction.Type.TRANSITIVE && action.getType() != TAction.Type.DITRANSITIVE)
-			throw new IllegalArgumentException("Action is not a transitive nor ditransitive action.");
-		return new TAMEAction(true, action, null, object, null);
-	}
-	
-	/**
-	 * Creates a ditransitive action item to execute later.
-	 * @param action the action to call.
-	 * @param object1 the first object.
-	 * @param object2 the second object.
-	 * @return a new TAME action item.
-	 * @throws IllegalArgumentException if the action provided is not a ditransitive one.
-	 */
-	public static TAMEAction createInitial(TAction action, TObject object1, TObject object2)
-	{
-		if (action.getType() != TAction.Type.DITRANSITIVE)
-			throw new IllegalArgumentException("Action is not a ditransitive action.");
-		return new TAMEAction(true, action, null, object1, object2);
-	}
-
-	/**
-	 * Checks if this was the action interpreted from the initial request.
-	 * @return true if so, false if not. 
-	 */
-	public boolean isInitial()
-	{
-		return initial;
-	}
-	
 	/**
 	 * Gets the action to call.
 	 * @return the returned action.
@@ -200,9 +132,7 @@ public class TAMEAction
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("ActionItem ");
-		if (initial)
-			sb.append("INITIAL ");
-			
+
 		switch (action.getType())
 		{
 			case GENERAL:

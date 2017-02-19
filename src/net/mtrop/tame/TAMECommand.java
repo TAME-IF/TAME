@@ -744,7 +744,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 
 	/**
-	 * Enqueues an general action to perform after the current one finishes.
+	 * Enqueues a general action to perform after the current one finishes.
 	 * POP is the action.
 	 * Returns nothing.
 	 */
@@ -763,7 +763,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (action.getType() != Type.GENERAL)
 				throw new ErrorInterrupt(action.getIdentity() + " is not a general action.");
 			else
-				request.addActionItem(TAMEAction.create(action));
+			{
+				TAMEAction tameAction = TAMEAction.create(action);
+				request.addActionItem(tameAction);
+				response.trace(request, "Enqueued "+tameAction);
+			}
 		}
 
 		@Override
@@ -775,7 +779,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 
 	/**
-	 * Enqueues a open/modal action to perform after the current one finishes.
+	 * Enqueues an open/modal action to perform after the current one finishes.
 	 * First POP is the modal or open target.
 	 * Second POP is the action.
 	 * Returns nothing.
@@ -799,7 +803,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (action.getType() != Type.MODAL && action.getType() != Type.OPEN)
 				throw new ErrorInterrupt(action.getIdentity() + " is not a modal nor open action.");
 			else
-				request.addActionItem(TAMEAction.create(action, target));
+			{
+				TAMEAction tameAction = TAMEAction.create(action, target);
+				request.addActionItem(tameAction);
+				response.trace(request, "Enqueued "+tameAction);
+			}
 		}
 
 		@Override
@@ -836,7 +844,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (action.getType() != Type.TRANSITIVE && action.getType() != Type.DITRANSITIVE)
 				throw new ErrorInterrupt(action.getIdentity() + " is not a transitive nor ditransitive action.");
 			else
-				request.addActionItem(TAMEAction.create(action, object));
+			{
+				TAMEAction tameAction = TAMEAction.create(action, object);
+				request.addActionItem(tameAction);
+				response.trace(request, "Enqueued "+tameAction);
+			}
 		}
 
 		@Override
@@ -878,7 +890,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("INTERNAL ERROR IN QUEUEACTIONFOROBJECTSIN.");
 			
 			for (TObject object : objectList)
-				request.addActionItem(TAMEAction.create(action, object));
+			{
+				TAMEAction tameAction = TAMEAction.create(action, object);
+				request.addActionItem(tameAction);
+				response.trace(request, "Enqueued "+tameAction);
+			}
 		}
 
 		@Override
@@ -926,7 +942,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String tagName = varTag.asString();
 			TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
 			for (TObject object : objectList) if (ownershipMap.checkObjectHasTag(object, tagName))
-				request.addActionItem(TAMEAction.create(action, object));
+			{
+				TAMEAction tameAction = TAMEAction.create(action, object);
+				request.addActionItem(tameAction);
+				response.trace(request, "Enqueued "+tameAction);
+			}
+			
 		}
 
 		@Override
@@ -968,7 +989,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (action.getType() != Type.DITRANSITIVE)
 				throw new ErrorInterrupt(action.getIdentity() + " is not a ditransitive action.");
 			else
-				request.addActionItem(TAMEAction.create(action, object, object2));
+			{
+				TAMEAction tameAction = TAMEAction.create(action, object, object2);
+				request.addActionItem(tameAction);
+				response.trace(request, "Enqueued "+tameAction);
+			}
+			
 		}
 
 		@Override
