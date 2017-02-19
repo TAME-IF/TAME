@@ -16,21 +16,49 @@ ul, ol {
 }
 ul ul {
 	list-style-type: none;
-	margin-bottom: 0.5em;
 	padding-left: 1.0em;
+}
+li.section {
+	margin-top: 0.5em;
+	font-size: 100%;
+}
+li.group {
+	margin-top: 0.5em;
+	line-height: 1.25em;
+}
+
+.content {
+	margin-left: 300px;
+	padding: 1em 2.5em;
 }
 
 .sidebar {
-	float: left;
-	max-height: 100%;
-	overflow: auto;
+	font-size: 85%;
+	
+    position: fixed;
 	padding: 0.5em;
-	margin: 0;
+	width: 300px;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+.sidebar-line {
+	margin-bottom: 0.5em;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
 }
 
 .sidebar-logo {
-	width: 330px;
-	height: 198px;
+	width: 280px;
+	height: 168px;
+}
+
+.sidebar-footer {
+	font-size: 75%;
+	padding: 0.25em;
 }
 
 .content {
