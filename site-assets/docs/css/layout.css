@@ -3,25 +3,30 @@ body {
 	font-family: sans-serif;
 	margin: 0;
 }
-a {
+
+ul a {
 	text-decoration: none;
 }
-a:hover {
+
+ul a:hover {
 	text-decoration: underline;
 }
 
-ul, ol {
+ul.sidebar-list {
 	list-style-type: none;
 	padding-left: 0;
 }
-ul ul {
+
+ul.sidebar-list ul {
 	list-style-type: none;
 	padding-left: 1.0em;
 }
+
 li.section {
 	margin-top: 0.5em;
 	font-size: 100%;
 }
+
 li.group {
 	margin-top: 0.5em;
 	line-height: 1.25em;
