@@ -36,32 +36,13 @@ var tamectx = TAME.newContext();
 
 const rl = readline.createInterface ({
 	input: process.stdin,
-	output: process.stdout,
-	prompt: '] '
+	output: process.stdout
 });
 
 var stop = false;
 var pause = false;
-var currentResponse = null;
-var currentCue = 0;
 var textBuffer = '';
 var lastColumn = 0;
-
-/**
- * Handles a TAME cue (for debugging).
- * @return true to continue handling, false to halt.
- */
-function debugCue(cue) {
-	var content = cue.content;
-	var type = cue.type.toLowerCase();
-	
-	println('['+cue.type+'] '+withEscChars(content));
-	if (type === 'quit' || type === 'fatal')
-		stop = true;
-		
-	return true;
-}
-
 
 function startFormatTag(tag) {
 	// Nothing
@@ -79,12 +60,26 @@ function formatText(text) {
  * Handles a TAME cue (for debugging).
  * @return true to continue handling, false to halt.
  */
-function doCue(cue) {
+function debugCue(type, content) {
+
+	type = type.toLowerCase();
+	println('['+type+'] '+withEscChars(content));
+	if (type === 'quit' || type === 'fatal')
+		stop = true;
+		
+	return true;
+}
+
+/**
+ * Handles a TAME cue (for debugging).
+ * @return true to continue handling, false to halt.
+ */
+function doCue(type, content) {
 	
-	var content = cue.content;
-	var type = cue.type.toLowerCase();
+	type = type.toLowerCase();
 	
-	if (type !== 'text' && type !== 'textf') {
+	if (type !== 'text' && type !== 'textf')
+	{
 		lastColumn = printWrapped(textBuffer, lastColumn, process.stdout.columns);
 		textBuffer = '';
 	}
@@ -100,7 +95,7 @@ function doCue(cue) {
 			return true;
 		
 		case 'textf':
-			(new FormatParser(startFormatTag, endFormatTag, formatText)).parse(content);
+			TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText);
 			return true;
 			
 		case 'wait':
@@ -140,15 +135,12 @@ function doCue(cue) {
 	
 }
 
-var handleCueFunc = debug ? debugCue : doCue;
+var handler = TAME.createResponseHandler({}, debug ? debugCue : doCue);
 
-function responseLoop() {
-	
-	while (currentCue < currentResponse.responseCues.length && handleCueFunc(currentResponse.responseCues[currentCue++])) {
-		/* Do nothing. */
-	}
-
-	if (textBuffer.length > 0) {
+function responseStop(notDone)
+{
+	if (textBuffer.length > 0)
+	{
 		printWrapped(textBuffer, lastColumn, process.stdout.columns);
 		lastColumn = 0;
 		textBuffer = '';
@@ -156,17 +148,20 @@ function responseLoop() {
 
 	if (stop)
 		rl.close();
-	else if (pause) {
+	else if (pause) 
+	{
 		rl.setPrompt('(CONTINUE) ');
 		rl.prompt();
-	} else if (currentCue == currentResponse.responseCues.length) {
-		currentResponse = null;
-		currentCue = 0;
-		if (!stop) {
+	} 
+	else if (!notDone) 
+	{
+		if (!stop) 
+		{
 			rl.setPrompt('] ');
 			println();
 			rl.prompt();
-		} else
+		} 
+		else
 			rl.close();
 	}
 }
@@ -175,7 +170,7 @@ function responseLoop() {
  * Handles a new TAME response.
  * @param response the TAME response object.
  */
-function handleResponse(response) 
+function startResponse(response) 
 {
 	if (debug) {
 		println('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
@@ -184,9 +179,7 @@ function handleResponse(response)
 		println('Cues: '+response.responseCues.length);
 	}
 	println();
-	currentResponse = response;
-	currentCue = 0;
-	responseLoop();
+	responseStop(handler.handleResponse(response));
 }
 
 const COMMAND_SAVE = '!save';
@@ -197,7 +190,7 @@ rl.on('line', function(line){
 	line = line.trim();
 	if (pause) {
 		pause = false;
-		responseLoop();
+		responseStop(handler.resume());
 	} else {
 		if (COMMAND_SAVE == line.substring(0, COMMAND_SAVE.length))
 		{
@@ -223,14 +216,14 @@ rl.on('line', function(line){
 			rl.prompt();
 		}
 		else
-			handleResponse(TAME.interpret(tamectx, line.trim(), trace));
+			startResponse(TAME.interpret(tamectx, line.trim(), trace));
 	}
 }).on('close', function(){
 	process.exit(0);
 });
 
 //Initialize.
-handleResponse(TAME.initialize(tamectx, trace));
+startResponse(TAME.initialize(tamectx, trace));
 
 // start loop.
 if (!stop)

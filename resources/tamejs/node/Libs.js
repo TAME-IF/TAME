@@ -10,127 +10,6 @@
 
 //##[[EXPORTJS-START
 
-/* Class */ 
-function FormatParser(tagStartFunc, tagEndFunc, textFunc)
-{
-	this.builder = '';
-	this.tagStack = [];
-	this.tagStartFunc = tagStartFunc; 
-	this.tagEndFunc = tagEndFunc; 
-	this.textFunc = textFunc;
-}
-
-FormatParser.prototype.parse = function(sequence)
-{
-	var self = this;
-	
-	var emitText = function()
-	{
-		if (self.builder.length == 0)
-			return;
-		
-		self.textFunc(self.builder);
-		self.builder = '';
-	}
-
-	var emitTag = function()
-	{
-		if (self.builder.length == 0)
-			return;
-
-		var tag = self.builder;
-		self.builder = '';
-		
-		if (tag == '/')
-		{
-			if (self.tagStack.length == 0)
-				return;
-			self.tagEndFunc(self.tagStack.pop());
-		}
-		else
-		{
-			self.tagStack.push(tag);
-			self.tagStartFunc(tag);
-		}
-	}
-
-	
-	const STATE_TEXT = 0;
-	const STATE_TAG_MAYBE = 1;
-	const STATE_TAG = 2;
-	const STATE_TAG_END_MAYBE = 3;
-	
-	var state = STATE_TEXT;
-	var len = sequence.length, i = 0;
-
-	while (i < len)
-	{
-		var c = sequence.charAt(i);
-
-		switch (state)
-		{
-			case STATE_TEXT:
-			{
-				if (c == '[')
-					state = STATE_TAG_MAYBE;
-				else
-					self.builder += (c);
-			}
-			break;
-
-			case STATE_TAG_MAYBE:
-			{
-				if (c == '[')
-				{
-					state = STATE_TEXT;
-					self.builder += (c);
-				}
-				else
-				{
-					state = STATE_TAG;
-					emitText();
-					i--;
-				}
-			}
-			break;
-			
-			case STATE_TAG:
-			{
-				if (c == ']')
-					state = STATE_TAG_END_MAYBE;
-				else
-					self.builder += (c);
-			}
-			break;
-			
-			case STATE_TAG_END_MAYBE:
-			{
-				if (c == ']')
-				{
-					state = STATE_TAG;
-					self.builder += (c);
-				}
-				else
-				{
-					state = STATE_TEXT;
-					emitTag();
-					i--;
-				}
-			}
-			break;
-		}
-		
-		i++;
-	}
-	
-	if (state == STATE_TAG_END_MAYBE)
-		emitTag();
-	
-	emitText();
-	while (self.tagStack.length > 0)
-		self.tagEndFunc(self.tagStack.pop());
-};
-
 function print(text) {
 	if (text)
 		process.stdout.write(text);
@@ -161,7 +40,8 @@ var RegexWhitespace = /\s/g;
  * @param width the width in characters.
  * @return the ending column for subsequent calls.
  */
-function printWrapped(message, startColumn, width) {
+function printWrapped(message, startColumn, width) 
+{
 	
 	if (width <= 1) return startColumn;
 	
@@ -170,7 +50,8 @@ function printWrapped(message, startColumn, width) {
 	var ln = startColumn;
 	var tok = 0;
 	
-	for (var i = 0; i < message.length; i++) {
+	for (var i = 0; i < message.length; i++)
+	{
 		var c = message.charAt(i);
 		if (c == '\n') {
 			line += token;
@@ -180,7 +61,9 @@ function printWrapped(message, startColumn, width) {
 			println(line);
 			line = '';
 			ln = 0;
-		} else if (RegexWhitespace.test(c)) {
+		} 
+		else if (RegexWhitespace.test(c))
+		{
 			line += token;
 			ln += token.length;
 			if (ln < width-1)
@@ -190,20 +73,26 @@ function printWrapped(message, startColumn, width) {
 			}
 			token = '';
 			tok = 0;
-		} else if (c == '-') {
+		} 
+		else if (c == '-') 
+		{
 			line += token;
 			ln += token.length;
 			line += '-';
 			ln++;
 			token = '';
 			tok = 0;
-		} else if (ln + token.length + 1 > width-1)	{
+		} 
+		else if (ln + token.length + 1 > width-1)
+		{
 			println(line);
 			line = '';
 			ln = 0;
 			token += c;
 			tok++;
-		} else {
+		} 
+		else 
+		{
 			token += c;
 			tok++;
 		}

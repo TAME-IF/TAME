@@ -65,6 +65,7 @@ Util.fromBase64 = (function()
 //##[[EXPORTJS-INCLUDE engine/objects/TAction.js
 //##[[EXPORTJS-INCLUDE engine/objects/TModule.js
 //##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
+//##[[EXPORTJS-INCLUDE engine/objects/TResponseHandler.js
 //##[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	var tameModule = new TModule(theader, tactions, telements);
@@ -98,6 +99,36 @@ Util.fromBase64 = (function()
 	this.interpret = function(context, inputMessage, tracing) 
 	{
 		return TLogic.handleRequest(context, inputMessage, tracing);
+	};
+
+	/**
+	 * Creates a response handler.
+	 * eventFunctionMap: A map of functions to call on certain events.
+	 * 		"start": Called before first cue is handled.
+	 *		"pause": Called when a pause occurs (after a cue function).
+	 *		"resume": Called on a resume (before cues are processed again).
+	 *		"end": Called after last cue is handled.
+	 * cueFunction: A default function that take two parameters (cue type, cue content), or a map of cue type to functions. 
+	 *		For the map:
+	 *			Cue type must be lowercase. 
+	 *			Function should accept one parameter: parameter as content. 
+	 *		Called function should return false to halt handling (true to keep going).
+	 */
+	this.createResponseHandler = function(eventFunctionMap, cueFunction)
+	{
+		return new TAMEResponseHandler(eventFunctionMap, cueFunction);
+	};
+
+	/**
+	 * Assists in parsing a cue with formatted text (TEXTF cue), or one known to have formatted text.
+	 * @param sequence the character sequence to parse.
+	 * @param tagStartFunc the function called on tag start. Should take one argument: the tag name.  
+	 * @param tagEndFunc the function called on tag end. Should take one argument: the tag name.  
+	 * @param textFunc the function called on tag contents (does not include tags - it is recommended to maintain a stack). Should take one argument: the text read inside tags.  
+	 */
+	this.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
+	{
+		return Util.parseFormatted(sequence, tagStartFunc, tagEndFunc, textFunc);
 	};
 
 	return this;

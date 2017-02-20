@@ -329,6 +329,125 @@ Util.formatDate = function(date, formatstring, utc)
 	return out;
 };
 
+/**
+ * Assists in parsing a cue with formatted text (TEXTF cue), or one known to have formatted text.
+ * @param sequence the character sequence to parse.
+ * @param tagStartFunc the function called on tag start. Should take one argument: the tag name.  
+ * @param tagEndFunc the function called on tag end. Should take one argument: the tag name.  
+ * @param textFunc the function called on tag contents (does not include tags - it is recommended to maintain a stack). Should take one argument: the text read inside tags.  
+ */
+Util.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
+{
+	var builder = '';
+	var tagStack = [];
+	
+	var emitText = function()
+	{
+		if (builder.length == 0)
+			return;
+		
+		textFunc(builder);
+		builder = '';
+	}
+
+	var emitTag = function()
+	{
+		if (builder.length == 0)
+			return;
+
+		var tag = builder;
+		builder = '';
+		
+		if (tag == '/')
+		{
+			if (tagStack.length == 0)
+				return;
+			tagEndFunc(tagStack.pop());
+		}
+		else
+		{
+			tagStack.push(tag);
+			tagStartFunc(tag);
+		}
+	}
+	
+	const STATE_TEXT = 0;
+	const STATE_TAG_MAYBE = 1;
+	const STATE_TAG = 2;
+	const STATE_TAG_END_MAYBE = 3;
+	
+	var state = STATE_TEXT;
+	var len = sequence.length, i = 0;
+
+	while (i < len)
+	{
+		var c = sequence.charAt(i);
+
+		switch (state)
+		{
+			case STATE_TEXT:
+			{
+				if (c == '[')
+					state = STATE_TAG_MAYBE;
+				else
+					builder += (c);
+			}
+			break;
+
+			case STATE_TAG_MAYBE:
+			{
+				if (c == '[')
+				{
+					state = STATE_TEXT;
+					builder += (c);
+				}
+				else
+				{
+					state = STATE_TAG;
+					emitText();
+					i--;
+				}
+			}
+			break;
+			
+			case STATE_TAG:
+			{
+				if (c == ']')
+					state = STATE_TAG_END_MAYBE;
+				else
+					builder += (c);
+			}
+			break;
+			
+			case STATE_TAG_END_MAYBE:
+			{
+				if (c == ']')
+				{
+					state = STATE_TAG;
+					builder += (c);
+				}
+				else
+				{
+					state = STATE_TEXT;
+					emitTag();
+					i--;
+				}
+			}
+			break;
+		}
+		
+		i++;
+	}
+	
+	if (state == STATE_TAG_END_MAYBE)
+		emitTag();
+	
+	emitText();
+	while (tagStack.length > 0)
+		tagEndFunc(tagStack.pop());
+};
+
+
 //##[[EXPORTJS-END
 
 
