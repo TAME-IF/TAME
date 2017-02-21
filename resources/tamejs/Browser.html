@@ -13,13 +13,58 @@
 	<head>
 		<title>TAME Module [CHANGE THIS]</title>
 		<style type="text/css">
-		
+		body {
+			font-size: 14pt;
+			font-family: monospace;
+		}
+		pre {
+			display: block;
+			font-family: monospace;
+			white-space: pre-wrap;
+			word-wrap: break-word;
+			margin: 0;
+		}
+		#output-div {
+			position: fixed;
+			left: 0;
+			right: 0;
+			top: 0;
+			margin: 0;
+			margin-bottom: 1.5em;
+			overflow-y: auto;
+		}
+		#input-div {
+			position: fixed;
+			width: 100%;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			margin: 0;
+			height: 1.5em;
+			border-top: 1px solid #000;
+		}
+		#input-box {
+			font-size: 100%;
+			font-family: monospace;
+			background-color: #ccc;
+			border: none;
+			position: relative;
+			width: 100%;
+			height: 1.5em;
+			margin: 0;
+		}
+		#input-box:focus {
+			outline: none;
+			background-color: #fff;
+		}
 		</style>
 	</head>
 	<body>
 		<div id="output-div">
+			<pre id="output-box"></pre>
 		</div>
 		<div id="input-div">
+			<div><input id="input-box" />
 		</div>
 		<script type="text/javascript">
 		// Engine plus Module.

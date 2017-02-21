@@ -71,7 +71,7 @@ function debugCue(type, content) {
 }
 
 /**
- * Handles a TAME cue (for debugging).
+ * Handles a TAME cue.
  * @return true to continue handling, false to halt.
  */
 function doCue(type, content) {
