@@ -19,12 +19,12 @@ var TAME = new (function(theader, tactions, telements){
 	
 Util.nanoTime = (function(){
 	// Webkit Browser
-	if (window && window.performance)
+	if (performance)
 	{
 		return function() 
 		{
 			// ms to ns (us res)
-			return parseInt(window.performance.now() * 1e6, 10);
+			return parseInt(performance.now() * 1e6, 10);
 		};	
 	}
 	else
