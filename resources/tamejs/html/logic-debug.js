@@ -1,4 +1,3 @@
-//##[[EXPORTJS-START
 var $Q = function(x){return document.querySelectorAll(x);};
 var $Q1 = function(x){return document.querySelector(x);};
 
@@ -85,4 +84,3 @@ function _TAMESetup() {
 }
 
 BodyElement.onload = _TAMESetup;
-//##[[EXPORTJS-END

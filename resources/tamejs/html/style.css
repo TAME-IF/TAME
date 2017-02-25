@@ -1,4 +1,3 @@
-//##[[EXPORTJS-START
 body {
 	font-size: 14pt;
 	font-family: monospace;
@@ -32,9 +31,9 @@ pre {
 	width: 100%;
 	height: 1.5em;
 	margin: 0;
+	padding-left: 0.5em;
 }
 #input-box:focus {
 	outline: none;
 	background-color: #fff;
 }
-//##[[EXPORTJS-END

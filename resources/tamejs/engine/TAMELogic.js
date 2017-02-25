@@ -376,14 +376,11 @@ TLogic.processAction = function(request, response, tameAction)
 TLogic.processActionLoop = function(request, response) 
 {
 	var initial = true;
-
-	var context = request.moduleContext;
-	
 	while (request.hasActionItems())
 	{
 		var tameAction = request.nextActionItem();
 		TLogic.processAction(request, response, tameAction);
-		if (!request.hasActionItems())
+		if (!request.hasActionItems() && initial)
 		{
 			initial = false;
 			TLogic.doAfterRequest(request, response);

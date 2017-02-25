@@ -77,6 +77,8 @@ public final class TAMEJSExporter
 	private static final String JS_DIRECTIVE_GENERATE = JS_DIRECTIVE_PREFIX + "GENERATE";
 	/** Reader directive - INCLUDE */
 	private static final String JS_DIRECTIVE_INCLUDE = JS_DIRECTIVE_PREFIX + "INCLUDE";
+	/** Reader directive - INCLUDEALL */
+	private static final String JS_DIRECTIVE_INCLUDEALL = JS_DIRECTIVE_PREFIX + "INCLUDEALL";
 	/** Reader directive - END */
 	private static final String JS_DIRECTIVE_END = JS_DIRECTIVE_PREFIX + "END";
 	
@@ -208,21 +210,21 @@ public final class TAMEJSExporter
 	public static void export(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
 		if (WRAPPER_NODE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeJS.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeJS.js", false);
 		else if (WRAPPER_MODULE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Module.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Module.js", false);
 		else if (WRAPPER_ENGINE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Engine.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Engine.js", false);
 		else if (WRAPPER_NODEENGINE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeEngine.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeEngine.js", false);
 		else if (WRAPPER_BROWSER.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js", false);
 		else if (WRAPPER_HTML.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.html");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.html", false);
 		else if (WRAPPER_HTML_DEBUG.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser-Debug.html");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser-Debug.html", false);
 		else
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js");
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js", false);
 	}
 
 	/**
@@ -232,8 +234,9 @@ public final class TAMEJSExporter
 	 * @param module the module to eventually write to.
 	 * @param options the exporter options.
 	 * @param path the import resource path.
+	 * @param entire if true, do not wait for the start directive to read.
 	 */
-	private static void processResource(Writer writer, TAMEModule module, TAMEJSExporterOptions options, String path) throws IOException
+	private static void processResource(Writer writer, TAMEModule module, TAMEJSExporterOptions options, String path, boolean entire) throws IOException
 	{
 		String parentPath = path.substring(0, path.lastIndexOf('/') + 1);
 		
@@ -248,6 +251,10 @@ public final class TAMEJSExporter
 			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 			String line = null;
 			boolean startWrite = false;
+			
+			if (entire)
+				startWrite = true;
+			
 			while ((line = br.readLine()) != null)
 			{
 				String trimline = line.trim();
@@ -264,14 +271,20 @@ public final class TAMEJSExporter
 				{
 					generateResource(writer, module, options, trimline.substring(JS_DIRECTIVE_GENERATE.length() + 1).trim());
 				}
+				else if (trimline.startsWith(JS_DIRECTIVE_INCLUDEALL))
+				{
+					String nextPath = parentPath + trimline.substring(JS_DIRECTIVE_INCLUDEALL.length() + 1).trim();
+					processResource(writer, module, options, nextPath, true);
+				}
 				else if (trimline.startsWith(JS_DIRECTIVE_INCLUDE))
 				{
 					String nextPath = parentPath + trimline.substring(JS_DIRECTIVE_INCLUDE.length() + 1).trim();
-					processResource(writer, module, options, nextPath);
+					processResource(writer, module, options, nextPath, false);
 				}
 				else if (trimline.startsWith(JS_DIRECTIVE_END))
 				{
-					break;
+					if (!entire)
+						break;
 				}
 				else
 				{

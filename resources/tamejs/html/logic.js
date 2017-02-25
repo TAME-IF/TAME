@@ -1,4 +1,3 @@
-//##[[EXPORTJS-START
 var $Q = function(x){return document.querySelectorAll(x);};
 var $Q1 = function(x){return document.querySelector(x);};
 
@@ -124,7 +123,6 @@ function readResponse() {
 
 }
 
-
 function startPause() {
 	InputBox.value = '(CONTINUE)';
 	InputBox.focus();
@@ -154,7 +152,7 @@ function endModule() {
 	InputBox.display = 'none';
 }
 
-function onSendInput() {
+function onSendInput(input) {
 	InputBox.value = '';
 	InputBox.focus();
 }
@@ -171,6 +169,26 @@ function formatText(text) {
 	textBuffer += text;
 }
 
+var CueEvents = 
+{
+	"start": function() 
+	{
+		InputBox.disabled = true;
+	},
+	"pause": function() 
+	{
+		InputBox.disabled = true;
+	},
+	"resume": function()
+	{
+		
+	},
+	"end": function()
+	{
+		InputBox.disabled = false;
+	}
+};
+
 function _TAMESetup() {
 	
 	var modulectx = TAME.newContext();
@@ -186,18 +204,17 @@ function _TAMESetup() {
 				readResponse();
 			} else {
 				var val = InputBox.value;
-				onSendInput();
+				onSendInput(val);
 				println("> "+val);
-				CueHandler = TAME.createResponseReader(TAME.interpret(modulectx, val), {}, handleCue);
+				CueHandler = TAME.createResponseReader(TAME.interpret(modulectx, val), CueEvents, handleCue);
 				readResponse();
 			}
 		}
 	});
 	
-	CueHandler = TAME.createResponseReader(TAME.initialize(modulectx), {}, handleCue);
+	CueHandler = TAME.createResponseReader(TAME.initialize(modulectx), CueEvents, handleCue);
 	readResponse();
 	startModule();
 }
 
 BodyElement.onload = _TAMESetup;
-//##[[EXPORTJS-END
