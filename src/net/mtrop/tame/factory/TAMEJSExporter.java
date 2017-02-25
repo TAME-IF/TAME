@@ -60,6 +60,8 @@ public final class TAMEJSExporter
 	public static final String WRAPPER_BROWSER = "browser";
 	/** Wrapper Type: Browser JS, Embedded Module, HTML Body wrapper. */
 	public static final String WRAPPER_HTML = "html";
+	/** Wrapper Type: Browser JS, Embedded Module, HTML Body wrapper (debug version). */
+	public static final String WRAPPER_HTML_DEBUG = "html-debug";
 
 	/** JS Module Default Variable Name */
 	private static final String DEFAULT_MODULE_VARNAME = "ModuleData";
@@ -217,6 +219,8 @@ public final class TAMEJSExporter
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js");
 		else if (WRAPPER_HTML.equalsIgnoreCase(options.getWrapperName()))
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.html");
+		else if (WRAPPER_HTML_DEBUG.equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser-Debug.html");
 		else
 			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js");
 	}

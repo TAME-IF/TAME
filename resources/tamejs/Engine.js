@@ -51,7 +51,7 @@ Util.fromBase64 = function(data){return atob(data);};
 //##[[EXPORTJS-INCLUDE engine/objects/TAction.js
 //##[[EXPORTJS-INCLUDE engine/objects/TModule.js
 //##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
-//##[[EXPORTJS-INCLUDE engine/objects/TResponseHandler.js
+//##[[EXPORTJS-INCLUDE engine/objects/TResponseReader.js
 //##[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	/**
@@ -98,21 +98,22 @@ Util.fromBase64 = function(data){return atob(data);};
 	};
 
 	/**
-	 * Creates a response handler.
-	 * eventFunctionMap: A map of functions to call on certain events.
+	 * Creates a new iterable response handler.
+	 * @param response the response to handle.
+	 * @param eventFunctionMap a map of functions to call on certain events.
 	 * 		"start": Called before first cue is handled.
 	 *		"pause": Called when a pause occurs (after a cue function).
 	 *		"resume": Called on a resume (before cues are processed again).
 	 *		"end": Called after last cue is handled.
-	 * cueFunction: A default function that take two parameters (cue type, cue content), or a map of cue type to functions. 
+	 * @param cueFunction A default function that take two parameters (cue type, cue content), or a map of cue type to functions. 
 	 *		For the map:
 	 *			Cue type must be lowercase. 
 	 *			Function should accept one parameter: parameter as content. 
 	 *		Called function should return false to halt handling (true to keep going).
 	 */
-	this.createResponseHandler = function(eventFunctionMap, cueFunction)
+	this.createResponseReader = function(response, eventFunctionMap, cueFunction)
 	{
-		return new TAMEResponseHandler(eventFunctionMap, cueFunction);
+		return new TResponseReader(response, eventFunctionMap, cueFunction);
 	};
 
 	/**

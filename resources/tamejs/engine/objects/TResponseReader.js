@@ -11,20 +11,23 @@
 //##[[EXPORTJS-START
 
 /**
- * Creates a response handler.
- * eventFunctionMap: A map of functions to call on certain events.
+ * Creates a new iterable response handler.
+ * @param tresponse the response to handle.
+ * @param eventFunctionMap a map of functions to call on certain events.
  * 		"start": Called before first cue is handled.
  *		"pause": Called when a pause occurs (after a cue function).
  *		"resume": Called on a resume (before cues are processed again).
  *		"end": Called after last cue is handled.
- * cueFunction: A default function that take two parameters (cue type, cue content), or a map of cue type to functions. 
+ * @param cueFunction A default function that take two parameters (cue type, cue content), or a map of cue type to functions. 
  *		For the map:
  *			Cue type must be lowercase. 
  *			Function should accept one parameter: parameter as content. 
  *		Called function should return false to halt handling (true to keep going).
  */
-var TAMEResponseHandler = function(eventFunctionMap, cueFunction)
+var TResponseReader = function(tresponse, eventFunctionMap, cueFunction)
 {
+	this.nextCue = 0;
+	this.currentResponse = tresponse;
 	this.eventFunctionMap = eventFunctionMap;
 	this.cueFunctionDefault = null;
 	this.cueFunctionMap = null;
@@ -33,17 +36,22 @@ var TAMEResponseHandler = function(eventFunctionMap, cueFunction)
 		this.cueFunctionDefault = cueFunction;
 	else
 		this.cueFunctionMap = cueFunction;
-	
-	// current state.
-	this.nextCue = 0;
-	this.currentResponse = null;
 }
+
+/**
+ * Checks if there are more cues to read.
+ * @return true if so, false if not.
+ */
+TResponseReader.prototype.hasMoreCues = function()
+{
+	return this.nextCue < this.currentResponse.responseCues.length;
+};
 
 /**
  * Resumes handling a response.
  * @return false if, on return, there are no more cues to process, or true if so (resume() should then be called to resume).
  */
-TAMEResponseHandler.prototype.resume = function()
+TResponseReader.prototype.read = function()
 {
 	if (!this.currentResponse)
 		throw 'resume() before handleResponse()!';
@@ -59,9 +67,8 @@ TAMEResponseHandler.prototype.resume = function()
 			this.eventFunctionMap['resume']();
 	}
 	
-	var cuelen = this.currentResponse.responseCues.length;
 	var keepGoing = true;
-	while (this.nextCue < cuelen && keepGoing) 
+	while (this.hasMoreCues() && keepGoing) 
 	{
 		var cue = this.currentResponse.responseCues[this.nextCue++];
 		if (this.cueFunctionDefault)
@@ -70,7 +77,7 @@ TAMEResponseHandler.prototype.resume = function()
 			keepGoing = this.cueFunctionMap[cue.type.toLowerCase()](cue.content);
 	}
 	
-	if (this.nextCue < cuelen)
+	if (this.hasMoreCues())
 	{
 		if (this.eventFunctionMap['pause'])
 			this.eventFunctionMap['pause']();
@@ -82,19 +89,6 @@ TAMEResponseHandler.prototype.resume = function()
 			this.eventFunctionMap['end']();
 		return false;
 	}
-};
-
-/**
- * Handles a response. 
- * Resets state.
- * @param tresponse the response to handle.
- * @return false if, on return, there are no more cues to process, or true if so (resume() should then be called to resume).
- */
-TAMEResponseHandler.prototype.handleResponse = function(tresponse)
-{
-	this.nextCue = 0;
-	this.currentResponse = tresponse;
-	return this.resume();
 };
 
 //##[[EXPORTJS-END

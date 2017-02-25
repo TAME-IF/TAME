@@ -72,6 +72,7 @@ public final class TAMECompilerMain
 		put(TAMEJSExporter.WRAPPER_NODE);
 		put(TAMEJSExporter.WRAPPER_BROWSER);
 		put(TAMEJSExporter.WRAPPER_HTML);
+		put(TAMEJSExporter.WRAPPER_HTML_DEBUG);
 	}};
 	
 	// Scan options.
@@ -338,7 +339,7 @@ public final class TAMECompilerMain
 			{
 				if (Common.isEmpty(jsOptions.wrapperName))
 					options.fileOutPath = DEFAULT_OUTFILE_JS;
-				else if (TAMEJSExporter.WRAPPER_HTML.equalsIgnoreCase(jsOptions.wrapperName))
+				else if (TAMEJSExporter.WRAPPER_HTML.equalsIgnoreCase(jsOptions.wrapperName) || TAMEJSExporter.WRAPPER_HTML_DEBUG.equalsIgnoreCase(jsOptions.wrapperName))
 					options.fileOutPath = DEFAULT_OUTFILE_HTML;
 				else
 					options.fileOutPath = DEFAULT_OUTFILE_JS;

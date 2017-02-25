@@ -3,8 +3,8 @@ var $Q = function(x){return document.querySelectorAll(x);};
 var $Q1 = function(x){return document.querySelector(x);};
 
 var InputBox = $Q1("#input-box");
-var OutputDiv = $Q1("#output-div");
 var OutputBox = $Q1("#output-box");
+var BodyElement = $Q1("body");
 
 var REGEX_AMP = /&/g;
 var REGEX_LT = /</g;
@@ -20,7 +20,7 @@ function print(text) {
 		return;
 	text = safetags(text);
 	OutputBox.innerHTML = OutputBox.innerHTML + text;
-	OutputDiv.scrollTop = OutputDiv.scrollHeight
+	BodyElement.scrollTop = BodyElement.scrollHeight
 }
 
 function println(text) {
@@ -30,46 +30,13 @@ function println(text) {
 		print(text + '\n');
 }
 
-function withEscChars(text) {
-	var t = JSON.stringify(text);
-	return t.substring(1, t.length - 1);
-}
-
-/**
- * Handles a TAME cue (for debugging).
- * @return true to continue handling, false to halt.
- */
-function debugCue(type, content) {
-
-	type = type.toLowerCase();
-	println('['+type+'] '+withEscChars(content));
-	if (type === 'quit' || type === 'fatal')
-		stop = true;
-		
-	return true;
-}
-
 var stop = false;
 var pause = false;
+var waitTime = 0;
+var waiting = false;
 var textBuffer = '';
 
-function startFormatTag(tag) {
-	// Nothing
-}
-
-function endFormatTag(tag) {
-	// Nothing
-}
-
-function formatText(text) {
-	textBuffer += text;
-}
-
-/**
- * Handles a TAME cue.
- * @return true to continue handling, false to halt.
- */
-function doCue(type, content) {
+function handleCue(type, content) {
 	
 	type = type.toLowerCase();
 	
@@ -93,8 +60,8 @@ function doCue(type, content) {
 			return true;
 			
 		case 'wait':
-			sleep(parseInt(content, 10));
-			return true;
+			waitTime = parseInt(content, 10);
+			return false;
 
 		case 'pause':
 			pause = true;
@@ -124,48 +91,113 @@ function doCue(type, content) {
 	
 }
 
-var CueHandler = TAME.createResponseHandler({}, doCue);
-var DebugCueHandler = TAME.createResponseHandler({}, debugCue);
+var CueHandler = null;
 
-function processResponse(response, debug) {
+function readResponse() {
 	
-	var h = debug ? DebugCueHandler : CueHandler;
-	var remainder = h.handleResponse(response);
-	
-	while (!stop && remainder) {
-		if (stop) break;
-		// TODO: Fix.
-		remainder = h.resume();
+	if (waiting) {
+		waiting = false;
+		endWait();
 	}
-	
-	if (stop)
-		InputBox.disabled = true;
+	if (CueHandler.read()) {
+		if (stop)
+			InputBox.disabled = true;
+		else if (pause)
+			startPause();
+		else if (waitTime > 0) {
+			startWait();
+			waiting = true;
+			setTimeout(readResponse, waitTime);
+			waitTime = 0;
+		}
+	} else if (stop) {
+		endModule();
+	} 
 	
 	if (textBuffer.length > 0) {
 		print(textBuffer);
 		textBuffer = '';
 	}
-	println();
+
+	if (!CueHandler.hasMoreCues())
+		println();
+
 }
 
-function _TAMESetup() {
-	var modulectx = TAME.newContext();
-	InputBox.addEventListener("keydown", function(event)
-	{
-		var trace = event.shiftKey;
-		var debug = event.ctrlKey;
-		if (event.keyCode == 13) // enter
-		{
-			event.preventDefault();
-			var val = InputBox.value;
-			InputBox.value = '';
-			processResponse(TAME.interpret(modulectx, val, trace), debug);
-		}
-	});
-	
-	processResponse(TAME.initialize(modulectx));
+
+function startPause() {
+	InputBox.value = '(CONTINUE)';
 	InputBox.focus();
 }
 
-$Q1("body").onload = _TAMESetup;
+function endPause() {
+	InputBox.value = '';
+	InputBox.focus();
+}
+
+function startWait() {
+	InputBox.disabled = true;
+}
+
+function endWait() {
+	InputBox.disabled = false;
+	InputBox.focus();
+}
+
+function startModule() {
+	InputBox.disabled = false;
+	InputBox.focus();
+}
+
+function endModule() {
+	InputBox.disabled = true;
+	InputBox.display = 'none';
+}
+
+function onSendInput() {
+	InputBox.value = '';
+	InputBox.focus();
+}
+
+function startFormatTag(tag) {
+	// Nothing
+}
+
+function endFormatTag(tag) {
+	// Nothing
+}
+
+function formatText(text) {
+	textBuffer += text;
+}
+
+function _TAMESetup() {
+	
+	var modulectx = TAME.newContext();
+	InputBox.addEventListener("keydown", function(event) {
+		// enter
+		if (event.keyCode == 13) {
+			
+			event.preventDefault();
+			
+			if (pause) {
+				pause = false;
+				endPause();
+				readResponse();
+			} else {
+				var val = InputBox.value;
+				onSendInput();
+				println("> "+val);
+				CueHandler = TAME.createResponseReader(TAME.interpret(modulectx, val), {}, handleCue);
+				readResponse();
+			}
+		}
+	});
+	
+	CueHandler = TAME.createResponseReader(TAME.initialize(modulectx), {}, handleCue);
+	readResponse();
+	startModule();
+}
+
+BodyElement.onload = _TAMESetup;
 //##[[EXPORTJS-END

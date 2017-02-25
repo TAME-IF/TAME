@@ -135,7 +135,7 @@ function doCue(type, content) {
 	
 }
 
-var handler = TAME.createResponseHandler({}, debug ? debugCue : doCue);
+var ResponseHandler = null;
 
 function responseStop(notDone)
 {
@@ -179,7 +179,8 @@ function startResponse(response)
 		println('Cues: '+response.responseCues.length);
 	}
 	println();
-	responseStop(handler.handleResponse(response));
+	ResponseHandler = TAME.createResponseReader(response, {}, debug ? debugCue : doCue);
+	responseStop(ResponseHandler.read());
 }
 
 const COMMAND_SAVE = '!save';
@@ -190,7 +191,7 @@ rl.on('line', function(line){
 	line = line.trim();
 	if (pause) {
 		pause = false;
-		responseStop(handler.resume());
+		responseStop(ResponseHandler.read());
 	} else {
 		if (COMMAND_SAVE == line.substring(0, COMMAND_SAVE.length))
 		{
