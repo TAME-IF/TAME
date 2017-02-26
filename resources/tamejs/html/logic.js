@@ -5,19 +5,9 @@ var InputBox = $Q1("#input-box");
 var OutputBox = $Q1("#output-box");
 var BodyElement = $Q1("body");
 
-var REGEX_AMP = /&/g;
-var REGEX_LT = /</g;
-var REGEX_GT = />/g;
-var REGEX_QUOT = /\"/g;
-
-function safetags(text) {
-	return text.replace(REGEX_QUOT, '&quot;').replace(REGEX_AMP, '&amp;').replace(REGEX_LT, '&lt;').replace(REGEX_GT, '&gt;');
-}
-
 function print(text) {
 	if (!text)
 		return;
-	text = safetags(text);
 	OutputBox.innerHTML = OutputBox.innerHTML + text;
 	BodyElement.scrollTop = BodyElement.scrollHeight
 }
@@ -189,7 +179,7 @@ var CueEvents =
 	}
 };
 
-function _TAMESetup() {
+BodyElement.onload = function() {
 	
 	var modulectx = TAME.newContext();
 	InputBox.addEventListener("keydown", function(event) {
@@ -215,6 +205,4 @@ function _TAMESetup() {
 	CueHandler = TAME.createResponseReader(TAME.initialize(modulectx), CueEvents, handleCue);
 	readResponse();
 	startModule();
-}
-
-BodyElement.onload = _TAMESetup;
+};
