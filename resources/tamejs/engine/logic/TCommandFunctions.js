@@ -1992,6 +1992,15 @@ var TCommandFunctions =
 		}
 	},
 
+	/* CONTEXTIDENTITY */
+	{
+		"name": 'CONTEXTIDENTITY', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			request.pushValue(TValue.createString(request.peekContext().identity));
+		}
+	},
+
 ];
 
 //##[[EXPORTJS-END

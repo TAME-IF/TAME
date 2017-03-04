@@ -34,6 +34,7 @@ import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.interrupt.EndInterrupt;
+import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
@@ -420,6 +421,25 @@ public final class TAMELogic implements TAMEConstants
 	}
 	
 	/**
+	 * Calls a procedure from an arbitrary context, using the bound element as a lineage search point.
+	 * @param request the current request.
+	 * @param response the current response.
+	 * @param procedureName the procedure name/value.
+	 * @param originContext the origin context (and then element).
+	 * @param silent if true, do not throw an error if the procedure was not found.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void callProcedureFrom(TAMERequest request, TAMEResponse response, Value procedureName, TElementContext<?> originContext, boolean silent) throws TAMEInterrupt 
+	{
+		TElement element = originContext.getElement();
+		Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, procedureName));
+		if (block != null)
+			callBlock(request, response, originContext, block);
+		else if (!silent)
+			response.addCue(CUE_ERROR, "No such procedure ("+procedureName.asString()+") in lineage of element " + element);
+	}
+
+	/**
 	 * Checks if an object is accessible to a player.
 	 * @param request the request object.
 	 * @param response the response object.
@@ -612,6 +632,72 @@ public final class TAMELogic implements TAMEConstants
 			
 		}
 	
+	}
+
+	/**
+	 * Resolves a list of all objects contained by an object container.
+	 * @param moduleContext the module context.
+	 * @param varObjectContainer the value to resolve via module context.
+	 * @return an iterable list of objects, or null if the value does not refer to an object container.
+	 * @throws ErrorInterrupt if a major error occurs.
+	 */
+	public static Iterable<TObject> resolveObjectList(TAMEModuleContext moduleContext, Value varObjectContainer) throws ErrorInterrupt 
+	{
+		return moduleContext.getOwnershipMap().getObjectsOwnedByElement((ObjectContainer)resolveElement(moduleContext, varObjectContainer));
+	}
+
+	/**
+	 * Resolves an element by a value.
+	 * @param moduleContext the module context.
+	 * @param varElement the value to resolve via module context.
+	 * @return the corresponding element, or null if the value does not refer to an object container.
+	 * @throws ErrorInterrupt if a major error occurs.
+	 */
+	public static TElement resolveElement(TAMEModuleContext moduleContext, Value varElement) throws ErrorInterrupt 
+	{
+		switch (varElement.getType())
+		{
+			default:
+				return null;
+			case OBJECT:
+				return moduleContext.resolveObject(varElement.asString());
+			case ROOM:
+				return moduleContext.resolveRoom(varElement.asString());
+			case PLAYER:
+				return moduleContext.resolvePlayer(varElement.asString());
+			case CONTAINER:
+				return moduleContext.resolveContainer(varElement.asString());
+			case WORLD:
+				return moduleContext.resolveWorld();
+		}
+		
+	}
+
+	/**
+	 * Resolves an element context by a value.
+	 * @param moduleContext the module context.
+	 * @param varElement the value to resolve via module context.
+	 * @return the corresponding element context, or null if the value does not refer to an object container.
+	 * @throws ErrorInterrupt if a major error occurs.
+	 */
+	public static TElementContext<?> resolveElementContext(TAMEModuleContext moduleContext, Value varElement) throws ErrorInterrupt 
+	{
+		switch (varElement.getType())
+		{
+			default:
+				return null;
+			case OBJECT:
+				return moduleContext.resolveObjectContext(varElement.asString());
+			case ROOM:
+				return moduleContext.resolveRoomContext(varElement.asString());
+			case PLAYER:
+				return moduleContext.resolvePlayerContext(varElement.asString());
+			case CONTAINER:
+				return moduleContext.resolveContainerContext(varElement.asString());
+			case WORLD:
+				return moduleContext.resolveWorldContext();
+		}
+		
 	}
 
 	/**

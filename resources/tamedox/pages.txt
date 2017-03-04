@@ -97,4 +97,5 @@ included/commands/nocurrentplayer.html command-nocurrentplayer.html
 included/commands/currentroomis.html command-currentroomis.html
 included/commands/nocurrentroom.html command-nocurrentroom.html
 included/commands/identity.html command-identity.html
+included/commands/contextidentity.html command-contextidentity.html
 included/diagrams.html diagrams.html
