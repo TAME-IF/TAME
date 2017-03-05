@@ -1,0 +1,38 @@
+module
+{
+	title = "ContextIdentity Test";
+}
+
+action general a_quit named "quit";
+action transitive a_drive named "drive";
+
+object archetype o_vehicle
+{
+	onaction(a_drive)
+	{
+		textln(contextidentity() +": VROOM!");
+	}
+}
+
+object o_boat : o_vehicle named "boat"
+{
+	onaction(a_drive)
+	{
+		textln(contextidentity() +": BLUBLUBLUB");
+	}
+}
+
+object o_car : o_vehicle named "car";
+
+world
+{
+	onaction(a_quit)
+	{
+		quit;
+	}
+	afterModuleInit()
+	{
+		giveobject(world, o_car);
+		giveobject(world, o_boat);
+	}
+}
