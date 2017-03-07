@@ -44,15 +44,18 @@ var pause = false;
 var textBuffer = '';
 var lastColumn = 0;
 
-function startFormatTag(tag) {
+function startFormatTag(tag)
+{
 	// Nothing
 }
 
-function endFormatTag(tag) {
+function endFormatTag(tag)
+{
 	// Nothing
 }
 
-function formatText(text) {
+function formatText(text) 
+{
 	textBuffer += text;
 }
 
@@ -60,10 +63,10 @@ function formatText(text) {
  * Handles a TAME cue (for debugging).
  * @return true to continue handling, false to halt.
  */
-function debugCue(type, content) {
-
-	type = type.toLowerCase();
-	println('['+type+'] '+withEscChars(content));
+function debugCue(cue)
+{
+	var type = type.toLowerCase();
+	println('['+type+'] '+withEscChars(cue.content));
 	if (type === 'quit' || type === 'fatal')
 		stop = true;
 		
@@ -74,9 +77,10 @@ function debugCue(type, content) {
  * Handles a TAME cue.
  * @return true to continue handling, false to halt.
  */
-function doCue(type, content) {
-	
-	type = type.toLowerCase();
+function doCue(cue)
+{
+	var type = cue.type.toLowerCase();
+	var content = cue.content;
 	
 	if (type !== 'text' && type !== 'textf')
 	{
@@ -84,7 +88,8 @@ function doCue(type, content) {
 		textBuffer = '';
 	}
 	
-	switch (type) {
+	switch (type)
+	{
 	
 		case 'quit':
 			stop = true;
@@ -172,14 +177,16 @@ function responseStop(notDone)
  */
 function startResponse(response) 
 {
-	if (debug) {
+	var handler = debug ? debugCue : doCue;
+	if (debug)
+	{
 		println('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
 		println('Request time: '+(response.requestNanos/1000000.0)+' ms');
 		println('Commands: '+response.commandsExecuted);
 		println('Cues: '+response.responseCues.length);
 	}
 	println();
-	ResponseHandler = TAME.createResponseReader(response, {}, debug ? debugCue : doCue);
+	ResponseHandler = TAME.createResponseReader(response, {"onCue":handler});
 	responseStop(ResponseHandler.read());
 }
 

@@ -105,19 +105,15 @@ Util.fromBase64 = (function()
 	 * Creates a new iterable response handler.
 	 * @param response the response to handle.
 	 * @param eventFunctionMap a map of functions to call on certain events.
-	 * 		"start": Called before first cue is handled.
-	 *		"pause": Called when a pause occurs (after a cue function).
-	 *		"resume": Called on a resume (before cues are processed again).
-	 *		"end": Called after last cue is handled.
-	 * @param cueFunction A default function that take two parameters (cue type, cue content), or a map of cue type to functions. 
-	 *		For the map:
-	 *			Cue type must be lowercase. 
-	 *			Function should accept one parameter: parameter as content. 
-	 *		Called function should return false to halt handling (true to keep going).
+	 * 		"onStart": Called before first cue is handled.
+	 *		"onPause": Called when a pause occurs (after a cue function).
+	 *		"onResume": Called on a resume (before cues are processed again).
+	 *		"onCue": Called to process a cue (should return false to halt handling (true to keep going)).
+	 *		"onEnd": Called after last cue is handled.
 	 */
-	this.createResponseReader = function(response, eventFunctionMap, cueFunction)
+	this.createResponseReader = function(response, eventFunctionMap)
 	{
-		return new TResponseReader(response, eventFunctionMap, cueFunction);
+		return new TResponseReader(response, eventFunctionMap);
 	};
 
 	/**

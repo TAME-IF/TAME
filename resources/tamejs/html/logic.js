@@ -5,14 +5,16 @@ var InputBox = $Q1("#input-box");
 var OutputBox = $Q1("#output-box");
 var BodyElement = $Q1("body");
 
-function print(text) {
+function print(text) 
+{
 	if (!text)
 		return;
 	OutputBox.innerHTML = OutputBox.innerHTML + text;
 	BodyElement.scrollTop = BodyElement.scrollHeight
 }
 
-function println(text) {
+function println(text) 
+{
 	if (!text)
 		print('\n');
 	else
@@ -24,61 +26,6 @@ var pause = false;
 var waitTime = 0;
 var waiting = false;
 var textBuffer = '';
-
-function handleCue(type, content) {
-	
-	type = type.toLowerCase();
-	
-	if (type !== 'text' && type !== 'textf') {
-		print(textBuffer);
-		textBuffer = '';
-	}
-	
-	switch (type) {
-	
-		case 'quit':
-			stop = true;
-			return false;
-		
-		case 'text':
-			textBuffer += content;
-			return true;
-		
-		case 'textf':
-			TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText);
-			return true;
-			
-		case 'wait':
-			waitTime = parseInt(content, 10);
-			return false;
-
-		case 'pause':
-			pause = true;
-			return false;
-
-		case 'trace':
-			// Ignore trace.
-			return true;
-
-		case 'tip':	
-			println('(TIP: '+content+')');
-			return true;
-
-		case 'info':	
-			println('INFO: '+content);
-			return true;
-
-		case 'error':	
-			println('\n!ERROR! '+content);
-			return true;
-
-		case 'fatal':
-			println('\n!!FATAL!! '+content);
-			stop = true;
-			return false;
-	}
-	
-}
 
 var CueHandler = null;
 
@@ -161,22 +108,84 @@ function formatText(text) {
 
 var CueEvents = 
 {
-	"start": function() 
+	"onStart": function() 
 	{
 		InputBox.disabled = true;
 	},
-	"pause": function() 
+	
+	"onPause": function() 
 	{
 		InputBox.disabled = true;
 	},
-	"resume": function()
+	
+	"onResume": function()
 	{
 		
 	},
-	"end": function()
+	
+	"onEnd": function()
 	{
 		InputBox.disabled = false;
+	},
+	
+	"onCue": function(cue) 
+	{
+		
+		var type = cue.type.toLowerCase();
+		var content = cue.content;
+		
+		if (type !== 'text' && type !== 'textf') 
+		{
+			print(textBuffer);
+			textBuffer = '';
+		}
+		
+		switch (type) {
+		
+			case 'quit':
+				stop = true;
+				return false;
+			
+			case 'text':
+				textBuffer += content;
+				return true;
+			
+			case 'textf':
+				TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText);
+				return true;
+				
+			case 'wait':
+				waitTime = parseInt(content, 10);
+				return false;
+
+			case 'pause':
+				pause = true;
+				return false;
+
+			case 'trace':
+				// Ignore trace.
+				return true;
+
+			case 'tip':	
+				println('(TIP: '+content+')');
+				return true;
+
+			case 'info':	
+				println('INFO: '+content);
+				return true;
+
+			case 'error':	
+				println('\n!ERROR! '+content);
+				return true;
+
+			case 'fatal':
+				println('\n!!FATAL!! '+content);
+				stop = true;
+				return false;
+		}
+		
 	}
+
 };
 
 BodyElement.onload = function() {
@@ -196,13 +205,13 @@ BodyElement.onload = function() {
 				var val = InputBox.value;
 				onSendInput(val);
 				println("> "+val);
-				CueHandler = TAME.createResponseReader(TAME.interpret(modulectx, val), CueEvents, handleCue);
+				CueHandler = TAME.createResponseReader(TAME.interpret(modulectx, val), CueEvents);
 				readResponse();
 			}
 		}
 	});
 	
-	CueHandler = TAME.createResponseReader(TAME.initialize(modulectx), CueEvents, handleCue);
+	CueHandler = TAME.createResponseReader(TAME.initialize(modulectx), CueEvents);
 	readResponse();
 	startModule();
 };

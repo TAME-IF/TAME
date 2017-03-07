@@ -14,28 +14,17 @@
  * Creates a new iterable response handler.
  * @param tresponse the response to handle.
  * @param eventFunctionMap a map of functions to call on certain events.
- * 		"start": Called before first cue is handled.
- *		"pause": Called when a pause occurs (after a cue function).
- *		"resume": Called on a resume (before cues are processed again).
- *		"end": Called after last cue is handled.
- * @param cueFunction A default function that take two parameters (cue type, cue content), or a map of cue type to functions. 
- *		For the map:
- *			Cue type must be lowercase. 
- *			Function should accept one parameter: parameter as content. 
- *		Called function should return false to halt handling (true to keep going).
+ * 		"onStart": Called before first cue is handled.
+ *		"onPause": Called when a pause occurs (after a cue function).
+ *		"onResume": Called on a resume (before cues are processed again).
+ *		"onCue": Called to process a cue (should return false to halt handling (true to keep going)).
+ *		"onEnd": Called after last cue is handled.
  */
-var TResponseReader = function(tresponse, eventFunctionMap, cueFunction)
+var TResponseReader = function(tresponse, eventFunctionMap)
 {
 	this.nextCue = 0;
 	this.currentResponse = tresponse;
 	this.eventFunctionMap = eventFunctionMap;
-	this.cueFunctionDefault = null;
-	this.cueFunctionMap = null;
-
-	if (Object.prototype.toString.call(cueFunction) === '[object Function]')
-		this.cueFunctionDefault = cueFunction;
-	else
-		this.cueFunctionMap = cueFunction;
 }
 
 /**
@@ -58,35 +47,33 @@ TResponseReader.prototype.read = function()
 	
 	if (this.nextCue == 0)
 	{
-		if (this.eventFunctionMap['start'])
-			this.eventFunctionMap['start']();
+		if (this.eventFunctionMap['onStart'])
+			this.eventFunctionMap['onStart']();
 	}
 	else
 	{
-		if (this.eventFunctionMap['resume'])
-			this.eventFunctionMap['resume']();
+		if (this.eventFunctionMap['onResume'])
+			this.eventFunctionMap['onResume']();
 	}
 	
 	var keepGoing = true;
 	while (this.hasMoreCues() && keepGoing) 
 	{
 		var cue = this.currentResponse.responseCues[this.nextCue++];
-		if (this.cueFunctionDefault)
-			keepGoing = this.cueFunctionDefault(cue.type.toLowerCase(), cue.content);
-		else
-			keepGoing = this.cueFunctionMap[cue.type.toLowerCase()](cue.content);
+		if (this.eventFunctionMap['onCue'])
+			this.eventFunctionMap['onCue'](cue);
 	}
 	
 	if (this.hasMoreCues())
 	{
-		if (this.eventFunctionMap['pause'])
-			this.eventFunctionMap['pause']();
+		if (this.eventFunctionMap['onPause'])
+			this.eventFunctionMap['onPause']();
 		return true;
 	}
 	else
 	{
-		if (this.eventFunctionMap['end'])
-			this.eventFunctionMap['end']();
+		if (this.eventFunctionMap['onEnd'])
+			this.eventFunctionMap['onEnd']();
 		return false;
 	}
 };
