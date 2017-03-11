@@ -66,7 +66,6 @@ module.exports = new (function()
 //##[[EXPORTJS-INCLUDE engine/objects/TAction.js
 //##[[EXPORTJS-INCLUDE engine/objects/TModule.js
 //##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
-//##[[EXPORTJS-INCLUDE engine/objects/TResponseReader.js
 //##[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	/**
@@ -109,21 +108,6 @@ module.exports = new (function()
 	this.interpret = function(context, inputMessage, tracing) 
 	{
 		return TLogic.handleRequest(context, inputMessage, tracing);
-	};
-
-	/**
-	 * Creates a new iterable response handler.
-	 * @param response the response to handle.
-	 * @param eventFunctionMap a map of functions to call on certain events.
-	 * 		"onStart": Called before first cue is handled.
-	 *		"onPause": Called when a pause occurs (after a cue function).
-	 *		"onResume": Called on a resume (before cues are processed again).
-	 *		"onCue": Called to process a cue (should return false to halt handling (true to keep going)).
-	 *		"onEnd": Called after last cue is handled.
-	 */
-	this.createResponseReader = function(response, eventFunctionMap)
-	{
-		return new TResponseReader(response, eventFunctionMap);
 	};
 
 	/**

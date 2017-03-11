@@ -5,11 +5,6 @@ var InputBox = $Q1("#input-box");
 var OutputBox = $Q1("#output-box");
 var BodyElement = $Q1("body");
 
-var REGEX_AMP = /&/g;
-var REGEX_LT = /</g;
-var REGEX_GT = />/g;
-var REGEX_QUOT = /\"/g;
-
 function print(text) 
 {
 	if (!text)
@@ -43,15 +38,15 @@ function handleCue(cue)
 	return true;
 }
 
-function readResponse(cueHandler)
+function readResponse(response)
 {
-	var response = cueHandler.currentResponse;
 	println('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
 	println('Request time: '+(response.requestNanos/1000000.0)+' ms');
 	println('Commands: '+response.commandsExecuted);
 	println('Cues: '+response.responseCues.length);
 
-	cueHandler.read();
+	for (i in response.responseCues) if (response.responseCues.hasOwnProperty(i))
+		handleCue(response.responseCues[i]);
 	
 	if (stop)
 		InputBox.disabled = true;
@@ -73,10 +68,10 @@ BodyElement.onload = function()
 			var val = InputBox.value;
 			InputBox.value = '';
 			println("> "+val);
-			readResponse(TAME.createResponseReader(TAME.interpret(modulectx, val, trace), {"onCue":handleCue}));
+			readResponse(TAME.interpret(modulectx, val, trace));
 		}
 	});
 	
-	readResponse(TAME.createResponseReader(TAME.initialize(modulectx), {"onCue":handleCue}));
+	readResponse(TAME.initialize(modulectx));
 	InputBox.focus();
 };

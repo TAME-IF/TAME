@@ -1,16 +1,18 @@
-var $Q = function(x){return document.querySelectorAll(x);};
 var $Q1 = function(x){return document.querySelector(x);};
 
 var InputBox = $Q1("#input-box");
+var InputDiv = $Q1("#input-div");
 var OutputBox = $Q1("#output-box");
 var BodyElement = $Q1("body");
+
+var mustContinue = false;
 
 function print(text) 
 {
 	if (!text)
 		return;
 	OutputBox.innerHTML = OutputBox.innerHTML + text;
-	BodyElement.scrollTop = BodyElement.scrollHeight
+	BodyElement.scrollTop = BodyElement.scrollHeight;
 }
 
 function println(text) 
@@ -21,197 +23,93 @@ function println(text)
 		print(text + '\n');
 }
 
-var stop = false;
-var pause = false;
-var waitTime = 0;
-var waiting = false;
-var textBuffer = '';
-
-var CueHandler = null;
-
-function readResponse() {
-	
-	if (waiting) {
-		waiting = false;
-		endWait();
-	}
-	if (CueHandler.read()) {
-		if (stop)
-			InputBox.disabled = true;
-		else if (pause)
-			startPause();
-		else if (waitTime > 0) {
-			startWait();
-			waiting = true;
-			setTimeout(readResponse, waitTime);
-			waitTime = 0;
-		}
-	} else if (stop) {
-		endModule();
-	} 
-	
-	if (textBuffer.length > 0) {
-		print(textBuffer);
-		textBuffer = '';
-	}
-
-	if (!CueHandler.hasMoreCues())
-		println();
-
-}
-
-function startPause() {
-	InputBox.value = '(CONTINUE)';
-	InputBox.focus();
-}
-
-function endPause() {
-	InputBox.value = '';
-	InputBox.focus();
-}
-
-function startWait() {
-	InputBox.disabled = true;
-}
-
-function endWait() {
-	InputBox.disabled = false;
-	InputBox.focus();
-}
-
-function startModule() {
-	InputBox.disabled = false;
-	InputBox.focus();
-}
-
-function endModule() {
-	InputBox.disabled = true;
-	InputBox.display = 'none';
-}
-
-function onSendInput(input) {
-	InputBox.value = '';
-	InputBox.focus();
-}
-
-function startFormatTag(tag) {
-	// Nothing
-}
-
-function endFormatTag(tag) {
-	// Nothing
-}
-
-function formatText(text) {
-	textBuffer += text;
-}
-
-var CueEvents = 
+var handler = new TAMEBrowserHandler(TAME,
 {
-	"onStart": function() 
+	"print": print,
+	
+	"onStart": function()
 	{
-		InputBox.disabled = true;
+		InputBox.disabled = true;	
 	},
 	
-	"onPause": function() 
+	"onSuspend": function() 
 	{
-		InputBox.disabled = true;
+		InputBox.disabled = false;
 	},
 	
 	"onResume": function()
 	{
-		
+		InputBox.disabled = true;
 	},
 	
 	"onEnd": function()
 	{
 		InputBox.disabled = false;
+		InputBox.focus();
 	},
 	
-	"onCue": function(cue) 
+	"onPauseCue": function()
 	{
-		
-		var type = cue.type.toLowerCase();
-		var content = cue.content;
-		
-		if (type !== 'text' && type !== 'textf') 
-		{
-			print(textBuffer);
-			textBuffer = '';
-		}
-		
-		switch (type) {
-		
-			case 'quit':
-				stop = true;
-				return false;
-			
-			case 'text':
-				textBuffer += content;
-				return true;
-			
-			case 'textf':
-				TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText);
-				return true;
-				
-			case 'wait':
-				waitTime = parseInt(content, 10);
-				return false;
-
-			case 'pause':
-				pause = true;
-				return false;
-
-			case 'trace':
-				// Ignore trace.
-				return true;
-
-			case 'tip':	
-				println('(TIP: '+content+')');
-				return true;
-
-			case 'info':	
-				println('INFO: '+content);
-				return true;
-
-			case 'error':	
-				println('\n!ERROR! '+content);
-				return true;
-
-			case 'fatal':
-				println('\n!!FATAL!! '+content);
-				stop = true;
-				return false;
-		}
-		
+		mustContinue = true;
+		InputBox.disabled = false;
+		InputBox.value = "(CONTINUE)";
+		InputBox.focus();
+	},
+	
+	"onQuitCue": function(content)
+	{
+		InputDiv.remove();
+	},
+	
+	"onInfoCue": function(content)
+	{
+		println("INFO: "+content);
+	},
+	
+	"onTipCue": function(content)
+	{
+		println("(TIP: "+content+")");
+	},
+	
+	"onErrorCue": function(content)
+	{
+		println("ERROR: "+content);
+	},
+	
+	"onFatalCue": function(content)
+	{
+		println("!!! FATAL !!!: "+content);
+		InputDiv.remove();
 	}
 
-};
+});
 
-BodyElement.onload = function() {
-	
+BodyElement.onload = function() 
+{	
 	var modulectx = TAME.newContext();
-	InputBox.addEventListener("keydown", function(event) {
+	InputBox.addEventListener("keydown", function(event) 
+	{
 		// enter
-		if (event.keyCode == 13) {
-			
+		if (event.keyCode == 13) 
+		{
 			event.preventDefault();
 			
-			if (pause) {
-				pause = false;
-				endPause();
-				readResponse();
-			} else {
+			if (mustContinue) 
+			{
+				mustContinue = false;
+				handler.resume();
+			} 
+			else 
+			{
 				var val = InputBox.value;
-				onSendInput(val);
-				println("> "+val);
-				CueHandler = TAME.createResponseReader(TAME.interpret(modulectx, val), CueEvents);
-				readResponse();
+				InputBox.value = '';
+				println("\n> "+val);
+				handler.prepare(TAME.interpret(modulectx, val));
+				handler.resume();
 			}
 		}
 	});
 	
-	CueHandler = TAME.createResponseReader(TAME.initialize(modulectx), CueEvents);
-	readResponse();
-	startModule();
+	handler.prepare(TAME.initialize(modulectx));
+	handler.resume();
 };
