@@ -516,7 +516,7 @@ TLogic.callProcedureFrom = function(request, response, procedureNameValue, origi
 
 	var block = context.resolveBlock(element.identity, 'PROCEDURE', [procedureNameValue]);
 	if (block)
-		TLogic.executeBlock(block, request, response, originContext);
+		TLogic.callBlock(request, response, originContext, block);
 	else if (!silent)
 		response.addCue(TAMEConstants.Cue.ERROR, "No such procedure ("+TValue.asString(procedureNameValue)+") in lineage of element " + TLogic.elementToString(element));
 };

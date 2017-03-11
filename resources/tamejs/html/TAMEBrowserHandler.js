@@ -46,9 +46,9 @@ function TAMEBrowserHandler(TAME, options)
 		"onErrorCue": BLANK_FUNCTION,
 		"onFatalCue": BLANK_FUNCTION,
 		"onUnknownCue": BLANK_FUNCTION,
-		"startFormatTag": BLANK_FUNCTION,
-		"endFormatTag": BLANK_FUNCTION, 
-		"formatText": function(text) 
+		"onStartFormatTag": BLANK_FUNCTION,
+		"onEndFormatTag": BLANK_FUNCTION, 
+		"onFormatText": function(text) 
 		{
 			self.textBuffer += text;
 		}
