@@ -73,12 +73,12 @@ var handler = new TAMEBrowserHandler(TAME,
 	
 	"onErrorCue": function(content)
 	{
-		println("ERROR: "+content);
+		println("\n !ERROR!: "+content);
 	},
 	
 	"onFatalCue": function(content)
 	{
-		println("!!! FATAL !!!: "+content);
+		println("\n!!FATAL!!: "+content);
 		InputDiv.remove();
 	}
 

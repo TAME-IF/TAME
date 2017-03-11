@@ -65,7 +65,7 @@ function formatText(text)
  */
 function debugCue(cue)
 {
-	var type = type.toLowerCase();
+	var type = cue.type.toLowerCase();
 	println('['+type+'] '+withEscChars(cue.content));
 	if (type === 'quit' || type === 'fatal')
 		stop = true;
@@ -140,7 +140,8 @@ function doCue(cue)
 	
 }
 
-var ResponseHandler = null;
+var currentResponseCue = 0;
+var currentResponse = null;
 
 function responseStop(notDone)
 {
@@ -171,12 +172,30 @@ function responseStop(notDone)
 	}
 }
 
+function responseRead()
+{
+    var keepGoing = true;
+    while (currentResponseCue < currentResponse.responseCues.length && keepGoing) 
+    {
+        var cue = currentResponse.responseCues[currentResponseCue++];
+        if (debug)
+        	keepGoing = debugCue(cue);
+        else
+        	keepGoing = doCue(cue);
+    }
+
+    return currentResponseCue < currentResponse.responseCues.length;
+}
+
 /**
  * Handles a new TAME response.
  * @param response the TAME response object.
  */
 function startResponse(response) 
 {
+	currentResponseCue = 0;
+	currentResponse = response;
+	
 	var handler = debug ? debugCue : doCue;
 	if (debug)
 	{
@@ -186,8 +205,8 @@ function startResponse(response)
 		println('Cues: '+response.responseCues.length);
 	}
 	println();
-	ResponseHandler = TAME.createResponseReader(response, {"onCue":handler});
-	responseStop(ResponseHandler.read());
+		
+	responseStop(responseRead());
 }
 
 const COMMAND_SAVE = '!save';
@@ -198,7 +217,7 @@ rl.on('line', function(line){
 	line = line.trim();
 	if (pause) {
 		pause = false;
-		responseStop(ResponseHandler.read());
+		responseStop(responseRead());
 	} else {
 		if (COMMAND_SAVE == line.substring(0, COMMAND_SAVE.length))
 		{
