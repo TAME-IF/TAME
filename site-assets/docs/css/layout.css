@@ -56,8 +56,19 @@ li.group {
 	border-bottom-width: 1px;
 }
 
-.sidebar-logo {
-	width: 280px;
+IMG.main-logo {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+	max-width: 65%;
+	height: auto;
+}
+
+IMG.sidebar-logo {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 280px;
 	height: 168px;
 }
 
@@ -68,3 +79,20 @@ li.group {
 
 .content {
 }
+
+.docs-section-header {
+	text-align: center;
+	width: 100%;
+}
+.docs-header-link {
+	float: left;
+}
+.docs-header-top {
+	float: right;
+}
+
+.docs-section-body {
+	
+}
+
+
