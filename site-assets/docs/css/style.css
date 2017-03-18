@@ -1,3 +1,22 @@
 .sidebar-line {
 	border-bottom-color: #222;
 }
+.sidebar-footer {
+	font-size: 75%;
+}
+.modal .box {
+	background-color: rgba(255, 255, 255, 1.0);
+}
+.modal {
+	background-color: rgba(0, 0, 0, 0.3);
+}
+.button-close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+}
+.button-close:hover, .button-close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}

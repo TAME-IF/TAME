@@ -73,7 +73,6 @@ IMG.sidebar-logo {
 }
 
 .sidebar-footer {
-	font-size: 75%;
 	padding: 0.25em;
 }
 
@@ -95,4 +94,51 @@ IMG.sidebar-logo {
 	
 }
 
+.box-heading {
+	position: relative;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 1.5em;
+	margin: 0;
+	padding: 0.25em;
+}
+.box-body {
+	position: relative;
+	top: 1.5em;
+	left: 0;
+	width: 100%;
+	height: 1.5em;
+	margin: 0;
+	padding: 0.5em;
+}
+.box-footer {
+	position: relative;
+	bottom: 0;
+	left: 0;
+	margin: 0;
+	padding: 0.5em;
+}
+.modal {
+	display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+.modal .box {
+	display: block;
+	position: relative;
+	width: 70%;
+	height: 70%;
+	margin: auto;
+}
 
+.button-close {
+    float: right;
+}

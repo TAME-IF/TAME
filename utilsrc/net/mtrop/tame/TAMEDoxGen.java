@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -49,6 +50,8 @@ public final class TAMEDoxGen
 	static final String OUTPATH_JS = "js/generated/";
 	/** Output directory for generated JS engine. */
 	static final String OUTPATH_JS_TAMEENGINE = OUTPATH_JS + "TAME.js";
+	/** Output directory for generated JS engine. */
+	static final String OUTPATH_JS_BROWSERHANDLER = OUTPATH_JS + "TAMEBrowserHandler.js";
 	/** Output directory for generated JS module. */
 	static final String OUTPATH_JS_TAMEMODULE = OUTPATH_JS + "modules/";
 
@@ -145,6 +148,8 @@ public final class TAMEDoxGen
 		
 		// Export engine.
 		exportEngine(outPath);
+		// Export browser JS helper.
+		exportBrowserHandler(outPath);
 		
 		// Process pages.
 		processAllPages(outPath);
@@ -179,6 +184,29 @@ public final class TAMEDoxGen
 					outFile.delete();
 			}
 		}
+	}
+
+	private static boolean exportBrowserHandler(String outPath) throws IOException
+	{
+		File outFile = new File(outPath + "/" + OUTPATH_JS_BROWSERHANDLER);
+		if (!Common.createPathForFile(outFile))
+		{
+			out.println("ERROR: Could not create path for "+outFile.getPath());
+			return false;
+		}
+		
+		InputStream in = null;
+		OutputStream out = null;
+		try {
+			in = Common.openResource("tamejs/html/TAMEBrowserHandler.js");
+			out = new FileOutputStream(outFile);
+			Common.relay(in, out);
+		} finally {
+			Common.close(in);
+			Common.close(out);
+		}
+		
+		return true;
 	}
 
 	private static boolean exportEngine(String outPath) throws IOException
@@ -386,16 +414,14 @@ public final class TAMEDoxGen
 			try {
 				String scriptContent = Common.getTextualContents(scriptIn);
 				writer.write("<div class=\"tame-codebox\">\n");
-				writer.write("\t<div class=\"box-heading\">\n");
+				writer.write("\t<div class=\"box-header\">\n");
 				writer.write("\t\t"+headingName+"\n");
-				writer.write("\t\t<div class=\"box-launch tame-example-"+moduleName+"\">\n");
-				writer.write("\t\t\tPlay Example\n");
-				writer.write("\t\t</div>\n");
+				writer.write("\t\t<button id=\"tame-"+moduleName+"\" class=\"docs-button button-launch\">Play Example</button>");
 				writer.write("\t</div>\n");
 				writer.write("\t<div class=\"box-body\">\n");
-				writer.write("\t\t<pre class=\"tame-code sh_tame\">\n");
+				writer.write("\t\t<pre><code id=\"tame-source-"+moduleName+"\" class=\"tame-code sh_tame\">\n");
 				writer.write(scriptContent);
-				writer.write("\t\t</pre>\n");
+				writer.write("\t\t</code></pre>\n");
 				writer.write("\t</div>\n");
 				writer.write("</div>\n");
 				
