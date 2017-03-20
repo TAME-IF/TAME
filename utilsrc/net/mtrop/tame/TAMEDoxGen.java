@@ -419,7 +419,7 @@ public final class TAMEDoxGen
 		{
 			String variableName = tokenizer.nextToken();
 			String variableValue = resolveVariable(tokenizer.nextToken(), pageContext);
-			pageContext.put(variableName.substring(VAR_PREFIX.length()), variableValue);
+			pageContext.put(variableName, variableValue);
 			return true;
 		}
 		else if (command.equalsIgnoreCase(COMMAND_CLEAR))
