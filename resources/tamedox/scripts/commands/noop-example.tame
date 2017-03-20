@@ -1,0 +1,14 @@
+action general a_quit named "quit";
+
+world
+{
+	init()
+	{
+		NoOp();
+	}
+	
+	onAction(a_quit)
+	{
+		quit;
+	}
+}

@@ -74,3 +74,19 @@ IMG.nav-logo {
 .sidebar-footer {
     padding: 0.25em;
 }
+
+.w3-code {
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+}
+
+#tame-input {
+	font-family: "Courier New", monospace;
+	font-weight: 400;
+}
+
+#tame-output {
+	font-family: "Courier New", monospace;
+	font-weight: 400;
+}

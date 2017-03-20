@@ -42,7 +42,7 @@ public final class TAMEDoxGen
 	/** Sidebar content. */
 	static final String RESOURCE_SIDEBARHTML = RESOURCE_ROOT + "/sidebar.html";
 	/** Pages list file. */
-	static final String RESOURCE_PAGESLIST = RESOURCE_ROOT + "/pages.txt";
+	static final String RESOURCE_PAGESLIST = RESOURCE_ROOT + "/_pages.txt";
 	/** Script root. */
 	static final String RESOURCE_SCRIPTROOT = RESOURCE_ROOT + "/scripts/";
 
@@ -162,7 +162,7 @@ public final class TAMEDoxGen
 			PrintWriter pw = null;
 			try {
 				pw = new PrintWriter(outFile, "UTF-8");
-				parsePageResource(outPath + "/" + page[1], pw, RESOURCE_ROOT + "/" + page[0]);
+				parsePageResource(outPath, outPath + "/" + page[1], pw, RESOURCE_ROOT + "/" + page[0]);
 			} catch (SecurityException e) {
 				out.println("ERROR: Could not write file "+outFile.getPath()+". Access denied.");
 				error = true;
@@ -258,22 +258,22 @@ public final class TAMEDoxGen
 
 	/**
 	 * Parses a file resource (presumably HTML) looking for <code>&lt;!--[ ... ]--&gt;</code> tags to parse and interpret.
-	 * @param outPath the base output path.
+	 * @param outFile the output file.
 	 * @param writer the output writer.
 	 * @param inPath input resource path.
 	 */
-	public static void parsePageResource(String outPath, Writer writer, String inPath) throws IOException
+	public static void parsePageResource(String outPath, String outFile, Writer writer, String inPath) throws IOException
 	{
-		parsePageResource(outPath, writer, inPath, new HashMap<String, String>());
+		parsePageResource(outPath, outFile, writer, inPath, new HashMap<String, String>());
 	}
 	
 	/**
 	 * Parses a file resource (presumably HTML) looking for <code>&lt;? ... ?&gt;</code> tags to parse and interpret.
-	 * @param outPath the base output path.
+	 * @param outFile the output file.
 	 * @param writer the output writer.
 	 * @param inPath input resource path.
 	 */
-	public static void parsePageResource(String outPath, Writer writer, String inPath, HashMap<String, String> pageContext) throws IOException
+	public static void parsePageResource(String outPath, String outFile, Writer writer, String inPath, HashMap<String, String> pageContext) throws IOException
 	{
 		final String TAG_START = "<!--[";
 		final String TAG_END = "]-->";
@@ -360,7 +360,7 @@ public final class TAMEDoxGen
 							{
 								state = STATE_PAGE;
 								String content = tagContent.toString();
-								if (!interpretTag(outPath, content.trim(), inPath, writer, pageContext))
+								if (!interpretTag(outPath, outFile, content.trim(), inPath, writer, pageContext))
 									writer.write(TAG_START + content + TAG_END);
 								tagContent.delete(0, tagContent.length());
 								tagPart.delete(0, tagPart.length());
@@ -400,12 +400,12 @@ public final class TAMEDoxGen
 	
 	/**
 	 * Interprets the contents of a parsed tag.
-	 * @param outPath the base output path.
+	 * @param outFile the base output path.
 	 * @param tagContent the content of the tag.
 	 * @param inPath the origin resource path.
 	 * @param writer the output writer.
 	 */
-	private static boolean interpretTag(String outPath, String tagContent, String inPath, Writer writer, HashMap<String, String> pageContext) throws IOException
+	private static boolean interpretTag(String outPath, String outFile, String tagContent, String inPath, Writer writer, HashMap<String, String> pageContext) throws IOException
 	{
 		String parentPath = inPath.substring(0, inPath.lastIndexOf('/') + 1);
 		CommonTokenizer tokenizer = new CommonTokenizer(tagContent);
@@ -437,7 +437,7 @@ public final class TAMEDoxGen
 		else if (command.equalsIgnoreCase(COMMAND_INCLUDE))
 		{
 			String relativePath = resolveVariable(tokenizer.nextToken(), pageContext);
-			parsePageResource(outPath, writer, parentPath + relativePath, pageContext);
+			parsePageResource(outPath, outFile, writer, parentPath + relativePath, pageContext);
 			return true;
 		}
 		else if (command.equalsIgnoreCase(COMMAND_TAMESCRIPT))
@@ -449,21 +449,19 @@ public final class TAMEDoxGen
 			InputStream scriptIn = Common.openResource(RESOURCE_SCRIPTROOT + scriptPath);
 			try {
 				String scriptContent = Common.getTextualContents(scriptIn);
-				writer.write("<div class=\"tame-codebox\">\n");
-				writer.write("\t<div class=\"box-header\">\n");
-				writer.write("\t\t"+headingName+"\n");
-				writer.write("\t\t<button id=\"tame-"+moduleName+"\" class=\"docs-button button-launch\">Play Example</button>");
-				writer.write("\t</div>\n");
-				writer.write("\t<div class=\"box-body\">\n");
-				writer.write("\t\t<pre><code id=\"tame-source-"+moduleName+"\" class=\"tame-code sh_tame\">\n");
+				writer.write("<div class=\"w3-example\">\n");
+				writer.write("\t<h4>"+headingName+"</h4>\n");
+				writer.write("\t<button id=\"tame-"+moduleName+"-trace\" class=\"w3-button w3-red button-launch\" style=\"float:right;\" onclick=\"tameStartExample('"+headingName+" (Debug and Trace)', "+moduleName+", true, true)\"><i class=\"fa fa-bug\"></i></button>");
+				writer.write("\t<button id=\"tame-"+moduleName+"-debug\" class=\"w3-button w3-yellow button-launch\" style=\"float:right;\" onclick=\"tameStartExample('"+headingName+" (Debug)', "+moduleName+", true)\"><i class=\"fa fa-bug\"></i></button>");
+				writer.write("\t<button id=\"tame-"+moduleName+"\" class=\"w3-button w3-green button-launch\" style=\"float:right;\" onclick=\"tameStartExample('"+headingName+"', "+moduleName+")\">Play Example</button>");
+				writer.write("\t<pre class=\"w3-code tame-code notranslate\"><code>\n");
 				writer.write(scriptContent);
-				writer.write("\t\t</code></pre>\n");
-				writer.write("\t</div>\n");
+				writer.write("\t</code></pre>\n");
 				writer.write("</div>\n");
 				
 				TAMEModule module = TAMEScriptReader.read(scriptContent, TAMESCRIPT_INCLUDER);
 				
-				String filePath = OUTPATH_JS_TAMEMODULE + moduleName + ".js";
+				String filePath = outPath + "/" + OUTPATH_JS_TAMEMODULE + moduleName + ".js";
 				
 				File jsFile = new File(filePath);
 				if (Common.createPathForFile(jsFile))
@@ -471,7 +469,7 @@ public final class TAMEDoxGen
 				else
 					out.println("!!! CANNOT EXPORT JS !!!");
 				
-				writer.write("<script type=\"text/javascript\" src=\"" + filePath + "\"></script>\n");
+				writer.write("<script type=\"text/javascript\" src=\"" + (OUTPATH_JS_TAMEMODULE + moduleName + ".js") + "\"></script>\n");
 				
 			} catch (IOException e) {
 				writer.write("<pre>!!! CAN'T FIND SCRIPT \""+parentPath + scriptPath+"\" !!!</pre>");
