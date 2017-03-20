@@ -17,6 +17,7 @@ import java.util.Date;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.CommonTokenizer;
+import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.linkedlist.Queue;
 
 import net.mtrop.tame.factory.TAMEJSExporter;
@@ -42,6 +43,8 @@ public final class TAMEDoxGen
 	static final String RESOURCE_SIDEBARHTML = RESOURCE_ROOT + "/sidebar.html";
 	/** Pages list file. */
 	static final String RESOURCE_PAGESLIST = RESOURCE_ROOT + "/pages.txt";
+	/** Script root. */
+	static final String RESOURCE_SCRIPTROOT = RESOURCE_ROOT + "/scripts/";
 
 	/** Pages list file. */
 	static final String SOURCE_SIDEASSETS = "./site-assets/docs";
@@ -55,13 +58,18 @@ public final class TAMEDoxGen
 	/** Output directory for generated JS module. */
 	static final String OUTPATH_JS_TAMEMODULE = OUTPATH_JS + "modules/";
 
+	/** Parse command: set variable. */
+	static final String COMMAND_SET = "set";
+	/** Parse command: clear variable. */
+	static final String COMMAND_CLEAR = "clear";
+	/** Parse command: print variable. */
+	static final String COMMAND_PRINT = "print";
 	/** Parse command: include (file) */
 	static final String COMMAND_INCLUDE = "include";
-	/** Parse command: sidebar */
-	static final String COMMAND_SIDEBAR = "sidebar";
 	/** Parse command: tamescript (name) (modulevarname) (file) */
 	static final String COMMAND_TAMESCRIPT = "tamescript";
-
+	/** Variable prefix. */
+	static final String VAR_PREFIX = "$";
 	
 	/** TAMEScript includer. */
 	static final TAMEScriptIncluder TAMESCRIPT_INCLUDER = new TAMEScriptIncluder()
@@ -100,23 +108,6 @@ public final class TAMEDoxGen
 		}
 	};
 	
-	/** Sidebar content. */
-	private static String SIDEBAR_CONTENT;
-	
-	static
-	{
-		InputStream in = null;
-		try {
-			in = Common.openResource(RESOURCE_SIDEBARHTML);
-			SIDEBAR_CONTENT = Common.getTextualContents(in);
-		} catch (IOException e) {
-			SIDEBAR_CONTENT = "!!READERROR!!";
-		} finally {
-			Common.close(in);
-		}
-	}
-	
-
 	// Entry point.
 	public static void main(String[] args) throws Exception
 	{
@@ -266,12 +257,23 @@ public final class TAMEDoxGen
 	}
 
 	/**
-	 * Parses a file resource (presumably HTML) looking for <code>&lt;? ... ?&gt;</code> tags to parse and interpret.
+	 * Parses a file resource (presumably HTML) looking for <code>&lt;!--[ ... ]--&gt;</code> tags to parse and interpret.
 	 * @param outPath the base output path.
 	 * @param writer the output writer.
 	 * @param inPath input resource path.
 	 */
 	public static void parsePageResource(String outPath, Writer writer, String inPath) throws IOException
+	{
+		parsePageResource(outPath, writer, inPath, new HashMap<String, String>());
+	}
+	
+	/**
+	 * Parses a file resource (presumably HTML) looking for <code>&lt;? ... ?&gt;</code> tags to parse and interpret.
+	 * @param outPath the base output path.
+	 * @param writer the output writer.
+	 * @param inPath input resource path.
+	 */
+	public static void parsePageResource(String outPath, Writer writer, String inPath, HashMap<String, String> pageContext) throws IOException
 	{
 		final String TAG_START = "<!--[";
 		final String TAG_END = "]-->";
@@ -358,7 +360,7 @@ public final class TAMEDoxGen
 							{
 								state = STATE_PAGE;
 								String content = tagContent.toString();
-								if (!interpretTag(outPath, content.trim(), inPath, writer))
+								if (!interpretTag(outPath, content.trim(), inPath, writer, pageContext))
 									writer.write(TAG_START + content + TAG_END);
 								tagContent.delete(0, tagContent.length());
 								tagPart.delete(0, tagPart.length());
@@ -377,13 +379,33 @@ public final class TAMEDoxGen
 	}
 	
 	/**
+	 * Potentially resolves a token variable.
+	 * @param inToken the input token.
+	 * @param pageContext the context that holds variables.
+	 * @return the associated object.
+	 */
+	private static String resolveVariable(String inToken, HashMap<String, String> pageContext)
+	{
+		if (inToken.startsWith(VAR_PREFIX))
+		{
+			String var = inToken.substring(VAR_PREFIX.length());
+			if (pageContext.containsKey(var))
+				return pageContext.get(var);
+			else
+				return inToken;
+		}
+		else
+			return inToken;
+	}
+	
+	/**
 	 * Interprets the contents of a parsed tag.
 	 * @param outPath the base output path.
 	 * @param tagContent the content of the tag.
 	 * @param inPath the origin resource path.
 	 * @param writer the output writer.
 	 */
-	private static boolean interpretTag(String outPath, String tagContent, String inPath, Writer writer) throws IOException
+	private static boolean interpretTag(String outPath, String tagContent, String inPath, Writer writer, HashMap<String, String> pageContext) throws IOException
 	{
 		String parentPath = inPath.substring(0, inPath.lastIndexOf('/') + 1);
 		CommonTokenizer tokenizer = new CommonTokenizer(tagContent);
@@ -393,24 +415,38 @@ public final class TAMEDoxGen
 		
 		String command = tokenizer.nextToken();
 		
-		if (command.equalsIgnoreCase(COMMAND_INCLUDE))
+		if (command.equalsIgnoreCase(COMMAND_SET))
 		{
-			String relativePath = tokenizer.nextToken();
-			parsePageResource(outPath, writer, parentPath + relativePath);
+			String variableName = tokenizer.nextToken();
+			String variableValue = resolveVariable(tokenizer.nextToken(), pageContext);
+			pageContext.put(variableName.substring(VAR_PREFIX.length()), variableValue);
 			return true;
 		}
-		else if (command.equalsIgnoreCase(COMMAND_SIDEBAR))
+		else if (command.equalsIgnoreCase(COMMAND_CLEAR))
 		{
-			writer.write(SIDEBAR_CONTENT);
+			String variableName = tokenizer.nextToken();
+			pageContext.removeUsingKey(variableName);
+			return true;
+		}
+		else if (command.equalsIgnoreCase(COMMAND_PRINT))
+		{
+			String variableName = tokenizer.nextToken();
+			writer.write(resolveVariable(variableName, pageContext));
+			return true;
+		}
+		else if (command.equalsIgnoreCase(COMMAND_INCLUDE))
+		{
+			String relativePath = resolveVariable(tokenizer.nextToken(), pageContext);
+			parsePageResource(outPath, writer, parentPath + relativePath, pageContext);
 			return true;
 		}
 		else if (command.equalsIgnoreCase(COMMAND_TAMESCRIPT))
 		{
-			String headingName = tokenizer.nextToken();
-			String moduleName = tokenizer.nextToken();
-			String scriptPath = tokenizer.nextToken();
+			String headingName = resolveVariable(tokenizer.nextToken(), pageContext);
+			String moduleName = resolveVariable(tokenizer.nextToken(), pageContext);
+			String scriptPath = resolveVariable(tokenizer.nextToken(), pageContext);
 			
-			InputStream scriptIn = Common.openResource(parentPath + scriptPath);
+			InputStream scriptIn = Common.openResource(RESOURCE_SCRIPTROOT + scriptPath);
 			try {
 				String scriptContent = Common.getTextualContents(scriptIn);
 				writer.write("<div class=\"tame-codebox\">\n");

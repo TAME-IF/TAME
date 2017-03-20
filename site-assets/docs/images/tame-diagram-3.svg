@@ -15,7 +15,7 @@
    version="1.1"
    id="svg5423"
    inkscape:version="0.92.0 r15299"
-   sodipodi:docname="TAME3.svg">
+   sodipodi:docname="tame-diagram-3.svg">
   <defs
      id="defs5417">
     <inkscape:path-effect
@@ -83,7 +83,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="316.76528"
+     inkscape:cx="-29.663296"
      inkscape:cy="286.06214"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
@@ -144,36 +144,14 @@
        height="34.395836"
        x="99.218742"
        y="8.604167" />
-    <flowRoot
-       xml:space="preserve"
-       id="flowRoot4499"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:25px;font-family:Consolas;-inkscape-font-specification:Consolas;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="matrix(0.26458333,0,0,0.26458333,12.066731,-4.3031732)"><flowRegion
-         id="flowRegion4501"><rect
-           id="rect4503"
-           width="120.00001"
-           height="30.000011"
-           x="360"
-           y="102.51968" /></flowRegion><flowPara
-         id="flowPara4505">SHELL</flowPara></flowRoot>    <rect
+    <rect
        style="opacity:1;fill:#ede37a;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.70555544;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4507"
        width="140.22917"
        height="101.86459"
        x="19.84375"
        y="49.614582" />
-    <flowRoot
-       xml:space="preserve"
-       id="flowRoot4509"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:25px;font-family:Consolas;-inkscape-font-specification:Consolas;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="matrix(0.26458333,0,0,0.26458333,-72.319217,116.04465)"><flowRegion
-         id="flowRegion4511"><rect
-           id="rect4513"
-           width="120"
-           height="50"
-           x="570"
-           y="102.51968" /></flowRegion><flowPara
-         id="flowPara4515">TAME</flowPara></flowRoot>    <g
+    <g
        id="g5612"
        transform="translate(1.3229192,3.96875)">
       <rect
@@ -883,5 +861,27 @@
        d="m 52.916666,54.90625 1.768826,-1.682693 0.572842,2.373194 z"
        inkscape:transform-center-x="0.19933121"
        inkscape:transform-center-y="-0.16536602" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:6.61458302px;font-family:Consolas;-inkscape-font-specification:Consolas;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="107.76477"
+       y="28.973324"
+       id="text7102"><tspan
+         sodipodi:role="line"
+         id="tspan7100"
+         x="107.76477"
+         y="28.973324"
+         style="stroke-width:0.26458332px">SHELL</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:6.61458302px;font-family:Consolas;-inkscape-font-specification:Consolas;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="78.282639"
+       y="148.98076"
+       id="text8357"><tspan
+         sodipodi:role="line"
+         id="tspan8355"
+         x="78.282639"
+         y="148.98076"
+         style="stroke-width:0.26458332px">TAME</tspan></text>
   </g>
 </svg>
