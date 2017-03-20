@@ -58,6 +58,7 @@
 	<property name="resource.dir" value="resources" />
 	<property name="replace.dir" value="${build.dir}/replace" />
 	<property name="zip.exe.filename" value="${project.archive}-exe-${build.version}.zip" />
+	<property name="tamedox.dir" value="${build.dir}/tamedox" />
 
 	<!-- Versions -->
 	<property name="exe.version" value="0.0.0.0" />
@@ -114,6 +115,9 @@
 			classpath="${project.classpath}"
 			debug="off" 
 			/>
+		<copy todir="${bin.dir}">
+			<fileset dir="${resource.dir}" />
+		</copy>
 	</target>
 
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
@@ -284,6 +288,13 @@
 	</target>
 	
 	<target name="release" depends="zip, exe, exe.deploy">
+	</target>
+
+	<target name="tamedox" description="Creates TAME documentation HTML pages. Run compile.all first!">
+		<delete dir="${tamedox.dir}" includeemptydirs="true" casesensitive="false" /> 
+		<java classname="net.mtrop.tame.TAMEDoxGen" classpath="${project.classpath}${S}${bin.dir}">
+			<arg value="${tamedox.dir}" />
+		</java>
 	</target>
 
 </project>
