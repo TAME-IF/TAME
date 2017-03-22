@@ -75,18 +75,41 @@ IMG.nav-logo {
     padding: 0.25em;
 }
 
-.w3-code {
+.tame-code {
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
 	tab-size: 4;
+	
+	max-height: 30em;
+	overflow-x:auto;
+	overflow-y:auto;
+}
+
+.tamedox-footer {
+	padding-top: 0.5em;
+	margin-top: 3em;
+	font-size:75%;
+}
+
+.tamedox-parameter {
+	font-style: italic;
+	font-weight: 800;
+	width: 1px;
+}
+.tamedox-parameter-description {
 }
 
 #tame-input {
 	font-family: "Courier New", monospace;
 	font-weight: 400;
+	line-height: 1.25em;
 }
-
+#tame-modal-output {
+	height: 25em;
+	overflow: auto;
+}
 #tame-output {
 	font-family: "Courier New", monospace;
 	font-weight: 400;
+	line-height: 1em;
 }

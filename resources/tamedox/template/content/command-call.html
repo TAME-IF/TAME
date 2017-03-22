@@ -1,0 +1,78 @@
+<h1>Call</h1>
+<div class="w3-container">
+	Calls a procedure block in the current element context's lineage.
+</div>
+
+<div class="w3-panel w3-light-gray w3-card-2">
+	<h3>Usage</h3>
+</div>
+<div class="w3-code notranslate">
+	Call(VALUE);<br/>
+</div>
+
+<div class="w3-panel w3-light-gray w3-card-2">
+	<h3>Parameters</h3>
+</div>
+<div class="w3-container">
+	<table class="w3-table w3-striped w3-border w3-bordered" >
+		<tr>
+			<td class="tamedox-parameter">VALUE</td>
+			<td class="tamedox-parameter-description">Value or Expression - The name of the procedure to call.</td>
+		</tr>
+	</table>
+</div>
+
+<div class="w3-panel w3-light-gray w3-card-2">
+	<h3>Returns</h3>
+</div>
+<div class="w3-container">
+	<em>Returns nothing. Cannot be used in expressions.</em>
+</div>
+
+<div class="w3-panel w3-light-gray w3-card-2">
+	<h3>What It Does</h3>
+</div>
+<div class="w3-container">
+	<p>
+		Calls a <a href="language-blocks.html#procedure">procedure</a> with the same name as the value parameter. The procedure must be in the same
+		element as the command, or within its lineage (parent elements).
+	</p>
+	<p>
+		Like the name of the procedure, the value can be any type. The procedure called must have a name 
+		equal to the value.
+	</p>
+	<p>
+		If the procedure cannot be found, an <kbd>ERROR</kbd> cue saying so is added to the response.
+	</p>
+</div>
+
+<div class="w3-panel w3-light-gray w3-card-2">
+	<h3>Example</h3>
+</div>
+<div class="w3-container">
+<!--[ tamescript "Call Example" module_call_example commands/call-example.tame ]-->
+</div>
+
+<!-- OPTIONAL SECTION -->
+<div class="w3-panel w3-light-gray w3-card-2">
+	<h3>See Also</h3>
+</div>
+<div class="w3-container">
+	<p>
+		<a href="command-callfrom.html">CallFrom</a> &mdash; Similar to <span class="w3-codespan">Call</span>, but from an arbitrary element's context.<br/>
+		<a href="command-callmaybe.html">CallMaybe</a> &mdash; Same as <span class="w3-codespan">Call</span>, except it doesn't add an <kbd>ERROR</kbd> cue.<br/>
+		<a href="command-callfrommaybe.html">CallFromMaybe</a> &mdash; Same as <span class="w3-codespan">CallFrom</span>, except it doesn't add an <kbd>ERROR</kbd> cue.<br/>
+	</p>
+</div>
+
+<div class="w3-panel w3-light-gray w3-card-2">
+	<h3>Technical Junk</h3>
+</div>
+<div class="w3-container">
+	<p>
+		<span class="w3-codespan">Call</span> always searches backwards from the origin context despite a block existing either earlier or later
+		in an element's lineage. It also uses regular equality to search for the matching procedure. It is not a "strict equals" - it 
+		does not need to be the same type (e.g. <span class="w3-codespan">"3"</span> and <span class="w3-codespan">3</span> are equal). So,
+		whatever works for the <span class="w3-codespan">==</span> operator.
+	</p>
+</div>
