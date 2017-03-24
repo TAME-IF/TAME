@@ -75,14 +75,8 @@ IMG.nav-logo {
     padding: 0.25em;
 }
 
-.tame-code {
-	-moz-tab-size: 4;
-	-o-tab-size: 4;
-	tab-size: 4;
-	
+.syntaxhighlighter {
 	max-height: 30em;
-	overflow-x:auto;
-	overflow-y:auto;
 }
 
 .tamedox-footer {
@@ -95,6 +89,8 @@ IMG.nav-logo {
 	font-style: italic;
 	font-weight: 800;
 	width: 1px;
+}
+.tamedox-parameter-type {
 }
 .tamedox-parameter-description {
 }

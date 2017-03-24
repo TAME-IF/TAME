@@ -1,6 +1,6 @@
-<h1>Call ( <em>NAME</em> );</h1>
+<h1>CallFrom ( <em>ELEMENT</em>, <em>NAME</em> );</h1>
 <div class="w3-container">
-	Calls a <a href="language-blocks.html#procedure">procedure</a> block in the current element context's lineage.
+	Calls a <a href="language-blocks.html#procedure">procedure</a> block from an arbitrary element context.
 </div>
 
 <div class="w3-panel w3-light-gray w3-card-2">
@@ -8,6 +8,11 @@
 </div>
 <div class="w3-container">
 	<table class="w3-table w3-striped" >
+		<tr>
+			<td class="tamedox-parameter">ELEMENT</td>
+			<td class="tamedox-parameter-type">Any Element (world, player, object, container, room)</td>
+			<td class="tamedox-parameter-description">The origin element context to call a procedure from (can also be <strong>player</strong> or <strong>room</strong>, for current player or room).</td>
+		</tr>
 		<tr>
 			<td class="tamedox-parameter">NAME</td>
 			<td class="tamedox-parameter-type">Value or Expression</td>
@@ -28,8 +33,8 @@
 </div>
 <div class="w3-container">
 	<p>
-		Calls a <a href="language-blocks.html#procedure">procedure</a> with the same name as the value parameter. The procedure must be in the same
-		element as the command, or within its lineage (parent elements).
+		Calls a <a href="language-blocks.html#procedure">procedure</a> with the same name as the value parameter in the same
+		element as the provided element, or within that element's lineage (parent elements).
 	</p>
 	<p>
 		Like the name of the procedure, the value can be any type. The procedure called must have a name 
@@ -44,7 +49,7 @@
 	<h3>Example</h3>
 </div>
 <div class="w3-container">
-<!--[ tamescript "Call Example" module_call_example commands/call-example.tame ]-->
+<!--[ tamescript "CallFrom Example" module_callfrom_example commands/callfrom-example.tame ]-->
 </div>
 
 <!-- OPTIONAL SECTION -->
@@ -53,8 +58,7 @@
 </div>
 <div class="w3-container">
 	<p>
-		<a href="command-callfrom.html">CallFrom</a> &mdash; Similar to <span class="w3-codespan">Call</span>, but from an arbitrary element's context.<br/>
-		<a href="command-callmaybe.html">CallMaybe</a> &mdash; Same as <span class="w3-codespan">Call</span>, except it doesn't add an <kbd>ERROR</kbd> cue.<br/>
+		<a href="command-call.html">Call</a> &mdash; Similar to <span class="w3-codespan">CallFrom</span>, but from the current context.<br/>
 		<a href="command-callfrommaybe.html">CallFromMaybe</a> &mdash; Same as <span class="w3-codespan">CallFrom</span>, except it doesn't add an <kbd>ERROR</kbd> cue.<br/>
 	</p>
 </div>
@@ -64,8 +68,8 @@
 </div>
 <div class="w3-container">
 	<p>
-		<span class="w3-codespan">Call</span> always searches backwards from the origin context despite a block existing either earlier or later
-		in an element's lineage. It also uses regular equality to search for the matching procedure. It is not a "strict equals" - it 
+		<span class="w3-codespan">CallFrom</span> always searches backwards from the specified context despite a block existing either earlier or later
+		in the element's lineage. It also uses regular equality to search for the matching procedure. It is not a "strict equals" - it 
 		does not need to be the same type (e.g. <span class="w3-codespan">"3"</span> and <span class="w3-codespan">3</span> are equal). So,
 		whatever works for the <span class="w3-codespan">==</span> operator.
 	</p>
