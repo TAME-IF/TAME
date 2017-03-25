@@ -152,17 +152,25 @@ public final class TAMEDoxGen
 	{
 		for (String[] page : getPageList())
 		{
+			
+			
 			boolean error = false;
-			File outFile = new File(outPath + "/" + page[1]);
+			File outFile = new File(outPath + "/" + page[0]);
 			if (!Common.createPathForFile(outFile))
 			{
 				out.println("ERROR: Could not create path for "+outFile.getPath());
 				continue;
 			}
+			
+			HashMap<String, String> variables = new HashMap<>();
+			variables.put("title", page[1]);
+			variables.put("content_page", "content/"+page[0]);
+			String template = page[2];
+			
 			PrintWriter pw = null;
 			try {
 				pw = new PrintWriter(outFile, "UTF-8");
-				parsePageResource(outPath, outPath + "/" + page[1], pw, RESOURCE_ROOT + "/" + page[0]);
+				parsePageResource(outPath, outFile, pw, RESOURCE_ROOT + "/" + template, variables);
 			} catch (SecurityException e) {
 				out.println("ERROR: Could not write file "+outFile.getPath()+". Access denied.");
 				error = true;
@@ -249,7 +257,13 @@ public final class TAMEDoxGen
 			String line = null;
 			BufferedReader pageReader = Common.openTextStream(in = Common.openResource(RESOURCE_PAGESLIST));
 			while ((line = pageReader.readLine()) != null)
-				out.add(line.split("\\s+"));
+			{
+				CommonTokenizer ct = new CommonTokenizer(line);
+				String[] linedata = new String[3];
+				for (int i = 0; i < linedata.length; i++)
+					linedata[i] = ct.nextToken();
+				out.add(linedata);
+			}
 		} finally {
 			Common.close(in);
 		}
@@ -257,23 +271,12 @@ public final class TAMEDoxGen
 	}
 
 	/**
-	 * Parses a file resource (presumably HTML) looking for <code>&lt;!--[ ... ]--&gt;</code> tags to parse and interpret.
-	 * @param outFile the output file.
-	 * @param writer the output writer.
-	 * @param inPath input resource path.
-	 */
-	public static void parsePageResource(String outPath, String outFile, Writer writer, String inPath) throws IOException
-	{
-		parsePageResource(outPath, outFile, writer, inPath, new HashMap<String, String>());
-	}
-	
-	/**
 	 * Parses a file resource (presumably HTML) looking for <code>&lt;? ... ?&gt;</code> tags to parse and interpret.
 	 * @param outFile the output file.
 	 * @param writer the output writer.
 	 * @param inPath input resource path.
 	 */
-	public static void parsePageResource(String outPath, String outFile, Writer writer, String inPath, HashMap<String, String> pageContext) throws IOException
+	public static void parsePageResource(String outPath, File outFile, Writer writer, String inPath, HashMap<String, String> pageContext) throws IOException
 	{
 		final String TAG_START = "<!--[";
 		final String TAG_END = "]-->";
@@ -405,7 +408,7 @@ public final class TAMEDoxGen
 	 * @param inPath the origin resource path.
 	 * @param writer the output writer.
 	 */
-	private static boolean interpretTag(String outPath, String outFile, String tagContent, String inPath, Writer writer, HashMap<String, String> pageContext) throws IOException
+	private static boolean interpretTag(String outPath, File outFile, String tagContent, String inPath, Writer writer, HashMap<String, String> pageContext) throws IOException
 	{
 		String parentPath = inPath.substring(0, inPath.lastIndexOf('/') + 1);
 		CommonTokenizer tokenizer = new CommonTokenizer(tagContent);

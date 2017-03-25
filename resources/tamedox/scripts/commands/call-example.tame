@@ -1,32 +1,62 @@
 action general a_quit named "quit";
-action transitive a_examine named "examine", "look at";
+action general a_test1 named "test1";
+action general a_test2 named "test2";
+action general a_test3 named "test3";
+action transitive a_test named "test";
 
-object archetype o_balls
+object o_test named "object"
 {
-	procedure("ExamineThis")
+	procedure("TestProcedure")
 	{
-		textln("Some kind of ball.");
+		textln("Called TestProcedure on the Object!");
 	}
 
-	onAction(a_examine)
+	onAction(a_test)
 	{
-		Call("ExamineThis");
-	}
-
-}
-
-object o_basketball : o_balls named "basketball" uses determiners "the"
-{
-	procedure("ExamineThis")
-	{
-		textln("Looks like a basketball.");
+		call("TestProcedure");
 	}
 }
-
-object o_unknownball : o_balls named "ball", "generic ball" uses determiners "the";
 
 world
 {
+	init()
+	{
+		giveObject(world, o_test);
+	}
+
+	procedure("TestProcedure")
+	{
+		textln("Called TestProcedure!");
+	}
+
+	procedure("10")
+	{
+		textln("Called 10!");
+	}
+	
+	procedure(3)
+	{
+		textln("Called 3!");
+	}
+	
+	onAction(a_test1)
+	{
+		textln("Calling procedure...");
+		call("TestProcedure");
+	}
+
+	onAction(a_test2)
+	{
+		textln("Calling procedure...");
+		call(1 + 2);
+	}
+
+	onAction(a_test3)
+	{
+		textln("Calling procedure...");
+		call(2 * 5);
+	}
+	
 	onAction(a_quit)
 	{
 		quit;
@@ -34,8 +64,8 @@ world
 	
 	afterModuleInit()
 	{
-		GiveObject(world, o_unknownball);
-		GiveObject(world, o_basketball);
-		textln("Type \"examine basketball\" and \"examine generic ball\" to test.");
+		textln("Type \"test1\", \"test2\", \"test3\", or \"test object\" to test.");
+		textln("\"test3\" should throw an error.");
 	}	
+	
 }

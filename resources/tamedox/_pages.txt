@@ -1,101 +1,101 @@
-index.html index.html
-intro.html intro.html
-module.html module.html
-interpreter.html interpreter.html
-tamescript.html tamescript.html
-language-elements.html language-elements.html
-language-blocks.html language-blocks.html
-language-commands.html language-commands.html
-command-noop.html command-noop.html
-command-call.html command-call.html
-command-callfrom.html command-callfrom.html
-command-callmaybe.html command-callmaybe.html
-command-callmaybefrom.html command-callmaybefrom.html
-command-queueaction.html command-queueaction.html
-command-queueactionstring.html command-queueactionstring.html
-command-queueactionobject.html command-queueactionobject.html
-command-queueactionforobjectsin.html command-queueactionforobjectsin.html
-command-queueactionfortaggedobjectsin.html command-queueactionfortaggedobjectsin.html
-command-queueactionobject2.html command-queueactionobject2.html
-command-addcue.html command-addcue.html
-command-text.html command-text.html
-command-textln.html command-textln.html
-command-textf.html command-textf.html
-command-textfln.html command-textfln.html
-command-pause.html command-pause.html
-command-wait.html command-wait.html
-command-tip.html command-tip.html
-command-info.html command-info.html
-command-asboolean.html command-asboolean.html
-command-asint.html command-asint.html
-command-asfloat.html command-asfloat.html
-command-asstring.html command-asstring.html
-command-strlength.html command-strlength.html
-command-strconcat.html command-strconcat.html
-command-strreplace.html command-strreplace.html
-command-strreplacepattern.html command-strreplacepattern.html
-command-strreplacepatternall.html command-strreplacepatternall.html
-command-strindex.html command-strindex.html
-command-strlastindex.html command-strlastindex.html
-command-strcontains.html command-strcontains.html
-command-strcontainspattern.html command-strcontainspattern.html
-command-strcontainstoken.html command-strcontainstoken.html
-command-strstartswith.html command-strstartswith.html
-command-strendswith.html command-strendswith.html
-command-substring.html command-substring.html
-command-strlower.html command-strlower.html
-command-strupper.html command-strupper.html
-command-strchar.html command-strchar.html
-command-strtrim.html command-strtrim.html
-command-floor.html command-floor.html
-command-ceiling.html command-ceiling.html
-command-round.html command-round.html
-command-fix.html command-fix.html
-command-sqrt.html command-sqrt.html
-command-pi.html command-pi.html
-command-e.html command-e.html
-command-sin.html command-sin.html
-command-cos.html command-cos.html
-command-tan.html command-tan.html
-command-min.html command-min.html
-command-max.html command-max.html
-command-clamp.html command-clamp.html
-command-random.html command-random.html
-command-frandom.html command-frandom.html
-command-grandom.html command-grandom.html
-command-time.html command-time.html
-command-seconds.html command-seconds.html
-command-minutes.html command-minutes.html
-command-hours.html command-hours.html
-command-days.html command-days.html
-command-formattime.html command-formattime.html
-command-objecthasname.html command-objecthasname.html
-command-objecthastag.html command-objecthastag.html
-command-addobjectname.html command-addobjectname.html
-command-addobjecttag.html command-addobjecttag.html
-command-addobjecttagtoallin.html command-addobjecttagtoallin.html
-command-removeobjectname.html command-removeobjectname.html
-command-removeobjecttag.html command-removeobjecttag.html
-command-removeobjecttagfromallin.html command-removeobjecttagfromallin.html
-command-giveobject.html command-giveobject.html
-command-removeobject.html command-removeobject.html
-command-moveobjectswithtag.html command-moveobjectswithtag.html
-command-objectcount.html command-objectcount.html
-command-hasobject.html command-hasobject.html
-command-objecthasnoowner.html command-objecthasnoowner.html
-command-playerisinroom.html command-playerisinroom.html
-command-playercanaccessobject.html command-playercanaccessobject.html
-command-browse.html command-browse.html
-command-browsetagged.html command-browsetagged.html
-command-setplayer.html command-setplayer.html
-command-setroom.html command-setroom.html
-command-pushroom.html command-pushroom.html
-command-poproom.html command-poproom.html
-command-swaproom.html command-swaproom.html
-command-currentplayeris.html command-currentplayeris.html
-command-nocurrentplayer.html command-nocurrentplayer.html
-command-currentroomis.html command-currentroomis.html
-command-nocurrentroom.html command-nocurrentroom.html
-command-identity.html command-identity.html
-command-contextidentity.html command-contextidentity.html
-diagrams.html diagrams.html
+index.html "Table of Contents" template/main.html
+intro.html "What is TAME?" template/main.html
+module.html "Module Overview" template/main.html
+interpreter.html "The Interpreter" template/main.html
+tamescript.html "TAMEScript" template/main.html
+language-elements.html "TAMEScriptModule Elements" template/main.html
+language-blocks.html "TAMEScript Module Blocks" template/main.html
+language-commands.html "TAMEScript Command Reference" template/main.html
+command-noop.html "Command: NoOp" template/main.html
+command-call.html "Command: Call" template/main.html
+command-callfrom.html "Command: CallFrom" template/main.html
+command-callmaybe.html "Command: CallMaybe" template/main.html
+command-callmaybefrom.html "Command: CallMaybeFrom" template/main.html
+command-queueaction.html "Command: QueueAction" template/main.html
+command-queueactionstring.html "Command: QueueActionString" template/main.html
+command-queueactionobject.html "Command: QueueActionObject" template/main.html
+command-queueactionforobjectsin.html "Command: QueueActionForObjectsIn" template/main.html
+command-queueactionfortaggedobjectsin.html "Command: QueueActionForTaggedObjectsIn" template/main.html
+command-queueactionobject2.html "Command: QueueActionObject2" template/main.html
+command-addcue.html "Command: XXXX" template/main.html
+command-text.html "Command: XXXX" template/main.html
+command-textln.html "Command: XXXX" template/main.html
+command-textf.html "Command: XXXX" template/main.html
+command-textfln.html "Command: XXXX" template/main.html
+command-pause.html "Command: XXXX" template/main.html
+command-wait.html "Command: XXXX" template/main.html
+command-tip.html "Command: XXXX" template/main.html
+command-info.html "Command: XXXX" template/main.html
+command-asboolean.html "Command: XXXX" template/main.html
+command-asint.html "Command: XXXX" template/main.html
+command-asfloat.html "Command: XXXX" template/main.html
+command-asstring.html "Command: XXXX" template/main.html
+command-strlength.html "Command: XXXX" template/main.html
+command-strconcat.html "Command: XXXX" template/main.html
+command-strreplace.html "Command: XXXX" template/main.html
+command-strreplacepattern.html "Command: XXXX" template/main.html
+command-strreplacepatternall.html "Command: XXXX" template/main.html
+command-strindex.html "Command: XXXX" template/main.html
+command-strlastindex.html "Command: XXXX" template/main.html
+command-strcontains.html "Command: XXXX" template/main.html
+command-strcontainspattern.html "Command: XXXX" template/main.html
+command-strcontainstoken.html "Command: XXXX" template/main.html
+command-strstartswith.html "Command: XXXX" template/main.html
+command-strendswith.html "Command: XXXX" template/main.html
+command-substring.html "Command: XXXX" template/main.html
+command-strlower.html "Command: XXXX" template/main.html
+command-strupper.html "Command: XXXX" template/main.html
+command-strchar.html "Command: XXXX" template/main.html
+command-strtrim.html "Command: XXXX" template/main.html
+command-floor.html "Command: XXXX" template/main.html
+command-ceiling.html "Command: XXXX" template/main.html
+command-round.html "Command: XXXX" template/main.html
+command-fix.html "Command: XXXX" template/main.html
+command-sqrt.html "Command: XXXX" template/main.html
+command-pi.html "Command: XXXX" template/main.html
+command-e.html "Command: XXXX" template/main.html
+command-sin.html "Command: XXXX" template/main.html
+command-cos.html "Command: XXXX" template/main.html
+command-tan.html "Command: XXXX" template/main.html
+command-min.html "Command: XXXX" template/main.html
+command-max.html "Command: XXXX" template/main.html
+command-clamp.html "Command: XXXX" template/main.html
+command-random.html "Command: XXXX" template/main.html
+command-frandom.html "Command: XXXX" template/main.html
+command-grandom.html "Command: XXXX" template/main.html
+command-time.html "Command: XXXX" template/main.html
+command-seconds.html "Command: XXXX" template/main.html
+command-minutes.html "Command: XXXX" template/main.html
+command-hours.html "Command: XXXX" template/main.html
+command-days.html "Command: XXXX" template/main.html
+command-formattime.html "Command: XXXX" template/main.html
+command-objecthasname.html "Command: XXXX" template/main.html
+command-objecthastag.html "Command: XXXX" template/main.html
+command-addobjectname.html "Command: XXXX" template/main.html
+command-addobjecttag.html "Command: XXXX" template/main.html
+command-addobjecttagtoallin.html "Command: XXXX" template/main.html
+command-removeobjectname.html "Command: XXXX" template/main.html
+command-removeobjecttag.html "Command: XXXX" template/main.html
+command-removeobjecttagfromallin.html "Command: XXXX" template/main.html
+command-giveobject.html "Command: XXXX" template/main.html
+command-removeobject.html "Command: XXXX" template/main.html
+command-moveobjectswithtag.html "Command: XXXX" template/main.html
+command-objectcount.html "Command: XXXX" template/main.html
+command-hasobject.html "Command: XXXX" template/main.html
+command-objecthasnoowner.html "Command: XXXX" template/main.html
+command-playerisinroom.html "Command: XXXX" template/main.html
+command-playercanaccessobject.html "Command: XXXX" template/main.html
+command-browse.html "Command: XXXX" template/main.html
+command-browsetagged.html "Command: XXXX" template/main.html
+command-setplayer.html "Command: XXXX" template/main.html
+command-setroom.html "Command: XXXX" template/main.html
+command-pushroom.html "Command: XXXX" template/main.html
+command-poproom.html "Command: XXXX" template/main.html
+command-swaproom.html "Command: XXXX" template/main.html
+command-currentplayeris.html "Command: XXXX" template/main.html
+command-nocurrentplayer.html "Command: XXXX" template/main.html
+command-currentroomis.html "Command: XXXX" template/main.html
+command-nocurrentroom.html "Command: XXXX" template/main.html
+command-identity.html "Command: XXXX" template/main.html
+command-contextidentity.html "Command: XXXX" template/main.html
+diagrams.html "TAME Execution Diagrams" template/main.html

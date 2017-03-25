@@ -69,8 +69,8 @@
 <div class="w3-container">
 	<p>
 		<span class="w3-codespan">CallFrom</span> always searches backwards from the specified context despite a block existing either earlier or later
-		in the element's lineage. It also uses regular equality to search for the matching procedure. It is not a "strict equals" - it 
-		does not need to be the same type (e.g. <span class="w3-codespan">"3"</span> and <span class="w3-codespan">3</span> are equal). So,
-		whatever works for the <span class="w3-codespan">==</span> operator.
+		in the element's lineage. It also uses <strong>strict</strong> equality to search for the matching procedure. It must be the same type 
+		(e.g. <span class="w3-codespan">"3"</span> and <span class="w3-codespan">3</span> are NOT equal). So, whatever works for 
+		the <span class="w3-codespan">===</span> operator.
 	</p>
 </div>
