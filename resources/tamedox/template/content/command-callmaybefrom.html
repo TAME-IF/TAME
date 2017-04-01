@@ -1,6 +1,7 @@
-<h1>CallFrom ( <em>ELEMENT</em>, <em>NAME</em> );</h1>
+<h1>CallMaybeFrom ( <em>ELEMENT</em>, <em>NAME</em> );</h1>
 <div class="w3-container">
-	Calls a <a href="language-blocks.html#procedure">procedure</a> block from an arbitrary element context.
+	Calls a <a href="language-blocks.html#procedure">procedure</a> block from an arbitrary element context, but unlike
+	<a href="command-call.html">CallFrom</a>, this will not throw an error if it does not exist.
 </div>
 
 <div class="w3-panel w3-light-gray w3-card-2">
@@ -37,14 +38,11 @@
 <div class="w3-container">
 	<p>
 		Calls a <a href="language-blocks.html#procedure">procedure</a> with the same name as the value parameter in the same
-		element as the provided element, or within that element's lineage (parent elements).
+		element as the provided element (if it exists), or within that element's lineage (parent elements).
 	</p>
 	<p>
 		Like the name of the procedure, the value can be any type. The procedure called must have a name 
 		<em>strictly equal</em> to the value.
-	</p>
-	<p>
-		If the procedure cannot be found, an <kbd>ERROR</kbd> cue saying so is added to the response.
 	</p>
 </div>
 
@@ -52,8 +50,8 @@
 	<h3>Example</h3>
 </div>
 <div class="w3-container">
-<!--[ tamescript "CallFrom Example" module_callfrom_example commands/callfrom-example.tame ]-->
-<!--[ tamescript "CallFrom with Inheritance Example" module_callfrom_inheritance_example commands/callfrom-inheritance-example.tame ]-->
+<!--[ tamescript "CallMaybeFrom Example" module_callmaybefrom_example commands/callmaybefrom-example.tame ]-->
+<!--[ tamescript "CallMaybeFrom with Inheritance Example" module_callmaybefrom_inheritance_example commands/callmaybefrom-inheritance-example.tame ]-->
 </div>
 
 <!-- OPTIONAL SECTION -->
@@ -62,8 +60,8 @@
 </div>
 <div class="w3-container">
 	<p>
-		<a href="command-call.html">Call</a> &mdash; Similar to <span class="w3-codespan">CallFrom</span>, but from the current context.<br/>
-		<a href="command-callmaybefrom.html">CallMaybeFrom</a> &mdash; Same as <span class="w3-codespan">CallFrom</span>, except it doesn't add an <kbd>ERROR</kbd> cue.<br/>
+		<a href="command-callmaybe.html">CallMaybe</a> &mdash; Similar to <span class="w3-codespan">CallMaybeFrom</span>, but from the current context.<br/>
+		<a href="command-callfrom.html">CallFrom</a> &mdash; Same as <span class="w3-codespan">CallMaybeFrom</span>, but adds an <kbd>ERROR</kbd> cue if it can't find the procedure.<br/>
 	</p>
 </div>
 
@@ -72,7 +70,7 @@
 </div>
 <div class="w3-container">
 	<p>
-		<span class="w3-codespan">CallFrom</span> always searches backwards from the specified context despite a block existing either earlier or later
+		<span class="w3-codespan">CallMaybeFrom</span> always searches backwards from the specified context despite a block existing either earlier or later
 		in the element's lineage. It also uses <strong>strict</strong> equality to search for the matching procedure. It must be the same type 
 		(e.g. <span class="w3-codespan">"3"</span>, <span class="w3-codespan">3.0</span>, and <span class="w3-codespan">3</span> are all NOT equal). So, whatever works for 
 		the <span class="w3-codespan">===</span> operator.

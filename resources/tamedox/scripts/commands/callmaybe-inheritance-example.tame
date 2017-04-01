@@ -1,11 +1,17 @@
 action general a_quit named "quit";
 action transitive a_examine named "examine", "look at";
+action transitive a_examinemaybe named "maybe examine", "maybe look at";
 
 object archetype o_balls
 {
 	onAction(a_examine)
 	{
 		call("ExamineThis");
+	}
+
+	onAction(a_examinemaybe)
+	{
+		callMaybe("ExamineThis");
 	}
 }
 
@@ -19,10 +25,6 @@ object o_basketball : o_balls named "basketball" uses determiners "the"
 
 object o_unknownball : o_balls named "ball" uses determiners "the"
 {
-	procedure("ExamineThis")
-	{
-		textln("Some kind of other ball.");
-	}
 }
 
 world
@@ -36,6 +38,7 @@ world
 	{
 		giveObject(world, o_unknownball);
 		giveObject(world, o_basketball);
-		textln("Type \"examine basketball\" and \"examine ball\" to test.");
+		textln("Type \"examine basketball\" and \"examine ball\" to test. The latter should fail.");
+		textln("Type \"maybe examine basketball\" and \"maybe examine ball\" to test. The latter should do nothing.");
 	}	
 }

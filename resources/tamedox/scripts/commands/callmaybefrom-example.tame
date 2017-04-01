@@ -42,28 +42,28 @@ world
 	onAction(a_test1)
 	{
 		textln("Calling procedure...");
-		callFrom(o_counter, "Increment");
+		callMaybeFrom(o_counter, "Increment");
 		textln("Counter is now "+o_counter.x);
 	}
 
 	onAction(a_test2)
 	{
 		textln("Calling procedure...");
-		callFrom(o_counter, "Reset");
+		callMaybeFrom(o_counter, "Reset");
 		textln("Counter is now "+o_counter.x);
 	}
 
 	onAction(a_test3)
 	{
 		textln("Calling procedure...");
-		callFrom(o_counter2, "Increment");
+		callMaybeFrom(o_counter2, "Increment");
 		textln("Counter2 is now "+o_counter2.x);
 	}
 	
 	onAction(a_test4)
 	{
 		textln("Calling procedure...");
-		callFrom(o_counter2, "Reset");
+		callMaybeFrom(o_counter2, "Reset");
 		textln("Counter2 is now "+o_counter2.x);
 	}
 	
@@ -75,7 +75,7 @@ world
 	afterModuleInit()
 	{
 		textln("Type \"test1\", \"test2\", \"test3\", or \"test4\" to test.");
-		textln("\"test4\" should throw an error.");
+		textln("\"test4\" should not change anything.");
 	}	
 
 }
