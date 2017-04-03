@@ -39,9 +39,9 @@ world
 	onAction(a_callmaybe)
 	{
 		callMaybe("butt");
-		callMaybeFrom(o_test, "butt");
+		callFromMaybe(o_test, "butt");
 		callMaybe("butt2");
-		callMaybeFrom(o_test, "butt2");
+		callFromMaybe(o_test, "butt2");
 	}
 	
 	AfterModuleInit()

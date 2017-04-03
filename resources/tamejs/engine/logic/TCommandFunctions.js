@@ -402,18 +402,18 @@ var TCommandFunctions =
 		}
 	},
 
-	/* CALLMAYBEFROM */
+	/* CALLFROMMAYBE */
 	{
-		"name": 'CALLMAYBEFROM', 
+		"name": 'CALLFROMMAYBE', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var procedureName = request.popValue();
 			var elementValue = request.popValue();
 			
 			if (!TValue.isLiteral(procedureName))
-				throw TAMEError.UnexpectedValueType("Expected literal type in CALLMAYBEFROM call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in CALLFROMMAYBE call.");
 			if (!TValue.isElement(elementValue))
-				throw TAMEError.UnexpectedValueType("Expected element type in CALLMAYBEFROM call.");
+				throw TAMEError.UnexpectedValueType("Expected element type in CALLFROMMAYBE call.");
 
 			var id = TValue.asString(elementValue);
 

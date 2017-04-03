@@ -715,7 +715,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the element identity. 
 	 * Returns nothing.
 	 */
-	CALLMAYBEFROM (/*Return: */ null, /*Args: */ ArgumentType.ELEMENT, ArgumentType.VALUE)
+	CALLFROMMAYBE (/*Return: */ null, /*Args: */ ArgumentType.ELEMENT, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -724,9 +724,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value varElement = request.popValue();
 
 			if (!varProcedureName.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in CALLMAYBEFROM call.");
+				throw new UnexpectedValueTypeException("Expected literal type in CALLFROMMAYBE call.");
 			if (!varElement.isElement())
-				throw new UnexpectedValueTypeException("Expected element type in CALLMAYBEFROM call.");
+				throw new UnexpectedValueTypeException("Expected element type in CALLFROMMAYBE call.");
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TElementContext<?> elementContext = TAMELogic.resolveElementContext(moduleContext, varElement);

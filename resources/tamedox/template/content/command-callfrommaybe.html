@@ -1,4 +1,4 @@
-<h1>CallMaybeFrom ( <em>ELEMENT</em>, <em>NAME</em> );</h1>
+<h1>CallFromMaybe ( <em>ELEMENT</em>, <em>NAME</em> );</h1>
 <div class="w3-container">
 	Calls a <a href="language-blocks.html#procedure">procedure</a> block from an arbitrary element context, but unlike
 	<a href="command-call.html">CallFrom</a>, this will not throw an error if it does not exist.
@@ -50,8 +50,8 @@
 	<h3>Example</h3>
 </div>
 <div class="w3-container">
-<!--[ tamescript "CallMaybeFrom Example" module_callmaybefrom_example commands/callmaybefrom-example.tame ]-->
-<!--[ tamescript "CallMaybeFrom with Inheritance Example" module_callmaybefrom_inheritance_example commands/callmaybefrom-inheritance-example.tame ]-->
+<!--[ tamescript "CallFromMaybe Example" module_callfrommaybe_example commands/callfrommaybe-example.tame ]-->
+<!--[ tamescript "CallFromMaybe with Inheritance Example" module_callfrommaybe_inheritance_example commands/callfrommaybe-inheritance-example.tame ]-->
 </div>
 
 <!-- OPTIONAL SECTION -->
@@ -60,8 +60,8 @@
 </div>
 <div class="w3-container">
 	<p>
-		<a href="command-callmaybe.html">CallMaybe</a> &mdash; Similar to <span class="w3-codespan">CallMaybeFrom</span>, but from the current context.<br/>
-		<a href="command-callfrom.html">CallFrom</a> &mdash; Same as <span class="w3-codespan">CallMaybeFrom</span>, but adds an <kbd>ERROR</kbd> cue if it can't find the procedure.<br/>
+		<a href="command-callmaybe.html">CallMaybe</a> &mdash; Similar to <span class="w3-codespan">CallFromMaybe</span>, but from the current context.<br/>
+		<a href="command-callfrom.html">CallFrom</a> &mdash; Same as <span class="w3-codespan">CallFromMaybe</span>, but adds an <kbd>ERROR</kbd> cue if it can't find the procedure.<br/>
 	</p>
 </div>
 
@@ -70,7 +70,7 @@
 </div>
 <div class="w3-container">
 	<p>
-		<span class="w3-codespan">CallMaybeFrom</span> always searches backwards from the specified context despite a block existing either earlier or later
+		<span class="w3-codespan">CallFromMaybe</span> always searches backwards from the specified context despite a block existing either earlier or later
 		in the element's lineage. It also uses <strong>strict</strong> equality to search for the matching procedure. It must be the same type 
 		(e.g. <span class="w3-codespan">"3"</span>, <span class="w3-codespan">3.0</span>, and <span class="w3-codespan">3</span> are all NOT equal). So, whatever works for 
 		the <span class="w3-codespan">===</span> operator.

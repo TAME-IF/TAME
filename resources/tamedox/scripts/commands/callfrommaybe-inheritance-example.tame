@@ -32,28 +32,28 @@ world
 	onAction(a_test1)
 	{
 		textln("Calling procedure...");
-		callMaybeFrom(o_counter, "Increment");
+		callFromMaybe(o_counter, "Increment");
 		textln("Counter is now "+o_counter.x);
 	}
 
 	onAction(a_test2)
 	{
 		textln("Calling procedure...");
-		callMaybeFrom(o_counter, "Reset");
+		callFromMaybe(o_counter, "Reset");
 		textln("Counter is now "+o_counter.x);
 	}
 
 	onAction(a_test3)
 	{
 		textln("Calling procedure...");
-		callMaybeFrom(o_resettablecounter, "Increment");
+		callFromMaybe(o_resettablecounter, "Increment");
 		textln("ResettableCounter is now "+o_resettablecounter.x);
 	}
 	
 	onAction(a_test4)
 	{
 		textln("Calling procedure...");
-		callMaybeFrom(o_resettablecounter, "Reset");
+		callFromMaybe(o_resettablecounter, "Reset");
 		textln("ResettableCounter is now "+o_resettablecounter.x);
 	}
 	

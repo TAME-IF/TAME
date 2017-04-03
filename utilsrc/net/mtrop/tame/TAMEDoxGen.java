@@ -449,8 +449,17 @@ public final class TAMEDoxGen
 			String moduleName = resolveVariable(tokenizer.nextToken(), pageContext);
 			String scriptPath = resolveVariable(tokenizer.nextToken(), pageContext);
 			
-			InputStream scriptIn = Common.openResource(RESOURCE_SCRIPTROOT + scriptPath);
+				
+			InputStream scriptIn = null;
+				
 			try {
+				
+				if ((scriptIn = Common.openResource(RESOURCE_SCRIPTROOT + scriptPath)) == null)
+				{
+					writer.write("<pre>!!! CAN'T FIND SCRIPT \""+parentPath + scriptPath+"\" !!!</pre>");
+					return false;
+				}
+					
 				String scriptContent = Common.getTextualContents(scriptIn);
 				writer.write("<div class=\"w3-example\">\n");
 				writer.write("\t<button id=\"tame-"+moduleName+"-trace\" class=\"w3-button w3-red button-launch\" style=\"float:right;\" onclick=\"tameStartExample('"+headingName+" (Debug and Trace)', "+moduleName+", true, true)\"><i class=\"fa fa-bug\"></i></button>\n");
