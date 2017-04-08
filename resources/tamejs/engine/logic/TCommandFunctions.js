@@ -337,6 +337,16 @@ var TCommandFunctions =
 		}
 	},
 
+	/* FINISH */
+	{
+		"name": 'FINISH', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			response.trace(request, "Throwing finish interrupt...");
+			throw TAMEInterrupt.Finish();
+		}
+	},
+
 	/* END */
 	{
 		"name": 'END', 
@@ -346,6 +356,41 @@ var TCommandFunctions =
 			throw TAMEInterrupt.End();
 		}
 	},
+
+	/* FUNCTIONRETURN */
+	{
+		"name": 'FUNCTIONRETURN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var retVal = request.popValue();
+			response.trace(request, "Returning "+TValue.toString(retVal));
+			TLogic.setValue(blockLocal, TAMEConstants.RETURN_VARIABLE, retVal);
+			response.trace(request, "Throwing end interrupt...");
+			throw TAMEInterrupt.End();
+		}
+	},
+
+	/*
+	FUNCTIONRETURN ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value retVal = request.popValue();
+			blockLocal.put(RETURN_VARIABLE, retVal);
+			response.trace(request, "Throwing end interrupt...");
+			throw new EndInterrupt();
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	 */
 
 	/* CALL */
 	{

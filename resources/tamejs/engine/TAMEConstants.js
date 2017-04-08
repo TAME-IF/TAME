@@ -41,7 +41,7 @@ TAMEConstants.Identity.PLAYER = "player";
 TAMEConstants.Identity.WORLD = "world";
 
 TAMEConstants.RUNAWAY_THRESHOLD = 100000;
-TAMEConstants.OPEN_TARGET_VARIABLE = "_target";
+TAMEConstants.RETURN_VARIABLE = "-. 0Return0 .-";
 
 //##[[EXPORTJS-END
 

@@ -25,7 +25,8 @@ TAMEInterrupt.Type =
 	"Continue": "Continue",
 	"Error": "Error",
 	"End": "End",
-	"Quit": "Quit"
+	"Quit": "Quit",
+	"Finish": "Finish"
 };
 
 // Convenience Constructors
@@ -34,6 +35,7 @@ TAMEInterrupt.Continue = function() { return new TAMEInterrupt(TAMEInterrupt.Typ
 TAMEInterrupt.Error = function(message) { return new TAMEInterrupt(TAMEInterrupt.Type.Error, message); };
 TAMEInterrupt.End = function() { return new TAMEInterrupt(TAMEInterrupt.Type.End, "An end interrupt was thrown!"); };
 TAMEInterrupt.Quit = function() { return new TAMEInterrupt(TAMEInterrupt.Type.Quit, "A quit interrupt was thrown!"); };
+TAMEInterrupt.Finish = function() { return new TAMEInterrupt(TAMEInterrupt.Type.Finish, "A finish interrupt was thrown!"); };
 
 
 TAMEInterrupt.prototype.toString = function()

@@ -1,5 +1,5 @@
 /*******************************************************************************
-\ * Copyright (c) 2016-2017 Matt Tropiano
+ * Copyright (c) 2016-2017 Matt Tropiano
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -15,16 +15,16 @@ import net.mtrop.tame.TAMEInterrupt;
  * Interrupt for ending a request action.
  * @author Matthew Tropiano
  */
-public class EndInterrupt extends TAMEInterrupt
+public class FinishInterrupt extends TAMEInterrupt
 {
-	private static final long serialVersionUID = -3518666904445530889L;
+	private static final long serialVersionUID = -3803861797843170253L;
 
-	public EndInterrupt()
+	public FinishInterrupt()
 	{
-		super("An end interrupt was thrown.");
+		super("A finish interrupt was thrown.");
 	}
 	
-	public EndInterrupt(String message)
+	public FinishInterrupt(String message)
 	{
 		super(message);
 	}

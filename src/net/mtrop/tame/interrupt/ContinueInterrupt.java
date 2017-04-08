@@ -9,11 +9,13 @@
  ******************************************************************************/
 package net.mtrop.tame.interrupt;
 
+import net.mtrop.tame.TAMEInterrupt;
+
 /**
  * Throwable that is thrown by a "continue" statement.
  * @author Matthew Tropiano
  */
-public class ContinueInterrupt extends EndInterrupt
+public class ContinueInterrupt extends TAMEInterrupt
 {
 	private static final long serialVersionUID = -8027918516813618299L;
 

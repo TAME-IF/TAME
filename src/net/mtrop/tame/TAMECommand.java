@@ -29,8 +29,9 @@ import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.UnexpectedValueTypeException;
 import net.mtrop.tame.interrupt.BreakInterrupt;
-import net.mtrop.tame.interrupt.EndInterrupt;
+import net.mtrop.tame.interrupt.FinishInterrupt;
 import net.mtrop.tame.interrupt.ContinueInterrupt;
+import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
 import net.mtrop.tame.lang.ArgumentType;
@@ -601,6 +602,27 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * Throws a FINISH interrupt.
+	 * Is keyword. Returns nothing. 
+	 */
+	FINISH ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			response.trace(request, "Throwing finish interrupt...");
+			throw new FinishInterrupt();
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
 	 * Throws an END interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
@@ -609,6 +631,31 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
+			response.trace(request, "Throwing end interrupt...");
+			throw new EndInterrupt();
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * Return from function.
+	 * Sets RETURN value on blocklocal from POP and then throws an END interrupt.
+	 * Is keyword. Returns nothing (irony!).
+	 */
+	FUNCTIONRETURN ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value retVal = request.popValue();
+			response.trace(request, "Returning "+retVal.toString());
+			blockLocal.put(RETURN_VARIABLE, retVal);
 			response.trace(request, "Throwing end interrupt...");
 			throw new EndInterrupt();
 		}

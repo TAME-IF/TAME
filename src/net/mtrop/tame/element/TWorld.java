@@ -17,6 +17,7 @@ import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
+import net.mtrop.tame.lang.FunctionEntry;
 
 /**
  * Contains immutable World data. 
@@ -97,4 +98,10 @@ public class TWorld extends TElement implements Inheritable<TWorld>, ObjectConta
 		return getBlock(blockEntry);
 	}
 	
+	@Override
+	public FunctionEntry resolveFunction(String functionName)
+	{
+		return getFunction(functionName);
+	}
+
 }

@@ -740,7 +740,6 @@ TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blo
 	}
 	blockname += ")";
 
-	var qualifyingBlock = null;
 	var element = this.resolveElement(elementIdentity); 
 	
 	while (element)
@@ -755,6 +754,33 @@ TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blo
 	}
 
 	return null;
+};
+
+/**
+ * Resolves a qualifying function by name starting from an element.
+ * The identities "player", "room", and "world" are special.
+ * @param elementIdentity the starting element identity.
+ * @param functionName the name of the function.
+ * @return the first qualifying function in the lineage, or null if no matching entry.
+ * @throws TAMEError if no such element context.
+ */
+TModuleContext.prototype.resolveFunction = function(elementIdentity, functionName)
+{
+	var element = this.resolveElement(elementIdentity); 
+	functionName = functionName.toLowerCase();
+	
+	while (element)
+	{
+		var out = element.functionTable[functionName];
+		if (out)
+			return out;
+		if (element.parent)
+			element = this.resolveElement(element.parent);
+		else
+			element = null;
+	}
+
+	return null;	
 };
 
 /**

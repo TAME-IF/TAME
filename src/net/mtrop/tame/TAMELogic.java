@@ -33,6 +33,7 @@ import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
 import net.mtrop.tame.exception.UnexpectedValueException;
+import net.mtrop.tame.interrupt.FinishInterrupt;
 import net.mtrop.tame.interrupt.EndInterrupt;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.interrupt.QuitInterrupt;
@@ -40,6 +41,7 @@ import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
+import net.mtrop.tame.lang.FunctionEntry;
 import net.mtrop.tame.lang.Value;
 import net.mtrop.tame.lang.ValueHash;
 
@@ -209,8 +211,8 @@ public final class TAMELogic implements TAMEConstants
 					break;
 			}
 			
-		} catch (EndInterrupt end) {
-			// Catches end.
+		} catch (FinishInterrupt finish) {
+			// Catches finish.
 		} finally {
 			request.checkStackClear();
 		}
@@ -397,9 +399,6 @@ public final class TAMELogic implements TAMEConstants
 	@SafeVarargs
 	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, ObjectPair<String, Value> ... localValues) throws TAMEInterrupt
 	{
-		response.trace(request, "Pushing %s...", context);
-		request.pushContext(context);
-
 		ValueHash blockLocal = new ValueHash();
 		
 		// set locals
@@ -409,8 +408,28 @@ public final class TAMELogic implements TAMEConstants
 			blockLocal.put(local.getKey(), local.getValue());
 		}
 		
+		callBlock(request, response, context, block, blockLocal);
+	}
+	
+	/**
+	 * Performs the necessary tasks for calling an object block.
+	 * Ensures that the block is called cleanly.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param context the context that the block is executed through.
+	 * @param block the block to execute.
+	 * @param blockLocal the local value hash to use on invoke.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, ValueHash blockLocal) throws TAMEInterrupt
+	{
+		response.trace(request, "Pushing %s...", context);
+		request.pushContext(context);
+
 		try {
 			block.execute(request, response, blockLocal);
+		} catch (EndInterrupt t) {
+			/* Do nothing. */
 		} catch (Throwable t) {
 			throw t;
 		} finally {
@@ -420,6 +439,28 @@ public final class TAMELogic implements TAMEConstants
 		request.checkStackClear();
 	}
 	
+	/**
+	 * Calls a function from an arbitrary context, using the bound element as a lineage search point.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param functionName the function to execute.
+	 * @param originContext the origin context (and then element).
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static void callElementFunction(TAMERequest request, TAMEResponse response, String functionName, TElementContext<?> originContext) throws TAMEInterrupt
+	{
+		TElement element = originContext.getElement();
+		FunctionEntry entry = element.resolveFunction(functionName);
+		if (entry == null)
+			response.addCue(CUE_FATAL, "No such function ("+functionName+") in lineage of element " + element);
+		else
+		{
+			// TODO: Finish this.
+			Block block = entry.getBlock();
+			callBlock(request, response, originContext, block);
+		}
+	}
+
 	/**
 	 * Calls a procedure from an arbitrary context, using the bound element as a lineage search point.
 	 * @param request the current request.

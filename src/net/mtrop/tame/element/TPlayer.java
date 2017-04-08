@@ -18,6 +18,7 @@ import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
+import net.mtrop.tame.lang.FunctionEntry;
 
 import com.blackrook.commons.hash.Hash;
 import com.blackrook.io.SuperReader;
@@ -137,7 +138,14 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 		Block out = getBlock(blockEntry);
 		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
 	}
-	
+
+	@Override
+	public FunctionEntry resolveFunction(String functionName)
+	{
+		FunctionEntry out = getFunction(functionName);
+		return out != null ? out : (parent != null ? parent.resolveFunction(functionName) : null);
+	}
+
 	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.

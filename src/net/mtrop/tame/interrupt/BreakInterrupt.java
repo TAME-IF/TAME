@@ -9,13 +9,15 @@
  ******************************************************************************/
 package net.mtrop.tame.interrupt;
 
+import net.mtrop.tame.TAMEInterrupt;
+
 /**
  * Throwable that is thrown by a "break" statement.
  * @author Matthew Tropiano
  */
-public class BreakInterrupt extends EndInterrupt
+public class BreakInterrupt extends TAMEInterrupt
 {
-	private static final long serialVersionUID = -8027918516813618299L;
+	private static final long serialVersionUID = 9182225306806559066L;
 
 	public BreakInterrupt()
 	{

@@ -25,6 +25,8 @@ import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockTable;
+import net.mtrop.tame.lang.FunctionEntry;
+import net.mtrop.tame.lang.FunctionTable;
 import net.mtrop.tame.lang.Saveable;
 
 /**
@@ -42,18 +44,21 @@ public abstract class TElement implements Saveable
 	
 	/** Element's primary identity. */
 	private String identity;
-	/** Element block map. */
-	private BlockTable blockTable;
 	/** Element is an archetype (defines behavior, is not physical). */
 	private boolean archetype;
+	/** Element block map. */
+	private BlockTable blockTable;
+	/** Function map. */
+	private FunctionTable functionTable;
 
 	/**
 	 * Prepares a new element.
 	 */
 	protected TElement()
 	{
-		this.blockTable = new BlockTable();
 		this.archetype = false;
+		this.blockTable = new BlockTable();
+		this.functionTable = new FunctionTable();
 	}
 	
 	/** 
@@ -126,6 +131,42 @@ public abstract class TElement implements Saveable
 	public abstract Block resolveBlock(BlockEntry blockEntry);
 
 	/**
+	 * Adds/replaces a block and block entry to this element.
+	 * @param functionName the function name to associate with the table.
+	 * @param entry the entry to associate.
+	 */
+	public void addBlock(String functionName, FunctionEntry entry)
+	{
+		functionTable.add(functionName, entry);
+	}
+	
+	/**
+	 * @return an iterable structure for all function entries in this table.
+	 */
+	public Iterable<ObjectPair<String, FunctionEntry>> getFunctionEntries()
+	{
+		return functionTable.getEntries();
+	}
+	
+	/**
+	 * Gets a function entry using a function name on this element.
+	 * @param functionName the function name to use.
+	 * @return the associated entry, or null if no associated entry.
+	 */
+	public FunctionEntry getFunction(String functionName)
+	{
+		return functionTable.get(functionName);
+	}
+	
+	/**
+	 * Resolves a function entry using a function name on this element 
+	 * by going backwards through its lineage.
+	 * @param functionName the function name to use.
+	 * @return an associated entry, or null if no associated entry.
+	 */
+	public abstract FunctionEntry resolveFunction(String functionName);
+
+	/**
 	 * Checks if this element is an Archetype.
 	 * Archetypes do not hold state nor have contexts - they only define code.
 	 * Archetypes can be inherited from, but can never be owned, nor own things, nor be in expressions nor commands.
@@ -187,8 +228,9 @@ public abstract class TElement implements Saveable
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeString(identity, "UTF-8");
-		blockTable.writeBytes(out);
 		sw.writeBoolean(archetype);
+		blockTable.writeBytes(out);
+		functionTable.writeBytes(out);
 	}
 	
 	@Override
@@ -196,8 +238,9 @@ public abstract class TElement implements Saveable
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		identity = sr.readString("UTF-8");
-		blockTable = BlockTable.create(in);
 		archetype = sr.readBoolean();
+		blockTable = BlockTable.create(in);
+		functionTable = FunctionTable.create(in);
 	}
 
 	@Override

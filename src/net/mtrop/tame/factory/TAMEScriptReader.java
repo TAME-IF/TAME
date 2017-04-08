@@ -77,8 +77,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_ELSE =			13;
 		static final int TYPE_QUIT =			14;
 		static final int TYPE_END =				15;
-		static final int TYPE_BREAK =			16;
-		static final int TYPE_CONTINUE =		17;
+		static final int TYPE_FINISH =			16;
+		static final int TYPE_BREAK =			17;
+		static final int TYPE_CONTINUE =		18;
+		static final int TYPE_RETURN =			19;
 
 		static final int TYPE_LPAREN =			20;
 		static final int TYPE_RPAREN =			21;
@@ -157,6 +159,8 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("for", TYPE_FOR);
 			addCaseInsensitiveKeyword("quit", TYPE_QUIT);
 			addCaseInsensitiveKeyword("end", TYPE_END);
+			addCaseInsensitiveKeyword("finish", TYPE_FINISH);
+			addCaseInsensitiveKeyword("return", TYPE_RETURN);
 			addCaseInsensitiveKeyword("break", TYPE_BREAK);
 			addCaseInsensitiveKeyword("continue", TYPE_CONTINUE);
 
@@ -2284,7 +2288,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			else if (currentType(TSKernel.TYPE_END))
 			{
 				nextToken();
-				emit(Command.create(TAMECommand.END));
+				emit(Command.create(TAMECommand.FINISH));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_CONTINUE))

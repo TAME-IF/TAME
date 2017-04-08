@@ -42,8 +42,11 @@ public interface TAMEConstants
 	public static final String IDENTITY_CURRENT_PLAYER = "player";
 	/** Identity of current world. */
 	public static final String IDENTITY_CURRENT_WORLD = "world";
+	
+	/** Return variable. */
+	public static final String RETURN_VARIABLE = "-. 0Return0 .-";
 
-	/** Hardcoded runaway max. */
+	/** Default runaway max. */
 	public static final int RUNAWAY_THRESHOLD = 100000;
 
 	/* ========= Known or suggested headers. ========= */

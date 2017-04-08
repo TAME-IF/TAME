@@ -16,6 +16,7 @@ import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
+import net.mtrop.tame.lang.FunctionEntry;
 
 /**
  * Container that just holds objects. It cannot be actioned on.
@@ -51,6 +52,7 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 		switch (type)
 		{
 			case INIT:
+			case PROCEDURE:
 				return true;
 			default:
 				return false;
@@ -83,6 +85,13 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
 	}
 	
+	@Override
+	public FunctionEntry resolveFunction(String functionName)
+	{
+		FunctionEntry out = getFunction(functionName);
+		return out != null ? out : (parent != null ? parent.resolveFunction(functionName) : null);
+	}
+
 	/**
 	 * Creates this container from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.

@@ -40,6 +40,7 @@ import net.mtrop.tame.exception.JSExportException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.Command;
+import net.mtrop.tame.lang.FunctionEntry;
 import net.mtrop.tame.lang.Value;
 
 /**
@@ -295,6 +296,32 @@ public final class TAMEJSExporter
 		} finally {
 			Common.close(in);
 		}
+	}
+
+	/**
+	 * Generates a function table in JS.
+	 * @param writer the writer to write to.
+	 * @param functionTable the function table.
+	 */
+	private static JSONObject convertFunctionTable(Iterable<ObjectPair<String, FunctionEntry>> functionTable) throws IOException
+	{
+		JSONObject out = JSONObject.createEmptyObject();
+		for (ObjectPair<String, FunctionEntry> entry : functionTable)
+			out.addMember(entry.getKey().toLowerCase(), convertFunctionEntry(entry.getValue()));
+		return out;
+	}
+
+	/**
+	 * Generates a function entry in JS.
+	 * @param writer the writer to write to.
+	 * @param entry the entry.
+	 */
+	private static JSONObject convertFunctionEntry(FunctionEntry entry) throws IOException
+	{
+		JSONObject out = JSONObject.createEmptyArray();
+		out.addMember("arguments", entry.getArguments());
+		out.addMember("block", convertBlock(entry.getBlock()));
+		return out;
 	}
 
 	/**
@@ -609,6 +636,7 @@ public final class TAMEJSExporter
 		out.addMember("tameType", TWorld.class.getSimpleName());
 		out.addMember("identity", world.getIdentity());
 		out.addMember("blockTable", convertBlockTable(world.getBlockEntries()));
+		out.addMember("functionTable", convertFunctionTable(world.getFunctionEntries()));
 		JSONWriter.writeJSON(out, writer);
 	}
 
@@ -637,6 +665,7 @@ public final class TAMEJSExporter
 			out.addMember("tags", arr);
 
 		out.addMember("blockTable", convertBlockTable(object.getBlockEntries()));
+		out.addMember("functionTable", convertFunctionTable(object.getFunctionEntries()));
 		JSONWriter.writeJSON(out, writer);
 	}
 	
@@ -663,6 +692,7 @@ public final class TAMEJSExporter
 			out.addMember("permittedActionList", arr);
 
 		out.addMember("blockTable", convertBlockTable(player.getBlockEntries()));
+		out.addMember("functionTable", convertFunctionTable(player.getFunctionEntries()));
 
 		JSONWriter.writeJSON(out, writer);
 	}
@@ -690,6 +720,7 @@ public final class TAMEJSExporter
 			out.addMember("permittedActionList", arr);
 
 		out.addMember("blockTable", convertBlockTable(room.getBlockEntries()));
+		out.addMember("functionTable", convertFunctionTable(room.getFunctionEntries()));
 
 		JSONWriter.writeJSON(out, writer);
 	}
@@ -710,6 +741,7 @@ public final class TAMEJSExporter
 			out.addMember("parent", container.getParent().getIdentity());
 
 		out.addMember("blockTable", convertBlockTable(container.getBlockEntries()));
+		out.addMember("functionTable", convertFunctionTable(container.getFunctionEntries()));
 
 		JSONWriter.writeJSON(out, writer);
 	}

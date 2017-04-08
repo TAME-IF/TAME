@@ -355,8 +355,8 @@ TLogic.processAction = function(request, response, tameAction)
 		}
 		
 	} catch (err) {
-		// catch end interrupt, throw everything else.
-		if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.End)
+		// catch finish interrupt, throw everything else.
+		if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.Finish)
 			throw err;
 	} finally {
 		request.checkStackClear();			
@@ -466,31 +466,45 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 };
 
 /**
+ * Creates a viable blocklocal object for use in callBlock.
+ * @param localValues (object) map of name to value. 
+ */
+TLogic.createBlockLocal = function(localValues)
+{
+	var out = {};
+	// set locals
+	Util.each(localValues, function(value, key){
+		response.trace(request, "Setting local variable \""+key+"\" to \""+value+"\"");
+		TLogic.setValue(out, key, value);
+	});
+
+	return out;
+};
+
+/**
  * Performs the necessary tasks for calling an object block.
  * Ensures that the block is called cleanly.
  * @param request (TRequest) the request object.
  * @param response (TResponse) the response object.
  * @param elementContext (object) the context that the block is executed through.
  * @param block [Object, ...] the block to execute.
- * @param localValues (object) the local values to set on invoke.
+ * @param blockLocal (object) the initial block-local values to set on invoke.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.callBlock = function(request, response, elementContext, block, localValues)
+TLogic.callBlock = function(request, response, elementContext, block, blockLocal)
 {
 	response.trace(request, "Pushing Context:"+elementContext.identity+"...");
 	request.pushContext(elementContext);
 	
-	var blockLocal = {};
-	// set locals
-	Util.each(localValues, function(value, key){
-		response.trace(request, "Setting local variable \""+key+"\" to \""+value+"\"");
-		TLogic.setValue(blockLocal, key, value);
-	});
-
+	if (!blockLocal)
+		blockLocal = {};
+	
 	try {
 		TLogic.executeBlock(block, request, response, blockLocal);
-	} catch (t) {
-		throw t;
+	} catch (err) {
+		// catch end interrupt, throw everything else.
+		if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.End)
+			throw err;
 	} finally {
 		response.trace(request, "Popping Context:"+elementContext.identity+"...");
 		request.popContext();
@@ -1650,7 +1664,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 					// just get the first one.
 					var localmap = {};
 					localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-					TLogic.callBlock(request, response, currentRoomContext, blockToCall, localmap);
+					TLogic.callBlock(request, response, currentRoomContext, blockToCall, TLogic.createBlockLocal(localmap));
 				}
 				else
 					TLogic.callBlock(request, response, currentRoomContext, blockToCall);
@@ -1669,7 +1683,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 				// just get the first one.
 				var localmap = {};
 				localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-				TLogic.callBlock(request, response, currentPlayerContext, blockToCall, localmap);
+				TLogic.callBlock(request, response, currentPlayerContext, blockToCall, TLogic.createBlockLocal(localmap));
 			}
 			else
 				TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
@@ -1691,7 +1705,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 			// just get the first one.
 			var localmap = {};
 			localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-			TLogic.callBlock(request, response, worldContext, blockToCall, localmap);
+			TLogic.callBlock(request, response, worldContext, blockToCall, TLogic.createBlockLocal(localmap));
 		}
 		else
 			TLogic.callBlock(request, response, worldContext, blockToCall);
