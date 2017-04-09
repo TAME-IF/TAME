@@ -38,6 +38,7 @@ import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Command;
 import net.mtrop.tame.lang.CommandType;
+import net.mtrop.tame.lang.FunctionEntry;
 import net.mtrop.tame.lang.Value;
 import net.mtrop.tame.lang.ValueHash;
 import net.mtrop.tame.lang.ValueType;
@@ -646,7 +647,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	/**
 	 * Return from function.
 	 * Sets RETURN value on blocklocal from POP and then throws an END interrupt.
-	 * Is keyword. Returns nothing (irony!).
 	 */
 	FUNCTIONRETURN ()
 	{
@@ -658,6 +658,34 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			blockLocal.put(RETURN_VARIABLE, retVal);
 			response.trace(request, "Throwing end interrupt...");
 			throw new EndInterrupt();
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Calls a function.
+	 * Operand0 is the function name.
+	 * Pops a varying amount of values off the stack depending on the function.
+	 * Pushes result.
+	 * Returns nothing.
+	 */
+	CALLFUNCTION ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value functionName = command.getOperand0();
+
+			if (!functionName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CALLFUNCTION call.");
+
+			request.pushValue(TAMELogic.callElementFunction(request, response, functionName.asString(), request.peekContext()));
 		}
 		
 		@Override

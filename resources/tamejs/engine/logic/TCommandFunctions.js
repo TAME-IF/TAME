@@ -370,27 +370,19 @@ var TCommandFunctions =
 		}
 	},
 
-	/*
-	FUNCTIONRETURN ()
+	/* CALLFUNCTION */
 	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		"name": 'CALLFUNCTION', 
+		"doCommand": function(request, response, blockLocal, command)
 		{
-			Value retVal = request.popValue();
-			blockLocal.put(RETURN_VARIABLE, retVal);
-			response.trace(request, "Throwing end interrupt...");
-			throw new EndInterrupt();
+			var functionName = command.operand0;
+
+			if (!!TValue.isLiteral(functionValue))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CALLFUNCTION call.");
+
+			request.pushValue(TLogic.callElementFunction(request, response, TValue.asString(functionName), request.peekContext()));
 		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
-	
-	 */
 
 	/* CALL */
 	{

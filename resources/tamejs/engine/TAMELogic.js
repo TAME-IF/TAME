@@ -515,6 +515,33 @@ TLogic.callBlock = function(request, response, elementContext, block, blockLocal
 };
 
 /**
+ * Calls a function from an arbitrary context, using the bound element as a lineage search point.
+ * @param request the request object.
+ * @param response the response object.
+ * @param functionName the function to execute.
+ * @param originContext the origin context (and then element).
+ * @throws TAMEInterrupt if an interrupt occurs.
+ * @return the return value from the function call. if no return, returns false.
+ */
+TLogic.callElementFunction = function(request, response, functionName, originContext) throws TAMEInterrupt
+{
+	var context = request.moduleContext;
+	var element = context.resolveElement(originContext.identity);
+
+	var entry = context.resolveFunction(functionName);
+	if (entry == null)
+		throw TAMEError.UnexpectedValue("No such function ("+functionName+") in lineage of element " + TLogic.elementToString(element));
+
+	var blockLocal = {};
+	var args = entry.arguments;
+	for (var i = args.length - 1; i >= 0; i--)
+		blockLocal[args[i]] = request.popValue();
+	TLogic.callBlock(request, response, originContext, entry.block, blockLocal);
+	return TLogic.getValue(blockLocal, TAMEConstants.RETURN_VARIABLE);
+}
+
+
+/**
  * Calls a procedure from an arbitrary context, using the bound element as a lineage search point.
  * @param request (TRequest) the current request.
  * @param response (TResponse) the current response.

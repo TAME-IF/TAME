@@ -32,6 +32,7 @@ import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
 import net.mtrop.tame.element.context.TRoomContext;
 import net.mtrop.tame.element.context.TWorldContext;
+import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.exception.UnexpectedValueException;
 import net.mtrop.tame.interrupt.FinishInterrupt;
 import net.mtrop.tame.interrupt.EndInterrupt;
@@ -446,19 +447,25 @@ public final class TAMELogic implements TAMEConstants
 	 * @param functionName the function to execute.
 	 * @param originContext the origin context (and then element).
 	 * @throws TAMEInterrupt if an interrupt occurs.
+	 * @return the return value from the function call. if no return, returns false.
 	 */
-	public static void callElementFunction(TAMERequest request, TAMEResponse response, String functionName, TElementContext<?> originContext) throws TAMEInterrupt
+	public static Value callElementFunction(TAMERequest request, TAMEResponse response, String functionName, TElementContext<?> originContext) throws TAMEInterrupt
 	{
 		TElement element = originContext.getElement();
 		FunctionEntry entry = element.resolveFunction(functionName);
 		if (entry == null)
-			response.addCue(CUE_FATAL, "No such function ("+functionName+") in lineage of element " + element);
+			throw new ModuleException("No such function ("+functionName+") in lineage of element " + element);
+
+		ValueHash blockLocal = new ValueHash();
+		String[] args = entry.getArguments();
+		for (int i = args.length - 1; i >= 0; i--)
+			blockLocal.put(args[i], request.popValue());
+		Block block = entry.getBlock();
+		callBlock(request, response, originContext, block, blockLocal);
+		if (blockLocal.containsKey(RETURN_VARIABLE))
+			return blockLocal.get(RETURN_VARIABLE);
 		else
-		{
-			// TODO: Finish this.
-			Block block = entry.getBlock();
-			callBlock(request, response, originContext, block);
-		}
+			return Value.create(false);
 	}
 
 	/**
