@@ -42,12 +42,8 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 		setIdentity(identity);
 	}
 
-	/**
-	 * Checks if this object handles a particular entry type.
-	 * @param type the entry type to check.
-	 * @return true if so, false if not.
-	 */
-	public static boolean isValidEntryType(BlockEntryType type)
+	@Override
+	public final boolean isValidEntryType(BlockEntryType type)
 	{
 		switch (type)
 		{
@@ -93,7 +89,7 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 	}
 
 	/**
-	 * Creates this container from an input stream, expecting its byte representation. 
+	 * Creates this Container from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.
 	 * @return the read object.
 	 * @throws IOException if a read error occurs.

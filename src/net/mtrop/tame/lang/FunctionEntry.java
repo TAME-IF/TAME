@@ -49,6 +49,19 @@ public class FunctionEntry implements Saveable
 	}
 	
 	/**
+	 * Creates a new FunctionEntry, null block (MUST BE SET LATER).
+	 * @param arguments the function argument names.
+	 * @return a new FunctionEntry.
+	 */
+	public static FunctionEntry create(String ... arguments)
+	{
+		FunctionEntry out = new FunctionEntry();
+		out.block = null;
+		out.arguments = arguments;
+		return out;
+	}
+	
+	/**
 	 * Creates a new FunctionEntry from an input stream.
 	 * @param in the input stream to read from.
 	 * @return a new BloFunctionEntryckEntry.
@@ -68,6 +81,15 @@ public class FunctionEntry implements Saveable
 	public String[] getArguments() 
 	{
 		return arguments;
+	}
+	
+	/**
+	 * Sets the function block on this entry.
+	 * @param block the block to set.
+	 */
+	public void setBlock(Block block) 
+	{
+		this.block = block;
 	}
 	
 	/**

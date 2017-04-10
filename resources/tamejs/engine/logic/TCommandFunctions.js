@@ -375,12 +375,30 @@ var TCommandFunctions =
 		"name": 'CALLFUNCTION', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			var functionName = command.operand0;
+			var varFunctionName = command.operand0;
 
-			if (!!TValue.isLiteral(functionValue))
+			if (!!TValue.isLiteral(varFunctionName))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CALLFUNCTION call.");
 
-			request.pushValue(TLogic.callElementFunction(request, response, TValue.asString(functionName), request.peekContext()));
+			request.pushValue(TLogic.callElementFunction(request, response, TValue.asString(varFunctionName), request.peekContext()));
+		}
+	},
+
+	/* CALLELEMENTFUNCTION */
+	{
+		"name": 'CALLELEMENTFUNCTION', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varElement = command.operand0;
+			var varFunctionName = command.operand1;
+
+			if (!TValue.isElement(varElement))
+				throw TAMEError.UnexpectedValueType("Expected element type in CALLELEMENTFUNCTION call.");
+			if (!TValue.isLiteral(varFunctionName))
+				throw TAMEError.UnexpectedValueType("Expected literal type in CALLELEMENTFUNCTION call.");
+
+			var elementContext = request.moduleContext.resolveElementContext(TValue.asString(varElement));
+			request.pushValue(TLogic.callElementFunction(request, response, TValue.asString(varFunctionName), elementContext));
 		}
 	},
 

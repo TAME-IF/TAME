@@ -24,6 +24,7 @@ import com.blackrook.io.SuperWriter;
 import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
+import net.mtrop.tame.lang.BlockEntryType;
 import net.mtrop.tame.lang.BlockTable;
 import net.mtrop.tame.lang.FunctionEntry;
 import net.mtrop.tame.lang.FunctionTable;
@@ -95,6 +96,13 @@ public abstract class TElement implements Saveable
 	}
 		
 	/**
+	 * Checks if this element handles a particular entry type.
+	 * @param type the entry type to check.
+	 * @return true if so, false if not.
+	 */
+	public abstract boolean isValidEntryType(BlockEntryType type);
+
+	/**
 	 * Adds/replaces a block and block entry to this element.
 	 * @param blockEntry the block entry to associate with a block. 
 	 * @param block the block to assign.
@@ -135,7 +143,7 @@ public abstract class TElement implements Saveable
 	 * @param functionName the function name to associate with the table.
 	 * @param entry the entry to associate.
 	 */
-	public void addBlock(String functionName, FunctionEntry entry)
+	public void addFunction(String functionName, FunctionEntry entry)
 	{
 		functionTable.add(functionName, entry);
 	}

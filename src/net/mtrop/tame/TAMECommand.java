@@ -38,7 +38,6 @@ import net.mtrop.tame.lang.ArgumentType;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.Command;
 import net.mtrop.tame.lang.CommandType;
-import net.mtrop.tame.lang.FunctionEntry;
 import net.mtrop.tame.lang.Value;
 import net.mtrop.tame.lang.ValueHash;
 import net.mtrop.tame.lang.ValueType;
@@ -680,12 +679,44 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
-			Value functionName = command.getOperand0();
+			Value varFunctionName = command.getOperand0();
 
-			if (!functionName.isLiteral())
+			if (!varFunctionName.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in CALLFUNCTION call.");
 
-			request.pushValue(TAMELogic.callElementFunction(request, response, functionName.asString(), request.peekContext()));
+			request.pushValue(TAMELogic.callElementFunction(request, response, varFunctionName.asString(), request.peekContext()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Calls an element function.
+	 * Operand0 is the element.
+	 * Operand1 is the function name.
+	 * Pops a varying amount of values off the stack depending on the function.
+	 * Pushes result.
+	 * Returns nothing.
+	 */
+	CALLELEMENTFUNCTION ()
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varElement = command.getOperand0();
+			Value varFunctionName = command.getOperand1();
+
+			if (!varElement.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in CALLELEMENTFUNCTION call.");
+			if (!varFunctionName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in CALLELEMENTFUNCTION call.");
+			
+			request.pushValue(TAMELogic.callElementFunction(request, response, varFunctionName.asString(), TAMELogic.resolveElementContext(request.getModuleContext(), varElement)));
 		}
 		
 		@Override

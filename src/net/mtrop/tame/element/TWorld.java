@@ -47,12 +47,8 @@ public class TWorld extends TElement implements Inheritable<TWorld>, ObjectConta
 		return out;
 	}
 	
-	/**
-	 * Checks if this object handles a particular entry type.
-	 * @param type the entry type to check.
-	 * @return true if so, false if not.
-	 */
-	public static boolean isValidEntryType(BlockEntryType type)
+	@Override
+	public final boolean isValidEntryType(BlockEntryType type)
 	{
 		switch (type)
 		{

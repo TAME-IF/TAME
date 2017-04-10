@@ -23,6 +23,7 @@ import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.commons.linkedlist.Stack;
+import com.blackrook.commons.list.List;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
 import com.blackrook.lang.Parser;
@@ -34,6 +35,7 @@ import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.ForbiddenHandler;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TContainer;
+import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
@@ -44,11 +46,13 @@ import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
 import net.mtrop.tame.lang.Command;
+import net.mtrop.tame.lang.FunctionEntry;
 import net.mtrop.tame.lang.PermissionType;
 import net.mtrop.tame.lang.Value;
 
 /**
  * A TAMEScript reading class that produces scripts. 
+ * TODO: Add function call statements/expressions.
  * @author Matthew Tropiano
  */
 public final class TAMEScriptReader implements TAMEConstants
@@ -136,6 +140,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_LOCAL = 			91;
 		static final int TYPE_CLEAR = 			92;
 		static final int TYPE_ARCHETYPE = 		93;
+		static final int TYPE_FUNCTION = 		94;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -218,6 +223,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("local", TYPE_LOCAL);
 			addCaseInsensitiveKeyword("clear", TYPE_CLEAR);
 			addCaseInsensitiveKeyword("archetype", TYPE_ARCHETYPE);
+			addCaseInsensitiveKeyword("function", TYPE_FUNCTION);
 
 			for (BlockEntryType entryType : BlockEntryType.VALUES)
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
@@ -274,10 +280,10 @@ public final class TAMEScriptReader implements TAMEConstants
 
 		/** Current module. */
 		private TAMEModule currentModule;
-		/** Current block. */
-		private Stack<Block> currentBlock;
 		/** Control block count. */
-		private int controlBlock;
+		private int controlDepth;
+		/** Function block count. */
+		private int functionDepth;
 		
 		private TSParser(TSLexer lexer, TAMEScriptReaderOptions options)
 		{
@@ -286,7 +292,8 @@ public final class TAMEScriptReader implements TAMEConstants
 				lexer.addDefineMacro(def);
 			this.options = options;
 			this.currentModule = null;
-			this.currentBlock = new Stack<Block>();
+			this.controlDepth = 0;
+			this.functionDepth = 0;
 		}
 		
 		/**
@@ -450,7 +457,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 
-				if (currentType(TSKernel.TYPE_STRING | TSKernel.TYPE_NUMBER))
+				if (!currentType(TSKernel.TYPE_STRING, TSKernel.TYPE_NUMBER))
 				{
 					addErrorMessage("Expected literal value.");
 					return false;
@@ -473,6 +480,143 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 			
 			return true;
+		}
+
+		/**
+		 * Parses the container body.
+		 * [ElementBody] :=
+		 * 		[FUNCTION] [STRING] [FunctionArgumentList] [FunctionBody]
+		 * 		[ElementBlock] [ElementBody]
+		 * 		[e]
+		 */
+		private boolean parseElementBody(TElement element, String elementTypeName)
+		{
+			BlockEntryType entryType;
+			while (true)
+			{
+				// test if function.
+				if (matchType(TSKernel.TYPE_FUNCTION))
+				{
+					if (!currentType(TSKernel.TYPE_IDENTIFIER) || !isVariable())
+					{
+						addErrorMessage("Expected identifier for function name - cannot be an identifier for an existing element.");
+						return false;
+					}
+					
+					String functionName = currentToken().getLexeme();
+
+					// cannot be the name of a visible command.
+					TAMECommand command = getCommand(functionName);
+					if (command != null && !command.isInternal())
+					{
+						addErrorMessage("Function name cannot be a command.");
+						return false;
+					}
+
+					// cannot be re-declared on the same element.
+					if (element.getFunction(functionName) != null)
+					{
+						addErrorMessage("Function \""+functionName+"\" was already declared on this element.");
+						return false;
+					}
+					
+					nextToken();
+					
+					String[] arguments;
+					if ((arguments = parseFunctionArgumentList(functionName, element.resolveFunction(functionName))) == null)
+						return false;
+					
+					// must be added to enable recursion.
+					FunctionEntry functionEntry = FunctionEntry.create(arguments);
+					element.addFunction(functionName, functionEntry);
+					
+					functionDepth++;
+					
+					Block functionBlock;
+					if ((functionBlock = parseBlock()) == null)
+						return false;
+
+					functionDepth--;
+					
+					functionEntry.setBlock(functionBlock);
+				}
+				// else
+				else if ((entryType = parseElementBlockType(element, elementTypeName)) != null)
+				{
+					BlockEntry entry;
+					if ((entry = parseBlockEntry(entryType)) == null)
+						return false;
+					
+					if (element.getBlock(entry) != null)
+					{
+						addErrorMessage("Entry " + entry.toFriendlyString() + " was already defined on this "+elementTypeName+".");
+						return false;
+					}
+			
+					Block block;
+					if ((block = parseBlock()) == null)
+						return false;
+					
+					element.addBlock(entry, block);
+				}
+				else
+					break;
+			}
+			
+			return true;
+		}
+		
+		// Parses a function's argument list, returns the list of arguments, null if bad.
+		private String[] parseFunctionArgumentList(String functionName, FunctionEntry overriddenEntry)
+		{
+			List<String> argList = new List<>(4);
+			
+			if (!matchType(TSKernel.TYPE_LPAREN))
+			{
+				addErrorMessage("Expected \"(\" to start function argument list.");
+				return null;
+			}
+			
+			while (!currentType(TSKernel.TYPE_IDENTIFIER) || !isVariable())
+			{
+				argList.add(currentToken().getLexeme());
+				nextToken();
+				
+				if (!currentType(TSKernel.TYPE_COMMA))
+					break;
+			}
+
+			if (!matchType(TSKernel.TYPE_RPAREN))
+			{
+				addErrorMessage("Expected \")\" to end function argument list, or a variable name.");
+				return null;
+			}
+			
+			if (overriddenEntry != null && argList.size() != overriddenEntry.getArguments().length)
+			{
+				addErrorMessage("Overridden function \""+functionName+"\" must have the same amount of arguments as its declaration in parent elements.");
+				return null;
+			}
+			
+			String[] out = new String[argList.size()];
+			argList.toArray(out);
+			return out;
+		}
+
+		// Return type if token type is a valid block type on a container.
+		private BlockEntryType parseElementBlockType(TElement element, String elementTypeName)
+		{
+			BlockEntryType entryType = parseBlockEntryType(elementTypeName);
+			if (entryType == null)
+				return null;
+				
+			if (!element.isValidEntryType(entryType))
+			{
+				addErrorMessage("Entry name \""+entryType.name()+"\"is not valid for a "+elementTypeName+".");
+				return null;
+			}
+			
+			return entryType;
 		}
 
 		// Returns a parsed block entry type.
@@ -648,86 +792,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			return BlockEntry.create(type, values);
 		}
 		
-		// Return type if token type is a valid block type on a container.
-		private BlockEntryType parseContainerBlockType()
-		{
-			BlockEntryType entryType = parseBlockEntryType("container");
-			if (entryType == null)
-				return null;
-				
-			if (!TContainer.isValidEntryType(entryType))
-			{
-				addErrorMessage("Entry name \""+entryType.name()+"\"is not valid for a container.");
-				return null;
-			}
-			
-			return entryType;
-		}
-
-		// Return type if token type is a valid block type on an object.
-		private BlockEntryType parseObjectBlockType()
-		{
-			BlockEntryType entryType = parseBlockEntryType("object");
-			if (entryType == null)
-				return null;
-				
-			if (!TObject.isValidEntryType(entryType))
-			{
-				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for an object.");
-				return null;
-			}
-			
-			return entryType;
-		}
-
-		// Return type if token type is a valid block type on a room.
-		private BlockEntryType parseRoomBlockType()
-		{
-			BlockEntryType entryType = parseBlockEntryType("room");
-			if (entryType == null)
-				return null;
-				
-			if (!TRoom.isValidEntryType(entryType))
-			{
-				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for a room.");
-				return null;
-			}
-			
-			return entryType;
-		}
-
-		// Return type if token type is a valid block type on a player.
-		private BlockEntryType parsePlayerBlockType()
-		{
-			BlockEntryType entryType = parseBlockEntryType("player");
-			if (entryType == null)
-				return null;
-				
-			if (!TPlayer.isValidEntryType(entryType))
-			{
-				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for a player.");
-				return null;
-			}
-			
-			return entryType;
-		}
-
-		// Return type if token type is a valid block type on a world.
-		private BlockEntryType parseWorldBlockType()
-		{
-			BlockEntryType entryType = parseBlockEntryType("world");
-			if (entryType == null)
-				return null;
-				
-			if (!TWorld.isValidEntryType(entryType))
-			{
-				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for a world.");
-				return null;
-			}
-			
-			return entryType;
-		}
-
 		/**
 		 * Parses a container.
 		 * [Container] :=
@@ -765,7 +829,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
-			if (!parseContainerBody(container))
+			if (!parseElementBody(container, "container"))
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_RBRACE))
@@ -777,36 +841,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			return true;
 		}
 		
-		/**
-		 * Parses the container body.
-		 * [ContainerBody] :=
-		 * 		[ContainerBlock] [ContainerBody]
-		 * 		[e]
-		 */
-		private boolean parseContainerBody(TContainer container)
-		{
-			BlockEntryType entryType;
-			BlockEntry entry;
-			while ((entryType = parseContainerBlockType()) != null)
-			{
-				if ((entry = parseBlockEntry(entryType)) == null)
-					return false;
-				
-				if (container.getBlock(entry) != null)
-				{
-					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this container.");
-					return false;
-				}
-
-				if (!parseBlock())
-					return false;
-				
-				container.addBlock(entry, currentBlock.pop());
-			}
-			
-			return true;
-		}
-				
 		/**
 		 * Parses an object.
 		 * [Object] :=
@@ -871,7 +905,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
-			if (!parseObjectBody(object))
+			if (!parseElementBody(object, "object"))
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_RBRACE))
@@ -907,36 +941,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			return true;
 		}
 		
-		/**
-		 * Parses the object body.
-		 * [ObjectBody] :=
-		 * 		[ObjectBlock] [ObjectBody]
-		 * 		[e]
-		 */
-		private boolean parseObjectBody(TObject object)
-		{
-			BlockEntryType entryType;
-			BlockEntry entry;
-			while ((entryType = parseObjectBlockType()) != null)
-			{
-				if ((entry = parseBlockEntry(entryType)) == null)
-					return false;
-				
-				if (object.getBlock(entry) != null)
-				{
-					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this object.");
-					return false;
-				}
-
-				if (!parseBlock())
-					return false;
-				
-				object.addBlock(entry, currentBlock.pop());
-			}
-			
-			return true;
-		}
-				
 		/**
 		 * Parses a room.
 		 * [Room] :=
@@ -999,7 +1003,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
-			if (!parseRoomBody(room))
+			if (!parseElementBody(room, "room"))
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_RBRACE))
@@ -1035,36 +1039,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			return true;
 		}
 		
-		/**
-		 * Parses the room body.
-		 * [RoomBody] :=
-		 * 		[RoomBlock] [RoomBody]
-		 * 		[e]
-		 */
-		private boolean parseRoomBody(TRoom room)
-		{
-			BlockEntryType entryType;
-			BlockEntry entry;
-			while ((entryType = parseRoomBlockType()) != null)
-			{
-				if ((entry = parseBlockEntry(entryType)) == null)
-					return false;
-
-				if (room.getBlock(entry) != null)
-				{
-					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this room.");
-					return false;
-				}
-
-				if (!parseBlock())
-					return false;
-				
-				room.addBlock(entry, currentBlock.pop());
-			}
-			
-			return true;
-		}
-				
 		/**
 		 * Parses a player.
 		 * [Player] :=
@@ -1126,7 +1100,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
-			if (!parsePlayerBody(player))
+			if (!parseElementBody(player, "player"))
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_RBRACE))
@@ -1163,36 +1137,6 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
-		 * Parses the player body.
-		 * [PlayerBody] :=
-		 * 		[PlayerBlock] [PlayerBody]
-		 * 		[e]
-		 */
-		private boolean parsePlayerBody(TPlayer player)
-		{
-			BlockEntryType entryType;
-			BlockEntry entry;
-			while ((entryType = parsePlayerBlockType()) != null)
-			{
-				if ((entry = parseBlockEntry(entryType)) == null)
-					return false;
-				
-				if (player.getBlock(entry) != null)
-				{
-					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this player.");
-					return false;
-				}
-				
-				if (!parseBlock())
-					return false;
-				
-				player.addBlock(entry, currentBlock.pop());
-			}
-			
-			return true;
-		}
-		
-		/**
 		 * Parses a world.
 		 * [World] :=
 		 * 		";"
@@ -1223,7 +1167,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
-			if (!parseWorldBody(world))
+			if (!parseElementBody(world, "world"))
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_RBRACE))
@@ -1235,36 +1179,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			return true;
 		}
 
-		/**
-		 * Parses the world body.
-		 * [WorldBody] :=
-		 * 		[WorldBlock] [WorldBody]
-		 * 		[e]
-		 */
-		private boolean parseWorldBody(TWorld world)
-		{
-			BlockEntryType entryType;
-			BlockEntry entry;
-			while ((entryType = parseWorldBlockType()) != null)
-			{
-				if ((entry = parseBlockEntry(entryType)) == null)
-					return false;
-				
-				if (world.getBlock(entry) != null)
-				{
-					addErrorMessage(" Entry " + entry.toFriendlyString() + " was already defined on this world.");
-					return false;
-				}
-
-				if (!parseBlock())
-					return false;
-				
-				world.addBlock(entry, currentBlock.pop());
-			}
-			
-			return true;
-		}
-		
 		/**
 		 * Parses an action clause (after "action").
 		 * 		[GENERAL] [IDENTIFIER] [ActionNames] ";"
@@ -1794,62 +1708,56 @@ public final class TAMEScriptReader implements TAMEConstants
 		
 		/**
 		 * Parses a block.
-		 * Pushes a block onto the block stack.
+		 * Returns a block or null of something went wrong.
 		 * [Block] :=
 		 * 		"{" [StatementList] "}"
 		 * 		[Statement]
 		 */
-		private boolean parseBlock()
+		private Block parseBlock()
 		{
-			currentBlock.push(new Block());
+			Block out = new Block();
 			
 			if (currentType(TSKernel.TYPE_LBRACE))
 			{
 				nextToken();
 				
-				if (!parseStatementList())
-				{
-					currentBlock.pop();
-					return false;
-				}
+				if (!parseStatementList(out))
+					return null;
 				
 				if (!matchType(TSKernel.TYPE_RBRACE))
 				{
-					currentBlock.pop();
 					addErrorMessage("Expected end of block '}'.");
-					return false;
+					return null;
 				}
 				
-				currentBlock.push(optimizeBlock(currentBlock.pop()));
-				return true;
+				return optimizeBlock(out);
 			}
 			
 			if (currentType(TSKernel.TYPE_SEMICOLON))
 			{
 				nextToken();
-				return true;
+				return out;
 			}
 			
 			// control block handling.
 			if (currentType(TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
 			{
-				if (!parseControl())
-					return false;
+				if (!parseControl(out))
+					return null;
 				
-				return true;
+				return out;
 			}
 			
-			if (!parseExecutableStatement())
-				return false;
+			if (!parseExecutableStatement(out))
+				return null;
 			
 			if (!matchType(TSKernel.TYPE_SEMICOLON))
 			{
 				addErrorMessage("Expected \";\" to terminate statement.");
-				return false;
+				return null;
 			}
 			
-			currentBlock.push(optimizeBlock(currentBlock.pop()));
-			return true;
+			return optimizeBlock(out);
 		}
 
 		/**
@@ -1858,18 +1766,14 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * [BlockStatement] :=
 		 * 		[Statement]
 		 */
-		private boolean parseBlockStatement()
+		private Block parseBlockStatement()
 		{
-			currentBlock.push(new Block());
+			Block out = new Block();
 			
-			if (!parseStatement())
-			{
-				currentBlock.pop();
-				return false;
-			}
+			if (!parseStatement(out))
+				return null;
 			
-			currentBlock.push(optimizeBlock(currentBlock.pop()));
-			return true;
+			return optimizeBlock(out);
 		}
 
 		/**
@@ -1878,22 +1782,18 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * [BlockExpression] :=
 		 * 		[Expression]
 		 */
-		private boolean parseBlockExpression()
+		private Block parseBlockExpression()
 		{
-			currentBlock.push(new Block());
+			Block out = new Block();
 			
-			if (!parseExpression())
-			{
-				currentBlock.pop();
-				return false;
-			}
+			if (!parseExpression(out))
+				return null;
 			
-			currentBlock.push(optimizeBlock(currentBlock.pop()));
-			return true;
+			return optimizeBlock(out);
 		}
 		
 		/**
-		 * Parses a statement. Emits commands to the current block.
+		 * Parses a statement. Emits commands to the provided block.
 		 * [Statement] := 
 		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		[IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
@@ -1902,7 +1802,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[COMMANDEXPRESSION]
 		 *		[e]
 		 */
-		private boolean parseStatement()
+		private boolean parseStatement(Block block)
 		{
 			if (currentType(TSKernel.TYPE_IDENTIFIER) || isElement(false))
 			{
@@ -1934,10 +1834,10 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 					}
 
-					if (!parseExpression())
+					if (!parseExpression(block))
 						return false;
 					
-					emit(Command.create(TAMECommand.POPELEMENTVALUE, identToken, variable));
+					block.add(Command.create(TAMECommand.POPELEMENTVALUE, identToken, variable));
 					return true;
 				}
 				else if (identToken.isVariable())
@@ -1958,7 +1858,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						}
 						else
 						{
-							if (!parseCommandArguments(command))
+							if (!parseCommandArguments(block, command))
 								return false;
 
 							if (!matchType(TSKernel.TYPE_RPAREN))
@@ -1967,19 +1867,19 @@ public final class TAMEScriptReader implements TAMEConstants
 								return false;
 							}
 							
-							emit(Command.create(command));
+							block.add(Command.create(command));
 							if(command.getReturnType() != null)
-								emit(Command.create(TAMECommand.POPVALUE));
+								block.add(Command.create(TAMECommand.POP));
 							
 							return true;
 						}
 					}
 					else if (matchType(TSKernel.TYPE_EQUAL))
 					{
-						if (!parseExpression())
+						if (!parseExpression(block))
 							return false;
 						
-						emit(Command.create(TAMECommand.POPVALUE, identToken));
+						block.add(Command.create(TAMECommand.POPVALUE, identToken));
 						return true;
 					}
 					else
@@ -2014,10 +1914,10 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				if (matchType(TSKernel.TYPE_EQUAL))
 				{
-					if (!parseExpression())
+					if (!parseExpression(block))
 						return false;
 					
-					emit(Command.create(TAMECommand.POPLOCALVALUE, identToken));
+					block.add(Command.create(TAMECommand.POPLOCALVALUE, identToken));
 					return true;
 				}
 				else
@@ -2057,12 +1957,12 @@ public final class TAMEScriptReader implements TAMEConstants
 					Value variable = tokenToValue();
 					nextToken();
 					
-					emit(Command.create(TAMECommand.CLEARELEMENTVALUE, identToken, variable));
+					block.add(Command.create(TAMECommand.CLEARELEMENTVALUE, identToken, variable));
 					return true;
 				}
 				else
 				{
-					emit(Command.create(TAMECommand.CLEARVALUE, identToken));
+					block.add(Command.create(TAMECommand.CLEARVALUE, identToken));
 					return true;
 				}
 				
@@ -2072,12 +1972,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
-		 * Parses a statement. Emits commands to the current block.
+		 * Parses a statement. block.adds commands to the current block.
 		 * [StatementList] := 
 		 *		[Statement] [StatementList]
 		 * 		[e]
 		 */
-		private boolean parseStatementList()
+		private boolean parseStatementList(Block block)
 		{
 			if (!currentType(
 					TSKernel.TYPE_SEMICOLON, 
@@ -2093,26 +1993,27 @@ public final class TAMEScriptReader implements TAMEConstants
 					TSKernel.TYPE_QUIT,
 					TSKernel.TYPE_END,
 					TSKernel.TYPE_BREAK,
-					TSKernel.TYPE_CONTINUE
+					TSKernel.TYPE_CONTINUE,
+					TSKernel.TYPE_RETURN
 				))
 				return true;
 			
 			if (currentType(TSKernel.TYPE_SEMICOLON))
 			{
 				nextToken();
-				return parseStatementList();
+				return parseStatementList(block);
 			}
 			
 			// control block handling.
 			if (currentType(TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
 			{
-				if (!parseControl())
+				if (!parseControl(block))
 					return false;
 				
-				return parseStatementList();
+				return parseStatementList(block);
 			}
 			
-			if (!parseExecutableStatement())
+			if (!parseExecutableStatement(block))
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_SEMICOLON))
@@ -2121,7 +2022,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 			
-			return parseStatementList();
+			return parseStatementList(block);
 		}
 
 		/**
@@ -2131,7 +2032,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[WHILE] "(" [EXPRESSION] ")" [BLOCK]
 		 * 		[FOR] "(" [STATEMENT] ";" [EXPRESSION] ";" [STATEMENT] ")" [BLOCK]
 		 */
-		private boolean parseControl() 
+		private boolean parseControl(Block block) 
 		{
 			if (currentType(TSKernel.TYPE_IF))
 			{
@@ -2143,13 +2044,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 		
-				Block conditionalBlock = null;
-				Block successBlock = null;
-				Block failureBlock = null;
-				
-				if (!parseBlockExpression())
+				Block conditionalBlock;
+				if ((conditionalBlock = parseBlockExpression()) == null)
 					return false;
-				conditionalBlock = currentBlock.pop();
 				
 				if (!matchType(TSKernel.TYPE_RPAREN))
 				{
@@ -2157,20 +2054,20 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 		
-				if (!parseBlock())
+				Block successBlock;
+				if ((successBlock = parseBlock()) == null)
 					return false;
-				successBlock = currentBlock.pop();
 				
+				Block failureBlock = null;
 				if (currentType(TSKernel.TYPE_ELSE))
 				{
 					nextToken();
 		
-					if (!parseBlock())
+					if ((failureBlock = parseBlock()) == null)
 						return false;
-					failureBlock = currentBlock.pop();
 				}
 		
-				emit(Command.create(TAMECommand.IF, conditionalBlock, successBlock, failureBlock));
+				block.add(Command.create(TAMECommand.IF, conditionalBlock, successBlock, failureBlock));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_WHILE))
@@ -2183,12 +2080,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 		
-				Block conditionalBlock = null;
-				Block successBlock = null;
-				
-				if (!parseBlockExpression())
+				Block conditionalBlock;
+				if ((conditionalBlock = parseBlockExpression()) == null)
 					return false;
-				conditionalBlock = currentBlock.pop();
 				
 				if (!matchType(TSKernel.TYPE_RPAREN))
 				{
@@ -2196,14 +2090,14 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 		
-				controlBlock++;
+				controlDepth++;
 		
-				if (!parseBlock())
+				Block successBlock;
+				if ((successBlock = parseBlock()) == null)
 					return false;
-				successBlock = currentBlock.pop();
 		
-				emit(Command.create(TAMECommand.WHILE, conditionalBlock, successBlock));
-				controlBlock--;
+				block.add(Command.create(TAMECommand.WHILE, conditionalBlock, successBlock));
+				controlDepth--;
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_FOR))
@@ -2216,14 +2110,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 		
-				Block initBlock = null;
-				Block conditionalBlock = null;
-				Block stepBlock = null;
-				Block successBlock = null;
-				
-				if (!parseBlockStatement())
+				Block initBlock;
+				if ((initBlock = parseBlockStatement()) == null)
 					return false;
-				initBlock = currentBlock.pop();
 		
 				if (!matchType(TSKernel.TYPE_SEMICOLON))
 				{
@@ -2231,9 +2120,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 		
-				if (!parseBlockExpression())
+				Block conditionalBlock;
+				if ((conditionalBlock = parseBlockExpression()) == null)
 					return false;
-				conditionalBlock = currentBlock.pop();
 				
 				if (!matchType(TSKernel.TYPE_SEMICOLON))
 				{
@@ -2241,9 +2130,9 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 		
-				if (!parseBlockStatement())
+				Block stepBlock;
+				if ((stepBlock = parseBlockStatement()) == null)
 					return false;
-				stepBlock = currentBlock.pop();
 		
 				if (!matchType(TSKernel.TYPE_RPAREN))
 				{
@@ -2251,14 +2140,14 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 		
-				controlBlock++;
+				controlDepth++;
 		
-				if (!parseBlock())
+				Block successBlock;
+				if ((successBlock = parseBlock()) == null)
 					return false;
-				successBlock = currentBlock.pop();
 		
-				emit(Command.create(TAMECommand.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
-				controlBlock--;
+				block.add(Command.create(TAMECommand.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
+				controlDepth--;
 				return true;
 			}
 			else
@@ -2269,7 +2158,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		/**
-		 * Parses a control block.
+		 * Parses an executable statement.
 		 * [ControlCommand] :=
 		 * 		[QUIT]
 		 * 		[BREAK]
@@ -2277,45 +2166,68 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[END]
 		 * 		[Statement]
 		 */
-		private boolean parseExecutableStatement() 
+		private boolean parseExecutableStatement(Block block) 
 		{
 			if (currentType(TSKernel.TYPE_QUIT))
 			{
 				nextToken();
-				emit(Command.create(TAMECommand.QUIT));
+				block.add(Command.create(TAMECommand.QUIT));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_FINISH))
+			{
+				nextToken();
+				block.add(Command.create(TAMECommand.FINISH));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_END))
 			{
 				nextToken();
-				emit(Command.create(TAMECommand.FINISH));
+				block.add(Command.create(TAMECommand.END));
+				return true;
+			}
+			else if (currentType(TSKernel.TYPE_RETURN))
+			{
+				nextToken();
+
+				if (functionDepth == 0)
+				{
+					addErrorMessage("Command \"return\" used outside of a function.");
+					return false;
+				}
+				
+				if (!parseExpression(block))
+					return false;
+				
+				block.add(Command.create(TAMECommand.FUNCTIONRETURN));
+				
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_CONTINUE))
 			{
-				if (controlBlock == 0)
+				if (controlDepth == 0)
 				{
 					addErrorMessage("Command \"continue\" used without \"for\" or \"while\".");
 					return false;
 				}
 				
 				nextToken();
-				emit(Command.create(TAMECommand.CONTINUE));
+				block.add(Command.create(TAMECommand.CONTINUE));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_BREAK))
 			{
-				if (controlBlock == 0)
+				if (controlDepth == 0)
 				{
 					addErrorMessage("Command \"break\" used without \"for\" or \"while\".");
 					return false;
 				}
 				
 				nextToken();
-				emit(Command.create(TAMECommand.BREAK));
+				block.add(Command.create(TAMECommand.BREAK));
 				return true;
 			}
-			else if (!parseStatement())
+			else if (!parseStatement(block))
 				return false;
 			
 			return true;
@@ -2324,7 +2236,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		/**
 		 * Parses command arguments.
 		 */
-		private boolean parseCommandArguments(TAMECommand commandType) 
+		private boolean parseCommandArguments(Block block, TAMECommand commandType) 
 		{
 			ArgumentType[] argTypes = commandType.getArgumentTypes();
 			for (int i = 0; i < argTypes.length; i++) 
@@ -2335,7 +2247,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					case VALUE:
 					{
 						// value - read expression.
-						if (!parseExpression())
+						if (!parseExpression(block))
 							return false;
 						break;
 					}
@@ -2347,7 +2259,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2359,7 +2271,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2371,7 +2283,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2383,7 +2295,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2395,7 +2307,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2407,7 +2319,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2419,7 +2331,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						emit(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2442,8 +2354,9 @@ public final class TAMEScriptReader implements TAMEConstants
 
 		/**
 		 * Parses an infix expression.
+		 * @param the block to block.add commands to.
 		 */
-		private boolean parseExpression()
+		private boolean parseExpression(Block block)
 		{
 			// make stacks.
 			Stack<ArithmeticOperator> expressionOperators = new Stack<>();
@@ -2482,7 +2395,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						emit(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, Value.createVariable(currentToken().getLexeme())));
+						block.add(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, Value.createVariable(currentToken().getLexeme())));
 						expressionValueCounter[0] += 1; // the "push"
 						lastWasValue = true;
 						nextToken();
@@ -2509,7 +2422,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							}
 							else
 							{
-								if (!parseCommandArguments(command))
+								if (!parseCommandArguments(block, command))
 									return false;
 
 								if (!matchType(TSKernel.TYPE_RPAREN))
@@ -2518,14 +2431,14 @@ public final class TAMEScriptReader implements TAMEConstants
 									return false;
 								}
 								
-								emit(Command.create(command));
+								block.add(Command.create(command));
 								expressionValueCounter[0] += 1;
 								lastWasValue = true;
 							}
 						}
 						else
 						{
-							emit(Command.create(TAMECommand.PUSHVALUE, identToken));
+							block.add(Command.create(TAMECommand.PUSHVALUE, identToken));
 							expressionValueCounter[0] += 1;
 							lastWasValue = true;
 						}
@@ -2545,7 +2458,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 					}
 					
-					if (!parseExpression())
+					if (!parseExpression(block))
 						return false;
 					
 					// NOTE: Expression ends in a push.
@@ -2568,7 +2481,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					
 					Value value = tokenToValue();
-					emit(Command.create(TAMECommand.PUSHVALUE, value));
+					block.add(Command.create(TAMECommand.PUSHVALUE, value));
 					expressionValueCounter[0] += 1;
 					nextToken();
 					lastWasValue = true;
@@ -2638,7 +2551,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						
 						nextToken();
 
-						if (!operatorReduce(expressionOperators, expressionValueCounter, nextOperator))
+						if (!operatorReduce(block, expressionOperators, expressionValueCounter, nextOperator))
 							return false;
 						
 						expressionOperators.push(nextOperator);
@@ -2680,7 +2593,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			// end of expression - reduce.
 			while (!expressionOperators.isEmpty())
 			{
-				if (!expressionReduce(expressionOperators, expressionValueCounter))
+				if (!expressionReduce(block, expressionOperators, expressionValueCounter))
 					return false;
 			}
 			
@@ -2694,12 +2607,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		// Operator reduce.
-		private boolean operatorReduce(Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter, ArithmeticOperator operator) 
+		private boolean operatorReduce(Block block, Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter, ArithmeticOperator operator) 
 		{
 			ArithmeticOperator top = expressionOperators.peek();
 			while (top != null && (top.getPrecedence() > operator.getPrecedence() || (top.getPrecedence() == operator.getPrecedence() && !operator.isRightAssociative())))
 			{
-				if (!expressionReduce(expressionOperators, expressionValueCounter))
+				if (!expressionReduce(block, expressionOperators, expressionValueCounter))
 					return false;
 				top = expressionOperators.peek();
 			}
@@ -2708,7 +2621,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		// Expression reduce.
-		private boolean expressionReduce(Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter)
+		private boolean expressionReduce(Block block, Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter)
 		{
 			if (expressionOperators.isEmpty())
 				throw new TAMEScriptParseException("Internal error - operator stack must have one operator in it.");
@@ -2724,7 +2637,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				throw new TAMEScriptParseException("Internal error - value counter did not have enough counter.");
 			
 			expressionValueCounter[0] += 1; // the "push"
-			emit(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(operator.ordinal())));
+			block.add(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(operator.ordinal())));
 			return true;
 		}
 
@@ -3056,14 +2969,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				outBlock.add(reverseStack.pop());
 			
 			return outBlock;
-		}
-		
-		/**
-		 * Emits a command into the current block.
-		 */
-		private void emit(Command command)
-		{
-			currentBlock.peek().add(command);
 		}
 		
 		/**
