@@ -15,7 +15,6 @@ import java.util.Iterator;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.CommonTokenizer;
-import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.linkedlist.Queue;
 
 import net.mtrop.tame.element.ObjectContainer;
@@ -397,18 +396,9 @@ public final class TAMELogic implements TAMEConstants
 	 * @param localValues the local values to set on invoke.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	@SafeVarargs
-	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, ObjectPair<String, Value> ... localValues) throws TAMEInterrupt
+	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block) throws TAMEInterrupt
 	{
 		ValueHash blockLocal = new ValueHash();
-		
-		// set locals
-		for (ObjectPair<String, Value> local : localValues)
-		{
-			response.trace(request, "Setting local variable \"%s\" to \"%s\"", local.getKey(), local.getValue());
-			blockLocal.put(local.getKey(), local.getValue());
-		}
-		
 		callBlock(request, response, context, block, blockLocal);
 	}
 	
@@ -437,7 +427,7 @@ public final class TAMELogic implements TAMEConstants
 			response.trace(request, "Popping %s...", context);
 			request.popContext();
 		}
-		// FIXME Interferes with functions. Maybe conditional call?
+		// FIXME Interferes with recursive functions. Maybe conditional call?
 		request.checkStackClear();
 	}
 	
@@ -460,7 +450,11 @@ public final class TAMELogic implements TAMEConstants
 		ValueHash blockLocal = new ValueHash();
 		String[] args = entry.getArguments();
 		for (int i = args.length - 1; i >= 0; i--)
-			blockLocal.put(args[i], request.popValue());
+		{
+			Value localValue = request.popValue();
+			response.trace(request, "Setting local variable \"%s\" to \"%s\"", args[i], localValue);
+			blockLocal.put(args[i], localValue);
+		}
 		Block block = entry.getBlock();
 		callBlock(request, response, originContext, block, blockLocal);
 		if (blockLocal.containsKey(RETURN_VARIABLE))
@@ -921,7 +915,12 @@ public final class TAMELogic implements TAMEConstants
 						// just get the first one.
 						for (String variableName : action.getExtraStrings())
 						{
-							callBlock(request, response, currentRoomContext, blockToCall, new ObjectPair<String, Value>(variableName, Value.create(openTarget)));
+							Value target = Value.create(openTarget);
+							// set locals
+							ValueHash blockLocal = new ValueHash();
+							response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
+							blockLocal.put(variableName, target);
+							callBlock(request, response, currentRoomContext, blockToCall, blockLocal);
 							break;
 						}
 					}
@@ -942,7 +941,12 @@ public final class TAMELogic implements TAMEConstants
 					// just get the first one.
 					for (String variableName : action.getExtraStrings())
 					{
-						callBlock(request, response, currentPlayerContext, blockToCall, new ObjectPair<String, Value>(variableName, Value.create(openTarget)));
+						Value target = Value.create(openTarget);
+						// set locals
+						ValueHash blockLocal = new ValueHash();
+						response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
+						blockLocal.put(variableName, target);
+						callBlock(request, response, currentPlayerContext, blockToCall, blockLocal);
 						break;
 					}
 				}
@@ -966,7 +970,12 @@ public final class TAMELogic implements TAMEConstants
 				// just get the first one.
 				for (String variableName : action.getExtraStrings())
 				{
-					callBlock(request, response, worldContext, blockToCall, new ObjectPair<String, Value>(variableName, Value.create(openTarget)));
+					Value target = Value.create(openTarget);
+					// set locals
+					ValueHash blockLocal = new ValueHash();
+					response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
+					blockLocal.put(variableName, target);
+					callBlock(request, response, worldContext, blockToCall, blockLocal);
 					break;
 				}
 			}

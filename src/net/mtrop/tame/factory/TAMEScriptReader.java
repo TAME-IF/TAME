@@ -2739,7 +2739,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 				else
 				{
-					addErrorMessage("Expression error - expected value after operator.");
+					addErrorMessage("Expression error - expected value.");
 					return false;
 				}
 				

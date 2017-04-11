@@ -535,7 +535,11 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 	var blockLocal = {};
 	var args = entry.arguments;
 	for (var i = args.length - 1; i >= 0; i--)
-		blockLocal[args[i]] = request.popValue();
+	{
+		var localValue = request.popValue();
+		response.trace(request, "Setting local variable \""+args[i]+"\" to \""+localValue+"\"");
+		blockLocal[args[i]] = localValue;
+	}
 	TLogic.callBlock(request, response, originContext, entry.block, blockLocal);
 	return TLogic.getValue(blockLocal, TAMEConstants.RETURN_VARIABLE);
 }

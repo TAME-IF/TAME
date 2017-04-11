@@ -52,12 +52,12 @@ world
 	
 	init()
 	{
-		textln(double(5));
+		o_bowlingball.dribble();
+		o_basketball.dribble();
+		textln(double(2));
 		textln(factorial(5));
 		textln(rollDie(6, 5));
-		textln(c_test.square(4));
-		textln(o_basketball.dribble());
-		textln(o_bowlingball.dribble());
+		textln(c_test.square(6));
 		quit;
 	}
 	
