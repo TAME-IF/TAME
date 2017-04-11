@@ -52,7 +52,6 @@ import net.mtrop.tame.lang.Value;
 
 /**
  * A TAMEScript reading class that produces scripts. 
- * TODO: Add function call statements/expressions.
  * @author Matthew Tropiano
  */
 public final class TAMEScriptReader implements TAMEConstants
@@ -533,7 +532,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					functionDepth++;
 					
 					Block functionBlock;
-					if ((functionBlock = parseBlock()) == null)
+					if ((functionBlock = parseBlock(element)) == null)
 						return false;
 
 					functionDepth--;
@@ -554,7 +553,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 			
 					Block block;
-					if ((block = parseBlock()) == null)
+					if ((block = parseBlock(element)) == null)
 						return false;
 					
 					element.addBlock(entry, block);
@@ -577,12 +576,12 @@ public final class TAMEScriptReader implements TAMEConstants
 				return null;
 			}
 			
-			while (!currentType(TSKernel.TYPE_IDENTIFIER) || !isVariable())
+			while (currentType(TSKernel.TYPE_IDENTIFIER) && isVariable())
 			{
 				argList.add(currentToken().getLexeme());
 				nextToken();
 				
-				if (!currentType(TSKernel.TYPE_COMMA))
+				if (!matchType(TSKernel.TYPE_COMMA))
 					break;
 			}
 
@@ -819,6 +818,9 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			verbosef("Read container %s...", identity);
 			
+			if (!parseContainerParent(container))
+				return false;
+
 			// prototype?
 			if (matchType(TSKernel.TYPE_SEMICOLON))
 				return true;
@@ -838,6 +840,30 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
+			return true;
+		}
+		
+		/**
+		 * Parses the container parent clause.
+		 * [ContainerParent] :=
+		 * 		":" [OBJECT]
+		 * 		[e]
+		 */
+		private boolean parseContainerParent(TContainer container)
+		{
+			if (matchType(TSKernel.TYPE_COLON))
+			{
+				if (!isObject(true))
+				{
+					addErrorMessage("Expected object type after \":\".");
+					return false;
+				}
+				
+				String identity = currentToken().getLexeme();
+				nextToken();
+				container.setParent(currentModule.getContainerByIdentity(identity));
+			}
+			
 			return true;
 		}
 		
@@ -1713,7 +1739,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		"{" [StatementList] "}"
 		 * 		[Statement]
 		 */
-		private Block parseBlock()
+		private Block parseBlock(TElement currentElement)
 		{
 			Block out = new Block();
 			
@@ -1721,7 +1747,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				nextToken();
 				
-				if (!parseStatementList(out))
+				if (!parseStatementList(currentElement, out))
 					return null;
 				
 				if (!matchType(TSKernel.TYPE_RBRACE))
@@ -1742,13 +1768,13 @@ public final class TAMEScriptReader implements TAMEConstants
 			// control block handling.
 			if (currentType(TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
 			{
-				if (!parseControl(out))
+				if (!parseControl(currentElement, out))
 					return null;
 				
 				return out;
 			}
 			
-			if (!parseExecutableStatement(out))
+			if (!parseExecutableStatement(currentElement, out))
 				return null;
 			
 			if (!matchType(TSKernel.TYPE_SEMICOLON))
@@ -1766,11 +1792,11 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * [BlockStatement] :=
 		 * 		[Statement]
 		 */
-		private Block parseBlockStatement()
+		private Block parseBlockStatement(TElement currentElement)
 		{
 			Block out = new Block();
 			
-			if (!parseStatement(out))
+			if (!parseStatement(currentElement, out))
 				return null;
 			
 			return optimizeBlock(out);
@@ -1782,11 +1808,11 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * [BlockExpression] :=
 		 * 		[Expression]
 		 */
-		private Block parseBlockExpression()
+		private Block parseBlockExpression(TElement currentElement)
 		{
 			Block out = new Block();
 			
-			if (!parseExpression(out))
+			if (!parseExpression(currentElement, out))
 				return null;
 			
 			return optimizeBlock(out);
@@ -1802,7 +1828,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[COMMANDEXPRESSION]
 		 *		[e]
 		 */
-		private boolean parseStatement(Block block)
+		private boolean parseStatement(TElement currentElement, Block block)
 		{
 			if (currentType(TSKernel.TYPE_IDENTIFIER) || isElement(false))
 			{
@@ -1821,20 +1847,52 @@ public final class TAMEScriptReader implements TAMEConstants
 					
 					if (!isVariable())
 					{
-						addErrorMessage("Statement error - expected variable.");
+						addErrorMessage("Expression error - expected variable or function name.");
 						return false;
 					}
 					
 					Value variable = tokenToValue();
 					nextToken();
+					String identName = variable.asString();
+
+					// if function call...
+					if (currentType(TSKernel.TYPE_LPAREN))
+					{
+						nextToken();
+						TElement derefElement = currentModule.getElementByIdentity(identToken.asString());
+						
+						FunctionEntry functionEntry;
+						if ((functionEntry = derefElement.resolveFunction(identName)) != null)
+						{
+							if (!parseFunctionCall(currentElement, functionEntry, block))
+								return false;
+							
+							if (!matchType(TSKernel.TYPE_RPAREN))
+							{
+								addErrorMessage("Expression error - expected \")\".");
+								return false;
+							}
+
+							block.add(Command.create(TAMECommand.CALLELEMENTFUNCTION, identToken, Value.create(identName)));
+							block.add(Command.create(TAMECommand.POP));
+							return true;
+						}
+						else
+						{
+							addErrorMessage("Expression error - no such function \""+identName+"\" in element \""+identToken.asString()+"\".");
+							return false;
+						}
+					}
+					
+					// else, not function.
 					
 					if (!matchType(TSKernel.TYPE_EQUAL))
 					{
-						addErrorMessage("Statement error - expected assignment operator.");
+						addErrorMessage("Statement error - expected assignment operator after variable.");
 						return false;
 					}
 
-					if (!parseExpression(block))
+					if (!parseExpression(currentElement, block))
 						return false;
 					
 					block.add(Command.create(TAMECommand.POPELEMENTVALUE, identToken, variable));
@@ -1850,15 +1908,11 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						nextToken();
 						
-						TAMECommand command = getCommand(identName);
-						if (command == null || command.isInternal())
+						TAMECommand command;
+						FunctionEntry functionEntry;
+						if ((command = getCommand(identName)) != null && !command.isInternal())
 						{
-							addErrorMessage("Expression error - \""+identName+"\" is not a command.");
-							return false;
-						}
-						else
-						{
-							if (!parseCommandArguments(block, command))
+							if (!parseCommandArguments(currentElement, block, command))
 								return false;
 
 							if (!matchType(TSKernel.TYPE_RPAREN))
@@ -1873,10 +1927,29 @@ public final class TAMEScriptReader implements TAMEConstants
 							
 							return true;
 						}
+						else if ((functionEntry = currentElement.resolveFunction(identName)) != null)
+						{
+							if (!parseFunctionCall(currentElement, functionEntry, block))
+								return false;
+							
+							if (!matchType(TSKernel.TYPE_RPAREN))
+							{
+								addErrorMessage("Expression error - expected \")\".");
+								return false;
+							}
+
+							block.add(Command.create(TAMECommand.CALLFUNCTION, Value.create(identName)));
+							block.add(Command.create(TAMECommand.POP));
+						}
+						else
+						{
+							addErrorMessage("Expression error - \""+identName+"\" is not a command or the name of as function in this element's lineage.");
+							return false;
+						}
 					}
 					else if (matchType(TSKernel.TYPE_EQUAL))
 					{
-						if (!parseExpression(block))
+						if (!parseExpression(currentElement, block))
 							return false;
 						
 						block.add(Command.create(TAMECommand.POPVALUE, identToken));
@@ -1914,7 +1987,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				if (matchType(TSKernel.TYPE_EQUAL))
 				{
-					if (!parseExpression(block))
+					if (!parseExpression(currentElement, block))
 						return false;
 					
 					block.add(Command.create(TAMECommand.POPLOCALVALUE, identToken));
@@ -1977,7 +2050,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 *		[Statement] [StatementList]
 		 * 		[e]
 		 */
-		private boolean parseStatementList(Block block)
+		private boolean parseStatementList(TElement currentElement, Block block)
 		{
 			if (!currentType(
 					TSKernel.TYPE_SEMICOLON, 
@@ -2001,19 +2074,19 @@ public final class TAMEScriptReader implements TAMEConstants
 			if (currentType(TSKernel.TYPE_SEMICOLON))
 			{
 				nextToken();
-				return parseStatementList(block);
+				return parseStatementList(currentElement, block);
 			}
 			
 			// control block handling.
 			if (currentType(TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
 			{
-				if (!parseControl(block))
+				if (!parseControl(currentElement, block))
 					return false;
 				
-				return parseStatementList(block);
+				return parseStatementList(currentElement, block);
 			}
 			
-			if (!parseExecutableStatement(block))
+			if (!parseExecutableStatement(currentElement, block))
 				return false;
 			
 			if (!matchType(TSKernel.TYPE_SEMICOLON))
@@ -2022,7 +2095,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 			
-			return parseStatementList(block);
+			return parseStatementList(currentElement, block);
 		}
 
 		/**
@@ -2032,7 +2105,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[WHILE] "(" [EXPRESSION] ")" [BLOCK]
 		 * 		[FOR] "(" [STATEMENT] ";" [EXPRESSION] ";" [STATEMENT] ")" [BLOCK]
 		 */
-		private boolean parseControl(Block block) 
+		private boolean parseControl(TElement currentElement, Block block) 
 		{
 			if (currentType(TSKernel.TYPE_IF))
 			{
@@ -2045,7 +2118,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 		
 				Block conditionalBlock;
-				if ((conditionalBlock = parseBlockExpression()) == null)
+				if ((conditionalBlock = parseBlockExpression(currentElement)) == null)
 					return false;
 				
 				if (!matchType(TSKernel.TYPE_RPAREN))
@@ -2055,7 +2128,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 		
 				Block successBlock;
-				if ((successBlock = parseBlock()) == null)
+				if ((successBlock = parseBlock(currentElement)) == null)
 					return false;
 				
 				Block failureBlock = null;
@@ -2063,7 +2136,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				{
 					nextToken();
 		
-					if ((failureBlock = parseBlock()) == null)
+					if ((failureBlock = parseBlock(currentElement)) == null)
 						return false;
 				}
 		
@@ -2081,7 +2154,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 		
 				Block conditionalBlock;
-				if ((conditionalBlock = parseBlockExpression()) == null)
+				if ((conditionalBlock = parseBlockExpression(currentElement)) == null)
 					return false;
 				
 				if (!matchType(TSKernel.TYPE_RPAREN))
@@ -2093,7 +2166,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				controlDepth++;
 		
 				Block successBlock;
-				if ((successBlock = parseBlock()) == null)
+				if ((successBlock = parseBlock(currentElement)) == null)
 					return false;
 		
 				block.add(Command.create(TAMECommand.WHILE, conditionalBlock, successBlock));
@@ -2111,7 +2184,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 		
 				Block initBlock;
-				if ((initBlock = parseBlockStatement()) == null)
+				if ((initBlock = parseBlockStatement(currentElement)) == null)
 					return false;
 		
 				if (!matchType(TSKernel.TYPE_SEMICOLON))
@@ -2121,7 +2194,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 		
 				Block conditionalBlock;
-				if ((conditionalBlock = parseBlockExpression()) == null)
+				if ((conditionalBlock = parseBlockExpression(currentElement)) == null)
 					return false;
 				
 				if (!matchType(TSKernel.TYPE_SEMICOLON))
@@ -2131,7 +2204,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 		
 				Block stepBlock;
-				if ((stepBlock = parseBlockStatement()) == null)
+				if ((stepBlock = parseBlockStatement(currentElement)) == null)
 					return false;
 		
 				if (!matchType(TSKernel.TYPE_RPAREN))
@@ -2143,7 +2216,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				controlDepth++;
 		
 				Block successBlock;
-				if ((successBlock = parseBlock()) == null)
+				if ((successBlock = parseBlock(currentElement)) == null)
 					return false;
 		
 				block.add(Command.create(TAMECommand.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
@@ -2166,7 +2239,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[END]
 		 * 		[Statement]
 		 */
-		private boolean parseExecutableStatement(Block block) 
+		private boolean parseExecutableStatement(TElement currentElement, Block block) 
 		{
 			if (currentType(TSKernel.TYPE_QUIT))
 			{
@@ -2196,7 +2269,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				if (!parseExpression(block))
+				if (!parseExpression(currentElement, block))
 					return false;
 				
 				block.add(Command.create(TAMECommand.FUNCTIONRETURN));
@@ -2227,7 +2300,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				block.add(Command.create(TAMECommand.BREAK));
 				return true;
 			}
-			else if (!parseStatement(block))
+			else if (!parseStatement(currentElement, block))
 				return false;
 			
 			return true;
@@ -2236,7 +2309,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		/**
 		 * Parses command arguments.
 		 */
-		private boolean parseCommandArguments(Block block, TAMECommand commandType) 
+		private boolean parseCommandArguments(TElement currentElement, Block block, TAMECommand commandType) 
 		{
 			ArgumentType[] argTypes = commandType.getArgumentTypes();
 			for (int i = 0; i < argTypes.length; i++) 
@@ -2247,7 +2320,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					case VALUE:
 					{
 						// value - read expression.
-						if (!parseExpression(block))
+						if (!parseExpression(currentElement, block))
 							return false;
 						break;
 					}
@@ -2353,10 +2426,34 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		/**
+		 * Parses a function call.
+		 */
+		private boolean parseFunctionCall(TElement currentElement, FunctionEntry entry, Block block)
+		{
+			int argCount = entry.getArguments().length;
+			while (argCount-- > 0)
+			{
+				if (!parseExpression(currentElement, block))
+					return false;
+				
+				if (argCount > 0)
+				{
+					if (!matchType(TSKernel.TYPE_COMMA))
+					{
+						addErrorMessage("Expected ',' after function argument. More arguments remain.");
+						return false;
+					}
+				}
+			}
+			
+			return true;
+		}
+		
+		/**
 		 * Parses an infix expression.
 		 * @param the block to block.add commands to.
 		 */
-		private boolean parseExpression(Block block)
+		private boolean parseExpression(TElement currentElement, Block block)
 		{
 			// make stacks.
 			Stack<ArithmeticOperator> expressionOperators = new Stack<>();
@@ -2391,14 +2488,49 @@ public final class TAMEScriptReader implements TAMEConstants
 						
 						if (!isVariable())
 						{
-							addErrorMessage("Expression error - expected variable.");
+							addErrorMessage("Expression error - expected variable or function name.");
 							return false;
 						}
 						
-						block.add(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, Value.createVariable(currentToken().getLexeme())));
-						expressionValueCounter[0] += 1; // the "push"
-						lastWasValue = true;
+						String identName = currentToken().getLexeme();
 						nextToken();
+
+						if (currentType(TSKernel.TYPE_LPAREN))
+						{
+							TElement derefElement = currentModule.getElementByIdentity(identToken.asString());
+							
+							FunctionEntry functionEntry;
+							if ((functionEntry = derefElement.resolveFunction(identName)) != null)
+							{
+								// saw LPAREN
+								nextToken();
+
+								if (!parseFunctionCall(currentElement, functionEntry, block))
+									return false;
+								
+								if (!matchType(TSKernel.TYPE_RPAREN))
+								{
+									addErrorMessage("Expression error - expected \")\".");
+									return false;
+								}
+								
+								block.add(Command.create(TAMECommand.CALLELEMENTFUNCTION, identToken, Value.create(identName)));
+								expressionValueCounter[0] += 1; // push after call.
+								lastWasValue = true;
+							}
+							else
+							{
+								addErrorMessage("Expression error - no such function \""+identName+"\" in element \""+identToken.asString()+"\".");
+								return false;
+							}
+						}
+						else
+						{
+							block.add(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, Value.createVariable(identName)));
+							expressionValueCounter[0] += 1; // the "push"
+							lastWasValue = true;
+						}
+						
 					}
 					else if (identToken.isVariable()) // or command...
 					{
@@ -2408,21 +2540,21 @@ public final class TAMEScriptReader implements TAMEConstants
 						// if there's a left parenthesis, check for command.
 						if (currentType(TSKernel.TYPE_LPAREN))
 						{
-							nextToken();
-							TAMECommand command = getCommand(identName);
-							if (command == null || command.isInternal())
+							TAMECommand command;
+							FunctionEntry functionEntry;
+							
+							if ((command = getCommand(identName)) != null && !command.isInternal())
 							{
-								addErrorMessage("Expression error - \""+identName+"\" is not a command.");
-								return false;
-							}
-							else if (command.getReturnType() == null)
-							{
-								addErrorMessage("Expression error - command \""+identName+"\" has no return type.");
-								return false;
-							}
-							else
-							{
-								if (!parseCommandArguments(block, command))
+								if (command.getReturnType() == null)
+								{
+									addErrorMessage("Expression error - command \""+identName+"\" has no return type.");
+									return false;
+								}
+								
+								// saw LPAREN
+								nextToken();
+
+								if (!parseCommandArguments(currentElement, block, command))
 									return false;
 
 								if (!matchType(TSKernel.TYPE_RPAREN))
@@ -2434,6 +2566,29 @@ public final class TAMEScriptReader implements TAMEConstants
 								block.add(Command.create(command));
 								expressionValueCounter[0] += 1;
 								lastWasValue = true;
+							}
+							else if ((functionEntry = currentElement.resolveFunction(identName)) != null)
+							{
+								// saw LPAREN
+								nextToken();
+
+								if (!parseFunctionCall(currentElement, functionEntry, block))
+									return false;
+								
+								if (!matchType(TSKernel.TYPE_RPAREN))
+								{
+									addErrorMessage("Expression error - expected \")\".");
+									return false;
+								}
+
+								block.add(Command.create(TAMECommand.CALLFUNCTION, Value.create(identName)));
+								expressionValueCounter[0] += 1;
+								lastWasValue = true;
+							}
+							else
+							{
+								addErrorMessage("Expression error - \""+identName+"\" is not a command nor function name.");
+								return false;
 							}
 						}
 						else
@@ -2458,7 +2613,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 					}
 					
-					if (!parseExpression(block))
+					if (!parseExpression(currentElement, block))
 						return false;
 					
 					// NOTE: Expression ends in a push.

@@ -12,7 +12,6 @@ package net.mtrop.tame.element;
 import java.io.IOException;
 import java.io.InputStream;
 
-import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -61,13 +60,6 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 		this.parent = parent;
 	}
 
-	@Override
-	public void setArchetype(boolean archetype) 
-	{
-		if (archetype)
-			throw new ModuleException("Containers cannot be archetypes!");
-	}
-	
 	@Override
 	public TContainer getParent()
 	{

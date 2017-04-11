@@ -437,6 +437,7 @@ public final class TAMELogic implements TAMEConstants
 			response.trace(request, "Popping %s...", context);
 			request.popContext();
 		}
+		// FIXME Interferes with functions. Maybe conditional call?
 		request.checkStackClear();
 	}
 	
