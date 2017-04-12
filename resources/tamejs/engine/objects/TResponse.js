@@ -22,6 +22,7 @@ var TResponse = function()
 {
     this.responseCues = [];
     this.commandsExecuted = 0;
+    this.functionDepth = 0;
     this.requestNanos = 0;
     this.interpretNanos = 0;
 };
@@ -60,6 +61,25 @@ TResponse.prototype.incrementAndCheckCommandsExecuted = function()
 	this.commandsExecuted++;
 	if (this.commandsExecuted >= TAMEConstants.RUNAWAY_THRESHOLD)
 		throw TAMEError.RunawayRequest("Too many commands executed - possible infinite loop.");
+};
+
+/**
+ * Increments and checks if function depth breaches the threshold.
+ * @throw TAMEError if a breach is detected.
+ */
+TResponse.prototype.incrementAndCheckFunctionDepth = function()
+{
+	this.functionDepth++;
+	if (this.functionDepth >= TAMEConstants.FUNCTION_DEPTH)
+		throw TAMEError.RunawayRequest("Too many function calls deep - possible stack overflow.");
+};
+/**
+ * Decrements the function depth.
+ * @throw TAMEError if a breach is detected.
+ */
+TResponse.prototype.decrementFunctionDepth = function()
+{
+	this.functionDepth--;
 };
 
 //##[[EXPORTJS-END

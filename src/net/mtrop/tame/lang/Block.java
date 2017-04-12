@@ -49,7 +49,7 @@ public class Block implements CallableType, Iterable<Command>, Saveable
 	{
 		statementQueue.add(statement);
 	}
-	
+
 	@Override
 	public Iterator<Command> iterator()
 	{

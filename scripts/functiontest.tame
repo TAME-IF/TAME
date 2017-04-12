@@ -23,8 +23,11 @@ object o_bowlingball : o_ball
 
 container c_test
 {
-	function square(x) 
+	function square(x)
+	{
+		called = true; 
 		return x * x;
+	}
 }
 
 world
@@ -44,7 +47,7 @@ world
 		local out = 0;
 		while (rolls > 1)
 		{
-			out = random(die) + 1;
+			out = out + random(die) + 1;
 			rolls = rolls - 1;
 		}
 		return out;
@@ -57,7 +60,9 @@ world
 		textln(double(2));
 		textln(factorial(5));
 		textln(rollDie(6, 5));
+		textln(c_test.called);
 		textln(c_test.square(6));
+		textln(c_test.called);
 		quit;
 	}
 	

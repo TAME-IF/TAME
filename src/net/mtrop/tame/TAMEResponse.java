@@ -28,6 +28,8 @@ public class TAMEResponse implements TAMEConstants
 	private Queue<Cue> responseCues;
 	/** Command counter. */
 	private int commandsExecuted;
+	/** Function depth. */
+	private int functionDepth;
 	/** Time in nanos to process a full request. */
 	private long requestNanos;
 	/** Time in nanos to interpret input. */
@@ -38,8 +40,11 @@ public class TAMEResponse implements TAMEConstants
 	 */
 	TAMEResponse()
 	{
-		responseCues = new Queue<Cue>();
-		commandsExecuted = 0;
+		this.responseCues = new Queue<Cue>();
+		this.commandsExecuted = 0;
+		this.functionDepth = 0;
+		this.requestNanos = 0L;
+		this.interpretNanos = 0L;
 	}
 
 	/**
@@ -115,6 +120,26 @@ public class TAMEResponse implements TAMEConstants
 		responseCues.enqueue(Cue.create(type));
 	}
 
+	/**
+	 * Increments the function depth by 1.
+	 * Also checks against the depth threshold.
+	 * After this object is received by the client, this means nothing.
+	 */
+	void incrementAndCheckFunctionDepth()
+	{
+		functionDepth++;
+		if (functionDepth >= FUNCTION_DEPTH)
+			throw new RunawayRequestException("Runaway request detected! Breached threshold of "+FUNCTION_DEPTH+" function calls deep.");
+	}
+	
+	/**
+	 * Decrements the function depth by 1.
+	 */
+	void decrementFunctionDepth()
+	{
+		functionDepth--;
+	}
+	
 	/**
 	 * Increments the commands executed counter by 1.
 	 * Also checks against the runaway threshold.

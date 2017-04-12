@@ -488,10 +488,11 @@ TLogic.createBlockLocal = function(localValues)
  * @param response (TResponse) the response object.
  * @param elementContext (object) the context that the block is executed through.
  * @param block [Object, ...] the block to execute.
+ * @param functionBlock (boolean) if true, this is a function call (changes some logic).
  * @param blockLocal (object) the initial block-local values to set on invoke.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.callBlock = function(request, response, elementContext, block, blockLocal)
+TLogic.callBlock = function(request, response, elementContext, block, functionBlock, blockLocal)
 {
 	response.trace(request, "Pushing Context:"+elementContext.identity+"...");
 	request.pushContext(elementContext);
@@ -510,7 +511,8 @@ TLogic.callBlock = function(request, response, elementContext, block, blockLocal
 		request.popContext();
 	}
 	
-	request.checkStackClear();
+	if (!functionBlock)
+		request.checkStackClear();
 	
 };
 
@@ -532,6 +534,7 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 	if (entry == null)
 		throw TAMEError.UnexpectedValue("No such function ("+functionName+") in lineage of element " + TLogic.elementToString(element));
 
+	response.trace(request, "Calling function \""+functionName+"\"...");
 	var blockLocal = {};
 	var args = entry.arguments;
 	for (var i = args.length - 1; i >= 0; i--)
@@ -540,7 +543,7 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 		response.trace(request, "Setting local variable \""+args[i]+"\" to \""+localValue+"\"");
 		blockLocal[args[i]] = localValue;
 	}
-	TLogic.callBlock(request, response, originContext, entry.block, blockLocal);
+	TLogic.callBlock(request, response, originContext, entry.block, true, blockLocal);
 	return TLogic.getValue(blockLocal, TAMEConstants.RETURN_VARIABLE);
 }
 
@@ -1695,7 +1698,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 					// just get the first one.
 					var localmap = {};
 					localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-					TLogic.callBlock(request, response, currentRoomContext, blockToCall, TLogic.createBlockLocal(localmap));
+					TLogic.callBlock(request, response, currentRoomContext, blockToCall, false, TLogic.createBlockLocal(localmap));
 				}
 				else
 					TLogic.callBlock(request, response, currentRoomContext, blockToCall);
@@ -1714,7 +1717,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 				// just get the first one.
 				var localmap = {};
 				localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-				TLogic.callBlock(request, response, currentPlayerContext, blockToCall, TLogic.createBlockLocal(localmap));
+				TLogic.callBlock(request, response, currentPlayerContext, blockToCall, false, TLogic.createBlockLocal(localmap));
 			}
 			else
 				TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
@@ -1736,7 +1739,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 			// just get the first one.
 			var localmap = {};
 			localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-			TLogic.callBlock(request, response, worldContext, blockToCall, TLogic.createBlockLocal(localmap));
+			TLogic.callBlock(request, response, worldContext, blockToCall, false, TLogic.createBlockLocal(localmap));
 		}
 		else
 			TLogic.callBlock(request, response, worldContext, blockToCall);

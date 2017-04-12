@@ -399,7 +399,7 @@ public final class TAMELogic implements TAMEConstants
 	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block) throws TAMEInterrupt
 	{
 		ValueHash blockLocal = new ValueHash();
-		callBlock(request, response, context, block, blockLocal);
+		callBlock(request, response, context, block, false, blockLocal);
 	}
 	
 	/**
@@ -409,10 +409,11 @@ public final class TAMELogic implements TAMEConstants
 	 * @param response the response object.
 	 * @param context the context that the block is executed through.
 	 * @param block the block to execute.
+	 * @param functionBlock if true, this is a function call (which is slightly different).
 	 * @param blockLocal the local value hash to use on invoke.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, ValueHash blockLocal) throws TAMEInterrupt
+	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, boolean functionBlock, ValueHash blockLocal) throws TAMEInterrupt
 	{
 		response.trace(request, "Pushing %s...", context);
 		request.pushContext(context);
@@ -427,8 +428,12 @@ public final class TAMELogic implements TAMEConstants
 			response.trace(request, "Popping %s...", context);
 			request.popContext();
 		}
-		// FIXME Interferes with recursive functions. Maybe conditional call?
-		request.checkStackClear();
+		
+		if (!functionBlock)
+		{
+			// Stack should be clear after a main block call. If not, BIG PROBLEMS!
+			request.checkStackClear();
+		}
 	}
 	
 	/**
@@ -447,6 +452,7 @@ public final class TAMELogic implements TAMEConstants
 		if (entry == null)
 			throw new ModuleException("No such function ("+functionName+") in lineage of element " + element);
 
+		response.trace(request, "Calling function \"%s\"...", functionName);
 		ValueHash blockLocal = new ValueHash();
 		String[] args = entry.getArguments();
 		for (int i = args.length - 1; i >= 0; i--)
@@ -455,8 +461,10 @@ public final class TAMELogic implements TAMEConstants
 			response.trace(request, "Setting local variable \"%s\" to \"%s\"", args[i], localValue);
 			blockLocal.put(args[i], localValue);
 		}
-		Block block = entry.getBlock();
-		callBlock(request, response, originContext, block, blockLocal);
+
+		response.incrementAndCheckFunctionDepth();
+		callBlock(request, response, originContext, entry.getBlock(), true, blockLocal);
+		response.decrementFunctionDepth();
 		if (blockLocal.containsKey(RETURN_VARIABLE))
 			return blockLocal.get(RETURN_VARIABLE);
 		else
@@ -920,7 +928,7 @@ public final class TAMELogic implements TAMEConstants
 							ValueHash blockLocal = new ValueHash();
 							response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
 							blockLocal.put(variableName, target);
-							callBlock(request, response, currentRoomContext, blockToCall, blockLocal);
+							callBlock(request, response, currentRoomContext, blockToCall, false, blockLocal);
 							break;
 						}
 					}
@@ -946,7 +954,7 @@ public final class TAMELogic implements TAMEConstants
 						ValueHash blockLocal = new ValueHash();
 						response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
 						blockLocal.put(variableName, target);
-						callBlock(request, response, currentPlayerContext, blockToCall, blockLocal);
+						callBlock(request, response, currentPlayerContext, blockToCall, false, blockLocal);
 						break;
 					}
 				}
@@ -975,7 +983,7 @@ public final class TAMELogic implements TAMEConstants
 					ValueHash blockLocal = new ValueHash();
 					response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
 					blockLocal.put(variableName, target);
-					callBlock(request, response, worldContext, blockToCall, blockLocal);
+					callBlock(request, response, worldContext, blockToCall, false, blockLocal);
 					break;
 				}
 			}
