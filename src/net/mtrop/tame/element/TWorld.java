@@ -53,7 +53,6 @@ public class TWorld extends TElement implements Inheritable<TWorld>, ObjectConta
 		switch (type)
 		{
 			case INIT:
-			case PROCEDURE:
 			case ONACTION:
 			case ONBADACTION:
 			case ONMODALACTION:

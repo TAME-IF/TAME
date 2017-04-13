@@ -7,10 +7,6 @@ language-elements.html "TAMEScriptModule Elements" template/main.html
 language-blocks.html "TAMEScript Module Blocks" template/main.html
 language-commands.html "TAMEScript Command Reference" template/main.html
 command-noop.html "Command: NoOp" template/main.html
-command-call.html "Command: Call" template/main.html
-command-callfrom.html "Command: CallFrom" template/main.html
-command-callmaybe.html "Command: CallMaybe" template/main.html
-command-callfrommaybe.html "Command: CallMaybeFrom" template/main.html
 command-queueaction.html "Command: QueueAction" template/main.html
 command-queueactionstring.html "Command: QueueActionString" template/main.html
 command-queueactionobject.html "Command: QueueActionObject" template/main.html

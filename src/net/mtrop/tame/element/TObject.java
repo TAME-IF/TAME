@@ -65,7 +65,6 @@ public class TObject extends TElement implements Inheritable<TObject>
 		switch (type)
 		{
 			case INIT:
-			case PROCEDURE:
 			case ONACTION:
 			case ONACTIONWITH:
 			case ONACTIONWITHOTHER:

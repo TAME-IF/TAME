@@ -472,25 +472,6 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
-	 * Calls a procedure from an arbitrary context, using the bound element as a lineage search point.
-	 * @param request the current request.
-	 * @param response the current response.
-	 * @param procedureName the procedure name/value.
-	 * @param originContext the origin context (and then element).
-	 * @param silent if true, do not throw an error if the procedure was not found.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	public static void callProcedureFrom(TAMERequest request, TAMEResponse response, Value procedureName, TElementContext<?> originContext, boolean silent) throws TAMEInterrupt 
-	{
-		TElement element = originContext.getElement();
-		Block block = element.resolveBlock(BlockEntry.create(BlockEntryType.PROCEDURE, procedureName));
-		if (block != null)
-			callBlock(request, response, originContext, block);
-		else if (!silent)
-			response.addCue(CUE_ERROR, "No such procedure ("+procedureName.asString()+") in lineage of element " + element);
-	}
-
-	/**
 	 * Checks if an object is accessible to a player.
 	 * @param request the request object.
 	 * @param response the response object.

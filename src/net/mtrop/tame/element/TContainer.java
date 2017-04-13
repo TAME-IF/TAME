@@ -47,7 +47,6 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 		switch (type)
 		{
 			case INIT:
-			case PROCEDURE:
 				return true;
 			default:
 				return false;

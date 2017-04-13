@@ -65,7 +65,6 @@ public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRo
 		switch (type)
 		{
 			case INIT:
-			case PROCEDURE:
 			case ONACTION:
 			case ONMODALACTION:
 			case ONFAILEDACTION:
