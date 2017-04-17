@@ -10,10 +10,11 @@
 		var keywords = 
 			'if else while for quit end break continue module world room player object ' + 
 			'container action general modal transitive ditransitive open restricted named ' + 
-			'tagged modes uses conjunctions determiners forbids allows local archetype';
+			'tagged modes uses conjunctions determiners forbids allows local clear archetype '+
+			'function return';
 		
 		var commands = 
-			'NOOP CALL CALLFROM CALLMAYBE CALLFROMMAYBE QUEUEACTION QUEUEACTIONSTRING QUEUEACTIONOBJECT ' + 
+			'NOOP QUEUEACTION QUEUEACTIONSTRING QUEUEACTIONOBJECT ' + 
 			'QUEUEACTIONFOROBJECTSIN QUEUEACTIONFORTAGGEDOBJECTSIN QUEUEACTIONOBJECT2 ADDCUE ' + 
 			'TEXT TEXTLN TEXTF TEXTFLN PAUSE WAIT TIP INFO ASBOOLEAN ASINT ASFLOAT ASSTRING ' + 
 			'STRLENGTH STRCONCAT STRREPLACE STRREPLACEPATTERN STRREPLACEPATTERNALL STRINDEX ' + 
