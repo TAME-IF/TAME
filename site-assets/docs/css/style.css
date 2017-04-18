@@ -109,3 +109,15 @@ IMG.nav-logo {
 	font-weight: 400;
 	line-height: 1em;
 }
+
+/* For link hovering. */
+.link-stub {
+	visibility: hidden;
+}
+
+.w3-panel:hover .link-stub {
+	visibility: visible;
+}
+
+
+

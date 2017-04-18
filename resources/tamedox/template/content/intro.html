@@ -1,1 +1,88 @@
-<p>hello</p>
+<div class="w3-container" style="margin-top: 2em;">
+	<p>
+		<strong>TAME</strong> (<strong>T</strong>ext <strong>A</strong>dventure <strong>M</strong>odule <strong>E</strong>ngine) is an <em>Interactive Fiction Engine</em> that
+		assists in the creation of Interactive Fiction. What sets TAME apart from most authoring tools is that it is not so much an all-in-one-authoring package 
+		with audio-visual hooks, but rather a single piece of logic that maintains a game state and interprets player input.
+	</p>
+	<p>
+		TAME's main programs are called <em>Modules</em>. Modules hold the entirety of a game's world: its <strong>Actions</strong>,
+		<strong>Objects</strong>, <strong>Rooms</strong>, <strong>Player</strong> Viewpoints, abstract <strong>Containers</strong>,
+		and the <strong>World</strong> itself.
+	</p>
+	<p>
+		TAME Modules are written in a language called <em>TAMEScript</em>.
+	</p>
+</div>
+
+<div id="tamescript" class="w3-panel w3-light-gray w3-card-2">
+	<h2><a href="#tamescript"><i class="link-stub fa fa-link"></i></a> 1.1 What is TAMEScript? <a class="w3-right" href="#top"><i class="link-stub fa fa-arrow-up"></i></a></h2>
+</div>
+<div class="w3-container">
+	<p>
+		<strong>TAMEScript</strong> is what every TAME Module is written in. Through TAMEScript, you can define every part of
+		your <strong>world</strong> - the <strong>players</strong> inside it, what <strong>rooms</strong> the players can visit, 
+		the <strong>objects</strong> in the world, and what happens when you interact with them via <strong>actions</strong>. 
+		In essence, you are creating the rules and the environment in which your piece of Interactive Fiction takes place.
+	</p>
+	<p>
+		A TAMEScript module can be as small as:
+	</p>
+</div>
+<div class="w3-container">
+<!--[ tamescript "Hello World" module_intro_helloworld helloworld.tame ]-->
+</div>
+<div class="w3-container">
+	<p>
+		Or it can contain a plethora of things!
+	</p>
+</div>
+<div class="w3-container">
+<!--[ tamescript "A Small Adventure" module_intro_adventure_small adventure-small.tame ]-->
+</div>
+
+<div id="virtualmachine" class="w3-panel w3-light-gray w3-card-2">
+	<h2><a href="#virtualmachine"><i class="link-stub fa fa-link"></i></a> 1.2 What is a &quot;Virtual Machine?&quot; <a class="w3-right" href="#top"><i class="link-stub fa fa-arrow-up"></i></a></h2>
+</div>
+<div class="w3-container">
+	<p>
+		A TAME Module's code runs in a thing called a <strong>Virtual Machine</strong>. It is the thing that figures out a player's <strong>input</strong>,
+		translates it into an <strong>action</strong>, finds a relevant <strong>entry point</strong> into the module, and executes the code.
+		Simply put, the <strong>Virtual Machine</strong> is just another word for the brains that make TAME work. 
+	</p>
+	<p>
+		A TAME Module itself is <em>immutable</em>, which means once it is defined, it cannot be changed. You cannot add code to a module
+		as it runs, and you can't add new rooms or objects or containers or players during its execution.
+	</p>
+	<p>
+		"But," you say, "doesn't the world change with my actions?" Of course! When you run a TAME Module, the module gets loaded into memory,
+		and that doesn't change. What DOES change, however, is chunk of data created from the module, called a <strong>Context</strong>.
+	</p>
+</div>
+
+<div id="context" class="w3-panel w3-light-gray w3-card-2">
+	<h2><a href="#context"><i class="link-stub fa fa-link"></i></a> 1.3 What is a &quot;Context?&quot; <a class="w3-right" href="#top"><i class="link-stub fa fa-arrow-up"></i></a></h2>
+</div>
+<div class="w3-container">
+	<p>
+		[[[Put stuff here.]]]
+	</p>
+</div>
+
+<div id="shell" class="w3-panel w3-light-gray w3-card-2">
+	<h2><a href="#shell"><i class="link-stub fa fa-link"></i></a> 1.4 What is a &quot;Shell?&quot; <a class="w3-right" href="#top"><i class="link-stub fa fa-arrow-up"></i></a></h2>
+</div>
+<div class="w3-container">
+	<p>
+		[[[Put stuff here.]]]
+	</p>
+</div>
+
+<div id="diagram" class="w3-panel w3-light-gray w3-card-2">
+	<h2><a href="#diagram"><i class="link-stub fa fa-link"></i></a> 1.5 A diagram of typical TAME systems. <a class="w3-right" href="#top"><i class="link-stub fa fa-arrow-up"></i></a></h2>
+</div>
+<div class="w3-container">
+	<p>
+		[[[Put stuff here.]]]
+	</p>
+</div>
+

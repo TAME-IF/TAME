@@ -525,7 +525,7 @@ TLogic.callBlock = function(request, response, elementContext, block, functionBl
  * @throws TAMEInterrupt if an interrupt occurs.
  * @return the return value from the function call. if no return, returns false.
  */
-TLogic.callElementFunction = function(request, response, functionName, originContext) throws TAMEInterrupt
+TLogic.callElementFunction = function(request, response, functionName, originContext)
 {
 	var context = request.moduleContext;
 	var element = context.resolveElement(originContext.identity);
@@ -547,27 +547,6 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 	return TLogic.getValue(blockLocal, TAMEConstants.RETURN_VARIABLE);
 }
 
-
-/**
- * Calls a procedure from an arbitrary context, using the bound element as a lineage search point.
- * @param request (TRequest) the current request.
- * @param response (TResponse) the current response.
- * @param procedureNameValue (TValue) the procedure name value.
- * @param originContext (object) the origin context (and then element).
- * @param silent (boolean) if true, do not throw an error if the procedure was not found.
- * @throws TAMEInterrupt if an interrupt occurs.
- */
-TLogic.callProcedureFrom = function(request, response, procedureNameValue, originContext, silent) 
-{
-	var context = request.moduleContext;
-	var element = context.resolveElement(originContext.identity);
-
-	var block = context.resolveBlock(element.identity, 'PROCEDURE', [procedureNameValue]);
-	if (block)
-		TLogic.callBlock(request, response, originContext, block);
-	else if (!silent)
-		response.addCue(TAMEConstants.Cue.ERROR, "No such procedure ("+TValue.asString(procedureNameValue)+") in lineage of element " + TLogic.elementToString(element));
-};
 
 /**
  * Interprets the input on the request.
