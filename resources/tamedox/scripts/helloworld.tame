@@ -1,6 +1,6 @@
 world
 {
-	afterModuleInit()
+	start()
 	{
 		textln("Hello, world!");
 	}

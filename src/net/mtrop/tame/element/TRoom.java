@@ -52,11 +52,22 @@ public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRo
 	/**
 	 * Creates an empty room.
 	 * @param identity its main identity.
+	 * @param parent the room's parent object.
 	 */
-	public TRoom(String identity)
+	public TRoom(String identity, TRoom parent)
 	{
 		this();
 		setIdentity(identity);
+		setParent(parent);
+	}
+	
+	/**
+	 * Creates an empty room.
+	 * @param identity its main identity.
+	 */
+	public TRoom(String identity)
+	{
+		this(identity, null);
 	}
 	
 	@Override
@@ -77,6 +88,8 @@ public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRo
 	@Override
 	public void setParent(TRoom parent)
 	{
+		if (this.parent != null && this.parent != parent)
+			throw new ModuleException("Parent elements cannot be reassigned once set.");
 		this.parent = parent;
 	}
 	

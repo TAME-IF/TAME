@@ -751,7 +751,7 @@ public final class TAMELogic implements TAMEConstants
 		callInitOnContexts(request, response, moduleContext.getRoomContextIterator());
 		callInitOnContexts(request, response, moduleContext.getPlayerContextIterator());
 		callInitBlock(request, response, moduleContext.getWorldContext());
-		callAfterModuleInitBlock(request, response);
+		callStartBlock(request, response);
 	}
 
 	/**
@@ -1665,21 +1665,21 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	// Call after module init block on the world.
-	private static void callAfterModuleInitBlock(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
+	private static void callStartBlock(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
 	{
 		TWorldContext worldContext = request.getModuleContext().getWorldContext();
-		response.trace(request, "Attempt to call after module init block on world.");
+		response.trace(request, "Attempt to call start block on world.");
 		TWorld world = worldContext.getElement();
 
-		Block initBlock = world.resolveBlock(BlockEntry.create(BlockEntryType.AFTERMODULEINIT));
+		Block initBlock = world.resolveBlock(BlockEntry.create(BlockEntryType.START));
 		if (initBlock != null)
 		{
-			response.trace(request, "Calling after module init block from %s.", worldContext);
+			response.trace(request, "Calling start block from %s.", worldContext);
 			callBlock(request, response, worldContext, initBlock);
 		}
 		else
 		{
-			response.trace(request, "No after module init block on world.");
+			response.trace(request, "No start block on world.");
 		}
 	}
 

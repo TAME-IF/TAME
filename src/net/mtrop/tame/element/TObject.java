@@ -52,11 +52,22 @@ public class TObject extends TElement implements Inheritable<TObject>
 	/**
 	 * Creates an empty object.
 	 * @param identity the unique identity.
+	 * @param parent the object's parent object.
 	 */
-	public TObject(String identity) 
+	public TObject(String identity, TObject parent) 
 	{
 		this();
 		setIdentity(identity);
+		setParent(parent);
+	}
+
+	/**
+	 * Creates an empty object.
+	 * @param identity the unique identity.
+	 */
+	public TObject(String identity) 
+	{
+		this(identity, null);
 	}
 
 	@Override
@@ -81,6 +92,8 @@ public class TObject extends TElement implements Inheritable<TObject>
 	@Override
 	public void setParent(TObject parent)
 	{
+		if (this.parent != null && this.parent != parent)
+			throw new ModuleException("Parent elements cannot be reassigned once set.");
 		this.parent = parent;
 	}
 	

@@ -12,6 +12,7 @@ package net.mtrop.tame.element;
 import java.io.IOException;
 import java.io.InputStream;
 
+import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.lang.Block;
 import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
@@ -34,11 +35,22 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 	/**
 	 * Creates an empty container.
 	 * @param identity its main identity.
+	 * @param parent the container's parent object.
 	 */
-	public TContainer(String identity) 
+	public TContainer(String identity, TContainer parent) 
 	{
 		this();
 		setIdentity(identity);
+		setParent(parent);
+	}
+
+	/**
+	 * Creates an empty container.
+	 * @param identity its main identity.
+	 */
+	public TContainer(String identity) 
+	{
+		this(identity, null);
 	}
 
 	@Override
@@ -53,9 +65,21 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 		}
 	}
 
+	private boolean hasCircularParentReference(TContainer parent)
+	{
+		if (this.parent != null)
+			return this.parent == parent || this.parent.hasCircularParentReference(parent);
+		else
+			return false;
+	}
+	
 	@Override
 	public void setParent(TContainer parent)
 	{
+		if (hasCircularParentReference(parent))
+			throw new ModuleException("Circular lineage detected.");
+		if (this.parent != null && this.parent != parent)
+			throw new ModuleException("Parent elements cannot be reassigned once set.");
 		this.parent = parent;
 	}
 

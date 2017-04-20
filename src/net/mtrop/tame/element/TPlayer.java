@@ -50,11 +50,22 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 	/**
 	 * Creates an empty player.
 	 * @param identity its main identity.
+	 * @param parent the player's parent object.
 	 */
-	public TPlayer(String identity)
+	public TPlayer(String identity, TPlayer parent)
 	{
 		this();
 		setIdentity(identity);
+		setParent(parent);
+	}
+	
+	/**
+	 * Creates an empty player.
+	 * @param identity its main identity.
+	 */
+	public TPlayer(String identity)
+	{
+		this(identity, null);
 	}
 	
 	@Override
@@ -81,6 +92,8 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 	@Override
 	public void setParent(TPlayer parent)
 	{
+		if (this.parent != null && this.parent != parent)
+			throw new ModuleException("Parent elements cannot be reassigned once set.");
 		this.parent = parent;
 	}
 	

@@ -17,8 +17,8 @@ package net.mtrop.tame.lang;
 public enum BlockEntryType
 {
 	INIT(0),
+	START(0),
 	AFTERREQUEST(0),
-	AFTERMODULEINIT(0),
 	ONACTION(1, ArgumentType.ACTION),
 	ONACTIONWITH(2, ArgumentType.ACTION, ArgumentType.OBJECT),
 	ONACTIONWITHOTHER(1, ArgumentType.ACTION),

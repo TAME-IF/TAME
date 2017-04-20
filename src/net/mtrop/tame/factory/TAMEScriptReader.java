@@ -799,6 +799,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseContainer()
 		{
+			boolean archetype = false;
+			if (matchType(TSKernel.TYPE_ARCHETYPE))
+				archetype = true;
+
 			// container identity.
 			if (!currentType(TSKernel.TYPE_IDENTIFIER))
 			{
@@ -809,11 +813,26 @@ public final class TAMEScriptReader implements TAMEConstants
 			String identity = currentToken().getLexeme();
 			nextToken();
 
+			verbosef("Read container %s...", identity);
+
 			TContainer container;
 			if ((container = currentModule.getContainerByIdentity(identity)) == null)
 			{
 				container = new TContainer(identity);
+				// archetype can only be set, never removed.
+				if (archetype)
+					container.setArchetype(true);
 				currentModule.addContainer(container);
+			}
+			else if (container.isArchetype() && !archetype)
+			{
+				addErrorMessage("Container \""+identity+"\" must be re-declared as \"archetype\" in subsequent declarations!");
+				return false;
+			}
+			else if (!container.isArchetype() && archetype)
+			{
+				addErrorMessage("Container \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
+				return false;
 			}
 
 			verbosef("Read container %s...", identity);
@@ -853,7 +872,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			if (matchType(TSKernel.TYPE_COLON))
 			{
-				if (!isObject(true))
+				if (!isContainer(true))
 				{
 					addErrorMessage("Expected object type after \":\".");
 					return false;
@@ -861,7 +880,8 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				String identity = currentToken().getLexeme();
 				nextToken();
-				container.setParent(currentModule.getContainerByIdentity(identity));
+				TContainer parent = currentModule.getContainerByIdentity(identity);
+				container.setParent(parent);
 			}
 			
 			return true;

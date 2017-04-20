@@ -61,7 +61,7 @@ public class TWorld extends TElement implements Inheritable<TWorld>, ObjectConta
 			case ONAMBIGUOUSACTION:
 			case ONUNKNOWNACTION:
 			case AFTERREQUEST:
-			case AFTERMODULEINIT:
+			case START:
 				return true;
 			default:
 				return false;

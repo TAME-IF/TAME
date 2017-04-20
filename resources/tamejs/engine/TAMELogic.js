@@ -990,20 +990,20 @@ TLogic.doBrowse = function(request, response, elementIdentity, tag)
 /**
  * Call after module init block on the world.
  */
-TLogic.callAfterModuleInitBlock = function(request, response)
+TLogic.callStartBlock = function(request, response)
 {
 	var context = request.moduleContext;
-	response.trace(request, "Attempt to call after module init block on world.");
+	response.trace(request, "Attempt to call start block on world.");
 	var worldContext = context.getElementContext('world');
 
-	if ((initBlock = context.resolveBlock('world', "AFTERMODULEINIT")) != null)
+	if ((initBlock = context.resolveBlock('world', "START")) != null)
 	{
-		response.trace(request, "Calling after module init block from Context:"+worldContext.identity+".");
+		response.trace(request, "Calling start block from Context:"+worldContext.identity+".");
 		TLogic.callBlock(request, response, worldContext, initBlock);
 	}
 	else
 	{
-		response.trace(request, "No after module init block on world.");
+		response.trace(request, "No start block on world.");
 	}
 };
 
@@ -1076,7 +1076,7 @@ TLogic.initializeContext = function(request, response)
 	TLogic.callInitOnContexts(request, response, roomContexts);
 	TLogic.callInitOnContexts(request, response, playerContexts);
 	TLogic.callInitBlock(request, response, context.resolveElementContext("world"));
-	TLogic.callAfterModuleInitBlock(request, response);
+	TLogic.callStartBlock(request, response);
 };
 
 /**
