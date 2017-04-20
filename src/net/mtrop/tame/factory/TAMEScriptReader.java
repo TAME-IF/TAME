@@ -822,6 +822,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				// archetype can only be set, never removed.
 				if (archetype)
 					container.setArchetype(true);
+
+				// parse parent clause if any.
+				if (!parseContainerParent(container))
+					return false;
+				
 				currentModule.addContainer(container);
 			}
 			else if (container.isArchetype() && !archetype)
@@ -834,11 +839,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				addErrorMessage("Container \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
 				return false;
 			}
-
-			verbosef("Read container %s...", identity);
-			
-			if (!parseContainerParent(container))
-				return false;
 
 			// prototype?
 			if (matchType(TSKernel.TYPE_SEMICOLON))
@@ -874,13 +874,20 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				if (!isContainer(true))
 				{
-					addErrorMessage("Expected object type after \":\".");
+					addErrorMessage("Expected container type after \":\".");
 					return false;
 				}
 				
 				String identity = currentToken().getLexeme();
 				nextToken();
 				TContainer parent = currentModule.getContainerByIdentity(identity);
+				
+				if (container.getParent() != null)
+				{
+					addErrorMessage("Container already has a parent.");
+					return false;
+				}
+				
 				container.setParent(parent);
 			}
 			
@@ -918,6 +925,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				// archetype can only be set, never removed.
 				if (archetype)
 					object.setArchetype(true);
+
+				// parse parent clause if any.
+				if (!parseObjectParent(object))
+					return false;
+
 				currentModule.addObject(object);
 			}
 			else if (object.isArchetype() && !archetype)
@@ -931,9 +943,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 									
-			if (!parseObjectParent(object))
-				return false;
-
 			if (!parseObjectNames(object))
 				return false;
 
@@ -981,7 +990,15 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				String identity = currentToken().getLexeme();
 				nextToken();
-				object.setParent(currentModule.getObjectByIdentity(identity));
+				TObject parent = currentModule.getObjectByIdentity(identity);
+				
+				if (object.getParent() != null)
+				{
+					addErrorMessage("Object already has a parent.");
+					return false;
+				}
+				
+				object.setParent(parent);
 			}
 			
 			return true;
@@ -1018,6 +1035,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				// archetype can only be set, never removed.
 				if (archetype)
 					room.setArchetype(true);
+
+				// parse parent clause if any.
+				if (!parseRoomParent(room))
+					return false;
+				
 				currentModule.addRoom(room);
 			}
 			else if (room.isArchetype() && !archetype)
@@ -1030,10 +1052,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				addErrorMessage("Room \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
 				return false;
 			}
-
-															
-			if (!parseRoomParent(room))
-				return false;
 
 			if (!parseActionPermissionClause(room))
 				return false;
@@ -1079,7 +1097,15 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				String identity = currentToken().getLexeme();
 				nextToken();
-				room.setParent(currentModule.getRoomByIdentity(identity));
+				TRoom parent = currentModule.getRoomByIdentity(identity);
+				
+				if (room.getParent() != null)
+				{
+					addErrorMessage("Room already has a parent.");
+					return false;
+				}
+				
+				room.setParent(parent);
 			}
 			
 			return true;
@@ -1116,6 +1142,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				// archetype can only be set, never removed.
 				if (archetype)
 					player.setArchetype(true);
+				
+				// parse parent clause if any.
+				if (!parsePlayerParent(player))
+					return false;
+
 				currentModule.addPlayer(player);
 			}
 			else if (player.isArchetype() && !archetype)
@@ -1129,9 +1160,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 																		
-			if (!parsePlayerParent(player))
-				return false;
-
 			if (!parseActionPermissionClause(player))
 				return false;
 			
@@ -1176,7 +1204,15 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				String identity = currentToken().getLexeme();
 				nextToken();
-				player.setParent(currentModule.getPlayerByIdentity(identity));
+				TPlayer parent = currentModule.getPlayerByIdentity(identity);
+				
+				if (player.getParent() != null)
+				{
+					addErrorMessage("Player already has a parent.");
+					return false;
+				}
+				
+				player.setParent(parent);
 			}
 			
 			return true;

@@ -85,9 +85,19 @@ public class TRoom extends TElement implements ForbiddenHandler, Inheritable<TRo
 		}
 	}
 
+	private boolean hasCircularParentReference(TRoom parent)
+	{
+		if (this.parent != null)
+			return this.parent == parent || this.parent.hasCircularParentReference(parent);
+		else
+			return false;
+	}
+	
 	@Override
 	public void setParent(TRoom parent)
 	{
+		if (hasCircularParentReference(parent))
+			throw new ModuleException("Circular lineage detected.");
 		if (this.parent != null && this.parent != parent)
 			throw new ModuleException("Parent elements cannot be reassigned once set.");
 		this.parent = parent;
