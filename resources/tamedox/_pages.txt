@@ -94,4 +94,5 @@ command-currentroomis.html "Command: CurrentRoomIs" template/main.html
 command-nocurrentroom.html "Command: NoCurrentRoom" template/main.html
 command-identity.html "Command: Identity" template/main.html
 command-contextidentity.html "Command: ContextIdentity" template/main.html
+command-header.html "Command: Header" template/main.html
 diagrams.html "TAME Execution Diagrams" template/main.html

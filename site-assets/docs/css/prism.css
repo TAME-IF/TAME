@@ -114,10 +114,12 @@ pre[class*="language-"] {
 .token.attr-value,
 .token.keyword {
 	color: #07a;
+	font-weight: bold;
 }
 
 .token.entry-name {
 	color: #673ab7;
+	font-weight: bold;
 }
 .token.function {
 	color: #DD4A68;
