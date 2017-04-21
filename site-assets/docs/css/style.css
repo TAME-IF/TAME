@@ -57,6 +57,10 @@ li.group {
     line-height: 1.25em;
 }
  
+PRE[class*="language-"] {
+	max-height: 30em;
+}
+
 IMG.main-logo {
     display: block;
     margin-left: auto;
@@ -73,10 +77,6 @@ IMG.nav-logo {
  
 .sidebar-footer {
     padding: 0.25em;
-}
-
-.syntaxhighlighter {
-	max-height: 30em;
 }
 
 .tamedox-footer {
@@ -112,11 +112,11 @@ IMG.nav-logo {
 
 /* For link hovering. */
 .link-stub {
-	visibility: hidden;
+	color: #ccc;
 }
 
 .w3-panel:hover .link-stub {
-	visibility: visible;
+	color: #000;
 }
 
 

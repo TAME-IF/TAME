@@ -466,9 +466,9 @@ public final class TAMEDoxGen
 				writer.write("\t<button id=\"tame-"+moduleName+"-debug\" class=\"w3-button w3-yellow button-launch\" style=\"float:right;\" onclick=\"tameStartExample('"+headingName+" (Debug)', "+moduleName+", true)\"><i class=\"fa fa-bug\"></i></button>\n");
 				writer.write("\t<button id=\"tame-"+moduleName+"\" class=\"w3-button w3-green button-launch\" style=\"float:right;\" onclick=\"tameStartExample('"+headingName+"', "+moduleName+")\">Play Example</button>\n");
 				writer.write("\t<h4>"+headingName+"</h4>\n");
-				writer.write("<pre class=\"brush: tamescript\">");
+				writer.write("<pre><code class=\"language-tamescript\">");
 				writer.write(scriptContent);
-				writer.write("</pre>\n");
+				writer.write("</code></pre>\n");
 				writer.write("</div>\n");
 				
 				TAMEModule module = TAMEScriptReader.read(scriptContent, TAMESCRIPT_INCLUDER);

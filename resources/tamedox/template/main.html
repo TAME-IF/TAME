@@ -5,8 +5,7 @@
 		<link rel="StyleSheet" type="text/css" href="css/w3.css" />
 		<link rel="StyleSheet" type="text/css" href="css/style.css" />
 		<link rel="StyleSheet" type="text/css" href="css/font-awesome.min.css">
-		<link rel="StyleSheet" type="text/css" href="css/shCore.css">
-		<link rel="StyleSheet" type="text/css" href="css/shThemeDefault.css">
+		<link rel="StyleSheet" type="text/css" href="css/prism.css">
 		<title>TAME Documentation - <!--[ print $title ]--></title>
 	</head>
 	<body>
@@ -37,7 +36,7 @@
 				<div class="w3-border-top w3-border-color-gray tamedox-footer">
 					TAME &copy; 2016-2017 Matt Tropiano<br/>
 					All Rights Reserved.<br/>
-					Uses <a href="https://www.w3schools.com/w3css/default.asp">W3.CSS</a> and <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a>
+					Uses <a href="https://www.w3schools.com/w3css/default.asp">W3.CSS</a> and <a href="http://prismjs.com">PrismJS</a>
 				</div>
 			</div>
 		</div>
@@ -66,13 +65,7 @@
 		<script type="application/javascript" src="js/generated/TAMEBrowserHandler.js"></script>
 		<script type="application/javascript" src="js/tamedox.js"></script>
 		<script type="application/javascript" src="js/tamedox-tame.js"></script>
-		<script type="application/javascript" src="js/shCore.js"></script>
-		<script type="application/javascript" src="js/shBrushTamescript.js"></script>
-		<script type="application/javascript">
-			var pres = document.querySelectorAll('pre');
-			for (x in pres) if (pres.hasOwnProperty(x))
-				pres[x].innerHTML = pres[x].innerHTML.replace(/>/g, '&gt;').replace(/</g, '&lt;'); 
-			SyntaxHighlighter.all();
-		</script>
+		<script type="application/javascript" src="js/prism.js"></script>
+		<script type="application/javascript" src="js/prism-tamescript.js"></script>
 	</body>
 </html>

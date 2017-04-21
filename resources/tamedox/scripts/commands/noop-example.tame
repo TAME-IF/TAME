@@ -1,14 +1,9 @@
-action general a_quit named "quit";
-
 world
 {
-	init()
+	start()
 	{
+		textln("Get ready to do nothing.");
 		noOp();
-	}
-	
-	onAction(a_quit)
-	{
-		quit;
+		textln("Nothing done.");
 	}
 }
