@@ -70,7 +70,7 @@ world
 		quit;
 	}
 	
-	afterModuleInit()
+	start()
 	{
 		giveObject(world, o_reddoor);
 		giveObject(world, o_bluedoor);

@@ -1936,7 +1936,7 @@ var TCommandFunctions =
 			var varRoom = request.popValue();
 
 			if (!TValue.isRoom(varRoom))
-				throw TAMEError.UnexpectedValueType("Expected room type in CURRENTPLAYERIS call.");
+				throw TAMEError.UnexpectedValueType("Expected room type in CURRENTROOMIS call.");
 
 			var context = request.moduleContext;
 			var room = context.resolveElement(TValue.asString(varRoom));
@@ -1977,6 +1977,20 @@ var TCommandFunctions =
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			request.pushValue(TValue.createString(request.peekContext().identity));
+		}
+	},
+
+	/* HEADER */
+	{
+		"name": 'HEADER', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var headerName = request.popValue();
+			
+			if (!TValue.isLiteral(headerName))
+				throw TAMEError.UnexpectedValueType("Expected literal type in HEADER call.");
+			
+			request.pushValue(TValue.createString(request.moduleContext.module.header[TValue.asString(headerName)]));
 		}
 	},
 

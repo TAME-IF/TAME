@@ -3470,6 +3470,31 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			return "Miscellaneous";
 		}
 		
+	},
+
+	/**
+	 * Pushes the value of a header value of the TAME module.
+	 * Returns string, always, regardless of how it is defined, and as it as defined without alteration.
+	 */
+	HEADER (/*Return: */ ArgumentType.VALUE, /* Args */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value headerName = request.popValue();
+
+			if (!headerName.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in HEADER call.");
+
+			request.pushValue(Value.create(request.getModuleContext().getModule().getHeader().getAttribute(headerName.asString())));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Miscellaneous";
+		}
+		
 	}
 
 	;

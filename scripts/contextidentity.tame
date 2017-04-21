@@ -30,7 +30,7 @@ world
 	{
 		quit;
 	}
-	afterModuleInit()
+	start()
 	{
 		giveobject(world, o_car);
 		giveobject(world, o_boat);
