@@ -55,7 +55,7 @@
 	</p>
 	<p>
 		"But," you say, "doesn't the world change with my actions?" Of course! When you run a TAME Module, the module gets loaded into memory,
-		and that doesn't change. What DOES change, however, is chunk of data created from the module, called a <strong>Context</strong>.
+		and that doesn't change. What DOES change, however, is a chunk of data created from the module, called a <strong>Context</strong>.
 	</p>
 </div>
 
@@ -64,7 +64,21 @@
 </div>
 <div class="w3-container">
 	<p>
-		[[[Put stuff here.]]]
+		A Context is the thing that changes when changes to the game occur. A context contains:
+		<ul>
+			<li>What elements contain which objects.</li>
+			<li>In what room or rooms each player is in.</li>
+			<li>Every variable stored in every element instance.</li>
+			<li>Every current name or names of every object.</li>
+			<li>Every current tag or tags of every object.</li>
+		</ul>
+		Nearly every command and function in TAME affects the context. A context is tied to one module.
+	</p>
+	<p>
+		A Context can also be saved and restored. Nearly every implementation of TAME contains a way to do this.
+	</p>
+	<p>
+		The way that the <em>user</em> interacts with TAME in order to make things happen or change is through a <strong>shell</strong>.
 	</p>
 </div>
 
@@ -73,16 +87,52 @@
 </div>
 <div class="w3-container">
 	<p>
-		[[[Put stuff here.]]]
+		Since TAME, in essence, is just an engine-plus-context, there must be a way to interface with it. 
+		The most common way is typing commands to it like,
+		<pre>pick up lamp
+look at dog
+scream
+</pre>
+		This part of TAME is called the <em>Shell</em>. It is the thing that enables a user to interact with TAME.
+		Technically, the shell does not have to be a text interface. While TAME provides text interfaces out-of-the-box, it can also be point-and-click, 
+		or even a 3D environment. It is up to the implementer of the engine itself to provide or change this.
+	</p>
+	<p>
+		In fact, a TAME system can be set up in many different ways, not just a single, monolithic Shell-Context-Module environment. 
 	</p>
 </div>
 
 <div id="diagram" class="w3-panel w3-light-gray w3-card-2">
-	<h2><a href="#diagram"><i class="link-stub fa fa-link"></i></a> 1.5 A diagram of typical TAME systems. <a class="w3-right" href="#top"><i class="link-stub fa fa-arrow-up"></i></a></h2>
+	<h2><a href="#diagram"><i class="link-stub fa fa-link"></i></a> 1.5 Diagrams of Typical TAME Systems <a class="w3-right" href="#top"><i class="link-stub fa fa-arrow-up"></i></a></h2>
 </div>
 <div class="w3-container">
 	<p>
-		[[[Put stuff here.]]]
+		For the most part, the most common TAME setup is this one - a user that interacts with a shell that changes a context, and 
+		the separation between shell, context, and module doesn't exist (for instance, most all-in-one adventures or games).
+	</p>
+	<img class="tame-diagram" src="images/tame-diagram-1.svg" />
+	<p>
+		But to be honest, they do not have to be together conceptually - the shell can be a dumb terminal that relies on the context for parsing and execution, like
+		a website that holds a context and the engine in memory, and can change its frontend appearance at will, or start new games.
+	</p>
+	<img class="tame-diagram" src="images/tame-diagram-2.svg" />
+	<p>
+		In fact, in some multi-user versions, you can have a system built to handle input from many users with 
+		many separate contexts, all built from the same module, like a old-school Compuserve terminal system or an interactive IRC bot!
+	</p>
+	<img class="tame-diagram" src="images/tame-diagram-3.svg" />
+	<p>
+		It is this separation that gives TAME its flexibility, be it for authoring, rendering, or running on multiple platforms that have a TAME
+		implementation. But regardless of the implementation, TAME still follows the same Request-Response model.
+	</p>
+</div>
+
+<div id="requestresponse" class="w3-panel w3-light-gray w3-card-2">
+	<h2><a href="#requestresponse"><i class="link-stub fa fa-link"></i></a> 1.6 Request and Response <a class="w3-right" href="#top"><i class="link-stub fa fa-arrow-up"></i></a></h2>
+</div>
+<div class="w3-container">
+	<p>
+		[[asdfasdfasdf]]
 	</p>
 </div>
 

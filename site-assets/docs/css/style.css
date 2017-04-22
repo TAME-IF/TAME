@@ -68,6 +68,13 @@ IMG.main-logo {
     max-width: 55%;
     height: auto;
 }
+
+IMG.tame-diagram {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: auto;
+}
  
 IMG.nav-logo {
     display: inline;
