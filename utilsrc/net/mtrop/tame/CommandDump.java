@@ -36,19 +36,16 @@ public final class CommandDump
 			if (command.isInternal() || command.isLanguage())
 				continue;
 			
-			out.println("<tamedox:command");
-		}
-
-		out.println("---------------------------");
-		
-		for (TAMECommand command : TAMECommand.values())
-		{
-			if (command.isInternal() || command.isLanguage())
-				continue;
-			
 			out.print(command.name() + " ");
 		}
 
+		out.println("\n---------------------------");
+		
+		for (BlockEntryType command : BlockEntryType.values())
+		{
+			out.print(command.name() + " ");
+		}
+		
 		out.println("\n---------------------------");
 		
 		out.println("var TCommandFunctions =");
@@ -67,23 +64,6 @@ public final class CommandDump
 		}
 		out.println("];");
 
-		out.println("\n---------------------------");
-
-		out.println("TCommandFunctions.Type =");
-		out.println("{");
-		for (TAMECommand command : TAMECommand.values())
-		{
-			out.println("\t\"" +command.name() + "\": " + command.ordinal() + ", ");
-		}
-		out.println("};");
-
-		out.println("\n---------------------------");
-		
-		for (BlockEntryType command : BlockEntryType.values())
-		{
-			out.print(command.name() + " ");
-		}
-		
 	}
 
 }

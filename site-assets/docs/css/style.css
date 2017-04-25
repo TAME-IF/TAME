@@ -102,6 +102,12 @@ IMG.nav-logo {
 .tamedox-parameter-description {
 }
 
+TABLE.tamedox-command-reference th:not(:last-child), 
+TABLE.tamedox-command-reference td:not(:last-child)
+{
+	width: 1px;
+}
+
 #tame-input {
 	font-family: "Courier New", monospace;
 	font-weight: 400;

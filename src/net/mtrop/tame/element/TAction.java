@@ -60,7 +60,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	/** What is the group of names of this action? */
 	private CaseInsensitiveHash names;
 	
-	/** */
+	/** Is this action only allowed on players and rooms that exclusively allow it? */
 	private boolean restricted;
 	
 	/** 

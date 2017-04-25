@@ -2408,7 +2408,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isPlayer(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type, or \"player\".");
 							return false;
 						}
 						
@@ -2420,7 +2420,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isRoom(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type, or \"room\".");
 							return false;
 						}
 						
@@ -2444,7 +2444,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isObjectContainer(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
 							return false;
 						}
 						
@@ -2456,7 +2456,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isElement(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type.");
+							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type (world, player, room, container, object).");
 							return false;
 						}
 						

@@ -28,7 +28,7 @@
             <Keywords name="Keywords2">true false Infinity NaN</Keywords>
             <Keywords name="Keywords3">if else while for quit end break continue module world room player object container action general modal transitive ditransitive open restricted named tagged modes uses conjunctions determiners forbids allows local clear archetype function return</Keywords>
             <Keywords name="Keywords4">#</Keywords>
-            <Keywords name="Keywords5">INIT AFTERREQUEST AFTERMODULEINIT ONACTION ONACTIONWITH ONACTIONWITHOTHER ONMODALACTION ONWORLDBROWSE ONROOMBROWSE ONPLAYERBROWSE ONCONTAINERBROWSE ONAMBIGUOUSACTION ONBADACTION ONINCOMPLETEACTION ONUNKNOWNACTION ONFAILEDACTION ONFORBIDDENACTION ONROOMFORBIDDENACTION</Keywords>
+            <Keywords name="Keywords5">INIT AFTERREQUEST START ONACTION ONACTIONWITH ONACTIONWITHOTHER ONMODALACTION ONWORLDBROWSE ONROOMBROWSE ONPLAYERBROWSE ONCONTAINERBROWSE ONAMBIGUOUSACTION ONBADACTION ONINCOMPLETEACTION ONUNKNOWNACTION ONFAILEDACTION ONFORBIDDENACTION ONROOMFORBIDDENACTION</Keywords>
             <Keywords name="Keywords6"></Keywords>
             <Keywords name="Keywords7"></Keywords>
             <Keywords name="Keywords8"></Keywords>

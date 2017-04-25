@@ -23,6 +23,7 @@ import com.blackrook.commons.linkedlist.Queue;
 import net.mtrop.tame.factory.TAMEJSExporter;
 import net.mtrop.tame.factory.TAMEJSExporterOptions;
 import net.mtrop.tame.factory.TAMEScriptIncluder;
+import net.mtrop.tame.factory.TAMEScriptParseException;
 import net.mtrop.tame.factory.TAMEScriptReader;
 
 /**
@@ -482,7 +483,10 @@ public final class TAMEDoxGen
 					out.println("!!! CANNOT EXPORT JS !!!");
 				
 				writer.write("<script type=\"text/javascript\" src=\"" + (OUTPATH_JS_TAMEMODULE + moduleName + ".js") + "\"></script>\n");
-				
+			} catch (TAMEScriptParseException e) {
+				out.println("PROBLEM!!!! "+RESOURCE_SCRIPTROOT + scriptPath+" not parsed!!");
+				out.println(e.getClass().getSimpleName()+": "+e.getLocalizedMessage());
+				return false;
 			} catch (IOException e) {
 				writer.write("<pre>!!! CAN'T FIND SCRIPT \""+parentPath + scriptPath+"\" !!!</pre>");
 				return false;

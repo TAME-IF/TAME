@@ -53,7 +53,7 @@ world
 		return out;
 	}
 	
-	init()
+	start()
 	{
 		o_bowlingball.dribble();
 		o_basketball.dribble();

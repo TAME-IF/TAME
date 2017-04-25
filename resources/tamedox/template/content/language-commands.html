@@ -1,0 +1,257 @@
+<div class="w3-container" style="margin-top: 2em;">
+	<h3>Quick Reference</h3>
+	<table class="w3-table w3-striped tamedox-command-reference">
+		<thead>
+			<tr>
+				<th>Command Name</th>
+				<th>Arguments</th>
+				<th>Returns</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td><a href="command-noop.html">NoOp</a></td>
+				<td>None</td>
+				<td>Nothing</td>
+				<td>Does nothing.</td>
+			</tr>
+			<tr>
+				<td><a href="command-queueaction.html">QueueAction</a></td>
+				<td><em>ACTION</em></td>
+				<td>Nothing</td>
+				<td>Queues a general action <em>ACTION</em> to be executed once this one completes.</td>
+			</tr>
+			<tr>
+				<td><a href="command-queueactionstring.html">QueueActionString</a></td>
+				<td><em>ACTION, VALUE(STRING)</em></td>
+				<td>Nothing</td>
+				<td>Queues an open action <em>ACTION</em> with target <em>VALUE</em> to be executed once this one completes.</td>
+			</tr>
+			<tr>
+				<td><a href="command-queueactionstring.html">QueueActionObject</a></td>
+				<td><em>ACTION, OBJECT</em></td>
+				<td>Nothing</td>
+				<td>Queues a transitive/ditransitive action <em>ACTION</em> with target <em>OBJECT</em> to be executed once this one completes.</td>
+			</tr>
+			<tr>
+				<td><a href="command-queueactionforobjectsin.html">QueueActionForObjectsIn</a></td>
+				<td><em>ACTION, OBJECT_CONTAINER</em></td>
+				<td>Nothing</td>
+				<td>Queues a transitive/ditransitive action <em>ACTION</em> for each object in <em>OBJECT_CONTAINER</em> to be executed once this one completes.</td>
+			</tr>
+			<tr>
+				<td><a href="command-queueactionfortaggedobjectsin.html">QueueActionForTaggedObjectsIn</a></td>
+				<td><em>ACTION, OBJECT_CONTAINER, VALUE(STRING)</em></td>
+				<td>Nothing</td>
+				<td>Queues a transitive/ditransitive action <em>ACTION</em> for each object in <em>OBJECT_CONTAINER</em> with tag <em>VALUE</em> to be executed once this one completes.</td>
+			</tr>
+			<tr>
+				<td><a href="command-queueactionobject2.html">QueueActionObject2</a></td>
+				<td><em>ACTION, OBJECT1, OBJECT2</em></td>
+				<td>Nothing</td>
+				<td>Queues a ditransitive action <em>ACTION</em> with targets <em>OBJECT1</em> and <em>OBJECT2</em> to be executed once this one completes.</td>
+			</tr>
+			<tr>
+				<td><a href="command-queueactionobject2.html">AddCue</a></td>
+				<td><em>VALUE(STRING), VALUE(STRING)</em></td>
+				<td>Nothing</td>
+				<td>Adds a <em>VALUE</em> cue to the response with content <em>VALUE</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-text.html">Text</a></td>
+				<td><em>VALUE(STRING)</em></td>
+				<td>Nothing</td>
+				<td>Convenience for <em>AddCue("text", VALUE)</em></td>
+			</tr>
+			<tr>
+				<td><a href="command-textln.html">Textln</a></td>
+				<td><em>VALUE(STRING)</em></td>
+				<td>Nothing</td>
+				<td>Convenience for <em>AddCue("text", VALUE + "\n")</em></td>
+			</tr>
+			<tr>
+				<td><a href="command-textf.html">Textf</a></td>
+				<td><em>VALUE(STRING)</em></td>
+				<td>Nothing</td>
+				<td>Convenience for <em>AddCue("textf", VALUE)</em></td>
+			</tr>
+			<tr>
+				<td><a href="command-textfln.html">Textfln</a></td>
+				<td><em>VALUE(STRING)</em></td>
+				<td>Nothing</td>
+				<td>Convenience for <em>AddCue("textf", VALUE + "\n")</em></td>
+			</tr>
+			<tr>
+				<td><a href="command-pause.html">Pause</a></td>
+				<td>None</td>
+				<td>Nothing</td>
+				<td>Convenience for <em>AddCue("pause", "")</em></td>
+			</tr>
+			<tr>
+				<td><a href="command-wait.html">Wait</a></td>
+				<td>VALUE(INTEGER)</td>
+				<td>Nothing</td>
+				<td>Convenience for <em>AddCue("wait", VALUE)</em></td>
+			</tr>
+			<tr>
+				<td><a href="command-tip.html">Tip</a></td>
+				<td>VALUE(STRING)</td>
+				<td>Nothing</td>
+				<td>Convenience for <em>AddCue("tip", VALUE)</em></td>
+			</tr>
+			<tr>
+				<td><a href="command-info.html">Info</a></td>
+				<td>VALUE(STRING)</td>
+				<td>Nothing</td>
+				<td>Convenience for <em>AddCue("info", VALUE)</em></td>
+			</tr>
+			<tr>
+				<td><a href="command-asboolean.html">AsBoolean</a></td>
+				<td>VALUE</td>
+				<td>VALUE(BOOLEAN)</td>
+				<td>Returns the boolean value of <em>VALUE</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-asint.html">AsInt</a></td>
+				<td>VALUE</td>
+				<td>VALUE(INTEGER)</td>
+				<td>Returns the integer value of <em>VALUE</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-asfloat.html">AsFloat</a></td>
+				<td>VALUE</td>
+				<td>VALUE(FLOAT)</td>
+				<td>Returns the floating-point value of <em>VALUE</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-asstring.html">AsString</a></td>
+				<td>VALUE</td>
+				<td>VALUE(STRING)</td>
+				<td>Returns the string value of <em>VALUE</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strlength.html">StrLength</a></td>
+				<td>VALUE(STRING)</td>
+				<td>VALUE(INTEGER)</td>
+				<td>Returns the amount of characters in the string representation of <em>VALUE</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strconcat.html">StrConcat</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING)</td>
+				<td>VALUE(STRING)</td>
+				<td>Returns the resultant string of sticking two strings together: <em>VALUE1</em> and <em>VALUE2</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strreplace.html">StrReplace</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING), VALUE3(STRING)</td>
+				<td>VALUE(STRING)</td>
+				<td>Returns the resultant string of taking <em>VALUE1</em> and replacing the first occurrance of <em>VALUE2</em> with <em>VALUE3</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strreplacepattern.html">StrReplacePattern</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING), VALUE3(STRING)</td>
+				<td>VALUE(STRING)</td>
+				<td>Returns the resultant string of taking <em>VALUE1</em> and replacing the first occurrance of RegEx pattern <em>VALUE2</em> with <em>VALUE3</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strreplacepatternall.html">StrReplacePatternAll</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING), VALUE3(STRING)</td>
+				<td>VALUE(STRING)</td>
+				<td>Returns the resultant string of taking <em>VALUE1</em> and replacing every occurrance of RegEx pattern <em>VALUE2</em> with <em>VALUE3</em>.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strindex.html">StrIndex</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING)</td>
+				<td>VALUE(INTEGER)</td>
+				<td>Returns the index of the first occurrance of <em>VALUE2</em> in <em>VALUE1</em>, or <strong>-1</strong> if not found.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strlastindex.html">StrLastIndex</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING)</td>
+				<td>VALUE(INTEGER)</td>
+				<td>Returns the index of the last occurrance of <em>VALUE2</em> in <em>VALUE1</em>, or <strong>-1</strong> if not found.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strcontains.html">StrContains</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING)</td>
+				<td>VALUE(BOOLEAN)</td>
+				<td>Returns <strong>TRUE</strong> if <em>VALUE2</em> is in <em>VALUE1</em>, or <strong>FALSE</strong> if not.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strcontainspattern.html">StrContainsPattern</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING)</td>
+				<td>VALUE(BOOLEAN)</td>
+				<td>Returns <strong>TRUE</strong> if RegEx <em>VALUE2</em> matches a part of <em>VALUE1</em>, or <strong>FALSE</strong> if not.</td>
+			</tr>
+			<tr>
+				<td><a href="command-strcontainstoken.html">StrContainsToken</a></td>
+				<td>VALUE1(STRING), VALUE2(STRING)</td>
+				<td>VALUE(BOOLEAN)</td>
+				<td>Returns <strong>TRUE</strong> if token <em>VALUE2</em> is in <em>VALUE1</em> (case-insensitive), or <strong>FALSE</strong> if not.</td>
+			</tr>
+			<!--
+command-strstartswith.html "Command: StrStartsWith" template/main.html
+command-strendswith.html "Command: StrEndsWith" template/main.html
+command-substring.html "Command: SubString" template/main.html
+command-strlower.html "Command: StrLower" template/main.html
+command-strupper.html "Command: StrUpper" template/main.html
+command-strchar.html "Command: StrChar" template/main.html
+command-strtrim.html "Command: StrTrim" template/main.html
+command-floor.html "Command: Floor" template/main.html
+command-ceiling.html "Command: Ceiling" template/main.html
+command-round.html "Command: Round" template/main.html
+command-fix.html "Command: Fix" template/main.html
+command-sqrt.html "Command: Sqrt" template/main.html
+command-pi.html "Command: PI" template/main.html
+command-e.html "Command: E" template/main.html
+command-sin.html "Command: SIN" template/main.html
+command-cos.html "Command: COS" template/main.html
+command-tan.html "Command: TAN" template/main.html
+command-min.html "Command: Min" template/main.html
+command-max.html "Command: Max" template/main.html
+command-clamp.html "Command: Clamp" template/main.html
+command-random.html "Command: Random" template/main.html
+command-frandom.html "Command: FRandom" template/main.html
+command-grandom.html "Command: GRandom" template/main.html
+command-time.html "Command: Time" template/main.html
+command-seconds.html "Command: Seconds" template/main.html
+command-minutes.html "Command: Minutes" template/main.html
+command-hours.html "Command: Hours" template/main.html
+command-days.html "Command: Days" template/main.html
+command-formattime.html "Command: FormatTime" template/main.html
+command-objecthasname.html "Command: ObjectHasName" template/main.html
+command-objecthastag.html "Command: ObjectHasTag" template/main.html
+command-addobjectname.html "Command: AddObjectName" template/main.html
+command-addobjecttag.html "Command: AddObjectTag" template/main.html
+command-addobjecttagtoallin.html "Command: AddObjectTagToAllIn" template/main.html
+command-removeobjectname.html "Command: RemoveObjectName" template/main.html
+command-removeobjecttag.html "Command: RemoveObjectTag" template/main.html
+command-removeobjecttagfromallin.html "RemoveObjectTagFromAllIn: XXXX" template/main.html
+command-giveobject.html "Command: GiveObject" template/main.html
+command-removeobject.html "Command: RemoveObject" template/main.html
+command-moveobjectswithtag.html "Command: RemoveObjectWithTag" template/main.html
+command-objectcount.html "Command: ObjectCount" template/main.html
+command-hasobject.html "Command: HasCount" template/main.html
+command-objecthasnoowner.html "Command: ObjectHasNoOwner" template/main.html
+command-playerisinroom.html "Command: PlayerIsInRoom" template/main.html
+command-playercanaccessobject.html "Command: PlayerCanAccessObject" template/main.html
+command-browse.html "Command: Browse" template/main.html
+command-browsetagged.html "Command: BrowseTagged" template/main.html
+command-setplayer.html "Command: SetPlayer" template/main.html
+command-setroom.html "Command: SetRoom" template/main.html
+command-pushroom.html "Command: PushRoom" template/main.html
+command-poproom.html "Command: PopRoom" template/main.html
+command-swaproom.html "Command: SwapRoom" template/main.html
+command-currentplayeris.html "Command: CurrentPlayerIs" template/main.html
+command-nocurrentplayer.html "Command: NoCurrentPlayer" template/main.html
+command-currentroomis.html "Command: CurrentRoomIs" template/main.html
+command-nocurrentroom.html "Command: NoCurrentRoom" template/main.html
+command-identity.html "Command: Identity" template/main.html
+command-contextidentity.html "Command: ContextIdentity" template/main.html
+command-header.html "Command: Header" template/main.html
+			-->
+		</tbody>
+	</table>
+</div>
+

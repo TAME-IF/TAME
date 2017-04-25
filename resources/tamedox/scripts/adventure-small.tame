@@ -1,4 +1,53 @@
-/** !!!finish this!!! */
+action general a_quit named "quit";
+action general a_look named "look around", "look", "l";
+action general a_take named "take", "pick up", "t", "p";
+action transitive a_examine named "look at", "examine", "x";
+action ditransitive a_use named "use" uses conjunctions "with", "and";
+
+object o_key named "key", "small key"
+{
+	onAction(a_examine)
+	{
+		textln("Looks like a key.");
+	}
+	
+	onAction(a_take)
+	{
+		if (!hasObject(player, o_key))
+		{
+			giveObject(player, o_key);
+			textln("You take the key.");
+		}
+		else
+			textln("You already have this.");
+	}
+	
+	onRoomBrowse()
+	{
+		textln("There's a key, here.");
+	}
+	
+}
+
+room r_startRoom
+{
+	init()
+	{
+		
+	}
+}
+
 world
 {
+
+	function setStuffUp()
+	{
+		
+	}
+
+	start()
+	{
+		setStuffUp();
+		
+	}
 }
