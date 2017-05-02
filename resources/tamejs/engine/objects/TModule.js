@@ -41,6 +41,7 @@ function TModule(theader, tactions, telements)
 	};
 	
 	Util.each(Util.mapify(telements, "identity"), function(element, identity) {
+		identity = identity.toLowerCase(); 
 		if (!typeHash[element.tameType])
 			throw TAMEError.Module("Unknown element type: "+element.tameType);
 		if (elem[identity] || act[identity])

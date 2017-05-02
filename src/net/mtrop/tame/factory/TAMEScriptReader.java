@@ -33,6 +33,7 @@ import net.mtrop.tame.TAMECommand;
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.TAMEModule;
 import net.mtrop.tame.element.ForbiddenHandler;
+import net.mtrop.tame.element.ObjectContainer;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
@@ -140,6 +141,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_CLEAR = 			92;
 		static final int TYPE_ARCHETYPE = 		93;
 		static final int TYPE_FUNCTION = 		94;
+		static final int TYPE_THIS = 			95;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -223,6 +225,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("clear", TYPE_CLEAR);
 			addCaseInsensitiveKeyword("archetype", TYPE_ARCHETYPE);
 			addCaseInsensitiveKeyword("function", TYPE_FUNCTION);
+			addCaseInsensitiveKeyword("this", TYPE_THIS);
 
 			for (BlockEntryType entryType : BlockEntryType.VALUES)
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
@@ -263,9 +266,15 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		@Override
-		public InputStream getResource(String path) throws IOException
+		protected String getNextResourceName(String currentStreamName, String includePath) throws IOException 
 		{
-			return includer.getIncludeResource(getCurrentStreamName(), path);
+			return includer.getNextIncludeResourceName(currentStreamName, includePath);
+		}
+		
+		@Override
+		protected InputStream getResource(String path) throws IOException
+		{
+			return includer.getIncludeResource(path);
 		}
 	}
 
@@ -2394,74 +2403,156 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case OBJECT:
 					{
-						if (!isObject(false))
+						if (currentType(TSKernel.TYPE_THIS))
+						{
+							if (TObject.class.isAssignableFrom(currentElement.getClass()))
+							{
+								block.add(Command.create(TAMECommand.PUSHTHIS));
+								nextToken();
+							}
+							else
+							{
+								addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
+								return false;
+							}
+						}
+						else if (!isObject(false))
 						{
 							addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
 							return false;
 						}
-						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
+						else
+						{
+							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							nextToken();
+						}
 						break;
 					}
 					case PLAYER:
 					{
-						if (!isPlayer(false))
+						if (currentType(TSKernel.TYPE_THIS))
+						{
+							if (TPlayer.class.isAssignableFrom(currentElement.getClass()))
+							{
+								block.add(Command.create(TAMECommand.PUSHTHIS));
+								nextToken();
+							}
+							else
+							{
+								addErrorMessage("Command "+commandType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type, or \"player\".");
+								return false;
+							}
+						}
+						else if (!isPlayer(false))
 						{
 							addErrorMessage("Command "+commandType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type, or \"player\".");
 							return false;
 						}
-						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
+						else
+						{
+							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							nextToken();
+						}
 						break;
 					}
 					case ROOM:
 					{
-						if (!isRoom(false))
+						if (currentType(TSKernel.TYPE_THIS))
+						{
+							if (TRoom.class.isAssignableFrom(currentElement.getClass()))
+							{
+								block.add(Command.create(TAMECommand.PUSHTHIS));
+								nextToken();
+							}
+							else
+							{
+								addErrorMessage("Command "+commandType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type, or \"room\".");
+								return false;
+							}
+						}
+						else if (!isRoom(false))
 						{
 							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type, or \"room\".");
 							return false;
 						}
-						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
+						else
+						{
+							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							nextToken();
+						}
 						break;
 					}
 					case CONTAINER:
 					{
-						if (!isContainer(false))
+						if (currentType(TSKernel.TYPE_THIS))
+						{
+							if (TContainer.class.isAssignableFrom(currentElement.getClass()))
+							{
+								block.add(Command.create(TAMECommand.PUSHTHIS));
+								nextToken();
+							}
+							else
+							{
+								addErrorMessage("Command "+commandType.name()+" requires a non-archetype CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable container type.");
+								return false;
+							}
+						}
+						else if (!isContainer(false))
 						{
 							addErrorMessage("Command "+commandType.name()+" requires a non-archetype CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable container type.");
 							return false;
 						}
-						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
+						else
+						{
+							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							nextToken();
+						}
 						break;
 					}
 					case OBJECT_CONTAINER:
 					{
-						if (!isObjectContainer(false))
+						if (currentType(TSKernel.TYPE_THIS))
+						{
+							if (ObjectContainer.class.isAssignableFrom(currentElement.getClass()))
+							{
+								block.add(Command.create(TAMECommand.PUSHTHIS));
+								nextToken();
+							}
+							else
+							{
+								addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
+								return false;
+							}
+						}
+						else if (!isObjectContainer(false))
 						{
 							addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
 							return false;
 						}
-						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
+						else
+						{
+							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							nextToken();
+						}
 						break;
 					}
 					case ELEMENT:
 					{
-						if (!isElement(false))
+						if (currentType(TSKernel.TYPE_THIS))
+						{
+							block.add(Command.create(TAMECommand.PUSHTHIS));
+							nextToken();
+						}
+						else if (!isElement(false))
 						{
 							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type (world, player, room, container, object).");
 							return false;
 						}
-						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
-						nextToken();
+						else
+						{
+							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							nextToken();
+						}
 						break;
 					}
 					

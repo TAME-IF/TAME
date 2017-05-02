@@ -76,14 +76,20 @@ public final class TAMEDoxGen
 	static final TAMEScriptIncluder TAMESCRIPT_INCLUDER = new TAMEScriptIncluder()
 	{
 		@Override
-		public InputStream getIncludeResource(String streamName, String path) throws IOException 
+		public InputStream getIncludeResource(String path) throws IOException 
+		{
+			return Common.openResource(path);
+		}
+
+		@Override
+		public String getNextIncludeResourceName(String streamName, String path) throws IOException
 		{
 			String streamParent = null;
 			int lidx = -1; 
 			if ((lidx = streamName.lastIndexOf('/')) >= 0)
 				streamParent = streamName.substring(0, lidx + 1);
 
-			return Common.openResource((streamParent != null ? streamParent : "") + path);
+			return (streamParent != null ? streamParent : "") + path;
 		}
 	};
 

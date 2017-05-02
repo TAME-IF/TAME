@@ -33,15 +33,6 @@ var TModuleContext = function(module)
 	var s = this.state;
 	var m = this.module;
 	
-	var ELEMENTCONTEXT = function(element)
-	{
-		var id = element.identity;
-		return {
-			"identity": id,
-			"variables": {}
-		};
-	};
-	
 	var mc = this;
 	
 	// create element contexts.
@@ -53,7 +44,10 @@ var TModuleContext = function(module)
 			return;
 		if (s.elements[identity])
 			throw TAMEError.Module("Another element already has the identity "+identity);
-		s.elements[identity] = ELEMENTCONTEXT(element);
+		s.elements[identity] = {
+			"identity": identity,
+			"variables": {}
+		};
 		
 		// just for objects
 		if (element.tameType === 'TObject')

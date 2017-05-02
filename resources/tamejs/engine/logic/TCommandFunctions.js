@@ -187,6 +187,27 @@ var TCommandFunctions =
 		}
 	},
 
+	/* PUSHTHIS */
+	{
+		"name": 'PUSHTHIS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var element = request.moduleContext.resolveElement(request.peekContext().identity);
+			if (element.tameType === 'TObject')
+				request.pushValue(TValue.createObject(element.identity));
+			else if (element.tameType === 'TRoom')
+				request.pushValue(TValue.createRoom(element.identity));
+			else if (element.tameType === 'TPlayer')
+				request.pushValue(TValue.createPlayer(element.identity));
+			else if (element.tameType === 'TContainer')
+				request.pushValue(TValue.createContainer(element.identity));
+			else if (element.tameType === 'TWorld')
+				request.pushValue(TValue.createWorld());
+			else
+				throw TAMEError.ModuleExecution("Internal error - invalid object type for PUSHTHIS.");
+		}
+	},
+	
 	/* ARITHMETICFUNC */
 	{
 		"name": 'ARITHMETICFUNC', 
@@ -377,7 +398,7 @@ var TCommandFunctions =
 		{
 			var varFunctionName = command.operand0;
 
-			if (!!TValue.isLiteral(varFunctionName))
+			if (!TValue.isLiteral(varFunctionName))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CALLFUNCTION call.");
 
 			request.pushValue(TLogic.callElementFunction(request, response, TValue.asString(varFunctionName), request.peekContext()));

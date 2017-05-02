@@ -38,7 +38,7 @@ public class DefaultIncluder implements TAMEScriptIncluder
 	public DefaultIncluder(){}
 	
 	@Override
-	public InputStream getIncludeResource(String streamName, String path) throws IOException
+	public String getNextIncludeResourceName(String streamName, String path) throws IOException
 	{
 		if (Common.isWindows() && streamName.contains("\\")) // check for Windows paths.
 			streamName = streamName.replace('\\', '/');
@@ -47,9 +47,9 @@ public class DefaultIncluder implements TAMEScriptIncluder
 		int lidx = -1; 
 		if ((lidx = streamName.lastIndexOf('/')) >= 0)
 			streamParent = streamName.substring(0, lidx + 1);
-		
+
 		if (path.startsWith(CLASSPATH_PREFIX) || (streamParent != null && streamParent.startsWith(CLASSPATH_PREFIX)))
-			return Common.openResource(((streamParent != null ? streamParent : "") + path).substring(CLASSPATH_PREFIX.length()));
+			return ((streamParent != null ? streamParent : "") + path);
 		else
 		{
 			File f = null;
@@ -57,17 +57,26 @@ public class DefaultIncluder implements TAMEScriptIncluder
 			{
 				f = new File(streamParent + path);
 				if (f.exists())
-					return new FileInputStream(f);
+					return f.getPath();
 				else
-					return new FileInputStream(new File(path));
+					return path;
 			}
 			else
 			{
-				return new FileInputStream(new File(path));
+				return path;
 			}
 			
 		}
 		
+	}
+
+	@Override
+	public InputStream getIncludeResource(String path) throws IOException
+	{
+		if (path.startsWith(CLASSPATH_PREFIX))
+			return Common.openResource(path.substring(CLASSPATH_PREFIX.length()));
+		else
+			return new FileInputStream(new File(path));
 	}
 }
 

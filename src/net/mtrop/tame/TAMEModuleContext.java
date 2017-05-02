@@ -24,13 +24,16 @@ import com.blackrook.commons.hash.HashMap;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
+import net.mtrop.tame.element.ObjectContainer;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TContainer;
+import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
 import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.element.context.TContainerContext;
+import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.element.context.TObjectContext;
 import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.element.context.TPlayerContext;
@@ -41,6 +44,7 @@ import net.mtrop.tame.exception.ModuleExecutionException;
 import net.mtrop.tame.exception.ModuleStateException;
 import net.mtrop.tame.interrupt.ErrorInterrupt;
 import net.mtrop.tame.lang.Saveable;
+import net.mtrop.tame.lang.Value;
 
 /**
  * A mutable context for a module.
@@ -365,15 +369,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
-	 * Resolves a world context.
-	 * @return the context resolved.
-	 */
-	public TWorldContext resolveWorldContext()
-	{
-		return getWorldContext();
-	}
-
-	/**
 	 * Resolves an action by its identity.
 	 * @param actionIdentity the action identity.
 	 * @return the element resolved.
@@ -386,6 +381,78 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			throw new ModuleExecutionException("Expected action '%s' in module context!", actionIdentity);
 
 		return action;
+	}
+
+	/**
+	 * Resolves an element by a value.
+	 * @param varElement the value to resolve via module context.
+	 * @return the corresponding element, or null if the value does not refer to an object container.
+	 * @throws ErrorInterrupt if a major error occurs.
+	 */
+	public TElement resolveElement(Value varElement) throws ErrorInterrupt 
+	{
+		switch (varElement.getType())
+		{
+			default:
+				return null;
+			case OBJECT:
+				return resolveObject(varElement.asString());
+			case ROOM:
+				return resolveRoom(varElement.asString());
+			case PLAYER:
+				return resolvePlayer(varElement.asString());
+			case CONTAINER:
+				return resolveContainer(varElement.asString());
+			case WORLD:
+				return resolveWorld();
+		}
+		
+	}
+
+	/**
+	 * Resolves an element context by a value.
+	 * @param varElement the value to resolve via module context.
+	 * @return the corresponding element context, or null if the value does not refer to an object container.
+	 * @throws ErrorInterrupt if a major error occurs.
+	 */
+	public TElementContext<?> resolveElementContext(Value varElement) throws ErrorInterrupt 
+	{
+		switch (varElement.getType())
+		{
+			default:
+				return null;
+			case OBJECT:
+				return resolveObjectContext(varElement.asString());
+			case ROOM:
+				return resolveRoomContext(varElement.asString());
+			case PLAYER:
+				return resolvePlayerContext(varElement.asString());
+			case CONTAINER:
+				return resolveContainerContext(varElement.asString());
+			case WORLD:
+				return resolveWorldContext();
+		}
+		
+	}
+
+	/**
+	 * Resolves a list of all objects contained by an object container.
+	 * @param varObjectContainer the value to resolve via module context.
+	 * @return an iterable list of objects, or null if the value does not refer to an object container.
+	 * @throws ErrorInterrupt if a major error occurs.
+	 */
+	public Iterable<TObject> resolveObjectList(Value varObjectContainer) throws ErrorInterrupt 
+	{
+		return getOwnershipMap().getObjectsOwnedByElement((ObjectContainer)resolveElement(varObjectContainer));
+	}
+
+	/**
+	 * Resolves a world context.
+	 * @return the context resolved.
+	 */
+	public TWorldContext resolveWorldContext()
+	{
+		return getWorldContext();
 	}
 
 	/**

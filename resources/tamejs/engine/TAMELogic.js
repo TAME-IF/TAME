@@ -530,7 +530,7 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 	var context = request.moduleContext;
 	var element = context.resolveElement(originContext.identity);
 
-	var entry = context.resolveFunction(functionName);
+	var entry = context.resolveFunction(originContext.identity, functionName);
 	if (entry == null)
 		throw TAMEError.UnexpectedValue("No such function ("+functionName+") in lineage of element " + TLogic.elementToString(element));
 

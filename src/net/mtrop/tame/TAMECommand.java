@@ -20,10 +20,12 @@ import com.blackrook.commons.math.RMath;
 import net.mtrop.tame.element.ObjectContainer;
 import net.mtrop.tame.element.TAction;
 import net.mtrop.tame.element.TAction.Type;
+import net.mtrop.tame.element.TContainer;
 import net.mtrop.tame.element.TElement;
 import net.mtrop.tame.element.TObject;
 import net.mtrop.tame.element.TPlayer;
 import net.mtrop.tame.element.TRoom;
+import net.mtrop.tame.element.TWorld;
 import net.mtrop.tame.element.context.TElementContext;
 import net.mtrop.tame.element.context.TOwnershipMap;
 import net.mtrop.tame.exception.ModuleExecutionException;
@@ -178,7 +180,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected element type in POPELEMENTVALUE call.");
 			
 			String variableName = variable.asString();
-			TElementContext<?> context = TAMELogic.resolveElementContext(request.getModuleContext(), varElement); 
+			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement); 
 			context.setValue(variableName, value);
 		}
 		
@@ -246,7 +248,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected element type in PUSHELEMENTVALUE call.");
 
 			String variableName = variable.asString();
-			TElementContext<?> context = TAMELogic.resolveElementContext(request.getModuleContext(), varElement); 
+			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement); 
 
 			request.pushValue(context.getValue(variableName));
 		}
@@ -313,10 +315,43 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				blockLocal.removeUsingKey(variableName);
 			else
 			{
-				TElementContext<?> context = TAMELogic.resolveElementContext(request.getModuleContext(), varElement);
+				TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement);
 				context.clearValue(variableName);
 			}
 				
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Pushes the element connected to the current context.
+	 * Returns nothing.
+	 */
+	PUSHTHIS (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			TElement element = request.peekContext().getElement();
+			Class<?> elementClass = element.getClass();
+			if (TObject.class.isAssignableFrom(elementClass))
+				request.pushValue(Value.createObject(element.getIdentity()));
+			else if (TRoom.class.isAssignableFrom(elementClass))
+				request.pushValue(Value.createRoom(element.getIdentity()));
+			else if (TPlayer.class.isAssignableFrom(elementClass))
+				request.pushValue(Value.createPlayer(element.getIdentity()));
+			else if (TContainer.class.isAssignableFrom(elementClass))
+				request.pushValue(Value.createContainer(element.getIdentity()));
+			else if (TWorld.class.isAssignableFrom(elementClass))
+				request.pushValue(Value.createWorld());
+			else
+				throw new ModuleExecutionException("Internal error - invalid object type for PUSHTHIS.");
 		}
 		
 		@Override
@@ -716,7 +751,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (!varFunctionName.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in CALLELEMENTFUNCTION call.");
 			
-			request.pushValue(TAMELogic.callElementFunction(request, response, varFunctionName.asString(), TAMELogic.resolveElementContext(request.getModuleContext(), varElement)));
+			request.pushValue(TAMELogic.callElementFunction(request, response, varFunctionName.asString(), request.getModuleContext().resolveElementContext(varElement)));
 		}
 		
 		@Override
@@ -870,7 +905,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			Iterable<TObject> objectList;
 			
-			if ((objectList = TAMELogic.resolveObjectList(moduleContext, varObjectContainer)) == null)
+			if ((objectList = moduleContext.resolveObjectList(varObjectContainer)) == null)
 				throw new UnexpectedValueTypeException("INTERNAL ERROR IN QUEUEACTIONFOROBJECTSIN.");
 			
 			for (TObject object : objectList)
@@ -920,7 +955,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			Iterable<TObject> objectList;
 			
-			if ((objectList = TAMELogic.resolveObjectList(moduleContext, varObjectContainer)) == null)
+			if ((objectList = moduleContext.resolveObjectList(varObjectContainer)) == null)
 				throw new UnexpectedValueTypeException("INTERNAL ERROR IN QUEUEACTIONFORTAGGEDOBJECTSIN.");
 	
 			String tagName = varTag.asString();
@@ -2700,7 +2735,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			Iterable<TObject> objectList;
 			
-			if ((objectList = TAMELogic.resolveObjectList(moduleContext, varObjectContainer)) == null)
+			if ((objectList = moduleContext.resolveObjectList(varObjectContainer)) == null)
 				throw new UnexpectedValueTypeException("INTERNAL ERROR IN ADDOBJECTTOALLIN.");
 			
 			for (TObject object : objectList)
@@ -2803,7 +2838,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			Iterable<TObject> objectList;
 			
-			if ((objectList = TAMELogic.resolveObjectList(moduleContext, varObjectContainer)) == null)
+			if ((objectList = moduleContext.resolveObjectList(varObjectContainer)) == null)
 				throw new UnexpectedValueTypeException("INTERNAL ERROR IN REMOVEOBJECTTAGFROMALLIN.");
 			
 			for (TObject object : objectList)
@@ -2841,7 +2876,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			
-			ObjectContainer element = (ObjectContainer)TAMELogic.resolveElement(moduleContext, varObjectContainer);
+			ObjectContainer element = (ObjectContainer)moduleContext.resolveElement(varObjectContainer);
 			moduleContext.getOwnershipMap().addObjectToElement(object, element);
 		}
 		
@@ -2908,12 +2943,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			Iterable<TObject> objectList;
 			
-			if ((objectList = TAMELogic.resolveObjectList(moduleContext, varObjectContainerSource)) == null)
+			if ((objectList = moduleContext.resolveObjectList(varObjectContainerSource)) == null)
 				throw new UnexpectedValueTypeException("INTERNAL ERROR IN MOVEOBJECTSWITHTAG.");
 			
 			String tag = tagValue.asString();
 			TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
-			ObjectContainer element = (ObjectContainer)TAMELogic.resolveElement(moduleContext, varObjectContainerDest);
+			ObjectContainer element = (ObjectContainer)moduleContext.resolveElement(varObjectContainerDest);
 			for (TObject object : objectList) if (ownershipMap.checkObjectHasTag(object, tag)) 
 				ownershipMap.addObjectToElement(object, element);
 		}
@@ -2942,7 +2977,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected object-container type in OBJECTCOUNT call.");
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			ObjectContainer element = (ObjectContainer)TAMELogic.resolveElement(moduleContext, varObjectContainer);
+			ObjectContainer element = (ObjectContainer)moduleContext.resolveElement(varObjectContainer);
 			request.pushValue(Value.create(moduleContext.getOwnershipMap().getObjectsOwnedByElementCount(element)));
 		}
 		
@@ -2975,7 +3010,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TObject object = moduleContext.resolveObject(varObject.asString());
-			ObjectContainer element = (ObjectContainer)TAMELogic.resolveElement(moduleContext, varObjectContainer);
+			ObjectContainer element = (ObjectContainer)moduleContext.resolveElement(varObjectContainer);
 			request.pushValue(Value.create(moduleContext.getOwnershipMap().checkElementHasObject(element, object)));
 		}
 		
@@ -3099,7 +3134,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected object-container type in BROWSE call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			ObjectContainer element = (ObjectContainer)TAMELogic.resolveElement(moduleContext, varObjectContainer);
+			ObjectContainer element = (ObjectContainer)moduleContext.resolveElement(varObjectContainer);
 			TAMELogic.doBrowse(request, response, element);
 		}
 		
@@ -3132,7 +3167,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			String tagName = varTag.asString(); 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			ObjectContainer element = (ObjectContainer)TAMELogic.resolveElement(moduleContext, varObjectContainer);
+			ObjectContainer element = (ObjectContainer)moduleContext.resolveElement(varObjectContainer);
 			TAMELogic.doBrowse(request, response, element, tagName);
 		}
 		
@@ -3440,7 +3475,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected element type in IDENTITY call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TElement element = TAMELogic.resolveElement(moduleContext, varElement);
+			TElement element = moduleContext.resolveElement(varElement);
 			request.pushValue(Value.create(element.getIdentity()));
 		}
 		

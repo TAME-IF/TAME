@@ -20,13 +20,22 @@ import java.io.InputStream;
 public interface TAMEScriptIncluder 
 {
 	/**
-	 * Returns an open {@link InputStream} for a path when the parser needs a resource.
-	 * By default, this attempts to open a file at the provided path.
+	 * Returns a path when the parser needs the next name of a resource.
+	 * By default, this attempts to resolve the new path of the next resource (based on parent information).
 	 * @param streamName the current name of the stream. This includer may use this to procure a relative path.
 	 * @param path the stream path.
 	 * @return an open {@link InputStream} for the requested resource, or null if not found.
 	 * @throws IOException if the included resource cannot be read or the stream cannot be opened.
 	 */
-	public InputStream getIncludeResource(String streamName, String path) throws IOException;
+	public String getNextIncludeResourceName(String streamName, String path) throws IOException;
+		
+	/**
+	 * Returns an open {@link InputStream} for a path when the parser needs a resource.
+	 * By default, this attempts to open a file at the provided path.
+	 * @param path the stream path.
+	 * @return an open {@link InputStream} for the requested resource, or null if not found.
+	 * @throws IOException if the included resource cannot be read or the stream cannot be opened.
+	 */
+	public InputStream getIncludeResource(String path) throws IOException;
 		
 }
