@@ -69,7 +69,6 @@ public class TAMEModule implements Saveable
 	/** Not saved, used for checking - known identities. */
 	private Hash<String> knownIdentities; 
 	
-	
 	/**
 	 * Creates a new module.
 	 */

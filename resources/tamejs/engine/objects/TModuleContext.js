@@ -66,6 +66,12 @@ var TModuleContext = function(module)
 		
 	});
 	
+	var cr = parseInt(module.header['tame_runaway_max'], 10);
+	var fd = parseInt(module.header['tame_funcdepth_max'], 10);
+	
+	this.commandRunawayMax = cr <= 0 || isNaN(cr) ? TAMEConstants.DEFAULT_RUNAWAY_THRESHOLD : cr;
+	this.functionDepthMax = fd <= 0 || isNaN(fd) ? TAMEConstants.DEFAULT_FUNCTION_DEPTH : fd;
+	
 };
 
 /**
@@ -103,6 +109,9 @@ TModuleContext.prototype.removePlayer = function(playerIdentity)
 		throw TAMEError.ModuleState("Context is invalid or null");
 	if(!contextState.elements)
 		throw TAMEError.ModuleState("Context state is missing required member: elements");
+	
+	playerIdentity = playerIdentity.toLowerCase();
+	
 	if (!contextState.elements[playerIdentity])
 		throw TAMEError.ModuleExecution("Element is missing from context state: "+playerIdentity);
 	delete contextState.roomStacks[playerIdentity];
@@ -708,10 +717,12 @@ TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 
 	var element = this.resolveElement(elementIdentity);
 
-	if (!contextState.elements[element.identity])
+	var ident = element.identity.toLowerCase();
+	
+	if (!contextState.elements[ident])
 		throw TAMEError.ModuleExecution("Element is missing from context state: "+element.identity);
 	
-	return contextState.elements[element.identity];
+	return contextState.elements[ident];
 };
 
 /**

@@ -47,12 +47,19 @@ public interface TAMEConstants
 	public static final String RETURN_VARIABLE = "-. 0Return0 .-";
 
 	/** Default runaway max. */
-	public static final int RUNAWAY_THRESHOLD = 100000;
+	public static final int DEFAULT_RUNAWAY_THRESHOLD = 100000;
 	/** Default runaway max. */
-	public static final int FUNCTION_DEPTH = 256;
+	public static final int DEFAULT_FUNCTION_DEPTH = 256;
+
+	/* ========= Standard headers that affect things. ========= */
+	
+	/** Header - TAME Option - Max Runaway Commands. */
+	public static final String HEADER_TAME_RUNAWAY_MAX = "tame_runaway_max";
+	/** Header - TAME Option - Max Function Depth. */
+	public static final String HEADER_TAME_FUNCDEPTH_MAX = "tame_funcdepth_max";
 
 	/* ========= Known or suggested headers. ========= */
-	
+
 	/** Header - Module title. */
 	public static final String HEADER_TITLE = "title";
 	/** Header - Author Name, Pen Name, or Pseudonym. */

@@ -154,7 +154,7 @@ TLogic.executeBlock = function(block, request, response, blockLocal)
 TLogic.executeCommand = function(request, response, blockLocal, command)
 {
 	TCommandFunctions[command.opcode].doCommand(request, response, blockLocal, command);
-	response.incrementAndCheckCommandsExecuted();
+	response.incrementAndCheckCommandsExecuted(request.moduleContext.commandRunawayMax);
 }
 
 /**
@@ -358,10 +358,10 @@ TLogic.processAction = function(request, response, tameAction)
 		// catch finish interrupt, throw everything else.
 		if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.Finish)
 			throw err;
-	} finally {
-		request.checkStackClear();			
-	}
-
+	} 
+	
+	request.checkStackClear();
+	
 };
 
 
@@ -488,11 +488,11 @@ TLogic.createBlockLocal = function(localValues)
  * @param response (TResponse) the response object.
  * @param elementContext (object) the context that the block is executed through.
  * @param block [Object, ...] the block to execute.
- * @param functionBlock (boolean) if true, this is a function call (changes some logic).
+ * @param isFunctionBlock (boolean) if true, this is a function call (changes some logic).
  * @param blockLocal (object) the initial block-local values to set on invoke.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.callBlock = function(request, response, elementContext, block, functionBlock, blockLocal)
+TLogic.callBlock = function(request, response, elementContext, block, isFunctionBlock, blockLocal)
 {
 	response.trace(request, "Pushing Context:"+elementContext.identity+"...");
 	request.pushContext(elementContext);
@@ -511,7 +511,7 @@ TLogic.callBlock = function(request, response, elementContext, block, functionBl
 		request.popContext();
 	}
 	
-	if (!functionBlock)
+	if (!isFunctionBlock)
 		request.checkStackClear();
 	
 };
@@ -543,7 +543,11 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 		response.trace(request, "Setting local variable \""+args[i]+"\" to \""+localValue+"\"");
 		blockLocal[args[i]] = localValue;
 	}
+	
+	response.incrementAndCheckFunctionDepth(request.moduleContext.functionDepthMax);
 	TLogic.callBlock(request, response, originContext, entry.block, true, blockLocal);
+	response.decrementFunctionDepth();
+
 	return TLogic.getValue(blockLocal, TAMEConstants.RETURN_VARIABLE);
 }
 

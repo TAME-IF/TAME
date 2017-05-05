@@ -40,8 +40,8 @@ TAMEConstants.Identity.ROOM = "room";
 TAMEConstants.Identity.PLAYER = "player";
 TAMEConstants.Identity.WORLD = "world";
 
-TAMEConstants.RUNAWAY_THRESHOLD = 100000;
-TAMEConstants.FUNCTION_DEPTH = 256;
+TAMEConstants.DEFAULT_RUNAWAY_THRESHOLD = 100000;
+TAMEConstants.DEFAULT_FUNCTION_DEPTH = 256;
 TAMEConstants.RETURN_VARIABLE = "-. 0Return0 .-";
 
 //##[[EXPORTJS-END

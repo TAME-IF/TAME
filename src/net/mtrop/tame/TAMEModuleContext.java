@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
 
+import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.Hash;
 import com.blackrook.commons.hash.HashMap;
@@ -72,6 +73,11 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	/** Ownership map for players. */
 	private TOwnershipMap ownershipMap;
 
+	/** Command runaway max from the Header. */
+	private long commandRunawayMax;
+	/** Command runaway max from the Header. */
+	private long functionDepthMax;
+	
 	/**
 	 * Creates a new module context.
 	 * @param module the module to create the context for.
@@ -81,14 +87,14 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		this.module = module;
 		this.random = new Random();
 		
-		playerContextHash = new HashMap<String, TPlayerContext>(3);
-		roomContextHash = new HashMap<String, TRoomContext>(20);
-		objectContextHash = new HashMap<String, TObjectContext>(40);
-		containerContextHash = new HashMap<String, TContainerContext>(10);
+		this.playerContextHash = new HashMap<String, TPlayerContext>(3);
+		this.roomContextHash = new HashMap<String, TRoomContext>(20);
+		this.objectContextHash = new HashMap<String, TObjectContext>(40);
+		this.containerContextHash = new HashMap<String, TContainerContext>(10);
 
 		// Build contexts.
 		
-		worldContext = new TWorldContext(module.getWorld());
+		this.worldContext = new TWorldContext(module.getWorld());
 		for (ObjectPair<String, TPlayer> element : module.getPlayerList()) 
 			if (!element.getValue().isArchetype())
 				playerContextHash.put(element.getKey(), new TPlayerContext(element.getValue()));
@@ -102,7 +108,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			if (!element.getValue().isArchetype())
 				containerContextHash.put(element.getKey(), new TContainerContext(element.getValue()));
 		
-		ownershipMap = new TOwnershipMap();
+		this.ownershipMap = new TOwnershipMap();
 
 		for (ObjectPair<String, TObjectContext> element : objectContextHash)
 		{
@@ -113,6 +119,12 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			for (String tag : object.getTags())
 				ownershipMap.addObjectTag(object, tag);
 		}
+		
+		long cr = Common.parseLong(module.getHeader().getAttribute(HEADER_TAME_RUNAWAY_MAX));
+		long fd = Common.parseLong(module.getHeader().getAttribute(HEADER_TAME_FUNCDEPTH_MAX));
+		
+		this.commandRunawayMax = cr <= 0 ? DEFAULT_RUNAWAY_THRESHOLD: cr;
+		this.functionDepthMax = fd <= 0 ? DEFAULT_FUNCTION_DEPTH: fd;
 	}
 
 	/**
@@ -131,6 +143,22 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	public Random getRandom()
 	{
 		return random;
+	}
+	
+	/**
+	 * @return the command runaway detection limit.
+	 */
+	public long getCommandRunawayMax() 
+	{
+		return commandRunawayMax;
+	}
+	
+	/**
+	 * @return the function depth detection limit.
+	 */
+	public long getFunctionDepthMax() 
+	{
+		return functionDepthMax;
 	}
 	
 	/**

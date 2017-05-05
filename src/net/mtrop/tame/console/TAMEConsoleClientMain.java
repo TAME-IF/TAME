@@ -239,6 +239,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		try {
 			in = new FileInputStream(file);
 			out = TAMEModule.create(in);
+		} catch (ModuleException e) {
+			System.out.println("ERROR: "+file.getPath()+" is not a TAME module.");
+			return null;
 		} catch (SecurityException e) {
 			System.out.println("ERROR: Could not read from "+file.getPath()+". Access denied.");
 			return null;

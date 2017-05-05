@@ -56,10 +56,10 @@ TResponse.prototype.trace = function(request, content)
  * Increments and checks if command amount breaches the threshold.
  * @throw TAMEError if a breach is detected.
  */
-TResponse.prototype.incrementAndCheckCommandsExecuted = function()
+TResponse.prototype.incrementAndCheckCommandsExecuted = function(maxCommands)
 {
 	this.commandsExecuted++;
-	if (this.commandsExecuted >= TAMEConstants.RUNAWAY_THRESHOLD)
+	if (this.commandsExecuted >= maxCommands)
 		throw TAMEError.RunawayRequest("Too many commands executed - possible infinite loop.");
 };
 
@@ -67,15 +67,15 @@ TResponse.prototype.incrementAndCheckCommandsExecuted = function()
  * Increments and checks if function depth breaches the threshold.
  * @throw TAMEError if a breach is detected.
  */
-TResponse.prototype.incrementAndCheckFunctionDepth = function()
+TResponse.prototype.incrementAndCheckFunctionDepth = function(maxDepth)
 {
 	this.functionDepth++;
-	if (this.functionDepth >= TAMEConstants.FUNCTION_DEPTH)
+	if (this.functionDepth >= maxDepth)
 		throw TAMEError.RunawayRequest("Too many function calls deep - possible stack overflow.");
 };
+
 /**
  * Decrements the function depth.
- * @throw TAMEError if a breach is detected.
  */
 TResponse.prototype.decrementFunctionDepth = function()
 {

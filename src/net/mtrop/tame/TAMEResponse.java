@@ -27,9 +27,9 @@ public class TAMEResponse implements TAMEConstants
 	/** The output message. */
 	private Queue<Cue> responseCues;
 	/** Command counter. */
-	private int commandsExecuted;
+	private long commandsExecuted;
 	/** Function depth. */
-	private int functionDepth;
+	private long functionDepth;
 	/** Time in nanos to process a full request. */
 	private long requestNanos;
 	/** Time in nanos to interpret input. */
@@ -124,12 +124,13 @@ public class TAMEResponse implements TAMEConstants
 	 * Increments the function depth by 1.
 	 * Also checks against the depth threshold.
 	 * After this object is received by the client, this means nothing.
+	 * @param maxDepth the function depth maximum.
 	 */
-	void incrementAndCheckFunctionDepth()
+	void incrementAndCheckFunctionDepth(long maxDepth)
 	{
 		functionDepth++;
-		if (functionDepth >= FUNCTION_DEPTH)
-			throw new RunawayRequestException("Runaway request detected! Breached threshold of "+FUNCTION_DEPTH+" function calls deep.");
+		if (functionDepth >= maxDepth)
+			throw new RunawayRequestException("Runaway request detected! Breached threshold of "+maxDepth+" function calls deep.");
 	}
 	
 	/**
@@ -144,18 +145,19 @@ public class TAMEResponse implements TAMEConstants
 	 * Increments the commands executed counter by 1.
 	 * Also checks against the runaway threshold.
 	 * After this object is received by the client, this means nothing.
+	 * @param maxCommands the command maximum.
 	 */
-	void incrementAndCheckCommandsExecuted() throws RunawayRequestException
+	void incrementAndCheckCommandsExecuted(long maxCommands) throws RunawayRequestException
 	{
 		commandsExecuted++;
-		if (commandsExecuted >= RUNAWAY_THRESHOLD)
-			throw new RunawayRequestException("Runaway request detected! Breached threshold of "+RUNAWAY_THRESHOLD+" requests.");
+		if (commandsExecuted >= maxCommands)
+			throw new RunawayRequestException("Runaway request detected! Breached threshold of "+maxCommands+" requests.");
 	}
 	
 	/**
 	 * @return the amount of commands executed because of the input.
 	 */
-	public int getCommandsExecuted()
+	public long getCommandsExecuted()
 	{
 		return commandsExecuted;
 	}

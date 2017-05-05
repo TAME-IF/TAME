@@ -212,9 +212,9 @@ public final class TAMELogic implements TAMEConstants
 			
 		} catch (FinishInterrupt finish) {
 			// Catches finish.
-		} finally {
-			request.checkStackClear();
 		}
+		
+		request.checkStackClear();
 	}
 
 	/**
@@ -461,7 +461,7 @@ public final class TAMELogic implements TAMEConstants
 			blockLocal.put(args[i], localValue);
 		}
 
-		response.incrementAndCheckFunctionDepth();
+		response.incrementAndCheckFunctionDepth(request.getModuleContext().getFunctionDepthMax());
 		callBlock(request, response, originContext, entry.getBlock(), true, blockLocal);
 		response.decrementFunctionDepth();
 		if (blockLocal.containsKey(RETURN_VARIABLE))

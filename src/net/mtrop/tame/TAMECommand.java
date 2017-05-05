@@ -3624,7 +3624,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	public final void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 	{
 		doCommand(request, response, blockLocal, command);
-		response.incrementAndCheckCommandsExecuted();
+		response.incrementAndCheckCommandsExecuted(request.getModuleContext().getCommandRunawayMax());
 	}
 	
 }
