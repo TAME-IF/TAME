@@ -142,6 +142,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_ARCHETYPE = 		93;
 		static final int TYPE_FUNCTION = 		94;
 		static final int TYPE_THIS = 			95;
+		static final int TYPE_EXTEND = 			96;
+		static final int TYPE_OVERRIDE = 		97;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -226,6 +228,8 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("archetype", TYPE_ARCHETYPE);
 			addCaseInsensitiveKeyword("function", TYPE_FUNCTION);
 			addCaseInsensitiveKeyword("this", TYPE_THIS);
+			addCaseInsensitiveKeyword("extend", TYPE_EXTEND);
+			addCaseInsensitiveKeyword("override", TYPE_OVERRIDE);
 
 			for (BlockEntryType entryType : BlockEntryType.VALUES)
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
@@ -358,6 +362,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseModuleElement()
 		{
+			boolean extendMode = false;
+			
 			if (matchType(TSKernel.TYPE_MODULE))
 			{
 				if (!parseModuleAttributes())
@@ -365,8 +371,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				return true;
 			}
-			
-			if (matchType(TSKernel.TYPE_ACTION))
+			else if (matchType(TSKernel.TYPE_ACTION))
 			{
 				if (!parseAction())
 					return false;
@@ -379,10 +384,14 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				return true;
 			}
+			else if (matchType(TSKernel.TYPE_EXTEND))
+			{
+				extendMode = true;
+			}
 
 			if (matchType(TSKernel.TYPE_WORLD))
 			{
-				if (!parseWorld())
+				if (!parseWorld(extendMode))
 					return false;
 				
 				return true;
@@ -390,7 +399,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			if (matchType(TSKernel.TYPE_PLAYER))
 			{
-				if (!parsePlayer())
+				if (!parsePlayer(extendMode))
 					return false;
 				
 				return true;
@@ -398,7 +407,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			if (matchType(TSKernel.TYPE_ROOM))
 			{
-				if (!parseRoom())
+				if (!parseRoom(extendMode))
 					return false;
 				
 				return true;
@@ -406,7 +415,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			if (matchType(TSKernel.TYPE_OBJECT))
 			{
-				if (!parseObject())
+				if (!parseObject(extendMode))
 					return false;
 				
 				return true;
@@ -414,7 +423,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 			if (matchType(TSKernel.TYPE_CONTAINER))
 			{
-				if (!parseContainer())
+				if (!parseContainer(extendMode))
 					return false;
 				
 				return true;
@@ -491,81 +500,575 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		/**
+		 * Parses a world.
+		 * [World] :=
+		 * 		";"
+		 * 		"{" [WorldBody] "}"
+		 */
+		private boolean parseWorld(boolean extendMode)
+		{
+			verbose("Read world...");
+		
+			// get world instance.
+			TWorld world = currentModule.getWorld();
+
+			// if no world
+			if (world == null)
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Keyword \"extend\" used on first declaration.");
+					return false;
+				}
+				else
+				{
+					world = new TWorld();
+					currentModule.setWorld(world);
+				}
+			}
+			else if (!extendMode)
+			{
+				addErrorMessage("The world was already declared previously - must have \"extend\" before it.");
+				return false;
+			}
+						
+			// empty?
+			if (matchType(TSKernel.TYPE_SEMICOLON))
+			{
+				currentModule.setWorld(new TWorld());
+				return true;
+			}
+		
+			// check for body.
+			if (!matchType(TSKernel.TYPE_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for world body start or \";\" (no body).");
+				return false;
+			}
+		
+			if (!parseElementBody(world, "world"))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_RBRACE))
+			{
+				addErrorMessage("Expected end-of-world \"}\".");
+				return false;
+			}
+		
+			return true;
+		}
+
+		/**
+		 * Parses a container.
+		 * [Container] :=
+		 * 		[IDENTIFIER] ";"
+		 * 		[IDENTIFIER] "{" [ObjectBody] "}"
+		 */
+		private boolean parseContainer(boolean extendMode)
+		{
+			boolean archetype = false;
+			if (matchType(TSKernel.TYPE_ARCHETYPE))
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Containers must be declared \"archetype\" on first declaration, not \"extend\" ones.");
+					return false;
+				}
+				else
+				{
+					archetype = true;
+				}
+			}
+
+			// container identity.
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
+			{
+				addErrorMessage("Expected container identity.");
+				return false;
+			}
+
+			String identity = currentToken().getLexeme();
+			nextToken();
+
+			verbosef("Read container %s...", identity);
+
+			// Get container.
+			TContainer container = currentModule.getContainerByIdentity(identity);
+			if (container == null)
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Keyword \"extend\" used on first declaration of container \""+identity+"\".");
+					return false;
+				}
+				else
+				{
+					container = new TContainer(identity);
+					// archetype can only be set, never removed.
+					if (archetype)
+						container.setArchetype(true);
+	
+					// parse parent clause if any.
+					if (!parseContainerParent(container))
+						return false;
+					
+					currentModule.addContainer(container);
+				}
+			}
+			else if (!extendMode)
+			{
+				addErrorMessage("Container \""+identity+"\" already declared - must have \"extend\" before it.");
+				return false;
+			}
+			
+			// prototype?
+			if (matchType(TSKernel.TYPE_SEMICOLON))
+				return true;
+
+			if (!matchType(TSKernel.TYPE_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for container body start or \";\" (no body).");
+				return false;
+			}
+
+			if (!parseElementBody(container, "container"))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_RBRACE))
+			{
+				addErrorMessage("Expected end-of-object \"}\".");
+				return false;
+			}
+
+			return true;
+		}
+		
+		/**
+		 * Parses the container parent clause.
+		 * [ContainerParent] :=
+		 * 		":" [OBJECT]
+		 * 		[e]
+		 */
+		private boolean parseContainerParent(TContainer container)
+		{
+			if (matchType(TSKernel.TYPE_COLON))
+			{
+				if (!isContainer(true))
+				{
+					addErrorMessage("Expected container type after \":\".");
+					return false;
+				}
+				
+				String identity = currentToken().getLexeme();
+				nextToken();
+				TContainer parent = currentModule.getContainerByIdentity(identity);
+				
+				if (container.getParent() != null)
+				{
+					addErrorMessage("Container already has a parent.");
+					return false;
+				}
+				
+				container.setParent(parent);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses a room.
+		 * [Room] :=
+		 * 		[IDENTIFIER] ";"
+		 * 		[IDENTIFIER] "{" [RoomBody] "}"
+		 */
+		private boolean parseRoom(boolean extendMode)
+		{
+			boolean archetype = false;
+			if (matchType(TSKernel.TYPE_ARCHETYPE))
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Room must be declared \"archetype\" on first declaration, not \"extend\" ones.");
+					return false;
+				}
+				else
+				{
+					archetype = true;
+				}
+			}
+
+			// room identity.
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
+			{
+				addErrorMessage("Expected room identity.");
+				return false;
+			}
+
+			String identity = currentToken().getLexeme();
+			nextToken();
+			
+			verbosef("Read room %s...", identity);
+
+			TRoom room = currentModule.getRoomByIdentity(identity);
+			if (room == null)
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Keyword \"extend\" used on first declaration of room \""+identity+"\".");
+					return false;
+				}
+				else
+				{
+					room = new TRoom(identity);
+					// archetype can only be set, never removed.
+					if (archetype)
+						room.setArchetype(true);
+	
+					// parse parent clause if any.
+					if (!parseRoomParent(room))
+						return false;
+					
+					if (!parseActionPermissionClause(room))
+						return false;
+
+					currentModule.addRoom(room);
+				}
+			}
+			else if (!extendMode)
+			{
+				addErrorMessage("Room \""+identity+"\" already declared - must have \"extend\" before it.");
+				return false;
+			}
+
+			// no body?
+			if (matchType(TSKernel.TYPE_SEMICOLON))
+				return true;
+
+			// check for body.
+			if (!matchType(TSKernel.TYPE_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for room body start or \";\" (no body).");
+				return false;
+			}
+
+			if (!parseElementBody(room, "room"))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_RBRACE))
+			{
+				addErrorMessage("Expected end-of-room \"}\".");
+				return false;
+			}
+
+			return true;
+		}
+		
+		/**
+		 * Parses the room parent clause.
+		 * [RoomParent] :=
+		 * 		":" [ROOM]
+		 * 		[e]
+		 */
+		private boolean parseRoomParent(TRoom room)
+		{
+			if (matchType(TSKernel.TYPE_COLON))
+			{
+				if (!isRoom(true))
+				{
+					addErrorMessage("Expected room type after \":\".");
+					return false;
+				}
+				
+				String identity = currentToken().getLexeme();
+				nextToken();
+				TRoom parent = currentModule.getRoomByIdentity(identity);
+				
+				if (room.getParent() != null)
+				{
+					addErrorMessage("Room already has a parent.");
+					return false;
+				}
+				
+				room.setParent(parent);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses a player.
+		 * [Player] :=
+		 * 		[IDENTIFIER] ";"
+		 * 		[IDENTIFIER] "{" [PlayerBody] "}"
+		 */
+		private boolean parsePlayer(boolean extendMode)
+		{
+			boolean archetype = false;
+			if (matchType(TSKernel.TYPE_ARCHETYPE))
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Player must be declared \"archetype\" on first declaration, not \"extend\" ones.");
+					return false;
+				}
+				else
+				{
+					archetype = true;
+				}
+			}
+
+			// player identity.
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
+			{
+				addErrorMessage("Expected player identity.");
+				return false;
+			}
+
+			String identity = currentToken().getLexeme();
+			nextToken();
+			
+			verbosef("Read player %s...", identity);
+
+			TPlayer player = currentModule.getPlayerByIdentity(identity);
+			if (player == null)
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Keyword \"extend\" used on first declaration of player \""+identity+"\".");
+					return false;
+				}
+				else
+				{
+					player = new TPlayer(identity);
+					// archetype can only be set, never removed.
+					if (archetype)
+						player.setArchetype(true);
+					
+					// parse parent clause if any.
+					if (!parsePlayerParent(player))
+						return false;
+	
+					if (!parseActionPermissionClause(player))
+						return false;
+	
+					currentModule.addPlayer(player);
+				}
+			}
+			else if (!extendMode)
+			{
+				addErrorMessage("Player \""+identity+"\" already declared - must have \"extend\" before it.");
+				return false;
+			}
+			
+			// no body?
+			if (matchType(TSKernel.TYPE_SEMICOLON))
+				return true;
+
+			// check for body.
+			if (!matchType(TSKernel.TYPE_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for player body start or \";\" (no body).");
+				return false;
+			}
+
+			if (!parseElementBody(player, "player"))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_RBRACE))
+			{
+				addErrorMessage("Expected end-of-player \"}\".");
+				return false;
+			}
+
+			return true;
+		}
+		
+		/**
+		 * Parses the player parent clause.
+		 * [PlayerParent] :=
+		 * 		":" [PLAYER]
+		 * 		[e]
+		 */
+		private boolean parsePlayerParent(TPlayer player)
+		{
+			if (matchType(TSKernel.TYPE_COLON))
+			{
+				if (!isPlayer(true))
+				{
+					addErrorMessage("Expected player type after \":\".");
+					return false;
+				}
+				
+				String identity = currentToken().getLexeme();
+				nextToken();
+				TPlayer parent = currentModule.getPlayerByIdentity(identity);
+				
+				if (player.getParent() != null)
+				{
+					addErrorMessage("Player already has a parent.");
+					return false;
+				}
+				
+				player.setParent(parent);
+			}
+			
+			return true;
+		}
+		
+		/**
+		 * Parses an object.
+		 * [Object] :=
+		 * 		[IDENTIFIER] ";"
+		 * 		[IDENTIFIER] "{" [ObjectBody] "}"
+		 */
+		private boolean parseObject(boolean extendMode)
+		{
+			boolean archetype = false;
+			if (matchType(TSKernel.TYPE_ARCHETYPE))
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Object must be declared \"archetype\" on first declaration, not \"extend\" ones.");
+					return false;
+				}
+				else
+				{
+					archetype = true;
+				}
+			}
+			
+			// object identity.
+			if (!currentType(TSKernel.TYPE_IDENTIFIER))
+			{
+				addErrorMessage("Expected object identity.");
+				return false;
+			}
+		
+			String identity = currentToken().getLexeme();
+			nextToken();
+			
+			verbosef("Read object %s...", identity);
+		
+			TObject object = currentModule.getObjectByIdentity(identity);
+			if (object == null)
+			{
+				if (extendMode)
+				{
+					addErrorMessage("Keyword \"extend\" used on first declaration of object \""+identity+"\".");
+					return false;
+				}
+				else
+				{
+					object = new TObject(identity);
+					// archetype can only be set, never removed.
+					if (archetype)
+						object.setArchetype(true);
+		
+					// parse parent clause if any.
+					if (!parseObjectParent(object))
+						return false;
+		
+					if (!parseObjectNames(object))
+						return false;
+		
+					if (!parseObjectTags(object))
+						return false;
+		
+					currentModule.addObject(object);
+				}
+			}
+			else if (!extendMode)
+			{
+				addErrorMessage("Object \""+identity+"\" already declared - must have \"extend\" before it.");
+				return false;
+			}
+									
+			// no body?
+			if (matchType(TSKernel.TYPE_SEMICOLON))
+				return true;
+		
+			// check for body.
+			if (!matchType(TSKernel.TYPE_LBRACE))
+			{
+				addErrorMessage("Expected \"{\" for object body start or \";\" (no body).");
+				return false;
+			}
+		
+			if (!parseElementBody(object, "object"))
+				return false;
+			
+			if (!matchType(TSKernel.TYPE_RBRACE))
+			{
+				addErrorMessage("Expected end-of-object \"}\".");
+				return false;
+			}
+		
+			return true;
+		}
+
+		/**
+		 * Parses the object parent clause.
+		 * [ObjectParent] :=
+		 * 		":" [OBJECT]
+		 * 		[e]
+		 */
+		private boolean parseObjectParent(TObject object)
+		{
+			if (matchType(TSKernel.TYPE_COLON))
+			{
+				if (!isObject(true))
+				{
+					addErrorMessage("Expected object type after \":\".");
+					return false;
+				}
+				
+				String identity = currentToken().getLexeme();
+				nextToken();
+				TObject parent = currentModule.getObjectByIdentity(identity);
+				
+				if (object.getParent() != null)
+				{
+					addErrorMessage("Object already has a parent.");
+					return false;
+				}
+				
+				object.setParent(parent);
+			}
+			
+			return true;
+		}
+
+		/**
 		 * Parses the container body.
 		 * [ElementBody] :=
 		 * 		[FUNCTION] [STRING] [FunctionArgumentList] [FunctionBody]
 		 * 		[ElementBlock] [ElementBody]
 		 * 		[e]
+		 * @param element the element to add to. 
+		 * @param elementTypeName the type name, for error message and the like.
 		 */
 		private boolean parseElementBody(TElement element, String elementTypeName)
 		{
 			BlockEntryType entryType;
 			while (true)
 			{
+				boolean override = false;
+				
+				// get override.
+				if (matchType(TSKernel.TYPE_OVERRIDE))
+					override = true;
+				
 				// test if function.
 				if (matchType(TSKernel.TYPE_FUNCTION))
 				{
-					if (!currentType(TSKernel.TYPE_IDENTIFIER) || !isVariable())
-					{
-						addErrorMessage("Expected identifier for function name - cannot be an identifier for an existing element.");
+					if (!parseFunction(element, override))
 						return false;
-					}
-					
-					String functionName = currentToken().getLexeme();
-
-					// cannot be the name of a visible command.
-					TAMECommand command = getCommand(functionName);
-					if (command != null && !command.isInternal())
-					{
-						addErrorMessage("Function name cannot be a command.");
-						return false;
-					}
-
-					// cannot be re-declared on the same element.
-					if (element.getFunction(functionName) != null)
-					{
-						addErrorMessage("Function \""+functionName+"\" was already declared on this element.");
-						return false;
-					}
-					
-					nextToken();
-					
-					String[] arguments;
-					if ((arguments = parseFunctionArgumentList(functionName, element.resolveFunction(functionName))) == null)
-						return false;
-					
-					// must be added to enable recursion.
-					FunctionEntry functionEntry = FunctionEntry.create(arguments);
-					element.addFunction(functionName, functionEntry);
-					
-					functionDepth++;
-					
-					Block functionBlock;
-					if ((functionBlock = parseBlock(element)) == null)
-						return false;
-
-					functionDepth--;
-					
-					functionEntry.setBlock(functionBlock);
 				}
-				// else
+				// test if other entry part.
 				else if ((entryType = parseElementBlockType(element, elementTypeName)) != null)
 				{
-					BlockEntry entry;
-					if ((entry = parseBlockEntry(entryType)) == null)
+					if (!parseElementBlock(element, elementTypeName, entryType, override))
 						return false;
-					
-					if (element.getBlock(entry) != null)
-					{
-						addErrorMessage("Entry " + entry.toFriendlyString() + " was already defined on this "+elementTypeName+".");
-						return false;
-					}
-			
-					Block block;
-					if ((block = parseBlock(element)) == null)
-						return false;
-					
-					element.addBlock(entry, block);
 				}
 				else
 					break;
@@ -573,42 +1076,102 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			return true;
 		}
-		
-		// Parses a function's argument list, returns the list of arguments, null if bad.
-		private String[] parseFunctionArgumentList(String functionName, FunctionEntry overriddenEntry)
+
+		/*
+		 * Parses element entry block.
+		 * [Function] := [IDENTIFIER] [FunctionArgumentList] [Block]
+		 */
+		private boolean parseElementBlock(TElement element, String elementTypeName, BlockEntryType entryType, boolean override) 
 		{
-			List<String> argList = new List<>(4);
+			BlockEntry entry;
+			if ((entry = parseBlockEntry(entryType)) == null)
+				return false;
 			
-			if (!matchType(TSKernel.TYPE_LPAREN))
+			if (element.getBlock(entry) != null)
 			{
-				addErrorMessage("Expected \"(\" to start function argument list.");
-				return null;
+				addErrorMessage("Entry " + entry.toFriendlyString() + " was already defined on this "+elementTypeName+".");
+				return false;
 			}
-			
-			while (currentType(TSKernel.TYPE_IDENTIFIER) && isVariable())
+			else if (element.resolveBlock(entry) != null && !override)
 			{
-				argList.add(currentToken().getLexeme());
-				nextToken();
-				
-				if (!matchType(TSKernel.TYPE_COMMA))
-					break;
+				addErrorMessage("Entry " + entry.toFriendlyString() + " was already defined on a parent "+elementTypeName+" - must declare with \"override\".");
+				return false;
+			}
+			else if (element.resolveBlock(entry) == null && override)
+			{
+				addErrorMessage("Entry " + entry.toFriendlyString() + " was never defined on a parent "+elementTypeName+" - do not declare with \"override\".");
+				return false;
 			}
 
-			if (!matchType(TSKernel.TYPE_RPAREN))
+			Block block;
+			if ((block = parseBlock(element)) == null)
+				return false;
+			
+			element.addBlock(entry, block);
+			return true;
+		}
+
+		/*
+		 * Parses function name and body.
+		 * [Function] := [IDENTIFIER] [FunctionArgumentList] [Block]
+		 */
+		private boolean parseFunction(TElement element, boolean override) 
+		{
+			if (!currentType(TSKernel.TYPE_IDENTIFIER) || !isVariable())
 			{
-				addErrorMessage("Expected \")\" to end function argument list, or a variable name.");
-				return null;
+				addErrorMessage("Expected identifier for function name - cannot be an identifier for an existing element.");
+				return false;
 			}
 			
-			if (overriddenEntry != null && argList.size() != overriddenEntry.getArguments().length)
+			String functionName = currentToken().getLexeme();
+
+			// cannot be the name of a visible command.
+			TAMECommand command = getCommand(functionName);
+			if (command != null && !command.isInternal())
 			{
-				addErrorMessage("Overridden function \""+functionName+"\" must have the same amount of arguments as its declaration in parent elements.");
-				return null;
+				addErrorMessage("Function name cannot be a command.");
+				return false;
+			}
+
+			// cannot be re-declared on the same element.
+			if (element.getFunction(functionName) != null)
+			{
+				addErrorMessage("Function \""+functionName+"\" was already declared on this element.");
+				return false;
+			}
+			// test if on hierarchy
+			if (element.resolveFunction(functionName) != null && !override)
+			{
+				addErrorMessage("Function \""+functionName+"\" already declared in a parent element - must declare with \"override\".");
+				return false;
+			}
+			// test if not on hierarchy
+			if (element.resolveFunction(functionName) == null && override)
+			{
+				addErrorMessage("Function \""+functionName+"\" not declared in a parent element - do not declare with \"override\".");
+				return false;
 			}
 			
-			String[] out = new String[argList.size()];
-			argList.toArray(out);
-			return out;
+			nextToken();
+			
+			String[] arguments;
+			if ((arguments = parseFunctionArgumentList(functionName, element.resolveFunction(functionName))) == null)
+				return false;
+			
+			// must be added to enable recursion.
+			FunctionEntry functionEntry = FunctionEntry.create(arguments);
+			element.addFunction(functionName, functionEntry);
+			
+			functionDepth++;
+			
+			Block functionBlock;
+			if ((functionBlock = parseBlock(element)) == null)
+				return false;
+
+			functionDepth--;
+			
+			functionEntry.setBlock(functionBlock);
+			return true;
 		}
 
 		// Return type if token type is a valid block type on a container.
@@ -645,7 +1208,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			nextToken();
 			return entryType;
 		}
-		
+
 		// Return type if token type is a valid block type on a container.
 		private BlockEntry parseBlockEntry(BlockEntryType type)
 		{
@@ -654,11 +1217,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				addErrorMessage("Expected \"(\" after block entry name.");
 				return null;
 			}
-
+		
 			BlockEntry out;
 			if ((out = parseBlockEntryArguments(type)) == null)
 				return null;
-
+		
 			if (out.getValues().length < type.getMinimumArgumentLength())
 			{
 				addErrorMessage("Expected ',' after entry argument. More arguments remain.");
@@ -673,8 +1236,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			return out; 
 		}
-		
-		
+
 		// Parses the block entry arguments into a BlockEntry.
 		private BlockEntry parseBlockEntryArguments(BlockEntryType type)
 		{
@@ -799,475 +1361,42 @@ public final class TAMEScriptReader implements TAMEConstants
 			parsedValues.toArray(values);
 			return BlockEntry.create(type, values);
 		}
-		
-		/**
-		 * Parses a container.
-		 * [Container] :=
-		 * 		[IDENTIFIER] ";"
-		 * 		[IDENTIFIER] "{" [ObjectBody] "}"
-		 */
-		private boolean parseContainer()
+
+		// Parses a function's argument list, returns the list of arguments, null if bad.
+		private String[] parseFunctionArgumentList(String functionName, FunctionEntry overriddenEntry)
 		{
-			boolean archetype = false;
-			if (matchType(TSKernel.TYPE_ARCHETYPE))
-				archetype = true;
-
-			// container identity.
-			if (!currentType(TSKernel.TYPE_IDENTIFIER))
-			{
-				addErrorMessage("Expected container identity.");
-				return false;
-			}
-
-			String identity = currentToken().getLexeme();
-			nextToken();
-
-			verbosef("Read container %s...", identity);
-
-			TContainer container;
-			if ((container = currentModule.getContainerByIdentity(identity)) == null)
-			{
-				container = new TContainer(identity);
-				// archetype can only be set, never removed.
-				if (archetype)
-					container.setArchetype(true);
-
-				// parse parent clause if any.
-				if (!parseContainerParent(container))
-					return false;
-				
-				currentModule.addContainer(container);
-			}
-			else if (container.isArchetype() && !archetype)
-			{
-				addErrorMessage("Container \""+identity+"\" must be re-declared as \"archetype\" in subsequent declarations!");
-				return false;
-			}
-			else if (!container.isArchetype() && archetype)
-			{
-				addErrorMessage("Container \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
-				return false;
-			}
-
-			// prototype?
-			if (matchType(TSKernel.TYPE_SEMICOLON))
-				return true;
-
-			if (!matchType(TSKernel.TYPE_LBRACE))
-			{
-				addErrorMessage("Expected \"{\" for container body start or \";\" (no body).");
-				return false;
-			}
-
-			if (!parseElementBody(container, "container"))
-				return false;
+			List<String> argList = new List<>(4);
 			
-			if (!matchType(TSKernel.TYPE_RBRACE))
+			if (!matchType(TSKernel.TYPE_LPAREN))
 			{
-				addErrorMessage("Expected end-of-object \"}\".");
-				return false;
+				addErrorMessage("Expected \"(\" to start function argument list.");
+				return null;
 			}
-
-			return true;
-		}
-		
-		/**
-		 * Parses the container parent clause.
-		 * [ContainerParent] :=
-		 * 		":" [OBJECT]
-		 * 		[e]
-		 */
-		private boolean parseContainerParent(TContainer container)
-		{
-			if (matchType(TSKernel.TYPE_COLON))
+			
+			while (currentType(TSKernel.TYPE_IDENTIFIER) && isVariable())
 			{
-				if (!isContainer(true))
-				{
-					addErrorMessage("Expected container type after \":\".");
-					return false;
-				}
-				
-				String identity = currentToken().getLexeme();
+				argList.add(currentToken().getLexeme());
 				nextToken();
-				TContainer parent = currentModule.getContainerByIdentity(identity);
 				
-				if (container.getParent() != null)
-				{
-					addErrorMessage("Container already has a parent.");
-					return false;
-				}
-				
-				container.setParent(parent);
+				if (!matchType(TSKernel.TYPE_COMMA))
+					break;
 			}
-			
-			return true;
-		}
 		
-		/**
-		 * Parses an object.
-		 * [Object] :=
-		 * 		[IDENTIFIER] ";"
-		 * 		[IDENTIFIER] "{" [ObjectBody] "}"
-		 */
-		private boolean parseObject()
-		{
-			boolean archetype = false;
-			if (matchType(TSKernel.TYPE_ARCHETYPE))
-				archetype = true;
-			
-			// object identity.
-			if (!currentType(TSKernel.TYPE_IDENTIFIER))
+			if (!matchType(TSKernel.TYPE_RPAREN))
 			{
-				addErrorMessage("Expected object identity.");
-				return false;
-			}
-
-			String identity = currentToken().getLexeme();
-			nextToken();
-			
-			verbosef("Read object %s...", identity);
-
-			TObject object;
-			if ((object = currentModule.getObjectByIdentity(identity)) == null)
-			{
-				object = new TObject(identity);
-				// archetype can only be set, never removed.
-				if (archetype)
-					object.setArchetype(true);
-
-				// parse parent clause if any.
-				if (!parseObjectParent(object))
-					return false;
-
-				currentModule.addObject(object);
-			}
-			else if (object.isArchetype() && !archetype)
-			{
-				addErrorMessage("Object \""+identity+"\" must be re-declared as \"archetype\" in subsequent declarations!");
-				return false;
-			}
-			else if (!object.isArchetype() && archetype)
-			{
-				addErrorMessage("Object \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
-				return false;
-			}
-									
-			if (!parseObjectNames(object))
-				return false;
-
-			if (!parseObjectTags(object))
-				return false;
-			
-			// no body?
-			if (matchType(TSKernel.TYPE_SEMICOLON))
-				return true;
-
-			// check for body.
-			if (!matchType(TSKernel.TYPE_LBRACE))
-			{
-				addErrorMessage("Expected \"{\" for object body start or \";\" (no body).");
-				return false;
-			}
-
-			if (!parseElementBody(object, "object"))
-				return false;
-			
-			if (!matchType(TSKernel.TYPE_RBRACE))
-			{
-				addErrorMessage("Expected end-of-object \"}\".");
-				return false;
-			}
-
-			return true;
-		}
-		
-		/**
-		 * Parses the object parent clause.
-		 * [ObjectParent] :=
-		 * 		":" [OBJECT]
-		 * 		[e]
-		 */
-		private boolean parseObjectParent(TObject object)
-		{
-			if (matchType(TSKernel.TYPE_COLON))
-			{
-				if (!isObject(true))
-				{
-					addErrorMessage("Expected object type after \":\".");
-					return false;
-				}
-				
-				String identity = currentToken().getLexeme();
-				nextToken();
-				TObject parent = currentModule.getObjectByIdentity(identity);
-				
-				if (object.getParent() != null)
-				{
-					addErrorMessage("Object already has a parent.");
-					return false;
-				}
-				
-				object.setParent(parent);
+				addErrorMessage("Expected \")\" to end function argument list, or a variable name.");
+				return null;
 			}
 			
-			return true;
-		}
-		
-		/**
-		 * Parses a room.
-		 * [Room] :=
-		 * 		[IDENTIFIER] ";"
-		 * 		[IDENTIFIER] "{" [RoomBody] "}"
-		 */
-		private boolean parseRoom()
-		{
-			boolean archetype = false;
-			if (matchType(TSKernel.TYPE_ARCHETYPE))
-				archetype = true;
-
-			// room identity.
-			if (!currentType(TSKernel.TYPE_IDENTIFIER))
+			if (overriddenEntry != null && argList.size() != overriddenEntry.getArguments().length)
 			{
-				addErrorMessage("Expected room identity.");
-				return false;
-			}
-
-			String identity = currentToken().getLexeme();
-			nextToken();
-			
-			verbosef("Read room %s...", identity);
-
-			TRoom room;
-			if ((room = currentModule.getRoomByIdentity(identity)) == null)
-			{
-				room = new TRoom(identity);
-				// archetype can only be set, never removed.
-				if (archetype)
-					room.setArchetype(true);
-
-				// parse parent clause if any.
-				if (!parseRoomParent(room))
-					return false;
-				
-				currentModule.addRoom(room);
-			}
-			else if (room.isArchetype() && !archetype)
-			{
-				addErrorMessage("Room \""+identity+"\" must be re-declared as \"archetype\" in subsequent declarations!");
-				return false;
-			}
-			else if (!room.isArchetype() && archetype)
-			{
-				addErrorMessage("Room \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
-				return false;
-			}
-
-			if (!parseActionPermissionClause(room))
-				return false;
-			
-			// no body?
-			if (matchType(TSKernel.TYPE_SEMICOLON))
-				return true;
-
-			// check for body.
-			if (!matchType(TSKernel.TYPE_LBRACE))
-			{
-				addErrorMessage("Expected \"{\" for room body start or \";\" (no body).");
-				return false;
-			}
-
-			if (!parseElementBody(room, "room"))
-				return false;
-			
-			if (!matchType(TSKernel.TYPE_RBRACE))
-			{
-				addErrorMessage("Expected end-of-room \"}\".");
-				return false;
-			}
-
-			return true;
-		}
-		
-		/**
-		 * Parses the room parent clause.
-		 * [RoomParent] :=
-		 * 		":" [ROOM]
-		 * 		[e]
-		 */
-		private boolean parseRoomParent(TRoom room)
-		{
-			if (matchType(TSKernel.TYPE_COLON))
-			{
-				if (!isRoom(true))
-				{
-					addErrorMessage("Expected room type after \":\".");
-					return false;
-				}
-				
-				String identity = currentToken().getLexeme();
-				nextToken();
-				TRoom parent = currentModule.getRoomByIdentity(identity);
-				
-				if (room.getParent() != null)
-				{
-					addErrorMessage("Room already has a parent.");
-					return false;
-				}
-				
-				room.setParent(parent);
+				addErrorMessage("Overridden function \""+functionName+"\" must have the same amount of arguments as its declaration in parent elements.");
+				return null;
 			}
 			
-			return true;
-		}
-		
-		/**
-		 * Parses a player.
-		 * [Player] :=
-		 * 		[IDENTIFIER] ";"
-		 * 		[IDENTIFIER] "{" [PlayerBody] "}"
-		 */
-		private boolean parsePlayer()
-		{
-			boolean archetype = false;
-			if (matchType(TSKernel.TYPE_ARCHETYPE))
-				archetype = true;
-
-			// player identity.
-			if (!currentType(TSKernel.TYPE_IDENTIFIER))
-			{
-				addErrorMessage("Expected player identity.");
-				return false;
-			}
-
-			String identity = currentToken().getLexeme();
-			nextToken();
-			
-			verbosef("Read player %s...", identity);
-
-			TPlayer player;
-			if ((player = currentModule.getPlayerByIdentity(identity)) == null)
-			{
-				player = new TPlayer(identity);
-				// archetype can only be set, never removed.
-				if (archetype)
-					player.setArchetype(true);
-				
-				// parse parent clause if any.
-				if (!parsePlayerParent(player))
-					return false;
-
-				currentModule.addPlayer(player);
-			}
-			else if (player.isArchetype() && !archetype)
-			{
-				addErrorMessage("Player \""+identity+"\" must be re-declared as \"archetype\" in subsequent declarations!");
-				return false;
-			}
-			else if (!player.isArchetype() && archetype)
-			{
-				addErrorMessage("Player \""+identity+"\" must be not be re-declared as \"archetype\" if it was never one at first declaration!");
-				return false;
-			}
-																		
-			if (!parseActionPermissionClause(player))
-				return false;
-			
-			// no body?
-			if (matchType(TSKernel.TYPE_SEMICOLON))
-				return true;
-
-			// check for body.
-			if (!matchType(TSKernel.TYPE_LBRACE))
-			{
-				addErrorMessage("Expected \"{\" for player body start or \";\" (no body).");
-				return false;
-			}
-
-			if (!parseElementBody(player, "player"))
-				return false;
-			
-			if (!matchType(TSKernel.TYPE_RBRACE))
-			{
-				addErrorMessage("Expected end-of-player \"}\".");
-				return false;
-			}
-
-			return true;
-		}
-		
-		/**
-		 * Parses the player parent clause.
-		 * [PlayerParent] :=
-		 * 		":" [PLAYER]
-		 * 		[e]
-		 */
-		private boolean parsePlayerParent(TPlayer player)
-		{
-			if (matchType(TSKernel.TYPE_COLON))
-			{
-				if (!isPlayer(true))
-				{
-					addErrorMessage("Expected player type after \":\".");
-					return false;
-				}
-				
-				String identity = currentToken().getLexeme();
-				nextToken();
-				TPlayer parent = currentModule.getPlayerByIdentity(identity);
-				
-				if (player.getParent() != null)
-				{
-					addErrorMessage("Player already has a parent.");
-					return false;
-				}
-				
-				player.setParent(parent);
-			}
-			
-			return true;
-		}
-		
-		/**
-		 * Parses a world.
-		 * [World] :=
-		 * 		";"
-		 * 		"{" [WorldBody] "}"
-		 */
-		private boolean parseWorld()
-		{
-			verbose("Read world...");
-
-			TWorld world;
-			if ((world = currentModule.getWorld()) == null)
-			{
-				world = new TWorld();
-				currentModule.setWorld(world);
-			}
-						
-			// prototype?
-			if (matchType(TSKernel.TYPE_SEMICOLON))
-			{
-				currentModule.setWorld(new TWorld());
-				return true;
-			}
-
-			// check for body.
-			if (!matchType(TSKernel.TYPE_LBRACE))
-			{
-				addErrorMessage("Expected \"{\" for world body start or \";\" (no body).");
-				return false;
-			}
-
-			if (!parseElementBody(world, "world"))
-				return false;
-			
-			if (!matchType(TSKernel.TYPE_RBRACE))
-			{
-				addErrorMessage("Expected end-of-world \"}\".");
-				return false;
-			}
-
-			return true;
+			String[] out = new String[argList.size()];
+			argList.toArray(out);
+			return out;
 		}
 
 		/**

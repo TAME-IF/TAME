@@ -72,7 +72,7 @@ command-addobjecttag.html "Command: AddObjectTag" template/main.html
 command-addobjecttagtoallin.html "Command: AddObjectTagToAllIn" template/main.html
 command-removeobjectname.html "Command: RemoveObjectName" template/main.html
 command-removeobjecttag.html "Command: RemoveObjectTag" template/main.html
-command-removeobjecttagfromallin.html "RemoveObjectTagFromAllIn: XXXX" template/main.html
+command-removeobjecttagfromallin.html "Command: RemoveObjectTagFromAllIn" template/main.html
 command-giveobject.html "Command: GiveObject" template/main.html
 command-removeobject.html "Command: RemoveObject" template/main.html
 command-moveobjectswithtag.html "Command: RemoveObjectWithTag" template/main.html
@@ -93,6 +93,5 @@ command-nocurrentplayer.html "Command: NoCurrentPlayer" template/main.html
 command-currentroomis.html "Command: CurrentRoomIs" template/main.html
 command-nocurrentroom.html "Command: NoCurrentRoom" template/main.html
 command-identity.html "Command: Identity" template/main.html
-command-contextidentity.html "Command: ContextIdentity" template/main.html
 command-header.html "Command: Header" template/main.html
 diagrams.html "TAME Execution Diagrams" template/main.html

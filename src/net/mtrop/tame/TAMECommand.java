@@ -3488,26 +3488,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 
 	/**
-	 * Pushes the identity of the element attached to the current active topmost context.
-	 * Returns string.
-	 */
-	CONTEXTIDENTITY (/*Return: */ ArgumentType.VALUE)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			request.pushValue(Value.create(request.peekContext().getElement().getIdentity()));
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return "Miscellaneous";
-		}
-		
-	},
-
-	/**
 	 * Pushes the value of a header value of the TAME module.
 	 * Returns string, always, regardless of how it is defined, and as it as defined without alteration.
 	 */
