@@ -8,7 +8,7 @@ object o_key named "key", "small key"
 {
 	onAction(a_examine)
 	{
-		textln("Looks like a key.");
+		textln("Looks like a small key.");
 	}
 	
 	onAction(a_take)
@@ -27,9 +27,55 @@ object o_key named "key", "small key"
 		textln("There's a key, here.");
 	}
 	
+	onPlayerBrowse()
+	{
+		textln("A key.");
+	}
+	
 }
 
-room r_startRoom
+object o_door named "door" uses determiners "the"
+{
+	init()
+	{
+		locked = true;
+	}
+
+	onAction(a_examine)
+	{
+		textln("Looks like a wooden door.");
+		addObjectName(this, "wooden door");
+	}
+	
+	onActionWith(a_use, o_key)
+	{
+		locked = false;
+		textln("You unlocked the door!");
+	}
+	
+	onAction(a_take)
+	{
+		textln("You can't pick up a door.");
+	}
+	
+	onAction(a_use)
+	{
+		if (locked)
+			textln("The door is locked.");
+		else
+		{
+			textln("You open the door. You escaped the room!");
+			quit;
+		}
+	}
+	
+}
+
+player p_guy
+{
+}
+
+room r_startroom
 {
 	init()
 	{
@@ -39,15 +85,11 @@ room r_startRoom
 
 world
 {
-
-	function setStuffUp()
-	{
-		
-	}
-
 	start()
 	{
-		setStuffUp();
-		
+		giveObject(r_startroom, o_key);
+		giveObject(r_startroom, o_door);
+		setPlayer(p_guy);
+		setRoom(player, r_startroom);
 	}
 }
