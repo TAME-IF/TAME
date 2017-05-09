@@ -106,7 +106,7 @@
 	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.exe"  description="Cleans up everything.">
 	</target>
 	
-	<target name="compile.all" depends="init.compile" description="Compiles the project, including test classes.">
+	<target name="compile" depends="init.compile" description="Compiles the project, including test classes.">
 		<javac 
 			source="1.8"
 			srcdir="${src.dir}${S}${src.test.dir}${S}${src.util.dir}" 
@@ -288,13 +288,6 @@
 	</target>
 	
 	<target name="release" depends="zip, exe, exe.deploy">
-	</target>
-
-	<target name="tamedox" description="Creates TAME documentation HTML pages. Run compile.all first!">
-		<delete dir="${tamedox.dir}" includeemptydirs="true" casesensitive="false" /> 
-		<java classname="net.mtrop.tame.TAMEDoxGen" classpath="${project.classpath}${S}${bin.dir}">
-			<arg value="${tamedox.dir}" />
-		</java>
 	</target>
 
 </project>

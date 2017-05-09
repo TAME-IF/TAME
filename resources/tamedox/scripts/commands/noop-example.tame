@@ -1,9 +1,0 @@
-world
-{
-	start()
-	{
-		textln("Get ready to do nothing.");
-		noOp();
-		textln("Nothing done.");
-	}
-}

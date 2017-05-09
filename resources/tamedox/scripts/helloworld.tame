@@ -1,7 +1,0 @@
-world
-{
-	start()
-	{
-		textln("Hello, world!");
-	}
-}
