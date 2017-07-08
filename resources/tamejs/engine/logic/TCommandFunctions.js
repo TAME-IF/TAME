@@ -1955,14 +1955,19 @@ var TCommandFunctions =
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var varRoom = request.popValue();
+			var varPlayer = request.popValue();
 
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in CURRENTROOMIS call.");
 			if (!TValue.isRoom(varRoom))
 				throw TAMEError.UnexpectedValueType("Expected room type in CURRENTROOMIS call.");
 
 			var context = request.moduleContext;
+			var playerIdentity = TValue.asString(varPlayer);
+			var player = context.resolveElement(playerIdentity);
 			var room = context.resolveElement(TValue.asString(varRoom));
-			var currentRoom = context.getCurrentRoom();
 			
+			var currentRoom = context.getCurrentRoom(player.identity);
 			request.pushValue(TValue.createBoolean(currentRoom != null && room.identity == currentRoom.identity));
 		}
 	},
@@ -1972,7 +1977,15 @@ var TCommandFunctions =
 		"name": 'NOCURRENTROOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
-			var currentRoom = request.moduleContext.getCurrentRoom();
+			var varPlayer = request.popValue();
+
+			if (!TValue.isPlayer(varPlayer))
+				throw TAMEError.UnexpectedValueType("Expected player type in NOCURRENTROOM call.");
+			
+			var context = request.moduleContext;
+			var playerIdentity = TValue.asString(varPlayer);
+			var player = context.resolveElement(playerIdentity);
+			var currentRoom = context.getCurrentRoom(player.identity);
 			request.pushValue(TValue.createBoolean(currentRoom == null));
 		}
 	},

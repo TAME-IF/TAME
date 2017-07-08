@@ -10,7 +10,7 @@ object archetype o_vehicle
 {
 	onaction(a_drive)
 	{
-		textln(contextidentity() +": VROOM!");
+		textln(identity(this) +": VROOM!");
 	}
 }
 
@@ -18,7 +18,7 @@ object o_boat : o_vehicle named "boat"
 {
 	onaction(a_drive)
 	{
-		textln(contextidentity() +": BLUBLUBLUB");
+		textln(identity(this) +": BLUBLUBLUB");
 	}
 }
 

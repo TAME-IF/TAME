@@ -181,7 +181,6 @@ world
 		textln(identity(c_container1));
 
 		textln(nocurrentplayer());
-		textln(nocurrentroom());
 
 		textln(currentplayeris(p_main));
 		setplayer(p_main);
@@ -189,15 +188,16 @@ world
 		textln(currentplayeris(player));
 
 		textln(nocurrentplayer());
-		textln(nocurrentroom());
+		textln(nocurrentroom(player));
 
-		textln(currentroomis(r_room1));
+		textln(currentroomis(p_main, r_room1));
+		textln(currentroomis(player, r_room1));
 		setroom(player, r_room1);
-		textln(currentroomis(r_room1));
-		textln(currentroomis(room));
+		textln(currentroomis(p_main, r_room1));
+		textln(currentroomis(p_main, room));
 
 		textln(nocurrentplayer());
-		textln(nocurrentroom());
+		textln(nocurrentroom(player));
 
 		pushroom(player, r_room2);
 		textln(identity(room));

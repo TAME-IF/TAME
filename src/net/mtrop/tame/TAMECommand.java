@@ -3411,19 +3411,23 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the room.
 	 * Returns boolean.
 	 */
-	CURRENTROOMIS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ROOM)
+	CURRENTROOMIS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
+			Value varPlayer = request.popValue();
 			
-			if (varRoom.getType() != ValueType.ROOM)
+			if (varPlayer.getType() != ValueType.PLAYER)
 				throw new UnexpectedValueTypeException("Expected player type in CURRENTROOMIS call.");
+			if (varRoom.getType() != ValueType.ROOM)
+				throw new UnexpectedValueTypeException("Expected room type in CURRENTROOMIS call.");
 
 			TAMEModuleContext moduleContext = request.getModuleContext();
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
 			TRoom room = moduleContext.resolveRoom(varRoom.asString());
-			TRoom currentRoom = moduleContext.getOwnershipMap().getCurrentRoom();
+			TRoom currentRoom = moduleContext.getOwnershipMap().getCurrentRoom(player);
 			
 			request.pushValue(Value.create(currentRoom != null && room.equals(currentRoom)));
 		}
@@ -3441,13 +3445,19 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POPs nothing.
 	 * Returns boolean.
 	 */
-	NOCURRENTROOM (/*Return: */ ArgumentType.VALUE)
+	NOCURRENTROOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
 		{
+			Value varPlayer = request.popValue();
+			
+			if (varPlayer.getType() != ValueType.PLAYER)
+				throw new UnexpectedValueTypeException("Expected player type in NOCURRENTROOM call.");
+
 			TAMEModuleContext moduleContext = request.getModuleContext();
-			TRoom room = moduleContext.getOwnershipMap().getCurrentRoom();
+			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
+			TRoom room = moduleContext.getOwnershipMap().getCurrentRoom(player);
 			request.pushValue(Value.create(room == null));
 		}
 
