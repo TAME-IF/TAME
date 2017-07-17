@@ -370,22 +370,28 @@ TLogic.processAction = function(request, response, tameAction)
  * until there is nothing left to process.
  * @param request the request context.
  * @param response the response object.
+ * @param skipAfterRequest if true, skips the afterRequest block.
  * @throws TAMEInterrupt if an uncaught interrupt occurs.
  * @throws TAMEError if something goes wrong during execution.
  */
-TLogic.processActionLoop = function(request, response) 
+TLogic.processActionLoop = function(request, response, skipAfterRequest) 
 {
-	var initial = true;
 	while (request.hasActionItems())
 	{
 		var tameAction = request.nextActionItem();
 		TLogic.processAction(request, response, tameAction);
-		if (!request.hasActionItems() && initial)
-		{
-			initial = false;
-			TLogic.doAfterRequest(request, response);
-		}
 	}
+	
+	if (skipAfterRequest)
+		return;
+	TLogic.doAfterRequest(request, response);
+	
+	while (request.hasActionItems())
+	{
+		var tameAction = request.nextActionItem();
+		TLogic.processAction(request, response, tameAction);
+	}
+	
 };
 
 
@@ -406,7 +412,7 @@ TLogic.handleInit = function(context, tracing)
 	try 
 	{
 		TLogic.initializeContext(request, response);
-		TLogic.processActionLoop(request, response);
+		TLogic.processActionLoop(request, response, true);
 	} 
 	catch (err) 
 	{
@@ -1278,7 +1284,7 @@ TLogic.callPlayerActionForbiddenBlock = function(request, response, action, play
 	// get forbid block.
 	var forbidBlock = null;
 
-	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONFORBIDDENACTION", TValue.createAction(action.identity))) != null)
+	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONFORBIDDENACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Got specific forbid block in player "+playerContext.identity+" lineage, action "+action.identity);
 		TLogic.callBlock(request, response, playerContext, forbidBlock);
@@ -1312,7 +1318,7 @@ TLogic.callRoomActionForbiddenBlock = function(request, response, action, player
 	// get forbid block.
 	var forbidBlock = null;
 
-	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONROOMFORBIDDENACTION", TValue.createAction(action.identity))) != null)
+	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONROOMFORBIDDENACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Calling specific room forbid block in player "+playerContext.identity+" lineage, action "+action.identity);
 		TLogic.callBlock(request, response, playerContext, forbidBlock);
@@ -1398,7 +1404,7 @@ TLogic.callWorldActionIncompleteBlock = function(request, response, action, worl
 	
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock('world', "ONINCOMPLETEACTION", TValue.createAction(action.identity))) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONINCOMPLETEACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Found specific action incomplete block on world, action "+action.identity+".");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1431,7 +1437,7 @@ TLogic.callPlayerActionIncompleteBlock = function(request, response, action, pla
 	
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETEACTION", TValue.createAction(action.identity))) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETEACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Found specific action incomplete block in player "+playerContext.identity+" lineage, action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
@@ -1487,7 +1493,7 @@ TLogic.callWorldActionFailBlock = function(request, response, action, worldConte
 	
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock('world', "ONFAILEDACTION", TValue.createAction(action.identity))) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONFAILEDACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Found specific action failure block on world, action "+action.identity+".");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1520,7 +1526,7 @@ TLogic.callPlayerActionFailBlock = function(request, response, action, playerCon
 
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONFAILEDACTION", TValue.createAction(action.identity))) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONFAILEDACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Found specific action failure block in player "+playerContext.identity+" lineage, action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
@@ -1758,7 +1764,7 @@ TLogic.doActionModal = function(request, response, action, mode)
 
 	if (currentPlayerContext != null)
 	{
-		var currentPlayer = currentPlayerContext.getElement();
+		var currentPlayer = context.getCurrentPlayer();
 
 		// try current room.
 		var currentRoomContext = context.getCurrentRoomContext();

@@ -96,7 +96,7 @@ public final class TAMELogic implements TAMEConstants
 
 		try {
 			initializeContext(request, response);
-			processActionLoop(request, response);
+			processActionLoop(request, response, true);
 		} catch (QuitInterrupt interrupt) {
 			/* Do nothing. */
 		} catch (TAMEFatalException exception) {
@@ -133,7 +133,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		try {
 			enqueueInterpretedAction(request, response, interpreterContext);
-			processActionLoop(request, response);
+			processActionLoop(request, response, false);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
 		} catch (QuitInterrupt end) {
@@ -161,7 +161,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		try {
 			request.addActionItem(action);
-			processActionLoop(request, response);
+			processActionLoop(request, response, false);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
 		} catch (QuitInterrupt end) {
@@ -692,24 +692,26 @@ public final class TAMELogic implements TAMEConstants
 	 * until there is nothing left to process.
 	 * @param request the request object.
 	 * @param response the response object.
+	 * @param skipAfterRequest if true, skips the afterRequest block.
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
 	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	private static void processActionLoop(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
+	private static void processActionLoop(TAMERequest request, TAMEResponse response, boolean skipAfterRequest) throws TAMEInterrupt 
 	{
-		boolean initial = true;
 		while (request.hasActionItems())
 		{
 			TAMEAction tameAction = request.nextActionItem();
 			processAction(request, response, tameAction);
-			
-			// do the "after" stuff.
-			if (!request.hasActionItems() && initial)
-			{
-				initial = false;
-				doAfterRequest(request, response);
-			}
-			
+		}
+		
+		if (skipAfterRequest)
+			return;
+		doAfterRequest(request, response);
+		
+		while (request.hasActionItems())
+		{
+			TAMEAction tameAction = request.nextActionItem();
+			processAction(request, response, tameAction);
 		}
 		
 	}
