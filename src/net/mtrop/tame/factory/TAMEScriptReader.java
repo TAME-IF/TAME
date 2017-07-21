@@ -1507,11 +1507,20 @@ public final class TAMEScriptReader implements TAMEConstants
 				if (!parseActionNames(action))
 					return false;
 				
-				if (matchType(TSKernel.TYPE_MODES))
+				if (!matchType(TSKernel.TYPE_USES))
 				{
-					if (!parseActionAdditionalNames(action))
-						return false;
+					addErrorMessage("Expected \"uses modes\", to declare modes.");
+					return false;
 				}
+
+				if (!matchType(TSKernel.TYPE_MODES))
+				{
+					addErrorMessage("Expected \"modes\" after \"uses\".");
+					return false;
+				}
+
+				if (!parseActionAdditionalNames(action))
+					return false;
 				
 				currentModule.addAction(action);
 				return true;
