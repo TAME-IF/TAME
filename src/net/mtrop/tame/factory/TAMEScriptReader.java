@@ -1468,7 +1468,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				if (!matchType(TSKernel.TYPE_LOCAL))
 				{
-					addErrorMessage("Expected \"local\" after \"uses\", to declare the target variable.");
+					addErrorMessage("Expected \"local\" after \"uses\" to declare the target variable.");
 					return false;
 				}
 
@@ -1509,13 +1509,13 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				if (!matchType(TSKernel.TYPE_USES))
 				{
-					addErrorMessage("Expected \"uses modes\", to declare modes.");
+					addErrorMessage("Expected \"uses modes\" to declare modes.");
 					return false;
 				}
 
 				if (!matchType(TSKernel.TYPE_MODES))
 				{
-					addErrorMessage("Expected \"modes\" after \"uses\".");
+					addErrorMessage("Expected \"modes\" after \"uses\" to declare modes.");
 					return false;
 				}
 
