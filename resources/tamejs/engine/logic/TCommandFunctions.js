@@ -1297,38 +1297,24 @@ var TCommandFunctions =
 		}
 	},
 
-	/* RANDOM */
+	/* IRANDOM */
 	{
-		"name": 'RANDOM', 
+		"name": 'IRANDOM', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
-				throw TAMEError.UnexpectedValueType("Expected literal type in RANDOM call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in IRANDOM call.");
 
-			if (TValue.isInteger(value1) || TValue.isBoolean(value1))
-			{
-				var value = TValue.asLong(value1);
-				if (value == 0)
-					request.pushValue(TValue.createInteger(0));
-				else
-				{
-					var v = Math.floor(Math.random() * Math.abs(value));
-					if (value < 0)
-						request.pushValue(TValue.createInteger(-v));
-					else
-						request.pushValue(TValue.createInteger(v));
-				}
-			}
+			var value = TValue.asLong(value1);
+
+			if (value == 0)
+				request.pushValue(TValue.createInteger(0));
+			else if (value < 0)
+				request.pushValue(TValue.createInteger(-(Math.floor(Math.random() * Math.abs(value)))));
 			else
-			{
-				var value = TValue.asDouble(value1);
-				if (value == 0.0)
-					request.pushValue(TValue.createFloat(0.0));
-				else
-					request.pushValue(TValue.createFloat(Math.random() * value));
-			}
+				request.pushValue(TValue.createInteger(Math.floor(Math.random() * Math.abs(value))));
 		}
 	},
 

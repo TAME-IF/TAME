@@ -2289,7 +2289,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the interval end.
 	 * Returns integer or float, depending on input.
 	 */
-	RANDOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	IRANDOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -2299,26 +2299,14 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			if (!valueInput.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in RANDOM call.");
 
-			if (valueInput.isInteger() || valueInput.isBoolean())
-			{
-				Random random = request.getModuleContext().getRandom();
-				long value = valueInput.asLong();
-				
-				if (value == 0)
-					request.pushValue(Value.create(0));
-				else
-					request.pushValue(Value.create(Math.abs(random.nextLong()) % value));
-			}
-			else
-			{
-				Random random = request.getModuleContext().getRandom();
-				double value = valueInput.asDouble();
-				if (value == 0.0)
-					request.pushValue(Value.create(0.0));
-				else
-					request.pushValue(Value.create(random.nextDouble() * value));
-			}
+			long value = valueInput.asLong();
+
+			Random random = request.getModuleContext().getRandom();
 			
+			if (value == 0)
+				request.pushValue(Value.create(0));
+			else
+				request.pushValue(Value.create(Math.abs(random.nextLong()) % value));
 		}
 		
 		@Override
