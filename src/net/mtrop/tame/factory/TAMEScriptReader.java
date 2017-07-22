@@ -2782,10 +2782,17 @@ public final class TAMEScriptReader implements TAMEConstants
 
 						if (currentType(TSKernel.TYPE_LPAREN))
 						{
-							TElement derefElement = currentModule.getElementByIdentity(identToken.asString());
+							String elementName = identToken.asString();
+							TElement derefElement = currentModule.getElementByIdentity(elementName);
 							
 							FunctionEntry functionEntry;
-							if ((functionEntry = derefElement.resolveFunction(identName)) != null)
+							// Not a real element.
+							if (derefElement == null)
+							{
+								addErrorMessage("Expression error - functions can only be called from discrete elements (not \"player\" or \"room\").");
+								return false;
+							}
+							else if ((functionEntry = derefElement.resolveFunction(identName)) != null)
 							{
 								// saw LPAREN
 								nextToken();
@@ -2805,7 +2812,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							}
 							else
 							{
-								addErrorMessage("Expression error - no such function \""+identName+"\" in element \""+identToken.asString()+"\".");
+								addErrorMessage("Expression error - no such function \""+identName+"\" in element \""+elementName+"\".");
 								return false;
 							}
 						}
