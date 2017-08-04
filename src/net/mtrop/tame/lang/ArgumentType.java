@@ -19,6 +19,14 @@ public enum ArgumentType
 	VALUE,
 	/** Argument accepts any action. */
 	ACTION,
+	/** Argument accepts general actions. */
+	ACTION_GENERAL,
+	/** Argument accepts modal or open actions. */
+	ACTION_MODAL_OPEN,
+	/** Argument accepts transitive/ditransitive actions. */
+	ACTION_TRANSITIVE_DITRANSITIVE,
+	/** Argument accepts ditransitive actions. */
+	ACTION_DITRANSITIVE,
 	/** Argument must accept a player. */
 	PLAYER,
 	/** Argument must accept a room. */
@@ -31,6 +39,8 @@ public enum ArgumentType
 	OBJECT_CONTAINER,
 	/** Argument must accept an element (object/player/room/container/world). */
 	ELEMENT,
+	/** Argument must accept an element (object/player/room/container/world) - can be archetype. */
+	ELEMENT_ANY,
 	/** Argument must accept a variable. */
 	VARIABLE;
 }

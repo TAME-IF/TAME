@@ -12,21 +12,14 @@ package net.mtrop.tame.element;
 import java.io.IOException;
 import java.io.InputStream;
 
-import net.mtrop.tame.exception.ModuleException;
-import net.mtrop.tame.lang.Block;
-import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
-import net.mtrop.tame.lang.FunctionEntry;
 
 /**
  * Container that just holds objects. It cannot be actioned on.
  * @author Matthew Tropiano
  */
-public class TContainer extends TElement implements Inheritable<TContainer>, ObjectContainer
+public class TContainer extends TElement implements ObjectContainer
 {
-	/** The parent container. */
-	private TContainer parent;	
-
 	private TContainer()
 	{
 		super();
@@ -63,44 +56,6 @@ public class TContainer extends TElement implements Inheritable<TContainer>, Obj
 			default:
 				return false;
 		}
-	}
-
-	private boolean hasCircularParentReference(TContainer parent)
-	{
-		if (this.parent != null)
-			return this.parent == parent || this.parent.hasCircularParentReference(parent);
-		else
-			return false;
-	}
-	
-	@Override
-	public void setParent(TContainer parent)
-	{
-		if (hasCircularParentReference(parent))
-			throw new ModuleException("Circular lineage detected.");
-		if (this.parent != null && this.parent != parent)
-			throw new ModuleException("Parent elements cannot be reassigned once set.");
-		this.parent = parent;
-	}
-
-	@Override
-	public TContainer getParent()
-	{
-		return parent;
-	}
-	
-	@Override
-	public Block resolveBlock(BlockEntry blockEntry)
-	{
-		Block out = getBlock(blockEntry);
-		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
-	}
-	
-	@Override
-	public FunctionEntry resolveFunction(String functionName)
-	{
-		FunctionEntry out = getFunction(functionName);
-		return out != null ? out : (parent != null ? parent.resolveFunction(functionName) : null);
 	}
 
 	/**

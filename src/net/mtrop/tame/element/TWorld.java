@@ -23,7 +23,7 @@ import net.mtrop.tame.lang.FunctionEntry;
  * Contains immutable World data. 
  * @author Matthew Tropiano
  */
-public class TWorld extends TElement implements Inheritable<TWorld>, ObjectContainer
+public class TWorld extends TElement implements ObjectContainer
 {
 	/**
 	 * Constructs an instance of a game world.
@@ -69,7 +69,7 @@ public class TWorld extends TElement implements Inheritable<TWorld>, ObjectConta
 	}
 
 	@Override
-	public void setParent(TWorld parent)
+	public void setParent(TElement parent)
 	{
 		throw new ModuleException("Worlds cannot have a lineage!");
 	}

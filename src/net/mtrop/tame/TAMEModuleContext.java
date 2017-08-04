@@ -49,6 +49,7 @@ import net.mtrop.tame.lang.Value;
 
 /**
  * A mutable context for a module.
+ * FIXME: Do resolve element without using resolve context to avoid archetype search issues.
  * @author Matthew Tropiano
  */
 public class TAMEModuleContext implements TAMEConstants, Saveable

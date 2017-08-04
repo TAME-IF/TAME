@@ -47,6 +47,8 @@ public abstract class TElement implements Saveable
 	private String identity;
 	/** Element is an archetype (defines behavior, is not physical). */
 	private boolean archetype;
+	/** Element parent. */
+	private TElement parent;
 	/** Element block map. */
 	private BlockTable blockTable;
 	/** Function map. */
@@ -136,8 +138,12 @@ public abstract class TElement implements Saveable
 	 * @param blockEntry the block entry to use.
 	 * @return an associated block, or null if no associated block.
 	 */
-	public abstract Block resolveBlock(BlockEntry blockEntry);
-
+	public Block resolveBlock(BlockEntry blockEntry)
+	{
+		Block out = getBlock(blockEntry);
+		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
+	}
+	
 	/**
 	 * Adds/replaces a block and block entry to this element.
 	 * @param functionName the function name to associate with the table.
@@ -172,7 +178,46 @@ public abstract class TElement implements Saveable
 	 * @param functionName the function name to use.
 	 * @return an associated entry, or null if no associated entry.
 	 */
-	public abstract FunctionEntry resolveFunction(String functionName);
+	public FunctionEntry resolveFunction(String functionName)
+	{
+		FunctionEntry out = getFunction(functionName);
+		return out != null ? out : (parent != null ? parent.resolveFunction(functionName) : null);
+	}
+
+	/**
+	 * Checks for a circular reference.
+	 */
+	private boolean hasCircularParentReference(TElement parent)
+	{
+		if (this.parent != null)
+			return this.parent == parent || this.parent.hasCircularParentReference(parent);
+		else
+			return false;
+	}
+	
+	/**
+	 * Sets a parent on this object.
+	 * @param parent the parent object to set.
+	 */
+	public void setParent(TElement parent)
+	{
+		if (hasCircularParentReference(parent))
+			throw new ModuleException("Circular lineage detected.");
+		if (this.parent != null && this.parent != parent)
+			throw new ModuleException("Parent elements cannot be reassigned once set.");
+		this.parent = parent;
+	}
+	
+	/**
+	 * Gets this object's parent.
+	 * The ordering is in the order they were added.
+	 * @return an iterator for this object's lineage.
+	 * @see #setParent(TElement)
+	 */
+	public TElement getParent()
+	{
+		return parent;
+	}
 
 	/**
 	 * Checks if this element is an Archetype.

@@ -14,10 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import net.mtrop.tame.exception.ModuleException;
-import net.mtrop.tame.lang.Block;
-import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
-import net.mtrop.tame.lang.FunctionEntry;
 
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.io.SuperReader;
@@ -29,10 +26,8 @@ import com.blackrook.io.SuperWriter;
  * in the possession of players take precedence over objects in a room.
  * @author Matthew Tropiano
  */
-public class TObject extends TElement implements Inheritable<TObject>
+public class TObject extends TElement
 {
-	/** The parent object. */
-	private TObject parent;
 	/** Element's names. */
 	protected CaseInsensitiveHash names;
 	/** Element's determiners (name token affixes). */
@@ -43,7 +38,6 @@ public class TObject extends TElement implements Inheritable<TObject>
 	private TObject()
 	{
 		super();
-		this.parent = null;
 		this.names = new CaseInsensitiveHash(3);
 		this.determiners = new CaseInsensitiveHash(2);
 		this.tags = new CaseInsensitiveHash(2);
@@ -87,30 +81,6 @@ public class TObject extends TElement implements Inheritable<TObject>
 			default:
 				return false;
 		}
-	}
-
-	private boolean hasCircularParentReference(TObject parent)
-	{
-		if (this.parent != null)
-			return this.parent == parent || this.parent.hasCircularParentReference(parent);
-		else
-			return false;
-	}
-	
-	@Override
-	public void setParent(TObject parent)
-	{
-		if (hasCircularParentReference(parent))
-			throw new ModuleException("Circular lineage detected.");
-		if (this.parent != null && this.parent != parent)
-			throw new ModuleException("Parent elements cannot be reassigned once set.");
-		this.parent = parent;
-	}
-	
-	@Override
-	public TObject getParent()
-	{
-		return parent;
 	}
 
 	/**
@@ -174,20 +144,6 @@ public class TObject extends TElement implements Inheritable<TObject>
 	public Iterable<String> getTags()
 	{
 		return tags;
-	}
-
-	@Override
-	public Block resolveBlock(BlockEntry blockEntry)
-	{
-		Block out = getBlock(blockEntry);
-		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
-	}
-	
-	@Override
-	public FunctionEntry resolveFunction(String functionName)
-	{
-		FunctionEntry out = getFunction(functionName);
-		return out != null ? out : (parent != null ? parent.resolveFunction(functionName) : null);
 	}
 
 	/**

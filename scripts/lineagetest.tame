@@ -1,0 +1,24 @@
+module
+{
+	title = "Lineage test";
+}
+
+
+object archetype o_key
+{
+
+}
+
+object o_wooden_key : o_key
+{
+	
+}
+
+world
+{
+	start()
+	{
+		textln(elementHasParent(o_key, o_key));
+		quit;
+	}
+}

@@ -2539,6 +2539,82 @@ public final class TAMEScriptReader implements TAMEConstants
 						nextToken();
 						break;
 					}
+					case ACTION_GENERAL:
+					{
+						if (!isAction())
+						{
+							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							return false;
+						}
+						
+						TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
+						if (action.getType() != TAction.Type.GENERAL)
+						{
+							addErrorMessage("Command "+commandType.name()+" requires a GENERAL ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a general action type.");
+							return false;
+						}
+						
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case ACTION_MODAL_OPEN:
+					{
+						if (!isAction())
+						{
+							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							return false;
+						}
+						
+						TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
+						if (!(action.getType() == TAction.Type.MODAL || action.getType() == TAction.Type.OPEN))
+						{
+							addErrorMessage("Command "+commandType.name()+" requires a MODAL or OPEN ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a modal or open action type.");
+							return false;
+						}
+						
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case ACTION_TRANSITIVE_DITRANSITIVE:
+					{
+						if (!isAction())
+						{
+							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							return false;
+						}
+						
+						TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
+						if (!(action.getType() == TAction.Type.TRANSITIVE || action.getType() == TAction.Type.DITRANSITIVE))
+						{
+							addErrorMessage("Command "+commandType.name()+" requires a TRANSITIVE or DITRANSITIVE ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a transitive or ditransitive action type.");
+							return false;
+						}
+						
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
+					case ACTION_DITRANSITIVE:
+					{
+						if (!isAction())
+						{
+							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							return false;
+						}
+						
+						TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
+						if (action.getType() != TAction.Type.DITRANSITIVE)
+						{
+							addErrorMessage("Command "+commandType.name()+" requires a DITRANSITIVE ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a ditransitive action type.");
+							return false;
+						}
+						
+						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						nextToken();
+						break;
+					}
 					case OBJECT:
 					{
 						if (currentType(TSKernel.TYPE_THIS))
@@ -2684,6 +2760,25 @@ public final class TAMEScriptReader implements TAMEConstants
 						else if (!isElement(false))
 						{
 							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type (world, player, room, container, object).");
+							return false;
+						}
+						else
+						{
+							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							nextToken();
+						}
+						break;
+					}
+					case ELEMENT_ANY:
+					{
+						if (currentType(TSKernel.TYPE_THIS))
+						{
+							block.add(Command.create(TAMECommand.PUSHTHIS));
+							nextToken();
+						}
+						else if (!isElement(true))
+						{
+							addErrorMessage("Command "+commandType.name()+" requires an ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type (world, player, room, container, object).");
 							return false;
 						}
 						else

@@ -767,7 +767,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTION (/*Return: */ null, /*Args: */ ArgumentType.ACTION)
+	QUEUEACTION (/*Return: */ null, /*Args: */ ArgumentType.ACTION_GENERAL)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -803,7 +803,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONSTRING (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.VALUE)
+	QUEUEACTIONSTRING (/*Return: */ null, /*Args: */ ArgumentType.ACTION_MODAL_OPEN, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -843,7 +843,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONOBJECT (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT)
+	QUEUEACTIONOBJECT (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -884,7 +884,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONFOROBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT_CONTAINER)
+	QUEUEACTIONFOROBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT_CONTAINER)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -931,7 +931,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Third POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONFORTAGGEDOBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
+	QUEUEACTIONFORTAGGEDOBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -984,7 +984,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Third POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONOBJECT2 (/*Return: */ null, /*Args: */ ArgumentType.ACTION, ArgumentType.OBJECT, ArgumentType.OBJECT)
+	QUEUEACTIONOBJECT2 (/*Return: */ null, /*Args: */ ArgumentType.ACTION_DITRANSITIVE, ArgumentType.OBJECT, ArgumentType.OBJECT)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -3157,6 +3157,50 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			ObjectContainer element = (ObjectContainer)moduleContext.resolveElement(varObjectContainer);
 			TAMELogic.doBrowse(request, response, element, tagName);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Elements";
+		}
+		
+	},
+	
+	/**
+	 * Returns true if the first element has the second element in its lineage.
+	 * First POP is parent to test. 
+	 * Second POP is the source element. 
+	 * Returns nothing.
+	 */
+	ELEMENTHASPARENT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT_ANY, ArgumentType.ELEMENT_ANY)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value varParent = request.popValue();
+			Value varElement = request.popValue();
+			
+			if (!varElement.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in ELEMENTHASPARENT call.");
+			if (!varParent.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in ELEMENTHASPARENT call.");
+
+			String parentIdentity = request.getModuleContext().resolveElement(varParent).getIdentity();
+			TElement element = request.getModuleContext().resolveElement(varElement);
+			
+			// search up though lineage.
+			while (element != null)
+			{
+				if (element.getIdentity().equalsIgnoreCase(parentIdentity))
+				{
+					request.pushValue(Value.create(true));
+					return;
+				}
+				element = element.getParent();
+			}
+			
+			request.pushValue(Value.create(false));
 		}
 		
 		@Override

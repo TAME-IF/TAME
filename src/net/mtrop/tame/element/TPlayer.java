@@ -15,10 +15,7 @@ import java.io.OutputStream;
 
 import net.mtrop.tame.lang.PermissionType;
 import net.mtrop.tame.exception.ModuleException;
-import net.mtrop.tame.lang.Block;
-import net.mtrop.tame.lang.BlockEntry;
 import net.mtrop.tame.lang.BlockEntryType;
-import net.mtrop.tame.lang.FunctionEntry;
 
 import com.blackrook.commons.hash.Hash;
 import com.blackrook.io.SuperReader;
@@ -29,11 +26,8 @@ import com.blackrook.io.SuperWriter;
  * The viewpoint can travel to different rooms, changing view aspects.
  * @author Matthew Tropiano
  */
-public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<TPlayer>, ObjectContainer
+public class TPlayer extends TElement implements ForbiddenHandler, ObjectContainer
 {
-	/** The parent player. */
-	private TPlayer parent;
-	
 	/** Set function for action list. */
 	protected PermissionType permissionType;
 	/** List of actions that are either restricted or excluded. */
@@ -42,7 +36,6 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 	private TPlayer()
 	{
 		super();
-		this.parent = null;
 		this.permissionType = PermissionType.FORBID;
 		this.permittedActionList = new Hash<String>(2);
 	}
@@ -89,30 +82,6 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 		}
 	}
 
-	private boolean hasCircularParentReference(TPlayer parent)
-	{
-		if (this.parent != null)
-			return this.parent == parent || this.parent.hasCircularParentReference(parent);
-		else
-			return false;
-	}
-	
-	@Override
-	public void setParent(TPlayer parent)
-	{
-		if (hasCircularParentReference(parent))
-			throw new ModuleException("Circular lineage detected.");
-		if (this.parent != null && this.parent != parent)
-			throw new ModuleException("Parent elements cannot be reassigned once set.");
-		this.parent = parent;
-	}
-	
-	@Override
-	public TPlayer getParent()
-	{
-		return parent;
-	}
-	
 	@Override
 	public PermissionType getPermissionType()
 	{
@@ -148,20 +117,6 @@ public class TPlayer extends TElement implements ForbiddenHandler, Inheritable<T
 			return !permittedActionList.contains(action.getIdentity());
 		else
 			throw new ModuleException("Bad or unknown permission type found: "+permissionType);
-	}
-
-	@Override
-	public Block resolveBlock(BlockEntry blockEntry)
-	{
-		Block out = getBlock(blockEntry);
-		return out != null ? out : (parent != null ? parent.resolveBlock(blockEntry) : null);
-	}
-
-	@Override
-	public FunctionEntry resolveFunction(String functionName)
-	{
-		FunctionEntry out = getFunction(functionName);
-		return out != null ? out : (parent != null ? parent.resolveFunction(functionName) : null);
 	}
 
 	/**
