@@ -6,6 +6,7 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  * 
  * See AUTHORS.TXT for full credits.
+ * TODO: Add ELEMENTHASPARENT
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
