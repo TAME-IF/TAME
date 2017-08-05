@@ -33,6 +33,8 @@ public enum ArgumentType
 	ROOM,
 	/** Argument must accept an object. */
 	OBJECT,
+	/** Argument must accept an object or an archetype object. */
+	OBJECT_ANY,
 	/** Argument must accept a container. */
 	CONTAINER,
 	/** Argument must accept an object container (player/room/container/world). */

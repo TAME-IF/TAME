@@ -490,7 +490,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TWorld resolveWorld()
 	{
-		return resolveWorldContext().getElement();
+		return module.getWorld();
 	}
 
 	/**
@@ -528,7 +528,10 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TPlayer resolvePlayer(String playerIdentity) throws ErrorInterrupt
 	{
-		return resolvePlayerContext(playerIdentity).getElement();
+		TPlayer element = module.getPlayerByIdentity(playerIdentity); 
+		if (element == null)
+			throw new ModuleExecutionException("Expected player '%s' in module context!", playerIdentity);
+		return element;
 	}
 
 	/**
@@ -566,7 +569,10 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TRoom resolveRoom(String roomIdentity) throws ErrorInterrupt
 	{
-		return resolveRoomContext(roomIdentity).getElement();
+		TRoom element = module.getRoomByIdentity(roomIdentity); 
+		if (element == null)
+			throw new ModuleExecutionException("Expected room '%s' in module context!", roomIdentity);
+		return element;
 	}
 
 	/**
@@ -591,7 +597,10 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TObject resolveObject(String objectIdentity)
 	{
-		return resolveObjectContext(objectIdentity).getElement();
+		TObject element = module.getObjectByIdentity(objectIdentity); 
+		if (element == null)
+			throw new ModuleExecutionException("Expected object '%s' in module context!", objectIdentity);
+		return element;
 	}
 
 	/**
@@ -616,7 +625,10 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TContainer resolveContainer(String containerIdentity)
 	{
-		return resolveContainerContext(containerIdentity).getElement();
+		TContainer element = module.getContainerByIdentity(containerIdentity); 
+		if (element == null)
+			throw new ModuleExecutionException("Expected container '%s' in module context!", containerIdentity);
+		return element;
 	}
 
 	@Override

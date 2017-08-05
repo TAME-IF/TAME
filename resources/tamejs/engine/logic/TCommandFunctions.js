@@ -6,7 +6,6 @@
  * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  * 
  * See AUTHORS.TXT for full credits.
- * TODO: Add ELEMENTHASPARENT
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
@@ -1795,6 +1794,39 @@ var TCommandFunctions =
 			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
 
 			TLogic.doBrowse(request, response, element.identity, tagName);
+		}
+	},
+
+	/* ELEMENTHASANCESTOR */
+	{
+		"name": 'ELEMENTHASANCESTOR', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varParent = request.popValue();
+			var varElement = request.popValue();
+
+			if (!TValue.isElement(varElement))
+				throw TAMEError.UnexpectedValueType("Expected element type in ELEMENTHASANCESTOR call.");
+			if (!TValue.isElement(varParent))
+				throw TAMEError.UnexpectedValueType("Expected element type in ELEMENTHASANCESTOR call.");
+
+			var context = request.moduleContext;
+			var parentIdentity = context.resolveElement(TValue.asString(varParent)).identity;
+			var element = context.resolveElement(TValue.asString(varElement));
+
+			var found = false;
+			while (element)
+			{
+				if (element.identity == parentIdentity)
+				{
+					found = true;
+					break;
+				}
+				
+				element = element.parent ? context.resolveElement(element.parent) : null;
+			}
+
+			request.pushValue(TValue.createBoolean(found));
 		}
 	},
 

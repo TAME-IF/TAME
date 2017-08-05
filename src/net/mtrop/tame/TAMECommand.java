@@ -3173,7 +3173,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Second POP is the source element. 
 	 * Returns nothing.
 	 */
-	ELEMENTHASPARENT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT_ANY, ArgumentType.ELEMENT_ANY)
+	ELEMENTHASANCESTOR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT_ANY, ArgumentType.ELEMENT_ANY)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -3182,25 +3182,26 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value varElement = request.popValue();
 			
 			if (!varElement.isElement())
-				throw new UnexpectedValueTypeException("Expected element type in ELEMENTHASPARENT call.");
+				throw new UnexpectedValueTypeException("Expected element type in ELEMENTHASANCESTOR call.");
 			if (!varParent.isElement())
-				throw new UnexpectedValueTypeException("Expected element type in ELEMENTHASPARENT call.");
+				throw new UnexpectedValueTypeException("Expected element type in ELEMENTHASANCESTOR call.");
 
 			String parentIdentity = request.getModuleContext().resolveElement(varParent).getIdentity();
 			TElement element = request.getModuleContext().resolveElement(varElement);
 			
 			// search up though lineage.
+			boolean found = false;
 			while (element != null)
 			{
 				if (element.getIdentity().equalsIgnoreCase(parentIdentity))
 				{
-					request.pushValue(Value.create(true));
-					return;
+					found = true;
+					break;
 				}
 				element = element.getParent();
 			}
 			
-			request.pushValue(Value.create(false));
+			request.pushValue(Value.create(found));
 		}
 		
 		@Override
