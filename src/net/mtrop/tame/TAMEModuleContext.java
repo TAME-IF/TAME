@@ -322,7 +322,16 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
-	 * Gets the current player context by the current player id.
+	 * Gets the current player.
+	 * @return the current player, or null if not set.
+	 */
+	public TPlayer getCurrentPlayer()
+	{
+		return ownershipMap.getCurrentPlayer();
+	}
+
+	/**
+	 * Gets the current player context.
 	 * @return the current player context, or null if not set.
 	 */
 	public TPlayerContext getCurrentPlayerContext()
@@ -331,7 +340,16 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
-	 * Gets the current room context by the current room id.
+	 * Gets the current room.
+	 * @return the current room, or null if not set.
+	 */
+	public TRoom getCurrentRoom()
+	{
+		return ownershipMap.getCurrentRoom();
+	}
+
+	/**
+	 * Gets the current room context.
 	 * @return the current room context, or null if not set.
 	 */
 	public TRoomContext getCurrentRoomContext()
@@ -528,10 +546,21 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TPlayer resolvePlayer(String playerIdentity) throws ErrorInterrupt
 	{
-		TPlayer element = module.getPlayerByIdentity(playerIdentity); 
-		if (element == null)
-			throw new ModuleExecutionException("Expected player '%s' in module context!", playerIdentity);
-		return element;
+		TPlayer element;
+		if (playerIdentity.equals(TAMEConstants.IDENTITY_CURRENT_PLAYER))
+		{
+			element = getCurrentPlayer();
+			if (element == null)
+				throw new ErrorInterrupt("Current player requested with no current player!");
+			return element;
+		}
+		else
+		{
+			element = module.getPlayerByIdentity(playerIdentity); 
+			if (element == null)
+				throw new ModuleExecutionException("Expected player '%s' in module context!", playerIdentity);
+			return element;
+		}
 	}
 
 	/**
@@ -569,10 +598,21 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 */
 	public TRoom resolveRoom(String roomIdentity) throws ErrorInterrupt
 	{
-		TRoom element = module.getRoomByIdentity(roomIdentity); 
-		if (element == null)
-			throw new ModuleExecutionException("Expected room '%s' in module context!", roomIdentity);
-		return element;
+		TRoom element;
+		if (roomIdentity.equals(TAMEConstants.IDENTITY_CURRENT_ROOM))
+		{
+			element = getCurrentRoom();
+			if (element == null)
+				throw new ErrorInterrupt("Current room requested with no current room!");
+			return element;
+		}
+		else
+		{
+			element = module.getRoomByIdentity(roomIdentity); 
+			if (element == null)
+				throw new ModuleExecutionException("Expected room '%s' in module context!", roomIdentity);
+			return element;
+		}
 	}
 
 	/**
