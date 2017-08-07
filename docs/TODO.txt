@@ -1,29 +1,4 @@
-ArgumentType OBJECT_TYPE (OBJECT, can be archetype)
 
-Ditransitive flow:
-	action, object1, object2
-	bool success = false;
-
-	success |= object2.onActionWith(action, object1)
-	success |= object1.onActionWith(action, object2)
-	if (success)
-		return;
-	
-	success |= object2.onActionWithAncestor(action, object1)
-	success |= object1.onActionWithAncestor(action, object2)
-	if (success)
-		return;
-	
-	success |= object2.onActionWithOther(action)
-	success |= object1.onActionWithOther(action)
-	if (success)
-		return;
-	
-	if (!player.onFailedAction(action))
-		world.onFailedAction(action)
-
-
-+onActionWithAncestor(2, ACTION, OBJECT_TYPE)
 +afterSuccessfulCommand(0)
 +afterFailedCommand(0)
 +afterEveryCommand(0)
