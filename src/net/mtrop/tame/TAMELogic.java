@@ -1041,11 +1041,12 @@ public final class TAMELogic implements TAMEConstants
 		
 		boolean success = false;
 		
+		BlockEntry blockEntry1, blockEntry2;
 		Value actionValue = Value.createAction(action.getIdentity());
-		BlockEntry blockEntry1 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object1.getIdentity()));
-		BlockEntry blockEntry2 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object2.getIdentity()));
-		
+
 		// call action on each object. one or both need to succeed for no failure.
+		blockEntry1 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object1.getIdentity()));
+		blockEntry2 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object2.getIdentity()));
 		if ((blockToCall = object1.resolveBlock(blockEntry2)) != null)
 		{
 			response.trace(request, "Found action block in object %s lineage with %s.", object1, object2);
@@ -1058,24 +1059,28 @@ public final class TAMELogic implements TAMEConstants
 			callBlock(request, response, currentObject2Context, blockToCall);
 			success = true;
 		}
+		if (success)
+			return;
 		
-		BlockEntry actionOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
-
+		// call action with ancestor on each object. one or both need to succeed for no failure.
+		success |= doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
+		success |= doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
+		if (success)
+			return;
+		
 		// attempt action with other on both objects.
-		if (!success)
+		BlockEntry actionOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
+		if ((blockToCall = object1.resolveBlock(actionOtherEntry)) != null)
 		{
-			if ((blockToCall = object1.resolveBlock(actionOtherEntry)) != null)
-			{
-				response.trace(request, "Found action with other block in object %s lineage.", object1);
-				callBlock(request, response, currentObject1Context, blockToCall);
-				success = true;
-			}
-			if ((blockToCall = object2.resolveBlock(actionOtherEntry)) != null)
-			{
-				response.trace(request, "Found action with other block in object %s lineage.", object2);
-				callBlock(request, response, currentObject2Context, blockToCall);
-				success = true;
-			}
+			response.trace(request, "Found action with other block in object %s lineage.", object1);
+			callBlock(request, response, currentObject1Context, blockToCall);
+			success = true;
+		}
+		if ((blockToCall = object2.resolveBlock(actionOtherEntry)) != null)
+		{
+			response.trace(request, "Found action with other block in object %s lineage.", object2);
+			callBlock(request, response, currentObject2Context, blockToCall);
+			success = true;
 		}
 		
 		// if we STILL can't do it...
@@ -1086,6 +1091,39 @@ public final class TAMELogic implements TAMEConstants
 				response.addCue(CUE_ERROR, "ACTION FAILED (make a better in-universe handler!).");
 		}
 		
+	}
+	
+	/**
+	 * Attempts to perform a ditransitive action for the ancestor search.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param actionValue the action that is being called (value).
+	 * @param object the object to call the block on.
+	 * @param start the object to start the search from.
+	 * @return true if a block was found an called.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean doActionDitransitiveAncestorSearch(TAMERequest request, TAMEResponse response, Value actionValue, TObject object, TObject start) throws TAMEInterrupt
+	{
+		Block blockToCall;
+		BlockEntry blockEntry;
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TObject ancestor = (TObject)start.getParent();
+		TObjectContext objectContext = moduleContext.getObjectContext(object);
+
+		while (ancestor != null)
+		{
+			blockEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHANCESTOR, actionValue, Value.createObject(ancestor.getIdentity()));
+			if ((blockToCall = object.resolveBlock(blockEntry)) != null)
+			{
+				response.trace(request, "Found action with ancestor block in object %s lineage - ancestor is %s.", object, ancestor);
+				callBlock(request, response, objectContext, blockToCall);
+				return true;
+			}
+			ancestor = (TObject)ancestor.getParent();
+		}
+		
+		return false;
 	}
 	
 	/**

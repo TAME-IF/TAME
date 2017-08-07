@@ -1840,6 +1840,38 @@ TLogic.doActionTransitive = function(request, response, action, object)
 		response.addCue(TAMEConstants.Cue.ERROR, "ACTION FAILED (make a better in-universe handler!).");
 };
 
+
+/**
+ * Attempts to perform a ditransitive action for the ancestor search.
+ * @param request the request object.
+ * @param response the response object.
+ * @param actionValue the action that is being called (value).
+ * @param object the object to call the block on.
+ * @param start the object to start the search from.
+ * @return true if a block was found an called.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
+TLogic.doActionDitransitiveAncestorSearch = function(request, response, actionValue, object, start)
+{
+	var blockToCall = null;
+	var context = request.moduleContext;
+	var ancestor = start.parent != null ? context.getElement(start.parent) : null;
+	var objectContext = context.getElementContext(object.identity);
+
+	while (ancestor != null)
+	{
+		if ((blockToCall = context.resolveBlock(object.identity, "ONACTIONWITHANCESTOR", [actionValue, TValue.createObject(ancestor.identity)])) != null)
+		{
+			response.trace(request, "Found action with ancestor block in object "+TLogic.elementToString(object)+" lineage - ancestor is "+TLogic.elementToString(ancestor)+".");
+			TLogic.callBlock(request, response, objectContext, blockToCall);
+			return true;
+		}
+		ancestor = ancestor.parent != null ? context.getElement(ancestor.parent) : null;
+	}
+	
+	return false;
+};
+
 /**
  * Attempts to perform a ditransitive action.
  * @param request the request object.
@@ -1877,23 +1909,30 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 		TLogic.callBlock(request, response, currentObject2Context, blockToCall);
 		success = true;
 	}
+	if (success)
+		return;
+	
+	// call action with ancestor on each object. one or both need to succeed for no failure.
+	success |= TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
+	success |= TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
+	if (success)
+		return;
 	
 	// attempt action with other on both objects.
-	if (!success)
+	if ((blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
 	{
-		if ((blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
-		{
-			response.trace(request, "Found action with other block in object "+TLogic.elementToString(object1)+" lineage.");
-			TLogic.callBlock(request, response, currentObject1Context, blockToCall);
-			success = true;
-		}
-		if ((blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
-		{
-			response.trace(request, "Found action with other block in object "+TLogic.elementToString(object2)+" lineage.");
-			TLogic.callBlock(request, response, currentObject2Context, blockToCall);
-			success = true;
-		}
+		response.trace(request, "Found action with other block in object "+TLogic.elementToString(object1)+" lineage.");
+		TLogic.callBlock(request, response, currentObject1Context, blockToCall);
+		success = true;
 	}
+	if ((blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+	{
+		response.trace(request, "Found action with other block in object "+TLogic.elementToString(object2)+" lineage.");
+		TLogic.callBlock(request, response, currentObject2Context, blockToCall);
+		success = true;
+	}
+	if (success)
+		return;
 
 	// if we STILL can't do it...
 	if (!success)

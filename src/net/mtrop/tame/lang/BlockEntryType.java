@@ -21,6 +21,7 @@ public enum BlockEntryType
 	AFTERREQUEST(0),
 	ONACTION(1, ArgumentType.ACTION),
 	ONACTIONWITH(2, ArgumentType.ACTION, ArgumentType.OBJECT),
+	ONACTIONWITHANCESTOR(2, ArgumentType.ACTION, ArgumentType.OBJECT_ANY),
 	ONACTIONWITHOTHER(1, ArgumentType.ACTION),
 	ONMODALACTION(2, ArgumentType.ACTION, ArgumentType.VALUE),
 	ONWORLDBROWSE(0),

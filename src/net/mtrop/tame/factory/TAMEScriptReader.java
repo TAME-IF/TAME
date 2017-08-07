@@ -1286,6 +1286,18 @@ public final class TAMEScriptReader implements TAMEConstants
 						nextToken();
 						break;
 					}
+					case OBJECT_ANY:
+					{
+						if (!isObject(true))
+						{
+							addErrorMessage("Entry requires an OBJECT. \""+currentToken().getLexeme()+"\" is not a viable object type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
 					case PLAYER:
 					{
 						if (!isPlayer(false))
@@ -2515,9 +2527,10 @@ public final class TAMEScriptReader implements TAMEConstants
 		private boolean parseCommandArguments(TElement currentElement, Block block, TAMECommand commandType) 
 		{
 			ArgumentType[] argTypes = commandType.getArgumentTypes();
-			for (int i = 0; i < argTypes.length; i++) 
+			for (int n = 0; n < argTypes.length; n++) 
 			{
-				switch (argTypes[i])
+				int i = n + 1;
+				switch (argTypes[n])
 				{
 					default:
 					case VALUE:
@@ -2791,7 +2804,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					
 				} // switch
 				
-				if (i < argTypes.length - 1)
+				if (n < argTypes.length - 1)
 				{
 					if (!matchType(TSKernel.TYPE_COMMA))
 					{

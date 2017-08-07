@@ -72,6 +72,7 @@ public class TObject extends TElement
 			case INIT:
 			case ONACTION:
 			case ONACTIONWITH:
+			case ONACTIONWITHANCESTOR:
 			case ONACTIONWITHOTHER:
 			case ONPLAYERBROWSE:
 			case ONROOMBROWSE:
