@@ -16,12 +16,14 @@ package net.mtrop.tame.lang;
  */
 public enum BlockEntryType
 {
+	// Lifecycle.
 	INIT(0),
 	START(0),
 	AFTERSUCCESSFULCOMMAND(0),
 	AFTERFAILEDCOMMAND(0),
 	AFTEREVERYCOMMAND(0),
 	
+	// Good interpret.
 	ONACTION(1, ArgumentType.ACTION),
 	ONACTIONWITH(2, ArgumentType.ACTION, ArgumentType.OBJECT),
 	ONACTIONWITHANCESTOR(2, ArgumentType.ACTION, ArgumentType.OBJECT_ANY),
@@ -35,6 +37,7 @@ public enum BlockEntryType
 	ONROOMFORBIDDENACTION(0, ArgumentType.ACTION),
 	ONFAILEDACTION(0, ArgumentType.ACTION),
 
+	// Bad interpret.
 	ONUNKNOWNACTION(0, ArgumentType.ACTION),
 	ONAMBIGUOUSACTION(0, ArgumentType.ACTION),
 	ONINCOMPLETEACTION(0, ArgumentType.ACTION),
