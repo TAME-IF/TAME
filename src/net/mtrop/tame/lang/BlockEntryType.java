@@ -13,6 +13,7 @@ package net.mtrop.tame.lang;
  * The block entry type.
  * Also describes what the compiler should expect when parsing the block type.
  * @author Matthew Tropiano
+ * TODO: Rename some of these. They are unclear.
  */
 public enum BlockEntryType
 {
@@ -38,7 +39,7 @@ public enum BlockEntryType
 	ONFAILEDACTION(0, ArgumentType.ACTION),
 
 	// Bad interpret.
-	ONUNKNOWNACTION(0, ArgumentType.ACTION),
+	ONUNKNOWNACTION(0),
 	ONAMBIGUOUSACTION(0, ArgumentType.ACTION),
 	ONINCOMPLETEACTION(0, ArgumentType.ACTION),
 	ONBADACTION(0, ArgumentType.ACTION),
