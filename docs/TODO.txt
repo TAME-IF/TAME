@@ -1,8 +1,0 @@
-
-+afterSuccessfulCommand(0)
-+afterFailedCommand(0)
-+afterEveryCommand(0)
-
-+ WORLD->afterSuccessfulCommand()
-+ WORLD->afterFailedCommand()
-+ WORLD->afterEveryCommand()

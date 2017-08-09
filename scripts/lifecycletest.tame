@@ -1,0 +1,41 @@
+module
+{
+	title = "Lifecycle Test";
+}
+
+action general a_test named "test";
+action general a_quit named "quit";
+
+world
+{
+	start()
+	{
+		textln("Start");
+	}
+	
+	onAction(a_test)
+	{
+		textln("test");
+	}
+	
+	onUnknownAction()
+	{
+		textln("unknown!");
+	}
+	
+	afterSuccessfulCommand()
+	{
+		textln("success");
+	}
+
+	afterFailedCommand()
+	{
+		textln("failed");
+	}
+	
+	afterEveryCommand()
+	{
+		textln("every");
+	}
+	
+}

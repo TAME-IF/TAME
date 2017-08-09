@@ -193,6 +193,7 @@ TLogic.callConditional = function(commandName, request, response, blockLocal, co
  * @param request the request object.
  * @param response the response object.
  * @param interpreterContext the interpreter context (left after interpretation).
+ * @return true if interpret was good and an action was enqueued, false if error.
  * @throws TAMEInterrupt if an uncaught interrupt occurs.
  * @throws TAMEError if something goes wrong during execution.
  */
@@ -200,15 +201,22 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 {
 	var action = interpreterContext.action;
 	if (action == null)
-		TLogic.doUnknownAction(request, response);
+	{
+		response.trace(request, "Performing unknown action.");
+		if (!TLogic.callUnknownAction(request, response))
+			response.addCue(TAMEConstants.Cue.ERROR, "ACTION IS UNKNOWN! (make a better in-universe handler!).");
+		return false;
+	}
 	else
 	{
 		switch (action.type)
 		{
 			default:
 			case TAMEConstants.ActionType.GENERAL:
+			{
 				request.addActionItem(TAction.create(action));
-				break;
+				return true;
+			}
 
 			case TAMEConstants.ActionType.OPEN:
 			{
@@ -217,11 +225,14 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					response.trace(request, "Performing open action "+action.identity+" with no target (incomplete)!");
 					if (!TLogic.callActionIncomplete(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					return false;
 				}
 				else
+				{
 					request.addActionItem(TAction.createModal(action, interpreterContext.target));
+					return true;
+				}
 			}
-			break;
 
 			case TAMEConstants.ActionType.MODAL:
 			{
@@ -230,17 +241,21 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					response.trace(request, "Performing modal action "+action.identity+" with no mode (incomplete)!");
 					if (!TLogic.callActionIncomplete(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					return false;
 				}
 				else if (interpreterContext.mode == null)
 				{
 					response.trace(request, "Performing modal action "+action.identity+" with an unknown mode!");
 					if (!TLogic.callBadAction(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+					return false;
 				}
 				else
+				{
 					request.addActionItem(TAction.createModal(action, interpreterContext.mode));
+					return true;
+				}
 			}
-			break;
 
 			case TAMEConstants.ActionType.TRANSITIVE:
 			{
@@ -249,23 +264,28 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					response.trace(request, "Object is ambiguous for action "+action.identity+".");
 					if (!TLogic.callAmbiguousAction(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
+					return false;
 				}
 				else if (!interpreterContext.object1LookedUp)
 				{
 					response.trace(request, "Performing transitive action "+action.identity+" with no object (incomplete)!");
 					if (!TLogic.callActionIncomplete(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					return false;
 				}
 				else if (interpreterContext.object1 == null)
 				{
 					response.trace(request, "Performing transitive action "+action.identity+" with an unknown object!");
 					if (!TLogic.callBadAction(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+					return false;
 				}
 				else
+				{
 					request.addActionItem(TAction.createObject(action, interpreterContext.object1));
+					return true;
+				}
 			}
-			break;
 	
 			case TAMEConstants.ActionType.DITRANSITIVE:
 			{
@@ -274,46 +294,55 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					response.trace(request, "Object is ambiguous for action "+action.identity+".");
 					if (!TLogic.callAmbiguousAction(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "ONE OR MORE OBJECTS ARE AMBIGUOUS (make a better in-universe handler!).");
+					return false;
 				}
 				else if (!interpreterContext.object1LookedUp)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" with no first object (incomplete)!");
 					if (!TLogic.callActionIncomplete(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					return false;
 				}
 				else if (interpreterContext.object1 == null)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown first object!");
 					if (!TLogic.callBadAction(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+					return false;
 				}
 				else if (!interpreterContext.conjugateLookedUp)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" as a transitive one...");
 					request.addActionItem(TAction.createObject(action, interpreterContext.object1));
+					return true;
 				}
 				else if (!interpreterContext.conjugateFound)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown conjugate!");
 					if (!TLogic.callBadAction(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+					return false;
 				}
 				else if (!interpreterContext.object2LookedUp)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" with no second object (incomplete)!");
 					if (!TLogic.callActionIncomplete(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+					return false;
 				}
 				else if (interpreterContext.object2 == null)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown second object!");
 					if (!TLogic.callBadAction(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "BAD ACTION (make a better in-universe handler!).");
+					return false;
 				}
 				else
+				{
 					request.addActionItem(TAction.createObject2(action, interpreterContext.object1, interpreterContext.object2));
+					return true;
+				}
 			}
-			break;
 		}
 	}
 };
@@ -364,36 +393,50 @@ TLogic.processAction = function(request, response, tameAction)
 	
 };
 
+/**
+ * Does an action loop: this keeps processing queued actions until there is nothing left to process.
+ * @param request the request object.
+ * @param response the response object.
+ * @throws TAMEInterrupt if an uncaught interrupt occurs.
+ * @throws TAMEError if something goes wrong during execution.
+ */
+TLogic.doAllActionItems = function(request, response) 
+{
+	while (request.hasActionItems())
+		TLogic.processAction(request, response, request.nextActionItem());
+};
 
 /**
  * Does an action loop: this keeps processing queued actions 
  * until there is nothing left to process.
- * @param request the request context.
+ * @param request the request object.
  * @param response the response object.
- * @param skipAfterRequest if true, skips the afterRequest block.
+ * @param afterSuccessfulCommand if true, executes the "after successful command" block.
+ * @param afterFailedCommand if true, executes the "after failed command" block.
+ * @param afterEveryCommand if true, executes the "after every command" block.
  * @throws TAMEInterrupt if an uncaught interrupt occurs.
  * @throws TAMEError if something goes wrong during execution.
  */
-TLogic.processActionLoop = function(request, response, skipAfterRequest) 
+TLogic.processActionLoop = function(request, response, afterSuccessfulCommand, afterFailedCommand, afterEveryCommand) 
 {
-	while (request.hasActionItems())
+	TLogic.doAllActionItems(request, response);
+	if (afterSuccessfulCommand)
 	{
-		var tameAction = request.nextActionItem();
-		TLogic.processAction(request, response, tameAction);
+		TLogic.doAfterSuccessfulCommand(request, response);
+		TLogic.doAllActionItems(request, response);
 	}
-	
-	if (skipAfterRequest)
-		return;
-	TLogic.doAfterRequest(request, response);
-	
-	while (request.hasActionItems())
+	if (afterFailedCommand)
 	{
-		var tameAction = request.nextActionItem();
-		TLogic.processAction(request, response, tameAction);
+		TLogic.doAfterFailedCommand(request, response);
+		TLogic.doAllActionItems(request, response);
 	}
+	if (afterEveryCommand)
+	{
+		TLogic.doAfterEveryCommand(request, response);
+		TLogic.doAllActionItems(request, response);
+	}		
 	
 };
-
 
 /**
  * Handles initializing a context. Must be called after a new context and game is started.
@@ -412,7 +455,7 @@ TLogic.handleInit = function(context, tracing)
 	try 
 	{
 		TLogic.initializeContext(request, response);
-		TLogic.processActionLoop(request, response, true);
+		TLogic.processActionLoop(request, response, false, false, false);
 	} 
 	catch (err) 
 	{
@@ -451,8 +494,8 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 	
 	try 
 	{
-		TLogic.enqueueInterpretedAction(request, response, interpreterContext);
-		TLogic.processActionLoop(request, response);
+		var good = TLogic.enqueueInterpretedAction(request, response, interpreterContext);
+		TLogic.processActionLoop(request, response, good, !good, true);
 	} 
 	catch (err) 
 	{
@@ -995,6 +1038,81 @@ TLogic.doBrowse = function(request, response, elementIdentity, tag)
 			TLogic.callBlock(request, response, objectContext, block);
 		}
 	});
+};
+
+/**
+ * Attempts to call the after successful command block on the world.
+ * @param request the request object.
+ * @param response the response object.
+ * @throws TAMEInterrupt if an uncaught interrupt occurs.
+ * @throws TAMEError if something goes wrong during execution.
+ */
+TLogic.doAfterSuccessfulCommand = function(request, response)
+{
+	response.trace(request, "Finding \"after successful command\" request block...");
+
+	var context = request.moduleContext;
+	var worldContext = context.getElementContext('world');
+	var blockToCall = null;
+
+	// get block on world.
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTERSUCCESSFULCOMMAND")) != null)
+	{
+		response.trace(request, "Found \"after successful command\" block on world.");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+	}
+	else
+		response.trace(request, "No \"after successful command\" block to call.");
+};
+
+/**
+ * Attempts to call the after failed command block on the world.
+ * @param request the request object.
+ * @param response the response object.
+ * @throws TAMEInterrupt if an uncaught interrupt occurs.
+ * @throws TAMEError if something goes wrong during execution.
+ */
+TLogic.doAfterFailedCommand = function(request, response)
+{
+	response.trace(request, "Finding \"after failed command\" request block...");
+
+	var context = request.moduleContext;
+	var worldContext = context.getElementContext('world');
+	var blockToCall = null;
+
+	// get block on world.
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTERFAILEDCOMMAND")) != null)
+	{
+		response.trace(request, "Found \"after failed command\" block on world.");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+	}
+	else
+		response.trace(request, "No \"after failed command\" block to call.");
+};
+
+/**
+ * Attempts to call the after every command block on the world.
+ * @param request the request object.
+ * @param response the response object.
+ * @throws TAMEInterrupt if an uncaught interrupt occurs.
+ * @throws TAMEError if something goes wrong during execution.
+ */
+TLogic.doAfterEveryCommand = function(request, response)
+{
+	response.trace(request, "Finding \"after every command\" request block...");
+
+	var context = request.moduleContext;
+	var worldContext = context.getElementContext('world');
+	var blockToCall = null;
+
+	// get block on world.
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTEREVERYCOMMAND")) != null)
+	{
+		response.trace(request, "Found \"after every command\" block on world.");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+	}
+	else
+		response.trace(request, "No \"after every command\" block to call.");
 };
 
 /**
@@ -1595,12 +1713,12 @@ TLogic.doAfterRequest = function(request, response)
 };
 
 /**
- * Attempts to call the bad action blocks.
+ * Attempts to call the unknown action blocks.
  * @param request the request object.
  * @param response the response object.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.doUnknownAction = function(request, response)
+TLogic.callUnknownAction = function(request, response)
 {
 	response.trace(request, "Finding unknown action blocks...");
 	var context = request.moduleContext;
@@ -1619,7 +1737,7 @@ TLogic.doUnknownAction = function(request, response)
 		{
 			response.trace(request, "Found unknown action block on player.");
 			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
-			return;
+			return true;
 		}
 	}
 	
@@ -1630,11 +1748,10 @@ TLogic.doUnknownAction = function(request, response)
 	{
 		response.trace(request, "Found unknown action block on player.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
-		return;
+		return true;
 	}
 
-	response.trace(request, "No unknown action block to call. Sending error.");
-	response.addCue(TAMEConstants.Cue.ERROR, "ACTION IS UNKNOWN! (make a better in-universe handler!).");
+	return false;
 };
 
 /**
@@ -1735,12 +1852,8 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 		return;
 	}
 
-	// try fail on player.
-	if (currentPlayerContext != null && TLogic.callPlayerActionFailBlock(request, response, action, currentPlayerContext))
-		return;
-
-	// try fail on world.
-	TLogic.callWorldActionFailBlock(request, response, action, worldContext);
+	if (!TLogic.callActionFailed(request, response, action))
+		response.addCue(TAMEConstants.Cue.ERROR, "ACTION FAILED (make a better in-universe handler!).");
 };
 
 /**

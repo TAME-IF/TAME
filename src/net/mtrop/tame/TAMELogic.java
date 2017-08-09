@@ -96,7 +96,7 @@ public final class TAMELogic implements TAMEConstants
 
 		try {
 			initializeContext(request, response);
-			processActionLoop(request, response, true);
+			processActionLoop(request, response, false, false, false);
 		} catch (QuitInterrupt interrupt) {
 			/* Do nothing. */
 		} catch (TAMEFatalException exception) {
@@ -132,8 +132,8 @@ public final class TAMELogic implements TAMEConstants
 		nanos = System.nanoTime();
 		
 		try {
-			enqueueInterpretedAction(request, response, interpreterContext);
-			processActionLoop(request, response, false);
+			boolean good = enqueueInterpretedAction(request, response, interpreterContext);
+			processActionLoop(request, response, good, !good, true);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
 		} catch (QuitInterrupt end) {
@@ -147,7 +147,8 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
-	 * Handles a full request.
+	 * Handles a single action.
+	 * Counts as a "successful command."
 	 * @param moduleContext the module context.
 	 * @param action the action to enqueue.
 	 * @param tracing if true, this does tracing.
@@ -161,7 +162,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		try {
 			request.addActionItem(action);
-			processActionLoop(request, response, false);
+			processActionLoop(request, response, true, false, true);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
 		} catch (QuitInterrupt end) {
@@ -260,22 +261,30 @@ public final class TAMELogic implements TAMEConstants
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param interpreterContext the interpreter context (left after interpretation).
+	 * @return true if interpret was good and an action was enqueued, false if error.
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
 	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	public static void enqueueInterpretedAction(TAMERequest request, TAMEResponse response, TAMEInterpreterContext interpreterContext) throws TAMEInterrupt 
+	public static boolean enqueueInterpretedAction(TAMERequest request, TAMEResponse response, TAMEInterpreterContext interpreterContext) throws TAMEInterrupt 
 	{
 		TAction action = interpreterContext.getAction();
 		if (action == null)
-			doUnknownAction(request, response);
+		{
+			response.trace(request, "Performing unknown action.");
+			if (!callUnknownAction(request, response))
+				response.addCue(CUE_ERROR, "ACTION IS UNKNOWN! (make a better in-universe handler!).");
+			return false;
+		}
 		else
 		{
 			switch (action.getType())
 			{
 				default:
 				case GENERAL:
+				{
 					request.addActionItem(TAMEAction.create(action));
-					break;
+					return true;
+				}
 	
 				case OPEN:
 				{
@@ -284,11 +293,14 @@ public final class TAMELogic implements TAMEConstants
 						response.trace(request, "Performing open action %s with no target (incomplete)!", action);
 						if (!callActionIncomplete(request, response, action))
 							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+						return false;
 					}
 					else
+					{
 						request.addActionItem(TAMEAction.create(action, interpreterContext.getTarget()));
+						return true;
+					}
 				}
-				break;
 	
 				case MODAL:
 				{
@@ -297,17 +309,21 @@ public final class TAMELogic implements TAMEConstants
 						response.trace(request, "Performing modal action %s with no mode (incomplete)!", action);
 						if (!callActionIncomplete(request, response, action))
 							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+						return false;
 					}
 					else if (interpreterContext.getMode() == null)
 					{
 						response.trace(request, "Performing modal action %s with an unknown mode!", action);
 						if (!callBadAction(request, response, action))
 							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+						return false;
 					}
 					else
+					{
 						request.addActionItem(TAMEAction.create(action, interpreterContext.getMode()));
+						return true;
+					}
 				}
-				break;
 	
 				case TRANSITIVE:
 				{
@@ -316,23 +332,28 @@ public final class TAMELogic implements TAMEConstants
 						response.trace(request, "Object is ambiguous for action %s.", action);
 						if (!callAmbiguousAction(request, response, action))
 							response.addCue(CUE_ERROR, "OBJECT IS AMBIGUOUS (make a better in-universe handler!).");
+						return false;
 					}
 					else if (!interpreterContext.isObject1LookedUp())
 					{
 						response.trace(request, "Performing transitive action %s with no object (incomplete)!", action);
 						if (!callActionIncomplete(request, response, action))
 							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+						return false;
 					}
 					else if (interpreterContext.getObject1() == null)
 					{
 						response.trace(request, "Performing transitive action %s with an unknown object!", action);
 						if (!callBadAction(request, response, action))
 							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+						return false;
 					}
 					else
+					{
 						request.addActionItem(TAMEAction.create(action, interpreterContext.getObject1()));
+						return true;
+					}
 				}
-				break;
 	
 				case DITRANSITIVE:
 				{
@@ -341,46 +362,55 @@ public final class TAMELogic implements TAMEConstants
 						response.trace(request, "Object is ambiguous for action %s.", action);
 						if (!callAmbiguousAction(request, response, action))
 							response.addCue(CUE_ERROR, "ONE OR MORE OBJECTS ARE AMBIGUOUS (make a better in-universe handler!).");
+						return false;
 					}
 					else if (!interpreterContext.isObject1LookedUp())
 					{
 						response.trace(request, "Performing ditransitive action %s with no first object (incomplete)!", action);
 						if (!callActionIncomplete(request, response, action))
 							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+						return false;
 					}
 					else if (interpreterContext.getObject1() == null)
 					{
 						response.trace(request, "Performing ditransitive action %s with an unknown first object!", action);
 						if (!callBadAction(request, response, action))
 							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+						return false;
 					}
 					else if (!interpreterContext.isConjugateLookedUp())
 					{
 						response.trace(request, "Performing ditransitive action %s as a transitive one...", action);
 						request.addActionItem(TAMEAction.create(action, interpreterContext.getObject1()));
+						return true;
 					}
 					else if (!interpreterContext.isConjugateFound())
 					{
 						response.trace(request, "Performing ditransitive action %s with an unknown conjugate!", action);
 						if (!callBadAction(request, response, action))
 							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+						return false;
 					}
 					else if (!interpreterContext.isObject2LookedUp())
 					{
 						response.trace(request, "Performing ditransitive action %s with no second object (incomplete)!", action);
 						if (!callActionIncomplete(request, response, action))
 							response.addCue(CUE_ERROR, "ACTION INCOMPLETE (make a better in-universe handler!).");
+						return false;
 					}
 					else if (interpreterContext.getObject2() == null)
 					{
 						response.trace(request, "Performing ditransitive action %s with an unknown second object!", action);
 						if (!callBadAction(request, response, action))
 							response.addCue(CUE_ERROR, "BAD ACTION (make a better in-universe handler!).");
+						return false;
 					}
 					else
+					{
 						request.addActionItem(TAMEAction.create(action, interpreterContext.getObject1(), interpreterContext.getObject2()));
+						return true;
+					}
 				}
-				break;
 			}
 		}
 	}
@@ -688,105 +718,123 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
-	 * Does an action loop: this keeps processing queued actions 
-	 * until there is nothing left to process.
+	 * Does an action loop: this keeps processing queued actions until there is nothing left to process.
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param skipAfterRequest if true, skips the afterRequest block.
+	 * @param afterSuccessfulCommand if true, executes the "after successful command" block.
+	 * @param afterFailedCommand if true, executes the "after failed command" block.
+	 * @param afterEveryCommand if true, executes the "after every command" block.
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
 	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	private static void processActionLoop(TAMERequest request, TAMEResponse response, boolean skipAfterRequest) throws TAMEInterrupt 
+	private static void processActionLoop(TAMERequest request, TAMEResponse response, boolean afterSuccessfulCommand, boolean afterFailedCommand, boolean afterEveryCommand) throws TAMEInterrupt 
 	{
-		while (request.hasActionItems())
+		doAllActionItems(request, response);
+		if (afterSuccessfulCommand)
 		{
-			TAMEAction tameAction = request.nextActionItem();
-			processAction(request, response, tameAction);
+			doAfterSuccessfulCommand(request, response);
+			doAllActionItems(request, response);
 		}
-		
-		if (skipAfterRequest)
-			return;
-		doAfterRequest(request, response);
-		
-		while (request.hasActionItems())
+		if (afterFailedCommand)
 		{
-			TAMEAction tameAction = request.nextActionItem();
-			processAction(request, response, tameAction);
+			doAfterFailedCommand(request, response);
+			doAllActionItems(request, response);
 		}
-		
+		if (afterEveryCommand)
+		{
+			doAfterEveryCommand(request, response);
+			doAllActionItems(request, response);
+		}		
 	}
 
 	/**
-	 * Attempts to call the after request block on the world.
+	 * Does an action loop: this keeps processing queued actions until there is nothing left to process.
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @throws TAMEInterrupt if an interrupt occurs.
+	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
+	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	private static void doAfterRequest(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	private static void doAllActionItems(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		response.trace(request, "Finding after request block...");
-
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		Block blockToCall = null;
-		
-		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTERREQUEST))) != null)
-		{
-			response.trace(request, "Found after request block on world.");
-			callBlock(request, response, worldContext, blockToCall);
-		}
-		else
-			response.trace(request, "No after request block to call.");
+		while (request.hasActionItems())
+			processAction(request, response, request.nextActionItem());
 	}
 	
 	/**
-	 * Attempts to call the bad action blocks.
+	 * Attempts to call the after successful command block on the world.
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @throws TAMEInterrupt if an interrupt occurs.
+	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	private static void doUnknownAction(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	private static void doAfterSuccessfulCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		response.trace(request, "Finding unknown action blocks...");
+		response.trace(request, "Finding \"after successful command\" request block...");
 
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		TWorldContext worldContext = moduleContext.getWorldContext();
 		Block blockToCall = null;
 		
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONUNKNOWNACTION);
-		
-		if (currentPlayerContext != null)
+		// get block on world.
+		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTERSUCCESSFULCOMMAND))) != null)
 		{
-			TPlayer currentPlayer = currentPlayerContext.getElement();
-			response.trace(request, "For current player %s...", currentPlayer);
-
-			// get block on player.
-			// find via inheritance.
-			blockToCall = currentPlayer.resolveBlock(blockEntry);
-			if (blockToCall != null)
-			{
-				response.trace(request, "Found unknown action block on player.");
-				callBlock(request, response, currentPlayerContext, blockToCall);
-				return;
-			}
-
+			response.trace(request, "Found \"after successful command\" block on world.");
+			callBlock(request, response, worldContext, blockToCall);
 		}
+		else
+			response.trace(request, "No \"after successful command\" block to call.");
+	}
+	
+	/**
+	 * Attempts to call the after failed command block on the world.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 * @throws TAMEFatalException if something goes wrong during execution.
+	 */
+	private static void doAfterFailedCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	{
+		response.trace(request, "Finding \"after failed command\" request block...");
 
+		TAMEModuleContext moduleContext = request.getModuleContext();
 		TWorldContext worldContext = moduleContext.getWorldContext();
+		Block blockToCall = null;
 		
 		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(blockEntry)) != null)
+		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTERFAILEDCOMMAND))) != null)
 		{
-			response.trace(request, "Found unknown action block on world.");
+			response.trace(request, "Found \"after failed command\" block on world.");
 			callBlock(request, response, worldContext, blockToCall);
-			return;
 		}
-
-		response.trace(request, "No unknown action block to call. Sending error.");
-		response.addCue(CUE_ERROR, "ACTION IS UNKNOWN! (make a better in-universe handler!).");
+		else
+			response.trace(request, "No \"after failed command\" block to call.");
 	}
+	
+	/**
+	 * Attempts to call the after every command block on the world.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 * @throws TAMEFatalException if something goes wrong during execution.
+	 */
+	private static void doAfterEveryCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	{
+		response.trace(request, "Finding \"after every command\" request block...");
 
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		Block blockToCall = null;
+		
+		// get block on world.
+		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTEREVERYCOMMAND))) != null)
+		{
+			response.trace(request, "Found \"after every command\" block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+		}
+		else
+			response.trace(request, "No \"after every command\" block to call.");
+	}
+	
 	/**
 	 * Attempts to perform a general action.
 	 * @param request the request object.
@@ -907,13 +955,9 @@ public final class TAMELogic implements TAMEConstants
 				callBlock(request, response, worldContext, blockToCall);
 			return;
 		}
-
-		// try fail on player.
-		if (currentPlayerContext != null && callPlayerActionFailBlock(request, response, action, currentPlayerContext))
-			return;
-
-		// try fail on world.
-		callWorldActionFailBlock(request, response, action, worldContext);
+		
+		if (!callActionFailed(request, response, action))
+			response.addCue(CUE_ERROR, "ACTION FAILED (make a better in-universe handler!).");
 	}
 
 	/**
@@ -1181,6 +1225,52 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
+	 * Attempts to call the unknown action blocks.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	private static boolean callUnknownAction(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	{
+		response.trace(request, "Finding unknown action blocks...");
+	
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		Block blockToCall = null;
+		
+		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONUNKNOWNACTION);
+		
+		if (currentPlayerContext != null)
+		{
+			TPlayer currentPlayer = currentPlayerContext.getElement();
+			response.trace(request, "For current player %s...", currentPlayer);
+	
+			// get block on player.
+			// find via inheritance.
+			blockToCall = currentPlayer.resolveBlock(blockEntry);
+			if (blockToCall != null)
+			{
+				response.trace(request, "Found unknown action block on player.");
+				callBlock(request, response, currentPlayerContext, blockToCall);
+				return true;
+			}
+	
+		}
+	
+		TWorldContext worldContext = moduleContext.getWorldContext();
+		
+		// get block on world.
+		if ((blockToCall = worldContext.getElement().resolveBlock(blockEntry)) != null)
+		{
+			response.trace(request, "Found unknown action block on world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return true;
+		}
+	
+		return false;
+	}
+
+	/**
 	 * Attempts to call the ambiguous action blocks.
 	 * @param request the request object.
 	 * @param response the response object.
@@ -1282,11 +1372,9 @@ public final class TAMELogic implements TAMEConstants
 	private static boolean callWorldAmbiguousActionBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext worldContext) throws TAMEInterrupt
 	{
 		Block blockToCall = null;
-		BlockEntry actionEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION, Value.createAction(action.getIdentity()));
-		BlockEntry generalEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION);
 		
 		// get specific block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(actionEntry)) != null)
+		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION, Value.createAction(action.getIdentity())))) != null)
 		{
 			response.trace(request, "Found specific ambiguous action block on world for action %s.", action.getIdentity());
 			callBlock(request, response, worldContext, blockToCall);
@@ -1294,7 +1382,7 @@ public final class TAMELogic implements TAMEConstants
 		}
 	
 		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(generalEntry)) != null)
+		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION))) != null)
 		{
 			response.trace(request, "Found default ambiguous action block on world.");
 			callBlock(request, response, worldContext, blockToCall);
@@ -1318,11 +1406,9 @@ public final class TAMELogic implements TAMEConstants
 		TPlayer currentPlayer = playerContext.getElement();
 	
 		Block blockToCall = null;
-		BlockEntry actionEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION, Value.createAction(action.getIdentity()));
-		BlockEntry generalEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION);
 		
 		// get specific block on player.
-		if ((blockToCall = currentPlayer.resolveBlock(actionEntry)) != null)
+		if ((blockToCall = currentPlayer.resolveBlock(BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION, Value.createAction(action.getIdentity())))) != null)
 		{
 			response.trace(request, "Found specific ambiguous action block in player %s lineage for action %s.", currentPlayer.getIdentity(), action.getIdentity());
 			callBlock(request, response, playerContext, blockToCall);
@@ -1330,7 +1416,7 @@ public final class TAMELogic implements TAMEConstants
 		}
 	
 		// get block on player.
-		if ((blockToCall = currentPlayer.resolveBlock(generalEntry)) != null)
+		if ((blockToCall = currentPlayer.resolveBlock(BlockEntry.create(BlockEntryType.ONAMBIGUOUSACTION))) != null)
 		{
 			response.trace(request, "Found default ambiguous action block in player %s lineage.", currentPlayer.getIdentity());
 			callBlock(request, response, playerContext, blockToCall);

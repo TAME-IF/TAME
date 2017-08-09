@@ -60,7 +60,9 @@ public class TWorld extends TElement implements ObjectContainer
 			case ONINCOMPLETEACTION:
 			case ONAMBIGUOUSACTION:
 			case ONUNKNOWNACTION:
-			case AFTERREQUEST:
+			case AFTERSUCCESSFULCOMMAND:
+			case AFTERFAILEDCOMMAND:
+			case AFTEREVERYCOMMAND:
 			case START:
 				return true;
 			default:
