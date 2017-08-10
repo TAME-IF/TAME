@@ -71,7 +71,7 @@ public class TRoom extends TElement implements ForbiddenHandler, ObjectContainer
 			case INIT:
 			case ONACTION:
 			case ONMODALACTION:
-			case ONFAILEDACTION:
+			case ONUNHANDLEDACTION:
 				return true;
 			default:
 				return false;

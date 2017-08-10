@@ -68,14 +68,14 @@ public class TPlayer extends TElement implements ForbiddenHandler, ObjectContain
 		{
 			case INIT:
 			case ONACTION:
-			case ONBADACTION:
+			case ONMALFORMEDCOMMAND:
 			case ONMODALACTION:
-			case ONFAILEDACTION:
+			case ONUNHANDLEDACTION:
 			case ONFORBIDDENACTION:
 			case ONROOMFORBIDDENACTION:
-			case ONINCOMPLETEACTION:
-			case ONAMBIGUOUSACTION:
-			case ONUNKNOWNACTION:
+			case ONINCOMPLETECOMMAND:
+			case ONAMBIGUOUSCOMMAND:
+			case ONUNKNOWNCOMMAND:
 				return true;
 			default:
 				return false;
