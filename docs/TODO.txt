@@ -1,0 +1,17 @@
+onFailedAction -> onUnhandledAction
+
+onUnknownAction -> onUnknownCommand (bad action)
+onAmbiguousAction -> onAmbiguousCommand (good action, object name refers to more than one)
+onIncompleteAction -> onIncompleteCommand (good action, missing mode / object)
+onBadAction -> onMalformedCommand (good action, bad mode, bad object(s) / conjugate)
+
+
+ditransitive change:
+	- add optional switch to force ordering
+		> useful for "ask X about Y"
+			X.onActionWith(A, Y) // called only
+	- action ditransitive a_ask 
+		named "ask", "interrogate" 
+		uses conjuntions "about"
+		uses ordering
+		;
