@@ -282,8 +282,18 @@ public final class TAMELogic implements TAMEConstants
 				default:
 				case GENERAL:
 				{
-					request.addActionItem(TAMEAction.create(action));
-					return true;
+					if (action.isStrict() && interpreterContext.tokenOffset < interpreterContext.tokens.length)
+					{
+						response.trace(request, "Performing general action %s, but has extra tokens!", action);
+						if (!callMalformedCommandBlock(request, response, action))
+							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
+						return false;
+					}
+					else
+					{
+						request.addActionItem(TAMEAction.create(action));
+						return true;
+					}
 				}
 	
 				case OPEN:
@@ -318,7 +328,14 @@ public final class TAMELogic implements TAMEConstants
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
 					}
-					else
+					else if (action.isStrict() && interpreterContext.tokenOffset < interpreterContext.tokens.length)
+					{
+						response.trace(request, "Performing modal action %s, but has extra tokens!", action);
+						if (!callMalformedCommandBlock(request, response, action))
+							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
+						return false;
+					}
+					else 
 					{
 						request.addActionItem(TAMEAction.create(action, interpreterContext.getMode()));
 						return true;
@@ -348,7 +365,14 @@ public final class TAMELogic implements TAMEConstants
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
 					}
-					else
+					else if (action.isStrict() && interpreterContext.tokenOffset < interpreterContext.tokens.length)
+					{
+						response.trace(request, "Performing transitive action %s, but has extra tokens!", action);
+						if (!callMalformedCommandBlock(request, response, action))
+							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
+						return false;
+					}
+					else 
 					{
 						request.addActionItem(TAMEAction.create(action, interpreterContext.getObject1()));
 						return true;
@@ -405,7 +429,14 @@ public final class TAMELogic implements TAMEConstants
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
 					}
-					else
+					else if (action.isStrict() && interpreterContext.tokenOffset < interpreterContext.tokens.length)
+					{
+						response.trace(request, "Performing ditransitive action %s, but has extra tokens!", action);
+						if (!callMalformedCommandBlock(request, response, action))
+							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
+						return false;
+					}
+					else 
 					{
 						request.addActionItem(TAMEAction.create(action, interpreterContext.getObject1(), interpreterContext.getObject2()));
 						return true;
@@ -1097,7 +1128,7 @@ public final class TAMELogic implements TAMEConstants
 			callBlock(request, response, currentObject1Context, blockToCall);
 			success = true;
 		}
-		if ((blockToCall = object2.resolveBlock(blockEntry1)) != null)
+		if (!action.isStrict() && (blockToCall = object2.resolveBlock(blockEntry1)) != null)
 		{
 			response.trace(request, "Found action block in object %s lineage with %s.", object2, object1);
 			callBlock(request, response, currentObject2Context, blockToCall);
@@ -1108,7 +1139,8 @@ public final class TAMELogic implements TAMEConstants
 		
 		// call action with ancestor on each object. one or both need to succeed for no failure.
 		success |= doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
-		success |= doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
+		if (!action.isStrict())
+			success |= doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
 		if (success)
 			return;
 		
@@ -1120,7 +1152,7 @@ public final class TAMELogic implements TAMEConstants
 			callBlock(request, response, currentObject1Context, blockToCall);
 			success = true;
 		}
-		if ((blockToCall = object2.resolveBlock(actionOtherEntry)) != null)
+		if (!action.isStrict() && (blockToCall = object2.resolveBlock(actionOtherEntry)) != null)
 		{
 			response.trace(request, "Found action with other block in object %s lineage.", object2);
 			callBlock(request, response, currentObject2Context, blockToCall);

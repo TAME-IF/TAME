@@ -544,6 +544,8 @@ public final class TAMEJSExporter
 			out.addMember("type", action.getType().ordinal());
 			if (action.isRestricted())
 				out.addMember("restricted", true);
+			if (action.isStrict())
+				out.addMember("strict", true);
 			if ((arr = JSONObject.create(action.getNames())).length() > 0)
 				out.addMember("names", arr);
 			if ((arr = JSONObject.create(action.getExtraStrings())).length() > 0)

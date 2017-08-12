@@ -1,0 +1,70 @@
+module
+{
+	title = "Strict Action Test";
+}
+
+action strict modal a_look named "look" uses modes "up", "down";
+action strict transitive a_examine named "examine", "x", "look at";
+action strict ditransitive a_use named "use" uses conjunctions "with", "and";
+action strict general a_quit named "quit";  
+
+object archetype o_key
+{
+	onAction(a_examine)
+	{
+		textln("Oh wow it's a "+identity(this));
+	}
+}
+object o_wooden_key : o_key named "wooden key", "key";
+object o_steel_key : o_key named "key", "steel key";
+
+object o_door named "door", "wooden door"
+{
+	onAction(a_examine)
+	{
+		textln("Yeah that's a door.");
+	}
+
+	onActionWith(a_use, o_wooden_key)
+	{
+		textln("Yay this worked.");
+	}
+
+	onActionWithAncestor(a_use, o_key)
+	{
+		textln("Not this key.");
+	}
+	
+	onActionWithOther(a_use)
+	{
+		textln("Not this thing.");
+	}
+	
+}
+
+
+world
+{
+	start()
+	{
+		giveObject(world, o_wooden_key);
+		giveObject(world, o_steel_key);
+		giveObject(world, o_door);
+	}
+	
+	onModalAction(a_look, "up")
+	{
+		textln("WOW! the ceiling!!");
+	}
+
+	onModalAction(a_look, "down")
+	{
+		textln("WOW! the floor!!");
+	}
+	
+	onAction(a_quit)
+	{
+		quit;
+	}
+	
+}

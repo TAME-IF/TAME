@@ -144,6 +144,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_THIS = 			95;
 		static final int TYPE_EXTEND = 			96;
 		static final int TYPE_OVERRIDE = 		97;
+		static final int TYPE_STRICT = 			98;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -230,6 +231,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("this", TYPE_THIS);
 			addCaseInsensitiveKeyword("extend", TYPE_EXTEND);
 			addCaseInsensitiveKeyword("override", TYPE_OVERRIDE);
+			addCaseInsensitiveKeyword("strict", TYPE_STRICT);
 
 			for (BlockEntryType entryType : BlockEntryType.VALUES)
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
@@ -1422,8 +1424,16 @@ public final class TAMEScriptReader implements TAMEConstants
 		private boolean parseAction()
 		{
 			boolean restricted = false;
+			boolean strict = false;
 			if (matchType(TSKernel.TYPE_RESTRICTED))
 				restricted = true;
+			if (matchType(TSKernel.TYPE_STRICT))
+			{
+				strict = true;
+				// check for restricted if not seen - order is not enforced. 
+				if (!restricted && matchType(TSKernel.TYPE_RESTRICTED))
+					restricted = true;
+			}
 			
 			if (currentType(TSKernel.TYPE_GENERAL))
 			{
@@ -1442,6 +1452,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				TAction action = new TAction(identity);
 				action.setType(actionType);
 				action.setRestricted(restricted);
+				action.setStrict(strict);
 				nextToken();
 				
 				if (!parseActionNames(action))
@@ -1467,6 +1478,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				TAction action = new TAction(identity);
 				action.setType(actionType);
 				action.setRestricted(restricted);
+				action.setStrict(strict);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1514,6 +1526,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				TAction action = new TAction(identity);
 				action.setType(actionType);
 				action.setRestricted(restricted);
+				action.setStrict(strict);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1554,6 +1567,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				TAction action = new TAction(identity);
 				action.setType(actionType);
 				action.setRestricted(restricted);
+				action.setStrict(strict);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1579,6 +1593,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				TAction action = new TAction(identity);
 				action.setType(actionType);
 				action.setRestricted(restricted);
+				action.setStrict(strict);
 				nextToken();
 
 				if (!parseActionNames(action))

@@ -214,8 +214,18 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 			default:
 			case TAMEConstants.ActionType.GENERAL:
 			{
-				request.addActionItem(TAction.create(action));
-				return true;
+				if (action.strict && interpreterContext.tokenOffset < interpreterContext.tokens.length)
+				{
+					response.trace(request, "Performing general action "+action.identity+", but has extra tokens!");
+					if (!TLogic.callMalformedCommand(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
+					return false;
+				}
+				else
+				{
+					request.addActionItem(TAction.create(action));
+					return true;
+				}
 			}
 
 			case TAMEConstants.ActionType.OPEN:
@@ -250,6 +260,13 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
 				}
+				else if (action.strict && interpreterContext.tokenOffset < interpreterContext.tokens.length)
+				{
+					response.trace(request, "Performing modal action "+action.identity+", but has extra tokens!");
+					if (!TLogic.callMalformedCommand(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
+					return false;
+				}
 				else
 				{
 					request.addActionItem(TAction.createModal(action, interpreterContext.mode));
@@ -276,6 +293,13 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				else if (interpreterContext.object1 == null)
 				{
 					response.trace(request, "Performing transitive action "+action.identity+" with an unknown object!");
+					if (!TLogic.callMalformedCommand(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
+					return false;
+				}
+				else if (action.strict && interpreterContext.tokenOffset < interpreterContext.tokens.length)
+				{
+					response.trace(request, "Performing transitive action "+action.identity+", but has extra tokens!");
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
@@ -333,6 +357,13 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				else if (interpreterContext.object2 == null)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown second object!");
+					if (!TLogic.callMalformedCommand(request, response, action))
+						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
+					return false;
+				}
+				else if (action.strict && interpreterContext.tokenOffset < interpreterContext.tokens.length)
+				{
+					response.trace(request, "Performing ditransitive action "+action.identity+", but has extra tokens!");
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
@@ -2016,7 +2047,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 		TLogic.callBlock(request, response, currentObject1Context, blockToCall);
 		success = true;
 	}
-	if ((blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object1.identity)])) != null)
+	if (!action.strict && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object1.identity)])) != null)
 	{
 		response.trace(request, "Found action block in object "+TLogic.elementToString(object2)+" lineage with "+TLogic.elementToString(object1));
 		TLogic.callBlock(request, response, currentObject2Context, blockToCall);
@@ -2027,7 +2058,8 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	
 	// call action with ancestor on each object. one or both need to succeed for no failure.
 	success |= TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
-	success |= TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
+	if (!action.strict)
+		success |= TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
 	if (success)
 		return;
 	
@@ -2038,7 +2070,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 		TLogic.callBlock(request, response, currentObject1Context, blockToCall);
 		success = true;
 	}
-	if ((blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+	if (!action.strict && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
 	{
 		response.trace(request, "Found action with other block in object "+TLogic.elementToString(object2)+" lineage.");
 		TLogic.callBlock(request, response, currentObject2Context, blockToCall);

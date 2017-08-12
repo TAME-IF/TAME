@@ -62,12 +62,16 @@ public class TAction implements Comparable<TAction>, Saveable
 	
 	/** Is this action only allowed on players and rooms that exclusively allow it? */
 	private boolean restricted;
+	/** Does the action employ stricter use? */
+	private boolean strict;
 	
 	/** 
-	 * Additional strings. 
-	 * For DITRANSITIVE, this is the object separator conjunctions.
-	 * For MODAL, these are the valid targets.
-	 * For OPEN, these are the local variables that hold the input data (usually just one).
+	 * Additional strings.
+	 * <ul> 
+	 * <li>For <b>DITRANSITIVE</b>, this is the object separator conjunctions.</li>
+	 * <li>For <b>MODAL</b>, these are the valid targets.</li>
+	 * <li>For <b>OPEN</b>, these are the local variables that hold the input data (usually just one).</li>
+	 * </ul>
 	 */
 	private CaseInsensitiveHash extraStrings;
 	
@@ -77,6 +81,8 @@ public class TAction implements Comparable<TAction>, Saveable
 		this.names = new CaseInsensitiveHash();
 		this.extraStrings = new CaseInsensitiveHash();
 		this.type = Type.GENERAL;
+		this.restricted = false;
+		this.strict = false;
 	}
 	
 	/**
@@ -148,6 +154,34 @@ public class TAction implements Comparable<TAction>, Saveable
 	public void setRestricted(boolean restricted) 
 	{
 		this.restricted = restricted;
+	}
+	
+	/**
+	 * Checks if this action is strict. Interpreter (and execution logic) changes if this is set:
+	 * <ul>
+	 * 	<li>For <b>OPEN</b>, nothing is different.</li>
+	 * 	<li>For <b>GENERAL</b>, all input after the accepted verb is considered malformed.</li>
+	 * 	<li>For <b>MODAL</b>, all input after the accepted verb and mode is considered malformed.</li>
+	 * 	<li>For <b>TRANSITIVE</b>, all input after the accepted verb and object is considered malformed.</li>
+	 * 	<li>
+	 * 		For <b>DITRANSITIVE</b>, all input after the accepted verb, objects, and conjugates is considered malformed,
+	 * 		and the order of the interpreted objects affect what <i>onActionWith</i> blocks are taken.
+	 *	</li>
+	 * </ul>
+	 * @return true if restricted, false if not.
+	 */
+	public boolean isStrict()
+	{
+		return strict;
+	}
+	
+	/**
+	 * Sets if this action is strict.
+	 * @param strict true if strict, false if not.
+	 */
+	public void setStrict(boolean strict) 
+	{
+		this.strict = strict;
 	}
 	
 	/**
