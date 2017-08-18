@@ -436,7 +436,7 @@ var TCommandFunctions =
 			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.GENERAL)
-				throw TAMEInterrupt.Error(action.identity + " is not a general action.");
+				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a general action.");
 
 			var tameAction = TAction.create(action);
 			request.addActionItem(tameAction);
@@ -485,7 +485,7 @@ var TCommandFunctions =
 			var object = request.moduleContext.resolveElement(TValue.asString(varObject));
 
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
-				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
+				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a transitive nor ditransitive action.");
 
 			var tameAction = TAction.createObject(action, object);
 			request.addActionItem(tameAction);
@@ -510,7 +510,7 @@ var TCommandFunctions =
 			var action = context.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
-				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
+				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a transitive nor ditransitive action.");
 
 			var element = context.resolveElement(TValue.asString(varObjectContainer));
 			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
@@ -543,7 +543,7 @@ var TCommandFunctions =
 			var action = context.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
-				throw TAMEInterrupt.Error(action.identity + " is not a transitive nor ditransitive action.");
+				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a transitive nor ditransitive action.");
 
 			var tagName = TValue.asString(varTag);
 			var element = context.resolveElement(TValue.asString(varObjectContainer));
@@ -582,7 +582,7 @@ var TCommandFunctions =
 			var object2 = context.resolveElement(TValue.asString(varObject2));
 
 			if (action.type != TAMEConstants.ActionType.DITRANSITIVE)
-				throw TAMEInterrupt.Error(action.identity + " is not a ditransitive action.");
+				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a ditransitive action.");
 			
 			var tameAction = TAction.createObject2(action, object, object2);
 			request.addActionItem(tameAction);
@@ -683,34 +683,6 @@ var TCommandFunctions =
 				throw TAMEError.UnexpectedValueType("Expected literal type in WAIT call.");
 
 			response.addCue(TAMEConstants.Cue.WAIT, TValue.asLong(value));
-		}
-	},
-
-	/* TIP */
-	{
-		"name": 'TIP', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			var value = request.popValue();
-			
-			if (!TValue.isLiteral(value))
-				throw TAMEError.UnexpectedValueType("Expected literal type in TIP call.");
-
-			response.addCue(TAMEConstants.Cue.TIP, TValue.asString(value));
-		}
-	},
-
-	/* INFO */
-	{
-		"name": 'INFO', 
-		"doCommand": function(request, response, blockLocal, command)
-		{
-			var value = request.popValue();
-			
-			if (!TValue.isLiteral(value))
-				throw TAMEError.UnexpectedValueType("Expected literal type in INFO call.");
-
-			response.addCue(TAMEConstants.Cue.INFO, TValue.asString(value));
 		}
 	},
 

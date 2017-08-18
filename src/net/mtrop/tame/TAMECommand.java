@@ -780,7 +780,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAction action = request.getModuleContext().resolveAction(varAction.asString());
 			
 			if (action.getType() != Type.GENERAL)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a general action.");
+				throw new UnexpectedValueTypeException("BAD TYPE: "+action.getIdentity() + " is not a general action.");
 			else
 			{
 				TAMEAction tameAction = TAMEAction.create(action);
@@ -820,7 +820,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String target = varTarget.asString();
 			
 			if (action.getType() != Type.MODAL && action.getType() != Type.OPEN)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a modal nor open action.");
+				throw new UnexpectedValueTypeException("BAD TYPE: " + action.getIdentity() + " is not a modal nor open action.");
 			else
 			{
 				TAMEAction tameAction = TAMEAction.create(action, target);
@@ -861,7 +861,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TObject object = moduleContext.resolveObject(varObject.asString());
 			
 			if (action.getType() != Type.TRANSITIVE && action.getType() != Type.DITRANSITIVE)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a transitive nor ditransitive action.");
+				throw new UnexpectedValueTypeException("BAD TYPE: " + action.getIdentity() + " is not a transitive nor ditransitive action.");
 			else
 			{
 				TAMEAction tameAction = TAMEAction.create(action, object);
@@ -901,7 +901,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			TAction action = moduleContext.resolveAction(varAction.asString());
 			if (action.getType() != Type.TRANSITIVE && action.getType() != Type.DITRANSITIVE)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a transitive nor ditransitive action.");
+				throw new UnexpectedValueTypeException("BAD TYPE: " + action.getIdentity() + " is not a transitive nor ditransitive action.");
 
 			Iterable<TObject> objectList;
 			
@@ -951,7 +951,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			TAction action = moduleContext.resolveAction(varAction.asString());
 			if (action.getType() != Type.TRANSITIVE && action.getType() != Type.DITRANSITIVE)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a transitive nor ditransitive action.");
+				throw new UnexpectedValueTypeException("BAD TYPE: " + action.getIdentity() + " is not a transitive nor ditransitive action.");
 
 			Iterable<TObject> objectList;
 			
@@ -1006,7 +1006,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TObject object2 = moduleContext.resolveObject(varObject2.asString());
 			
 			if (action.getType() != Type.DITRANSITIVE)
-				throw new ErrorInterrupt(action.getIdentity() + " is not a ditransitive action.");
+				throw new UnexpectedValueTypeException("BAD TYPE: " + action.getIdentity() + " is not a ditransitive action.");
 			else
 			{
 				TAMEAction tameAction = TAMEAction.create(action, object, object2);
@@ -1195,58 +1195,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in WAIT call.");
 
 			response.addCue(CUE_WAIT, value.asLong());
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return "Cues";
-		}
-		
-	},
-	
-	/**
-	 * Adds a TIP cue to the response.
-	 * POP is the message to send. 
-	 * Returns nothing. 
-	 */
-	TIP (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in TIP call.");
-
-			response.addCue(CUE_TIP, value.asString());
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return "Cues";
-		}
-		
-	},
-	
-	/**
-	 * Adds a INFO cue to the response.
-	 * POP is the message to send. 
-	 * Returns nothing. 
-	 */
-	INFO (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
-		{
-			Value value = request.popValue();
-			
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in INFO call.");
-
-			response.addCue(CUE_INFO, value.asString());
 		}
 		
 		@Override
@@ -1656,7 +1604,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			try {
 				p = Pattern.compile(pattern);
 			} catch (PatternSyntaxException e) {
-				throw new ErrorInterrupt("Expected valid expression in STRCONTAINSPATTERN call.");
+				throw new UnexpectedValueTypeException("Expected valid RegEx in STRCONTAINSPATTERN call.");
 			}
 			
 			request.pushValue(Value.create(p.matcher(str).find()));
@@ -3274,7 +3222,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	/**
 	 * Pushes a room onto the room stack (for the current player).
-	 * ErrorInterrupt if no current player.
 	 * POP is the new room.
 	 * Returns nothing.
 	 */
@@ -3309,7 +3256,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	/**
 	 * Pops a room off of the room stack (for the current player).
-	 * ErrorInterrupt if no current player or no rooms on the room stack for the player.
 	 * POPs nothing.
 	 * Returns nothing.
 	 */
@@ -3344,7 +3290,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 	/**
 	 * Pops a room off of the room stack and pushes a new one (for the current player).
-	 * ErrorInterrupt if no current player or no rooms on the room stack for the player.
 	 * POP is the new room.
 	 * Returns nothing.
 	 */

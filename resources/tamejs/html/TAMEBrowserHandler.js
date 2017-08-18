@@ -41,11 +41,9 @@ function TAMEBrowserHandler(TAME, options)
 		"onResume": BLANK_FUNCTION,
 		"onQuitCue": BLANK_FUNCTION,
 		"onPauseCue": BLANK_FUNCTION,
-		"onInfoCue": BLANK_FUNCTION,
-		"onTipCue": BLANK_FUNCTION,
 		"onErrorCue": BLANK_FUNCTION,
 		"onFatalCue": BLANK_FUNCTION,
-		"onUnknownCue": BLANK_FUNCTION,
+		"onOtherCue": BLANK_FUNCTION,
 		"onStartFormatTag": BLANK_FUNCTION,
 		"onEndFormatTag": BLANK_FUNCTION, 
 		"onFormatText": function(text) 
@@ -96,18 +94,6 @@ function TAMEBrowserHandler(TAME, options)
 		"trace": function()
 		{
 			// Ignore trace.
-			return true;
-		},
-
-		"tip": function(content)
-		{
-			self.options.onTipCue(content);
-			return true;
-		},
-
-		"info": function(content)
-		{
-			self.options.onInfoCue(content);
 			return true;
 		},
 
@@ -186,7 +172,7 @@ TAMEBrowserHandler.prototype.resume = function()
 		if (this.cueHandlers[cueType])
 			keepGoing = this.cueHandlers[cueType](cueContent);
 		else
-			keepGoing = this.options.onUnknownCue(cueType, cueContent);
+			keepGoing = this.options.onOtherCue(cueType, cueContent);
 	}
 
 	if (this.textBuffer.length > 0) 

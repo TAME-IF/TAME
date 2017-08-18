@@ -515,17 +515,16 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * Resolves a player context.
 	 * @param playerIdentity the player identity.
 	 * @return the context resolved.
-	 * @throws ErrorInterrupt if no current player when requested.
-	 * @throws ModuleExecutionException if the non-current player identity cannot be found.
+	 * @throws ModuleExecutionException if the non-current player identity cannot be found, or if no current player when requested.
 	 */
-	public TPlayerContext resolvePlayerContext(String playerIdentity) throws ErrorInterrupt
+	public TPlayerContext resolvePlayerContext(String playerIdentity)
 	{
 		TPlayerContext context = null;
 		if (playerIdentity.equals(IDENTITY_CURRENT_PLAYER))
 		{
 			context = getCurrentPlayerContext();
 			if (context == null)
-				throw new ErrorInterrupt("Current player context requested with no current player!");
+				throw new ModuleExecutionException("Current player context requested with no current player!");
 		}
 		else
 		{
@@ -541,17 +540,16 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * Resolves a player.
 	 * @param playerIdentity the player identity.
 	 * @return the context resolved.
-	 * @throws ErrorInterrupt if no current player when requested.
-	 * @throws ModuleExecutionException if the non-current player identity cannot be found.
+	 * @throws ModuleExecutionException if the non-current player identity cannot be found, or if no current player if requesed.
 	 */
-	public TPlayer resolvePlayer(String playerIdentity) throws ErrorInterrupt
+	public TPlayer resolvePlayer(String playerIdentity)
 	{
 		TPlayer element;
 		if (playerIdentity.equals(TAMEConstants.IDENTITY_CURRENT_PLAYER))
 		{
 			element = getCurrentPlayer();
 			if (element == null)
-				throw new ErrorInterrupt("Current player requested with no current player!");
+				throw new ModuleExecutionException("Current player requested with no current player!");
 			return element;
 		}
 		else
@@ -567,17 +565,16 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * Resolves a room context.
 	 * @param roomIdentity the roomIdentity.
 	 * @return the context resolved.
-	 * @throws ErrorInterrupt if no current room when requested.
-	 * @throws ModuleExecutionException if the non-current room identity cannot be found.
+	 * @throws ModuleExecutionException if the non-current room identity cannot be found, or if no current room if requested.
 	 */
-	public TRoomContext resolveRoomContext(String roomIdentity) throws ErrorInterrupt
+	public TRoomContext resolveRoomContext(String roomIdentity)
 	{
 		TRoomContext context = null;
 		if (roomIdentity.equals(IDENTITY_CURRENT_ROOM))
 		{
 			context = getCurrentRoomContext();
 			if (context == null)
-				throw new ErrorInterrupt("Current room context requested with no current room!");
+				throw new ModuleExecutionException("Current room context requested with no current room!");
 		}
 		else
 		{
@@ -593,17 +590,16 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	 * Resolves a room.
 	 * @param roomIdentity the roomIdentity.
 	 * @return the context resolved.
-	 * @throws ErrorInterrupt if no current room, if it is requested.
-	 * @throws ModuleExecutionException if the non-current room identity cannot be found.
+	 * @throws ModuleExecutionException if the non-current room identity cannot be found, or if not current room if requested.
 	 */
-	public TRoom resolveRoom(String roomIdentity) throws ErrorInterrupt
+	public TRoom resolveRoom(String roomIdentity)
 	{
 		TRoom element;
 		if (roomIdentity.equals(TAMEConstants.IDENTITY_CURRENT_ROOM))
 		{
 			element = getCurrentRoom();
 			if (element == null)
-				throw new ErrorInterrupt("Current room requested with no current room!");
+				throw new ModuleExecutionException("Current room requested with no current room!");
 			return element;
 		}
 		else

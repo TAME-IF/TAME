@@ -663,8 +663,7 @@ TModuleContext.prototype.resolveAction = function(actionIdentity)
  * The identities "player", "room", and "world" are special.
  * @param elementIdentity the element identity.
  * @return the corresponding action or null if no current room or player.
- * @throws TAMEError if no such element context.
- * @throws TAMEInterrupt if identity refers to a current object that is not set.
+ * @throws TAMEError if no such element context or if identity refers to a current object that is not set.
  */
 TModuleContext.prototype.resolveElement = function(elementIdentity)
 {	
@@ -676,7 +675,7 @@ TModuleContext.prototype.resolveElement = function(elementIdentity)
 	{
 		element = this.getCurrentPlayer();
 		if (!element)
-			throw TAMEInterrupt.Error("Current player context called with no current player!");
+			throw TAMEError.ModuleExecution("Current player context called with no current player!");
 		return element;
 	}
 	// current room
@@ -684,11 +683,11 @@ TModuleContext.prototype.resolveElement = function(elementIdentity)
 	{
 		var player = this.getCurrentPlayer();
 		if (!player)
-			throw TAMEInterrupt.Error("Current room context called with no current player!");
+			throw TAMEError.ModuleExecution("Current room context called with no current player!");
 		
 		element = this.getCurrentRoom();
 		if (!element)
-			throw TAMEInterrupt.Error("Current room context called with no current room!");
+			throw TAMEError.ModuleExecution("Current room context called with no current room!");
 		return element;
 	}
 	else
@@ -705,8 +704,7 @@ TModuleContext.prototype.resolveElement = function(elementIdentity)
  * The identities "player", "room", and "world" are special.
  * @param elementIdentity the element identity.
  * @return the corresponding action or null if no current room or player.
- * @throws TAMEError if no such element context.
- * @throws TAMEInterrupt if identity refers to a current object that is not set.
+ * @throws TAMEError if no such element context or if identity refers to a current object that is not set.
  */
 TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 {	

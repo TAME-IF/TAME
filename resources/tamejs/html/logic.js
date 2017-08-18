@@ -61,16 +61,6 @@ var handler = new TAMEBrowserHandler(TAME,
 		InputDiv.remove();
 	},
 	
-	"onInfoCue": function(content)
-	{
-		println("INFO: "+content);
-	},
-	
-	"onTipCue": function(content)
-	{
-		println("(TIP: "+content+")");
-	},
-	
 	"onErrorCue": function(content)
 	{
 		println("\n !ERROR!: "+content);

@@ -163,12 +163,12 @@ player p_default
 		textln("\""+target+"\"");
 	}
 	
-	onUnknownAction()
+	onUnknownCommand()
 	{
 		textln("I'm not quite sure what you mean.");
 	}
 		
-	onFailedAction()
+	onUnhandledAction()
 	{
 		textln("I don't think I can do that.");
 	}
@@ -178,7 +178,7 @@ player p_default
 		textln("I can't do that here.");
 	}
 		
-	onAmbiguousAction()
+	onAmbiguousCommand()
 	{
 		textln("A lot of things are here that can described using that. Perhaps I should be more specific...");
 	}

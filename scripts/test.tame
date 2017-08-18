@@ -85,9 +85,6 @@ world
 		textln("PAUSE!");
 		pause();
 		
-		tip("butt");
-		info("butt");
-
 		textln(asBoolean(6));
 		textln(asInt(6.0));
 		textln(asFloat(6));
@@ -130,7 +127,7 @@ world
 		textln(max(4, 8)); 
 		textln(clamp(9, 0, 5)); 
 
-		textln(random(10)); 
+		textln(irandom(10)); 
 		textln(frandom()); 
 		textln(grandom(0, 1)); 
 		
