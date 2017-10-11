@@ -2006,13 +2006,14 @@ TLogic.doActionDitransitiveAncestorSearch = function(request, response, actionVa
 	{
 		if ((blockToCall = context.resolveBlock(object.identity, "ONACTIONWITHANCESTOR", [actionValue, TValue.createObject(ancestor.identity)])) != null)
 		{
-			response.trace(request, "Found action with ancestor block in object "+TLogic.elementToString(object)+" lineage - ancestor is "+TLogic.elementToString(ancestor)+".");
+			response.trace(request, "Found \"action with ancestor\" block in object "+TLogic.elementToString(object)+" lineage - ancestor is "+TLogic.elementToString(ancestor)+".");
 			TLogic.callBlock(request, response, objectContext, blockToCall);
 			return true;
 		}
 		ancestor = ancestor.parent != null ? context.getElement(ancestor.parent) : null;
 	}
 	
+	response.trace(request, "No matching \"action with ancestor\" block in object "+TLogic.elementToString(object)+" lineage.");
 	return false;
 };
 
@@ -2040,52 +2041,64 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	var success = false;
 	var actionValue = TValue.createAction(action.identity);
 	
+	var call12 = !action.strict || (action.strict && !action.reversed);
+	var call21 = !action.strict || (action.strict && action.reversed);
+
 	// call action on each object. one or both need to succeed for no failure.
-	if ((blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object2.identity)])) != null)
+	if (call12 && (blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object2.identity)])) != null)
 	{
-		response.trace(request, "Found action block in object "+TLogic.elementToString(object1)+" lineage with "+TLogic.elementToString(object2));
+		response.trace(request, "Found \"action with\" block in object "+TLogic.elementToString(object1)+" lineage with "+TLogic.elementToString(object2));
 		TLogic.callBlock(request, response, currentObject1Context, blockToCall);
 		success = true;
 	}
-	if (!action.strict && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object1.identity)])) != null)
+	else
+		response.trace(request, "No matching \"action with\" block in object "+TLogic.elementToString(object1)+" lineage with "+TLogic.elementToString(object2));
+
+	if (call21 && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object1.identity)])) != null)
 	{
-		response.trace(request, "Found action block in object "+TLogic.elementToString(object2)+" lineage with "+TLogic.elementToString(object1));
+		response.trace(request, "Found \"action with\" block in object "+TLogic.elementToString(object2)+" lineage with "+TLogic.elementToString(object1));
 		TLogic.callBlock(request, response, currentObject2Context, blockToCall);
 		success = true;
 	}
+	else
+		response.trace(request, "No matching \"action with\" block in object "+TLogic.elementToString(object2)+" lineage with "+TLogic.elementToString(object1));
+
 	if (success)
 		return;
-	
+
+
 	// call action with ancestor on each object. one or both need to succeed for no failure.
-	success |= TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
-	if (!action.strict)
-		success |= TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
+	success |= call12 && TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
+	success |= call21 && TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
 	if (success)
 		return;
 	
 	// attempt action with other on both objects.
-	if ((blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+	if (call12 && (blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
 	{
-		response.trace(request, "Found action with other block in object "+TLogic.elementToString(object1)+" lineage.");
+		response.trace(request, "Found \"action with other\" block in object "+TLogic.elementToString(object1)+" lineage.");
 		TLogic.callBlock(request, response, currentObject1Context, blockToCall);
 		success = true;
 	}
-	if (!action.strict && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+	else
+		response.trace(request, "No matching \"action with other\" block in object "+TLogic.elementToString(object1)+" lineage.");
+
+	if (call21 && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
 	{
-		response.trace(request, "Found action with other block in object "+TLogic.elementToString(object2)+" lineage.");
+		response.trace(request, "Found \"action with other\" block in object "+TLogic.elementToString(object2)+" lineage.");
 		TLogic.callBlock(request, response, currentObject2Context, blockToCall);
 		success = true;
 	}
+	else
+		response.trace(request, "No matching \"action with other\" block in object "+TLogic.elementToString(object2)+" lineage.");
+	
 	if (success)
 		return;
-
+	
 	// if we STILL can't do it...
-	if (!success)
-	{
-		response.trace(request, "No blocks called in ditransitive action call.");
-		if (!TLogic.callActionUnhandled(request, response, action))
-			response.addCue(TAMEConstants.Cue.ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
-	}
+	response.trace(request, "No blocks called in ditransitive action call.");
+	if (!TLogic.callActionUnhandled(request, response, action))
+		response.addCue(TAMEConstants.Cue.ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
 };
 
 

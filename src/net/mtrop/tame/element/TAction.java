@@ -64,6 +64,8 @@ public class TAction implements Comparable<TAction>, Saveable
 	private boolean restricted;
 	/** Does the action employ stricter use? */
 	private boolean strict;
+	/** Does the action reverse its strict handling? */
+	private boolean reversed;
 	
 	/** 
 	 * Additional strings.
@@ -83,6 +85,7 @@ public class TAction implements Comparable<TAction>, Saveable
 		this.type = Type.GENERAL;
 		this.restricted = false;
 		this.strict = false;
+		this.reversed = false;
 	}
 	
 	/**
@@ -182,6 +185,24 @@ public class TAction implements Comparable<TAction>, Saveable
 	public void setStrict(boolean strict) 
 	{
 		this.strict = strict;
+	}
+	
+	/**
+	 * Checks if this reverses the context of a strict ditransitive action.
+	 * @return true if so, false if not.
+	 */
+	public boolean isReversed() 
+	{
+		return reversed;
+	}
+	
+	/**
+	 * Sets if this reverses the context of a strict ditransitive action.
+	 * @param reversed true if so, false if not.
+	 */
+	public void setReversed(boolean reversed) 
+	{
+		this.reversed = reversed;
 	}
 	
 	/**
@@ -303,7 +324,11 @@ public class TAction implements Comparable<TAction>, Saveable
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeString(identity, "UTF-8");
 		sw.writeByte((byte)type.ordinal());
-		sw.writeBoolean(restricted);
+		
+		sw.writeBit(restricted);
+		sw.writeBit(strict);
+		sw.writeBit(reversed);
+		sw.flushBits();
 		
 		sw.writeInt(names.size());
 		for (String s : names)
@@ -321,8 +346,12 @@ public class TAction implements Comparable<TAction>, Saveable
 		extraStrings.clear();
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		setIdentity(sr.readString("UTF-8"));
-		this.type = Type.VALUES[(int)sr.readByte()];
-		restricted = sr.readBoolean();
+		type = Type.VALUES[(int)sr.readByte()];
+		
+		byte flags = sr.readByte();
+		restricted = (flags & 0x01) != 0;
+		strict = (flags & 0x02) != 0;
+		reversed = (flags & 0x04) != 0;
 		
 		int size;
 		

@@ -145,6 +145,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_EXTEND = 			96;
 		static final int TYPE_OVERRIDE = 		97;
 		static final int TYPE_STRICT = 			98;
+		static final int TYPE_REVERSED = 		99;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -232,6 +233,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("extend", TYPE_EXTEND);
 			addCaseInsensitiveKeyword("override", TYPE_OVERRIDE);
 			addCaseInsensitiveKeyword("strict", TYPE_STRICT);
+			addCaseInsensitiveKeyword("reversed", TYPE_REVERSED);
 
 			for (BlockEntryType entryType : BlockEntryType.VALUES)
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
@@ -1425,14 +1427,17 @@ public final class TAMEScriptReader implements TAMEConstants
 		{
 			boolean restricted = false;
 			boolean strict = false;
-			if (matchType(TSKernel.TYPE_RESTRICTED))
-				restricted = true;
-			if (matchType(TSKernel.TYPE_STRICT))
+			boolean reversed = false;
+
+			// can happen in any order
+			while (currentType(TSKernel.TYPE_RESTRICTED, TSKernel.TYPE_STRICT, TSKernel.TYPE_REVERSED))
 			{
-				strict = true;
-				// check for restricted if not seen - order is not enforced. 
-				if (!restricted && matchType(TSKernel.TYPE_RESTRICTED))
+				if (matchType(TSKernel.TYPE_RESTRICTED))
 					restricted = true;
+				if (matchType(TSKernel.TYPE_STRICT))
+					strict = true;
+				if (matchType(TSKernel.TYPE_REVERSED))
+					reversed = true;
 			}
 			
 			if (currentType(TSKernel.TYPE_GENERAL))
@@ -1453,6 +1458,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				action.setType(actionType);
 				action.setRestricted(restricted);
 				action.setStrict(strict);
+				action.setReversed(reversed);
 				nextToken();
 				
 				if (!parseActionNames(action))
@@ -1479,6 +1485,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				action.setType(actionType);
 				action.setRestricted(restricted);
 				action.setStrict(strict);
+				action.setReversed(reversed);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1527,6 +1534,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				action.setType(actionType);
 				action.setRestricted(restricted);
 				action.setStrict(strict);
+				action.setReversed(reversed);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1568,6 +1576,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				action.setType(actionType);
 				action.setRestricted(restricted);
 				action.setStrict(strict);
+				action.setReversed(reversed);
 				nextToken();
 
 				if (!parseActionNames(action))
@@ -1594,6 +1603,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				action.setType(actionType);
 				action.setRestricted(restricted);
 				action.setStrict(strict);
+				action.setReversed(reversed);
 				nextToken();
 
 				if (!parseActionNames(action))

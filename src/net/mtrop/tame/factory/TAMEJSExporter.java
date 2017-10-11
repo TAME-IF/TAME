@@ -546,6 +546,8 @@ public final class TAMEJSExporter
 				out.addMember("restricted", true);
 			if (action.isStrict())
 				out.addMember("strict", true);
+			if (action.isReversed())
+				out.addMember("reversed", true);
 			if ((arr = JSONObject.create(action.getNames())).length() > 0)
 				out.addMember("names", arr);
 			if ((arr = JSONObject.create(action.getExtraStrings())).length() > 0)

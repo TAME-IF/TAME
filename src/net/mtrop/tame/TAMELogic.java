@@ -1122,51 +1122,65 @@ public final class TAMELogic implements TAMEConstants
 		// call action on each object. one or both need to succeed for no failure.
 		blockEntry1 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object1.getIdentity()));
 		blockEntry2 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object2.getIdentity()));
-		if ((blockToCall = object1.resolveBlock(blockEntry2)) != null)
+		
+		boolean call12 = !action.isStrict() || (action.isStrict() && !action.isReversed());
+		boolean call21 = !action.isStrict() || (action.isStrict() && action.isReversed());
+		
+		if (call12 && (blockToCall = object1.resolveBlock(blockEntry2)) != null)
 		{
-			response.trace(request, "Found action block in object %s lineage with %s.", object1, object2);
+			response.trace(request, "Found \"action with\" block in object %s lineage with %s.", object1, object2);
 			callBlock(request, response, currentObject1Context, blockToCall);
 			success = true;
 		}
-		if (!action.isStrict() && (blockToCall = object2.resolveBlock(blockEntry1)) != null)
+		else
+			response.trace(request, "No matching \"action with\" block in object %s lineage with %s.", object1, object2);
+
+		if (call21 && (blockToCall = object2.resolveBlock(blockEntry1)) != null)
 		{
-			response.trace(request, "Found action block in object %s lineage with %s.", object2, object1);
+			response.trace(request, "Found \"action with\" block in object %s lineage with %s.", object2, object1);
 			callBlock(request, response, currentObject2Context, blockToCall);
 			success = true;
 		}
+		else
+			response.trace(request, "No matching \"action with\" block in object %s lineage with %s.", object2, object1);
+
 		if (success)
 			return;
-		
+
+
 		// call action with ancestor on each object. one or both need to succeed for no failure.
-		success |= doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
-		if (!action.isStrict())
-			success |= doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
+		success |= call12 && doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
+		success |= call21 && doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
 		if (success)
 			return;
 		
 		// attempt action with other on both objects.
 		BlockEntry actionOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
-		if ((blockToCall = object1.resolveBlock(actionOtherEntry)) != null)
+		if (call12 && (blockToCall = object1.resolveBlock(actionOtherEntry)) != null)
 		{
-			response.trace(request, "Found action with other block in object %s lineage.", object1);
+			response.trace(request, "Found \"action with other\" block in object %s lineage.", object1);
 			callBlock(request, response, currentObject1Context, blockToCall);
 			success = true;
 		}
-		if (!action.isStrict() && (blockToCall = object2.resolveBlock(actionOtherEntry)) != null)
+		else
+			response.trace(request, "No matching \"action with other\" block in object %s lineage.", object1);
+
+		if (call21 && (blockToCall = object2.resolveBlock(actionOtherEntry)) != null)
 		{
-			response.trace(request, "Found action with other block in object %s lineage.", object2);
+			response.trace(request, "Found \"action with other\" block in object %s lineage.", object2);
 			callBlock(request, response, currentObject2Context, blockToCall);
 			success = true;
 		}
+		else
+			response.trace(request, "No matching \"action with other\" block in object %s lineage.", object2);
+		
+		if (success)
+			return;
 		
 		// if we STILL can't do it...
-		if (!success)
-		{
-			response.trace(request, "No blocks called in ditransitive action call.");
-			if (!callActionUnhandled(request, response, action))
-				response.addCue(CUE_ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
-		}
-		
+		response.trace(request, "No blocks called in ditransitive action call.");
+		if (!callActionUnhandled(request, response, action))
+			response.addCue(CUE_ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
 	}
 	
 	/**
@@ -1192,13 +1206,14 @@ public final class TAMELogic implements TAMEConstants
 			blockEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHANCESTOR, actionValue, Value.createObject(ancestor.getIdentity()));
 			if ((blockToCall = object.resolveBlock(blockEntry)) != null)
 			{
-				response.trace(request, "Found action with ancestor block in object %s lineage - ancestor is %s.", object, ancestor);
+				response.trace(request, "Found \"action with ancestor\" block in object %s lineage - ancestor is %s.", object, ancestor);
 				callBlock(request, response, objectContext, blockToCall);
 				return true;
 			}
 			ancestor = (TObject)ancestor.getParent();
 		}
 		
+		response.trace(request, "No matching \"action with ancestor\" block in object %s lineage.", object);
 		return false;
 	}
 	
