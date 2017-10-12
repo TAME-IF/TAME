@@ -16,6 +16,8 @@ package net.mtrop.tame.lang;
 public enum PermissionType
 {
 	FORBID,
-	ALLOW
+	ALLOW;
+	
+	public static final PermissionType[] VALUES = values();
 }
 

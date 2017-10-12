@@ -25,6 +25,9 @@ public enum ValueType
 	ROOM,
 	WORLD,
 	ACTION,
-	VARIABLE
+	VARIABLE;
+	
+	public static final ValueType[] VALUES = values();
+
 }
 

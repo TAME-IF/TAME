@@ -21,7 +21,7 @@ public final class CommandDump
 	{
 		PrintStream out = System.out;
 		
-		for (TAMECommand command : TAMECommand.values())
+		for (TAMECommand command : TAMECommand.VALUES)
 		{
 			if (command.isInternal() || command.isLanguage())
 				continue;
@@ -31,7 +31,7 @@ public final class CommandDump
 
 		out.println("---------------------------");
 		
-		for (TAMECommand command : TAMECommand.values())
+		for (TAMECommand command : TAMECommand.VALUES)
 		{
 			if (command.isInternal() || command.isLanguage())
 				continue;
@@ -41,7 +41,7 @@ public final class CommandDump
 
 		out.println("\n---------------------------");
 		
-		for (BlockEntryType command : BlockEntryType.values())
+		for (BlockEntryType command : BlockEntryType.VALUES)
 		{
 			out.print(command.name() + " ");
 		}
@@ -50,7 +50,7 @@ public final class CommandDump
 		
 		out.println("var TCommandFunctions =");
 		out.println("[");
-		for (TAMECommand command : TAMECommand.values())
+		for (TAMECommand command : TAMECommand.VALUES)
 		{
 			out.println("\t/* " +command.name() + " */");
 			out.println("\t{");

@@ -145,7 +145,7 @@ public class TRoom extends TElement implements ForbiddenHandler, ObjectContainer
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readBytes(in);
-		permissionType = PermissionType.values()[sr.readByte()];
+		permissionType = PermissionType.VALUES[sr.readByte()];
 		
 		permittedActionList.clear();
 		int size = sr.readInt();

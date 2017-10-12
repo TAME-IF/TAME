@@ -1114,8 +1114,6 @@ public final class TAMELogic implements TAMEConstants
 		TObjectContext currentObject2Context = moduleContext.getObjectContext(object2);
 		Block blockToCall = null;
 		
-		boolean success = false;
-		
 		BlockEntry blockEntry1, blockEntry2;
 		Value actionValue = Value.createAction(action.getIdentity());
 
@@ -1123,14 +1121,14 @@ public final class TAMELogic implements TAMEConstants
 		blockEntry1 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object1.getIdentity()));
 		blockEntry2 = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object2.getIdentity()));
 		
-		boolean call12 = !action.isStrict() || (action.isStrict() && !action.isReversed());
-		boolean call21 = !action.isStrict() || (action.isStrict() && action.isReversed());
+		boolean call12 = !action.isStrict() || !action.isReversed();
+		boolean call21 = !action.isStrict() || action.isReversed();
 		
 		if (call12 && (blockToCall = object1.resolveBlock(blockEntry2)) != null)
 		{
 			response.trace(request, "Found \"action with\" block in object %s lineage with %s.", object1, object2);
 			callBlock(request, response, currentObject1Context, blockToCall);
-			success = true;
+			return;
 		}
 		else
 			response.trace(request, "No matching \"action with\" block in object %s lineage with %s.", object1, object2);
@@ -1139,19 +1137,15 @@ public final class TAMELogic implements TAMEConstants
 		{
 			response.trace(request, "Found \"action with\" block in object %s lineage with %s.", object2, object1);
 			callBlock(request, response, currentObject2Context, blockToCall);
-			success = true;
+			return;
 		}
 		else
 			response.trace(request, "No matching \"action with\" block in object %s lineage with %s.", object2, object1);
 
-		if (success)
-			return;
-
-
 		// call action with ancestor on each object. one or both need to succeed for no failure.
-		success |= call12 && doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2);
-		success |= call21 && doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1);
-		if (success)
+		if (call12 && doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2))
+			return;
+		if (call21 && doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1))
 			return;
 		
 		// attempt action with other on both objects.
@@ -1160,7 +1154,7 @@ public final class TAMELogic implements TAMEConstants
 		{
 			response.trace(request, "Found \"action with other\" block in object %s lineage.", object1);
 			callBlock(request, response, currentObject1Context, blockToCall);
-			success = true;
+			return;
 		}
 		else
 			response.trace(request, "No matching \"action with other\" block in object %s lineage.", object1);
@@ -1169,13 +1163,10 @@ public final class TAMELogic implements TAMEConstants
 		{
 			response.trace(request, "Found \"action with other\" block in object %s lineage.", object2);
 			callBlock(request, response, currentObject2Context, blockToCall);
-			success = true;
+			return;
 		}
 		else
 			response.trace(request, "No matching \"action with other\" block in object %s lineage.", object2);
-		
-		if (success)
-			return;
 		
 		// if we STILL can't do it...
 		response.trace(request, "No blocks called in ditransitive action call.");

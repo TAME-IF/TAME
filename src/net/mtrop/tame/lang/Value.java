@@ -397,7 +397,7 @@ public class Value implements Comparable<Value>, Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		type = ValueType.values()[sr.readByte()];
+		type = ValueType.VALUES[sr.readByte()];
 		
 		switch (type)
 		{

@@ -149,7 +149,7 @@ public class TPlayer extends TElement implements ForbiddenHandler, ObjectContain
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		super.readBytes(in);
-		permissionType = PermissionType.values()[sr.readByte()];
+		permissionType = PermissionType.VALUES[sr.readByte()];
 		
 		permittedActionList.clear();
 		int size = sr.readInt();
