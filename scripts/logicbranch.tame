@@ -2,8 +2,7 @@ world
 {
 	start()
 	{
-		a = false;
-		b = a ? 4 : 7;
+		textln(false || true);
 		quit;
 	}
 }

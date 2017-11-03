@@ -3154,10 +3154,13 @@ public final class TAMEScriptReader implements TAMEConstants
 						conditional.add(Command.create(TAMECommand.NOOP));
 
 						Block successBlock;
-						if ((successBlock = parseBlockExpression(currentElement)) != null)
+						if ((successBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 						
-						block.add(Command.create(TAMECommand.IF, conditional, successBlock));
+						Block failureBlock = new Block();
+						failureBlock.add(Command.create(TAMECommand.PUSHVALUE, Value.create(false)));
+
+						block.add(Command.create(TAMECommand.IF, conditional, successBlock, failureBlock));
 
 						lastWasValue = true;
 					}
@@ -3172,10 +3175,13 @@ public final class TAMEScriptReader implements TAMEConstants
 						conditional.add(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(ArithmeticOperator.NEGATE.ordinal())));
 
 						Block successBlock;
-						if ((successBlock = parseBlockExpression(currentElement)) != null)
+						if ((successBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 						
-						block.add(Command.create(TAMECommand.IF, conditional, successBlock));
+						Block failureBlock = new Block();
+						failureBlock.add(Command.create(TAMECommand.PUSHVALUE, Value.create(true)));
+
+						block.add(Command.create(TAMECommand.IF, conditional, successBlock, failureBlock));
 
 						lastWasValue = true;
 					}
@@ -3190,7 +3196,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						conditional.add(Command.create(TAMECommand.NOOP));
 
 						Block successBlock;
-						if ((successBlock = parseBlockExpression(currentElement)) != null)
+						if ((successBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 						
 						if (!matchType(TSKernel.TYPE_COLON))
@@ -3200,7 +3206,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						}
 
 						Block failureBlock;
-						if ((failureBlock = parseBlockExpression(currentElement)) != null)
+						if ((failureBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 
 						block.add(Command.create(TAMECommand.IF, conditional, successBlock, failureBlock));
