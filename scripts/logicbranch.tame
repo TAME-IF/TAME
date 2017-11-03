@@ -1,0 +1,9 @@
+world
+{
+	start()
+	{
+		a = false;
+		b = a ? 4 : 7;
+		quit;
+	}
+}

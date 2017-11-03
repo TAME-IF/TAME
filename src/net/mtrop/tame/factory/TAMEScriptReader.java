@@ -115,6 +115,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_EQUAL3 = 			56;
 		static final int TYPE_NOTEQUAL = 		57;
 		static final int TYPE_NOTEQUALEQUAL =	58;
+		static final int TYPE_DOUBLEAMPERSAND = 59;
+		static final int TYPE_DOUBLEPIPE = 		60;
+		static final int TYPE_QUESTIONMARK = 	61;
 
 		static final int TYPE_MODULE = 			70;
 		static final int TYPE_WORLD = 			71;
@@ -184,6 +187,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addDelimiter(";", TYPE_SEMICOLON);
 			addDelimiter(",", TYPE_COMMA);
 			addDelimiter(".", TYPE_DOT);
+			addDelimiter("?", TYPE_QUESTIONMARK);
 			addDelimiter("+", TYPE_PLUS);
 			addDelimiter("-", TYPE_MINUS);
 			addDelimiter("!", TYPE_EXCLAMATION);
@@ -192,7 +196,9 @@ public final class TAMEScriptReader implements TAMEConstants
 			addDelimiter("/", TYPE_SLASH);
 			addDelimiter("%", TYPE_PERCENT);
 			addDelimiter("&", TYPE_AMPERSAND);
+			addDelimiter("&&", TYPE_DOUBLEAMPERSAND);
 			addDelimiter("|", TYPE_PIPE);
+			addDelimiter("||", TYPE_DOUBLEPIPE);
 			addDelimiter("^", TYPE_CARAT);
 			addDelimiter("<", TYPE_LESS);
 			addDelimiter("<=", TYPE_LESSEQUAL);
@@ -3137,6 +3143,70 @@ public final class TAMEScriptReader implements TAMEConstants
 						expressionOperators.push(nextOperator);
 						lastWasValue = false;
 					}
+					// short-circuit and
+					else if (matchType(TSKernel.TYPE_DOUBLEAMPERSAND))
+					{
+						// low priority - emit all commands.
+						reduceRest(block, expressionOperators, expressionValueCounter);
+						
+						// no-op conditional - "if" pops and evaluates.
+						Block conditional = new Block();
+						conditional.add(Command.create(TAMECommand.NOOP));
+
+						Block successBlock;
+						if ((successBlock = parseBlockExpression(currentElement)) != null)
+							return false;
+						
+						block.add(Command.create(TAMECommand.IF, conditional, successBlock));
+
+						lastWasValue = true;
+					}
+					// short-circuit or
+					else if (matchType(TSKernel.TYPE_DOUBLEPIPE))
+					{
+						// low priority - emit all commands.
+						reduceRest(block, expressionOperators, expressionValueCounter);
+
+						// negate conditional - "if" pops and evaluates.
+						Block conditional = new Block();
+						conditional.add(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(ArithmeticOperator.NEGATE.ordinal())));
+
+						Block successBlock;
+						if ((successBlock = parseBlockExpression(currentElement)) != null)
+							return false;
+						
+						block.add(Command.create(TAMECommand.IF, conditional, successBlock));
+
+						lastWasValue = true;
+					}
+					// ternary operator
+					else if (matchType(TSKernel.TYPE_QUESTIONMARK))
+					{
+						// low priority - emit all commands.
+						reduceRest(block, expressionOperators, expressionValueCounter);
+
+						// no-op conditional - "if" pops and evaluates.
+						Block conditional = new Block();
+						conditional.add(Command.create(TAMECommand.NOOP));
+
+						Block successBlock;
+						if ((successBlock = parseBlockExpression(currentElement)) != null)
+							return false;
+						
+						if (!matchType(TSKernel.TYPE_COLON))
+						{
+							addErrorMessage("Expected \":\" after ternary branch expression.");
+							return false;
+						}
+
+						Block failureBlock;
+						if ((failureBlock = parseBlockExpression(currentElement)) != null)
+							return false;
+
+						block.add(Command.create(TAMECommand.IF, conditional, successBlock, failureBlock));
+
+						lastWasValue = true;
+					}
 					else // end on a value
 					{
 						keepGoing = false;
@@ -3170,12 +3240,8 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 			}
 			
-			// end of expression - reduce.
-			while (!expressionOperators.isEmpty())
-			{
-				if (!expressionReduce(block, expressionOperators, expressionValueCounter))
-					return false;
-			}
+			if (!reduceRest(block, expressionOperators, expressionValueCounter))
+				return false;
 			
 			if (expressionValueCounter[0] != 1)
 			{
@@ -3183,6 +3249,18 @@ public final class TAMEScriptReader implements TAMEConstants
 				return false;
 			}
 
+			return true;
+		}
+
+		// reduces until there's nothing left to reduce.
+		private boolean reduceRest(Block block, Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter) 
+		{
+			// end of expression - reduce.
+			while (!expressionOperators.isEmpty())
+			{
+				if (!expressionReduce(block, expressionOperators, expressionValueCounter))
+					return false;
+			}
 			return true;
 		}
 
