@@ -23,7 +23,7 @@ public final class CommandDump
 		
 		for (TAMECommand command : TAMECommand.VALUES)
 		{
-			if (command.isInternal() || command.isLanguage())
+			if (command.isInternal())
 				continue;
 			
 			out.println(command.name() + " Returns: " + command.getReturnType() + " Arguments: " + Arrays.toString(command.getArgumentTypes()));
@@ -33,7 +33,7 @@ public final class CommandDump
 		
 		for (TAMECommand command : TAMECommand.VALUES)
 		{
-			if (command.isInternal() || command.isLanguage())
+			if (command.isInternal())
 				continue;
 			
 			out.print(command.name() + " ");

@@ -32,13 +32,6 @@ public interface CommandType
 	public void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command statement) throws TAMEInterrupt;
 	
 	/**
-	 * Does this represent a linguistic construct?
-	 * These are parsed in the language.
-	 * @return true if so, false if not.
-	 */
-	public boolean isLanguage();
-	
-	/**
 	 * Is this an internal command type?
 	 * Internal commands are not exposed to the parser.
 	 * @return true if so, false if not.

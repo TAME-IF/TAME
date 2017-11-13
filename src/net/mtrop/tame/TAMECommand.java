@@ -395,7 +395,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * block if POP is true, or if false and the fail block exists, call the fail block. 
 	 * Returns nothing. 
 	 */
-	IF (true, true)
+	IF (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -453,7 +453,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Has a conditional block that is called and then the success block if POP is true. 
 	 * Returns nothing. 
 	 */
-	WHILE (true, true)
+	WHILE (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -509,7 +509,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * and another block for the next step. 
 	 * Returns nothing. 
 	 */
-	FOR (true, true)
+	FOR (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -573,7 +573,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}, 
 	
 	/**
-	 * Throws a BREAK interrupt.
+	 * [INTERNAL] Throws a BREAK interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	BREAK ()
@@ -594,7 +594,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Throws a CONTINUE interrupt.
+	 * [INTERNAL] Throws a CONTINUE interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	CONTINUE ()
@@ -615,7 +615,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Adds a QUIT cue to the response and throws a QUIT interrupt.
+	 * [INTERNAL] Adds a QUIT cue to the response and throws a QUIT interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	QUIT ()
@@ -637,7 +637,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Throws a FINISH interrupt.
+	 * [INTERNAL] Throws a FINISH interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	FINISH ()
@@ -658,7 +658,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Throws an END interrupt.
+	 * [INTERNAL] Throws an END interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
 	END ()
@@ -679,10 +679,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Return from function.
+	 * [INTERNAL] Return from function.
 	 * Sets RETURN value on blocklocal from POP and then throws an END interrupt.
 	 */
-	FUNCTIONRETURN ()
+	FUNCTIONRETURN (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -709,7 +709,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Pushes result.
 	 * Returns nothing.
 	 */
-	CALLFUNCTION ()
+	CALLFUNCTION (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -738,7 +738,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Pushes result.
 	 * Returns nothing.
 	 */
-	CALLELEMENTFUNCTION ()
+	CALLELEMENTFUNCTION (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -3505,45 +3505,32 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	/** Array to get around multiple allocations. */
 	public static final TAMECommand[] VALUES = values();
 	
-	private boolean language;
 	private boolean internal;
 	private ArgumentType returnType;
 	private ArgumentType[] argumentTypes;
 	
 	private TAMECommand()
 	{
-		this(true, true, null, null);
+		this(true, null, null);
 	}
 
 	private TAMECommand(boolean internal)
 	{
-		this(internal, false, null, null);
-	}
-	
-	private TAMECommand(boolean internal, boolean block)
-	{
-		this(internal, block, null, null);
+		this(internal, null, null);
 	}
 	
 	private TAMECommand(ArgumentType returnType, ArgumentType ... argumentTypes)
 	{
-		this(false, false, returnType, argumentTypes);
+		this(false, returnType, argumentTypes);
 	}
 
-	private TAMECommand(boolean internal, boolean language, ArgumentType returnType, ArgumentType[] argumentTypes)
+	private TAMECommand(boolean internal, ArgumentType returnType, ArgumentType[] argumentTypes)
 	{
-		this.language = language;
 		this.internal = internal;
 		this.returnType = returnType;
 		this.argumentTypes = argumentTypes;
 	}
 
-	@Override
-	public boolean isLanguage() 
-	{
-		return language;
-	}
-	
 	@Override
 	public boolean isInternal() 
 	{
