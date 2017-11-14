@@ -19,6 +19,7 @@ public enum ValueType
 	INTEGER,
 	FLOAT,
 	STRING,
+	LIST,
 	OBJECT,
 	CONTAINER,
 	PLAYER,

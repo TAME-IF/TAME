@@ -20,6 +20,7 @@ import net.mtrop.tame.exception.ModuleException;
 import net.mtrop.tame.exception.UnexpectedValueException;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.list.List;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 
@@ -126,6 +127,29 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
+	 * Creates an empty list value.
+	 * @return the new value.
+	 */
+	public static Value createEmptyList()
+	{
+		Value out = new Value();
+		out.set(ValueType.LIST, new List<Value>());
+		return out;
+	}
+
+	/**
+	 * Creates an empty list value.
+	 * @param capacity the initial capacity.
+	 * @return the new value.
+	 */
+	public static Value createEmptyList(int capacity)
+	{
+		Value out = new Value();
+		out.set(ValueType.LIST, new List<Value>(capacity));
+		return out;
+	}
+
+	/**
 	 * Creates an object value.
 	 * @param identity the object identity.
 	 * @return the new value.
@@ -215,6 +239,7 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates a copy of a value.
+	 * List-typed values only copy their reference. This does NOT create a new list!
 	 * @param inputValue the input value.
 	 * @return the new value that is a copy of the input value.
 	 */
@@ -230,6 +255,10 @@ public class Value implements Comparable<Value>, Saveable
 				return create((Double)inputValue.value);
 			case STRING:
 				return create((String)inputValue.value);
+			case LIST:
+				Value out = new Value();
+				out.set(ValueType.LIST, inputValue.value);
+				return out;
 			case OBJECT:
 				return createObject((String)inputValue.value);
 			case PLAYER:
@@ -333,6 +362,9 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (equals(v))
 			return 0;
+
+		if (isList() || v.isList())
+			return -1;
 		
 		if (!isLiteral() || !v.isLiteral())
 			return asString().compareTo(v.asString());
@@ -362,6 +394,7 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
@@ -369,6 +402,8 @@ public class Value implements Comparable<Value>, Saveable
 		
 		switch (type)
 		{
+			default:
+				throw new IOException("Unimplemented value type serialization.");
 			case BOOLEAN:
 				sw.writeBoolean((Boolean)value);
 				break;
@@ -378,7 +413,12 @@ public class Value implements Comparable<Value>, Saveable
 			case FLOAT:
 				sw.writeDouble((Double)value);
 				break;
-			default:
+			case LIST:
+				List<Value> list = (List<Value>)value;
+				sw.writeInt(list.size());
+				for (Value v : list)
+					v.writeBytes(out);
+				break;
 			case STRING:
 			case OBJECT:
 			case CONTAINER:
@@ -410,6 +450,13 @@ public class Value implements Comparable<Value>, Saveable
 			case FLOAT:
 				value = sr.readDouble();
 				break;
+			case LIST:
+			{
+				int len = sr.readInt();
+				value = new List<Value>(len);
+				listAdd(create(in));
+				break;
+			}
 			case STRING:
 			case OBJECT:
 			case CONTAINER:
@@ -622,6 +669,15 @@ public class Value implements Comparable<Value>, Saveable
 	}
 	
 	/**
+	 * Returns if this value is a string value.
+	 * @return true if so, false if not.
+	 */
+	public boolean isList()
+	{
+		return type == ValueType.LIST;
+	}
+	
+	/**
 	 * Returns if this value is a literal value.
 	 * @return true if so, false if not.
 	 */
@@ -679,6 +735,64 @@ public class Value implements Comparable<Value>, Saveable
 		return type == ValueType.VARIABLE;
 	}
 	
+	/**
+	 * Adds a value to this, if this is a list.
+	 * @param value the value to add.
+	 * @return true if added, false if not.
+	 */
+	public int length()
+	{
+		if (isList())
+		{
+			@SuppressWarnings("unchecked")
+			List<Value> list = (List<Value>)value;
+			return list.size();
+		}
+		else if (isString())
+		{
+			return asString().length();
+		}
+		else
+			return 1;
+	}
+	
+	/**
+	 * Adds a value to this, if this is a list.
+	 * @param value the value to add.
+	 * @return true if added, false if not.
+	 */
+	public boolean listAdd(Value v)
+	{
+		if (!isList())
+			return false;
+		@SuppressWarnings("unchecked")
+		List<Value> list = (List<Value>)value;
+		list.add(create(v));
+		return true;
+	}
+	
+	/**
+	 * Sets a value on this at a specific index, if this is a list.
+	 * @param i the index to set.
+	 * @param value the value to set.
+	 * @return true if set, false if not (index is out of range).
+	 */
+	public boolean listSet(int i, Value v)
+	{
+		if (!isList())
+			return false;
+		
+		@SuppressWarnings("unchecked")
+		List<Value> list = (List<Value>)value;
+		if (i < 0 || i >= list.size())
+			return false;
+		
+		list.replace(i, create(v));
+		return true;
+	}
+
+	// TODO: Finish list stuff.
+	
 	@Override
 	public String toString()
 	{
@@ -731,15 +845,15 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the addition of two literal values.
+	 * False is returned if the values cannot be added.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value add(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be added: " + value1 + ", " + value2);
+			return create(false);
 
 		if (value1.isBoolean() && value2.isBoolean())
 		{
@@ -769,6 +883,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the subtraction of the second literal value from the first.
+	 * False is returned if the values cannot be subtracted.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -777,7 +892,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value subtract(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be subtracted: " + value1 + ", " + value2);
+			return create(false);
 
 		if (value1.isBoolean() && value2.isBoolean())
 		{
@@ -801,6 +916,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the multiplication of two literal values.
+	 * False is returned if the values cannot be multiplied.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -809,7 +925,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value multiply(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be multiplied: " + value1 + ", " + value2);
+			return create(false);
 
 		if (value1.isBoolean() && value2.isBoolean())
 		{
@@ -833,6 +949,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the division of two literal values.
+	 * False is returned if the values cannot be divided.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -841,7 +958,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value divide(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be divided: " + value1 + ", " + value2);
+			return create(false);
 
 		if (value1.isInteger() && value2.isInteger())
 		{
@@ -875,6 +992,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the modulo of one literal value using another.
+	 * False is returned if the values cannot be modularly-divided.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -883,7 +1001,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value modulo(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be modulo divided: " + value1 + ", " + value2);
+			return create(false);
 
 		if (value1.isInteger() && value2.isInteger())
 		{
@@ -907,6 +1025,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the result of one value raised to a certain power. 
+	 * False is returned if the values cannot be power.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -915,20 +1034,12 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value power(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be raised to a power: " + value1 + ", " + value2);
+			return create(false);
 
 		double v1 = value1.asDouble();
 		double v2 = value2.asDouble();
 		double p = Math.pow(v1, v2);
 		return create(p);
-		/*
-		if (v1 == 0.0 && v2 < 0.0)
-			return create(Double.POSITIVE_INFINITY);
-		else if (value1.isInteger() && value2.isInteger())
-			return create((long)p);
-		else
-			return create(p);
-		*/
 	}
 	
 	/**
@@ -940,9 +1051,6 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public static Value logicalAnd(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
-		
 		boolean v1 = value1.asBoolean();
 		boolean v2 = value2.asBoolean();
 		return create(v1 && v2);
@@ -957,9 +1065,6 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public static Value logicalOr(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
-		
 		boolean v1 = value1.asBoolean();
 		boolean v2 = value2.asBoolean();
 		return create(v1 || v2);
@@ -974,9 +1079,6 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public static Value logicalXOr(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be and'ed: " + value1 + ", " + value2);
-		
 		boolean v1 = value1.asBoolean();
 		boolean v2 = value2.asBoolean();
 		return create(v1 ^ v2);
@@ -1033,6 +1135,7 @@ public class Value implements Comparable<Value>, Saveable
 	/**
 	 * Returns if the first literal value is less than the second.
 	 * If either are strings, they are compared lexicographically.
+	 * False is returned if the values cannot be compared.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
@@ -1041,7 +1144,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value less(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
 		else if (value1.isString() || value2.isString())
@@ -1057,6 +1160,7 @@ public class Value implements Comparable<Value>, Saveable
 	/**
 	 * Returns if the first literal value is less than or equal to the second.
 	 * If either are strings, they are compared lexicographically.
+	 * False is returned if the values cannot be compared.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
@@ -1065,7 +1169,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value lessOrEqual(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
 		else if (value1.isString() || value2.isString())
@@ -1081,6 +1185,7 @@ public class Value implements Comparable<Value>, Saveable
 	/**
 	 * Returns if the first literal value is greater than the second.
 	 * If either are strings, they are compared lexicographically.
+	 * False is returned if the values cannot be compared.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
@@ -1089,7 +1194,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value greater(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
 		else if (value1.isString() || value2.isString())
@@ -1105,6 +1210,7 @@ public class Value implements Comparable<Value>, Saveable
 	/**
 	 * Returns if the first literal value is greater than or equal to the second.
 	 * If either are strings, they are compared lexicographically.
+	 * False is returned if the values cannot be compared.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value, as a boolean.
@@ -1113,7 +1219,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value greaterOrEqual(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			throw new ArithmeticException("These values can't be compared: " + value1 + ", " + value2);
+			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
 		else if (value1.isString() || value2.isString())

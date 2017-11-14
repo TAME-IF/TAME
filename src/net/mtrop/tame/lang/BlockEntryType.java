@@ -13,7 +13,6 @@ package net.mtrop.tame.lang;
  * The block entry type.
  * Also describes what the compiler should expect when parsing the block type.
  * @author Matthew Tropiano
- * TODO: Rename some of these. They are unclear.
  */
 public enum BlockEntryType
 {
