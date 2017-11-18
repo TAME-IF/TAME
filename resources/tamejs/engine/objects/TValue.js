@@ -65,6 +65,7 @@ TValue.Type =
 	"INTEGER": "INTEGER",
 	"FLOAT": "FLOAT",
 	"STRING": "STRING",
+	"LIST": "LIST",
 	"OBJECT": "OBJECT",
 	"CONTAINER": "CONTAINER",
 	"PLAYER": "PLAYER",
@@ -93,6 +94,7 @@ TValue.createBoolean = function(value) {return TValue.create(TValue.Type.BOOLEAN
 TValue.createInteger = function(value) {return TValue.create(TValue.Type.INTEGER, parseInt(value, 10));}
 TValue.createFloat = function(value) {return TValue.create(TValue.Type.FLOAT, parseFloat(value));}
 TValue.createString = function(value) {return TValue.create(TValue.Type.STRING, Util.toBase64(String(value)));}
+TValue.createList = function(value) {return TValue.create(TValue.Type.LIST, value);}
 TValue.createWorld = function() {return TValue.create(TValue.Type.WORLD, Util.toBase64("world"));}
 TValue.createObject = function(value) {return TValue.create(TValue.Type.OBJECT, Util.toBase64(String(value)));}
 TValue.createContainer = function(value) {return TValue.create(TValue.Type.CONTAINER, Util.toBase64(String(value)));}
@@ -150,8 +152,13 @@ TValue.compare = function(v1, v2)
 	var d1 = null;
 	var d2 = null;
 
+	// one is a list
+	if (TValue.isLiteral(v1) || TValue.isLiteral(v2))
+	{
+		return -1;
+	}
 	// one is not a literal
-	if (!TValue.isLiteral(v1) || !TValue.isLiteral(v2))
+	else if (!TValue.isLiteral(v1) || !TValue.isLiteral(v2))
 	{
 		d1 = TValue.asString(v1);
 		d2 = TValue.asString(v2);
@@ -659,6 +666,15 @@ TValue.isString = function(value)
 };
 
 /**
+ * Returns if this value is a list.
+ * @return true if so, false if not.
+ */
+TValue.isList = function(value)
+{
+	return value.type === TValue.Type.LIST;
+};
+
+/**
  * Returns if this value is a literal value.
  * @return true if so, false if not.
  */
@@ -840,6 +856,7 @@ TValue.asDouble = function(value)
  */
 TValue.asString = function(value)
 {
+	// TODO: Handle lists.
 	if (TValue.isString(value) || TValue.isElement(value) || TValue.isVariable(value) || TValue.isAction(value))
 		return Util.fromBase64(value.value);
 	else if (TValue.isInfinite(value) || TValue.isNaN(value))
@@ -911,6 +928,44 @@ TValue.toString = function(value)
 {
 	return value.type + "[" + Util.withEscChars(TValue.asString(value)) + "]";
 };
+
+/**
+ * Gets if a value is "empty."
+ * If boolean, this returns true if and only if it is false.
+ * If numeric, this returns true if and only if the value is 0 or NaN.
+ * If string, this returns true if and only if the value, trimmed, is length 0.
+ * If list, this returns true if and only if the list is length 0.
+ * Otherwise, false.
+ * @return true if this value is "empty", false if not.
+ */
+TValue.isEmpty = function(value)
+{
+	if (TValue.isStrictlyNaN(value))
+		return true;
+	else if (TValue.isBoolean(value))
+		return TValue.asBoolean(value);
+	else if (TValue.isNumeric(value))
+		return TValue.asDouble(value) !== 0.0;
+	else if (TValue.isString(value))
+		return TValue.asString(value).trim().length() === 0;
+	else if (TValue.isList(value))
+		return value.value.length === 0;
+	else
+		return false;
+};
+
+/*
+TODO: All of this.
+length()
+listAdd(Value)
+listAddAt(int, Value)
+listSet(int, Value)
+listGet(int)
+listRemove(Value)
+listRemoveAt(int)
+listIndexOf(Value)
+listContains(Value)
+*/
 
 //##[[EXPORTJS-END
 

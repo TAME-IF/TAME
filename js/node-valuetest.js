@@ -103,3 +103,5 @@ for (var x in TArithmeticFunctions.Type) if (TArithmeticFunctions.Type.hasOwnPro
 	console.log("-------------------------------");
 }
 
+console.log(TValue.asString(TValue.createList([])));
+

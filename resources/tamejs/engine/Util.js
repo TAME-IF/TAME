@@ -80,6 +80,12 @@ Util.objectStringContains = function(hash, identity, str)
 	return (arr && arr[str]);
 };
 
+// isArray - tests if an object is an array.
+Util.isArray = function(obj)
+{
+	return Object.prototype.toString.call(obj) === '[object Array]';
+};
+
 // Mapify - [object, ...] to {object.memberKey -> object, ...}
 Util.mapify = function(objlist, memberKey, multi) 
 {
@@ -111,7 +117,7 @@ Util.pairify = function(objlist, memberKey, memberValue, multi)
 			var chain = out[objlist[x][memberKey]];
 			if (multi && chain)
 			{
-				if (Object.prototype.toString.call(chain) === '[object Array]')
+				if (Util.isArray(chain))
 					chain.push(objlist[x][memberValue]); 
 				else
 					out[objlist[x][memberKey]] = [out[objlist[x][memberKey]], objlist[x][memberValue]]; 
@@ -134,7 +140,6 @@ Util.withEscChars = function(text)
 	var t = JSON.stringify(text);
 	return t.substring(1, t.length - 1);
 };
-
 
 // formatDate - Return a string that is a formatted date. Similar to SimpleDateFormat in Java.
 Util.formatDate = function(date, formatstring, utc) 

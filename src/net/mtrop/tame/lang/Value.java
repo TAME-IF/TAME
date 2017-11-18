@@ -303,13 +303,24 @@ public class Value implements Comparable<Value>, Saveable
 			throw new UnexpectedValueException("Value cannot be null!");
 		this.type = type;
 		this.value = value;
+		this.hash = 0;
 	}
 
 	@Override
 	public int hashCode()
 	{
 		if (hash == 0)
-			hash = type.ordinal() + 31 * String.valueOf(value).hashCode();
+		{
+			hash = type.ordinal();
+			if (isList())
+			{
+				int len = length();
+				for (int i = 0; i < len; i++)
+					hash += 31 * listGet(i).hashCode(); 
+			}
+			else
+				hash += 31 * String.valueOf(value).hashCode();
+		}
 		return hash;
 	}
 
@@ -734,11 +745,42 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		return type == ValueType.VARIABLE;
 	}
+
+	/**
+	 * Gets if this value is "empty."
+	 * <br/>If boolean, this returns true if and only if this is false.
+	 * <br/>If numeric, this returns true if and only if the value is 0 or NaN.
+	 * <br/>If string, this returns true if and only if this value, trimmed, is length 0.
+	 * <br/>If list, this returns true if and only if this list is length 0.
+	 * <br/>Otherwise, false.
+	 * @return true if this value is "empty", false if not.
+	 */
+	public boolean isEmpty()
+	{
+		if (isStrictlyNaN())
+			return true;
+		else if (isBoolean())
+			return asBoolean();
+		else if (isNumeric())
+			return asDouble() != 0.0;
+		else if (isString())
+			return asString().trim().length() == 0;
+		else if (isList())
+		{
+			@SuppressWarnings("unchecked")
+			List<Value> list = (List<Value>)value;
+			return list.isEmpty();
+		}
+		else
+			return false;
+	}
 	
 	/**
-	 * Adds a value to this, if this is a list.
-	 * @param value the value to add.
-	 * @return true if added, false if not.
+	 * Gets the length of this value.
+	 * <br/>If string, this returns the string length in characters.
+	 * <br/>If list, this returns the cardinality.
+	 * <br/>Otherwise, 1.
+	 * @return the length.
 	 */
 	public int length()
 	{
@@ -758,7 +800,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Adds a value to this, if this is a list.
-	 * @param value the value to add.
+	 * @param v the value to add.
 	 * @return true if added, false if not.
 	 */
 	public boolean listAdd(Value v)
@@ -768,6 +810,22 @@ public class Value implements Comparable<Value>, Saveable
 		@SuppressWarnings("unchecked")
 		List<Value> list = (List<Value>)value;
 		list.add(create(v));
+		return true;
+	}
+	
+	/**
+	 * Adds a value to this at a specific index, if this is a list.
+	 * @param i the index to add the value at.
+	 * @param v the value to add.
+	 * @return true if added, false if not.
+	 */
+	public boolean listAddAt(int i, Value v)
+	{
+		if (!isList())
+			return false;
+		@SuppressWarnings("unchecked")
+		List<Value> list = (List<Value>)value;
+		list.add(i, create(v));
 		return true;
 	}
 	
@@ -790,9 +848,86 @@ public class Value implements Comparable<Value>, Saveable
 		list.replace(i, create(v));
 		return true;
 	}
-
-	// TODO: Finish list stuff.
 	
+	/**
+	 * Gets a value on this at a specific index, if this is a list.
+	 * @param i the index to get.
+	 * @return the value (new instance via {@link #create(Value)}) or false if not found.
+	 */
+	public Value listGet(int i)
+	{
+		if (!isList())
+			return create(false);
+		
+		@SuppressWarnings("unchecked")
+		List<Value> list = (List<Value>)value;
+		if (i < 0 || i >= list.size())
+			return create(false);
+		
+		return create(list.getByIndex(i));
+	}
+
+	/**
+	 * Removes a value from inside this value, if this is a list.
+	 * Remember, list-typed values are compared by reference!
+	 * @param v the value to remove.
+	 * @return true if a value was removed or false if not found.
+	 */
+	public boolean listRemove(Value v)
+	{
+		if (!isList())
+			return false;
+		
+		@SuppressWarnings("unchecked")
+		List<Value> list = (List<Value>)value;
+		return list.remove(v);
+	}
+
+	/**
+	 * Removes a value from this at a specific index, if this is a list.
+	 * @param i the index to get.
+	 * @return the value removed (new instance via {@link #create(Value)}) or false if not found.
+	 */
+	public Value listRemoveAt(int i)
+	{
+		if (!isList())
+			return create(false);
+		
+		@SuppressWarnings("unchecked")
+		List<Value> list = (List<Value>)value;
+		if (i < 0 || i >= list.size())
+			return create(false);
+		
+		return create(list.removeIndex(i));
+	}
+
+	/**
+	 * Gets the index of a value from this, if this is a list.
+	 * Remember, list-typed values are compared by reference!
+	 * @param v the value to search for.
+	 * @return the index of the matching value, or -1 if not found.
+	 */
+	public int listIndexOf(Value v)
+	{
+		if (!isList())
+			return -1;
+		
+		@SuppressWarnings("unchecked")
+		List<Value> list = (List<Value>)value;
+		return list.getIndexOf(v);
+	}
+
+	/**
+	 * Checks if this value contains a value, if this is a list.
+	 * Remember, list-typed values are compared by reference!
+	 * @param v the value to search for.
+	 * @return true if so, false if not.
+	 */
+	public boolean listContains(Value v)
+	{
+		return listIndexOf(v) >= 0;
+	}
+
 	@Override
 	public String toString()
 	{
