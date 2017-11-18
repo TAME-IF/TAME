@@ -832,7 +832,7 @@ public class Value implements Comparable<Value>, Saveable
 	/**
 	 * Sets a value on this at a specific index, if this is a list.
 	 * @param i the index to set.
-	 * @param value the value to set.
+	 * @param v the value to set.
 	 * @return true if set, false if not (index is out of range).
 	 */
 	public boolean listSet(int i, Value v)
