@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
 
 import net.mtrop.tame.TAMEConstants;
 import net.mtrop.tame.exception.ModuleException;
@@ -593,7 +594,25 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	public String asString()
 	{
-		return String.valueOf(value);
+		if (isList())
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append("[");
+			@SuppressWarnings("unchecked")
+			List<Value> list = (List<Value>)value;
+			Iterator<Value> it = list.iterator();
+			while (it.hasNext())
+			{
+				Value v = it.next();
+				sb.append(v.asString());
+				if (it.hasNext())
+					sb.append(", ");
+			}
+			sb.append("]");
+			return sb.toString();
+		}
+		else
+			return String.valueOf(value);
 	}
 
 	/**
@@ -760,9 +779,9 @@ public class Value implements Comparable<Value>, Saveable
 		if (isStrictlyNaN())
 			return true;
 		else if (isBoolean())
-			return asBoolean();
+			return !asBoolean();
 		else if (isNumeric())
-			return asDouble() != 0.0;
+			return asDouble() == 0.0;
 		else if (isString())
 			return asString().trim().length() == 0;
 		else if (isList())
@@ -980,7 +999,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the addition of two literal values.
-	 * False is returned if the values cannot be added.
+	 * NaN is returned if the values cannot be multiplied.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -988,7 +1007,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value add(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			return create(false);
+			return create(Double.NaN);
 
 		if (value1.isBoolean() && value2.isBoolean())
 		{
@@ -1018,16 +1037,15 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the subtraction of the second literal value from the first.
-	 * False is returned if the values cannot be subtracted.
+	 * NaN is returned if the values cannot be multiplied.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value subtract(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			return create(false);
+			return create(Double.NaN);
 
 		if (value1.isBoolean() && value2.isBoolean())
 		{
@@ -1051,16 +1069,15 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the multiplication of two literal values.
-	 * False is returned if the values cannot be multiplied.
+	 * NaN is returned if the values cannot be multiplied.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
-	 * @throws ArithmeticException If an arithmetic exception occurs.
 	 */
 	public static Value multiply(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			return create(false);
+			return create(Double.NaN);
 
 		if (value1.isBoolean() && value2.isBoolean())
 		{
@@ -1084,7 +1101,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the division of two literal values.
-	 * False is returned if the values cannot be divided.
+	 * NaN is returned if the values cannot be divided.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -1093,7 +1110,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value divide(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			return create(false);
+			return create(Double.NaN);
 
 		if (value1.isInteger() && value2.isInteger())
 		{
@@ -1127,7 +1144,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the modulo of one literal value using another.
-	 * False is returned if the values cannot be modularly-divided.
+	 * NaN is returned if the values cannot be modularly-divided.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -1136,7 +1153,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value modulo(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			return create(false);
+			return create(Double.NaN);
 
 		if (value1.isInteger() && value2.isInteger())
 		{
@@ -1160,7 +1177,7 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Returns the result of one value raised to a certain power. 
-	 * False is returned if the values cannot be power.
+	 * NaN is returned if the values cannot be power.
 	 * @param value1 the first operand.
 	 * @param value2 the second operand.
 	 * @return the resultant value.
@@ -1169,7 +1186,7 @@ public class Value implements Comparable<Value>, Saveable
 	public static Value power(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
-			return create(false);
+			return create(Double.NaN);
 
 		double v1 = value1.asDouble();
 		double v2 = value2.asDouble();

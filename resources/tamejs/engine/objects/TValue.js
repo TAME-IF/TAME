@@ -11,6 +11,7 @@
 // REQUIREMENTS =========================================================================================
 var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
+var TStringBuilder = TStringBuilder || ((typeof require) !== 'undefined' ? require('../TStringBuilder.js') : null);
 // ======================================================================================================
 Util.nanoTime = function()
 {
@@ -105,6 +106,7 @@ TValue.createVariable = function(value) {return TValue.create(TValue.Type.VARIAB
 TValue.createNaN = function() {return TValue.create(TValue.Type.FLOAT, NaN);}
 TValue.createInfinity = function() {return TValue.create(TValue.Type.FLOAT, Infinity);}
 TValue.createNegativeInfinity = function() {return TValue.create(TValue.Type.FLOAT, -Infinity);}
+TValue.createValue = function(value) {return TValue.create(value.type, value.value);}
 
 /**
  * Returns if this value is equal to another, value-wise.
@@ -153,7 +155,7 @@ TValue.compare = function(v1, v2)
 	var d2 = null;
 
 	// one is a list
-	if (TValue.isLiteral(v1) || TValue.isLiteral(v2))
+	if (TValue.isList(v1) || TValue.isList(v2))
 	{
 		return -1;
 	}
@@ -259,12 +261,11 @@ TValue.not = function(value1)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.add = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be added: " + value1 + ", " + value2);
+		return TValue.createNaN();
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -297,12 +298,11 @@ TValue.add = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.subtract = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be subtracted: " + value1 + ", " + value2);
+		return TValue.createNaN();
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -329,12 +329,11 @@ TValue.subtract = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.multiply = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be multiplied: " + value1 + ", " + value2);
+		return TValue.createNaN();
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -453,12 +452,11 @@ TValue.power = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.logicalAnd = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be and'ed: " + value1 + ", " + value2);
+		return TValue.createBoolean(false);
 	
 	var v1 = TValue.asBoolean(value1);
 	var v2 = TValue.asBoolean(value2);
@@ -470,12 +468,11 @@ TValue.logicalAnd = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.logicalOr = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be and'ed: " + value1 + ", " + value2);
+		return TValue.createBoolean(false);
 	
 	var v1 = TValue.asBoolean(value1);
 	var v2 = TValue.asBoolean(value2);
@@ -487,12 +484,11 @@ TValue.logicalOr = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.logicalXOr = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be and'ed: " + value1 + ", " + value2);
+		return TValue.createBoolean(false);
 	
 	var v1 = TValue.asBoolean(value1);
 	var v2 = TValue.asBoolean(value2);
@@ -504,7 +500,6 @@ TValue.logicalXOr = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.equals = function(value1, value2)
 {
@@ -516,7 +511,6 @@ TValue.equals = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.notEquals = function(value1, value2)
 {
@@ -528,7 +522,6 @@ TValue.notEquals = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.strictEquals = function(value1, value2)
 {
@@ -540,7 +533,6 @@ TValue.strictEquals = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.strictNotEquals = function(value1, value2)
 {
@@ -553,12 +545,11 @@ TValue.strictNotEquals = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.less = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be compared: " + value1 + ", " + value2);
+		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -571,12 +562,11 @@ TValue.less = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.lessOrEqual = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be compared: " + value1 + ", " + value2);
+		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -589,12 +579,11 @@ TValue.lessOrEqual = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.greater = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be compared: " + value1 + ", " + value2);
+		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -607,12 +596,11 @@ TValue.greater = function(value1, value2)
  * @param value1 the first operand.
  * @param value2 the second operand.
  * @return the resultant value, as a boolean.
- * @throws Arithmetic If an arithmetic exception occurs.
  */
 TValue.greaterOrEqual = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be compared: " + value1 + ", " + value2);
+		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -856,8 +844,20 @@ TValue.asDouble = function(value)
  */
 TValue.asString = function(value)
 {
-	// TODO: Handle lists.
-	if (TValue.isString(value) || TValue.isElement(value) || TValue.isVariable(value) || TValue.isAction(value))
+	if (TValue.isList(value))
+	{
+		var tsb = new TStringBuilder();
+		tsb.append("[");
+		for (var i = 0; i < value.value.length; i++)
+		{
+			tsb.append(TValue.asString(value.value[i]));
+			if (i < value.value.length - 1)
+				tsb.append(", ");
+		}
+		tsb.append("]");
+		return tsb.toString();
+	}
+	else if (TValue.isString(value) || TValue.isElement(value) || TValue.isVariable(value) || TValue.isAction(value))
 		return Util.fromBase64(value.value);
 	else if (TValue.isInfinite(value) || TValue.isNaN(value))
 		return ""+value.value;
@@ -943,29 +943,168 @@ TValue.isEmpty = function(value)
 	if (TValue.isStrictlyNaN(value))
 		return true;
 	else if (TValue.isBoolean(value))
-		return TValue.asBoolean(value);
+		return !TValue.asBoolean(value);
 	else if (TValue.isNumeric(value))
-		return TValue.asDouble(value) !== 0.0;
+		return TValue.asDouble(value) === 0.0;
 	else if (TValue.isString(value))
-		return TValue.asString(value).trim().length() === 0;
+		return TValue.asString(value).trim().length === 0;
 	else if (TValue.isList(value))
 		return value.value.length === 0;
 	else
 		return false;
 };
 
-/*
-TODO: All of this.
-length()
-listAdd(Value)
-listAddAt(int, Value)
-listSet(int, Value)
-listGet(int)
-listRemove(Value)
-listRemoveAt(int)
-listIndexOf(Value)
-listContains(Value)
-*/
+/**
+ * Gets the length of this value.
+ * If string, this returns the string length in characters.
+ * If list, this returns the cardinality.
+ * Otherwise, 1.
+ * @return the length.
+ */
+TValue.length = function(value)
+{
+	if (TValue.isList(value))
+		return value.value.length;
+	else if (TValue.isString(value))
+		return TValue.asString(value).length;
+	else
+		return 1;
+};
+
+/**
+ * Adds a value to this, if this is a list.
+ * @param listValue the list value.
+ * @param v the value to add.
+ * @return true if added, false if not.
+ */
+TValue.listAdd = function(listValue, v)
+{
+	if (!TValue.isList(listValue))
+		return false;
+	listValue.value.push(TValue.createValue(v));
+	return true;
+};
+
+/**
+ * Adds a value to this at a specific index, if this is a list.
+ * @param listValue the list value.
+ * @param i the index to add the value at.
+ * @param v the value to add.
+ * @return true if added, false if not.
+ */
+TValue.listAddAt = function(listValue, i, v)
+{
+	if (!TValue.isList(listValue))
+		return false;
+	listValue.value.splice(i, 0, TValue.createValue(v));
+	return true;
+};
+
+/**
+ * Sets a value on this at a specific index, if this is a list.
+ * @param listValue the list value.
+ * @param i the index to set.
+ * @param v the value to set.
+ * @return true if set, false if not (index is out of range).
+ */
+TValue.listSet = function(listValue, i, v)
+{
+	if (!TValue.isList(listValue))
+		return false;
+	
+	if (i < 0 || i >= listValue.value.length)
+		return false;
+	
+	listValue.value[i] = TValue.createValue(v);
+	return true;
+};
+
+/**
+ * Gets a value on this at a specific index, if this is a list.
+ * @param listValue the list value.
+ * @param i the index to get.
+ * @return the value (new instance via TValue.createValue()) or false if not found.
+ */
+TValue.listGet = function(listValue, i)
+{
+	if (!TValue.isList(listValue))
+		return TValue.createBoolean(false);
+	
+	if (i < 0 || i >= listValue.value.length)
+		return TValue.createBoolean(false);
+	
+	return TValue.createValue(listValue.value[i]);
+};
+
+/**
+ * Gets the index of a value from this, if this is a list.
+ * Remember, list-typed values are compared by reference!
+ * @param listValue the list value.
+ * @param v the value to search for.
+ * @return the index of the matching value, or -1 if not found.
+ */
+TValue.listIndexOf = function(listValue, v)
+{
+	if (!TValue.isList(listValue))
+		return -1;
+	
+	for (var i = 0; i < listValue.value.length; i++)
+	{
+		if (TValue.areEqual(v, listValue.value[i]))
+			return i;
+	}
+	
+	return -1;
+};
+
+/**
+ * Checks if this value contains a value, if this is a list.
+ * Remember, list-typed values are compared by reference!
+ * @param listValue the list value.
+ * @param v the value to search for.
+ * @return true if so, false if not.
+ */
+TValue.listContains = function(listValue, v)
+{
+	return TValue.listIndexOf(listValue, v) >= 0;
+};
+
+/**
+ * Removes a value from inside this value, if this is a list.
+ * Remember, list-typed values are compared by reference!
+ * @param listValue the list value.
+ * @param v the value to remove.
+ * @return true if a value was removed or false if not found.
+ */
+TValue.listRemove = function(listValue, v)
+{
+	if (!TValue.isList(listValue))
+		return false;
+
+	var i = TValue.listIndexOf(listValue, v);
+	if (i < 0)
+		return false;
+	
+	listValue.value.splice(i, 1);
+	return true;
+};
+
+/**
+ * Removes a value from this at a specific index, if this is a list.
+ * @param listValue the list value.
+ * @param i the index to get.
+ * @return the value removed (new instance via {@link #create(Value)}) or false if not found.
+ */
+TValue.listRemoveAt = function(listValue, i)
+{
+	if (!TValue.isList(listValue))
+		return TValue.createBoolean(false);
+
+	if (i < 0 || i >= listValue.value.length)
+		return TValue.createBoolean(false);
+	
+	return TValue.createValue(listValue.value.splice(i, 1)[0]);
+};
 
 //##[[EXPORTJS-END
 

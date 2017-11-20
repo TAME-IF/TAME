@@ -42,6 +42,7 @@ Util.nanoTime = (function(){
 Util.toBase64 = function(text){return btoa(text);};
 Util.fromBase64 = function(data){return atob(data);};
 
+//##[[EXPORTJS-INCLUDE engine/TStringBuilder.js
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
 //##[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js

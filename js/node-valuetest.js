@@ -40,14 +40,24 @@ var TEST_VALUES = [
 	TValue.createString("banana"),
 ];
 
+function printEmpty(v1)
+{
+	console.log(TValue.toString(v1) + " > EMPTY? > " + TValue.isEmpty(v1));
+}
+
+function printLength(v1)
+{
+	console.log(TValue.toString(v1) + " > LENGTH > " + TValue.length(v1));
+}
+
 function printBoolean(v1)
 {
-	console.log(TValue.toString(v1) + " > BOOLEAN > " +TValue.asBoolean(v1));
+	console.log(TValue.toString(v1) + " > BOOLEAN > " + TValue.asBoolean(v1));
 }
 
 function printInteger(v1)
 {
-	console.log(TValue.toString(v1) + " > INT > " +TValue.asLong(v1));
+	console.log(TValue.toString(v1) + " > INT > " + TValue.asLong(v1));
 }
 
 function printFloat(v1)
@@ -72,6 +82,12 @@ function print2(op, opSign, v1, v2)
 }
 
 var i;
+for (i = 0; i < TEST_VALUES.length; i++)
+	printEmpty(TEST_VALUES[i]);
+console.log("-------------------------------");
+for (i = 0; i < TEST_VALUES.length; i++)
+	printLength(TEST_VALUES[i]);
+console.log("-------------------------------");
 for (i = 0; i < TEST_VALUES.length; i++)
 	printBoolean(TEST_VALUES[i]);
 console.log("-------------------------------");
@@ -103,5 +119,17 @@ for (var x in TArithmeticFunctions.Type) if (TArithmeticFunctions.Type.hasOwnPro
 	console.log("-------------------------------");
 }
 
-console.log(TValue.asString(TValue.createList([])));
+var listValue = TValue.createList([]);
+
+for (i = 0; i < TEST_VALUES.length; i++)
+	TValue.listAdd(listValue, TEST_VALUES[i]);
+
+console.log(TValue.asString(listValue));
+
+for (i = 0; i < TEST_VALUES.length; i++)
+	TValue.listRemove(listValue, TValue.createBoolean(true));
+
+console.log(TValue.asString(listValue));
+
+console.log(TValue.length(listValue));
 

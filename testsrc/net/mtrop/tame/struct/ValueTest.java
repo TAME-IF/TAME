@@ -62,6 +62,12 @@ public final class ValueTest
 		PrintStream out = System.out;
 		
 		for (int i = 0; i < TEST_VALUES.length; i++)
+			printEmpty(out, TEST_VALUES[i]);
+		out.println("-------------------------------");
+		for (int i = 0; i < TEST_VALUES.length; i++)
+			printLength(out, TEST_VALUES[i]);
+		out.println("-------------------------------");
+		for (int i = 0; i < TEST_VALUES.length; i++)
 			printBoolean(out, TEST_VALUES[i]);
 		out.println("-------------------------------");
 		for (int i = 0; i < TEST_VALUES.length; i++)
@@ -92,6 +98,16 @@ public final class ValueTest
 			
 	}
 	
+	private static void printEmpty(PrintStream out, Value v1)
+	{
+		out.println(v1 + " > EMPTY? > " +v1.isEmpty());
+	}
+
+	private static void printLength(PrintStream out, Value v1)
+	{
+		out.println(v1 + " > LENGTH > " +v1.length());
+	}
+
 	private static void printBoolean(PrintStream out, Value v1)
 	{
 		out.println(v1 + " > BOOLEAN > " +v1.asBoolean());

@@ -102,5 +102,6 @@ public final class ListValueTest
 		Common.noop();
 		
 		out.println(list.length());
+		out.println(list.asString());
 	}
 }

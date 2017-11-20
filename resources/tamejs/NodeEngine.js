@@ -57,6 +57,7 @@ module.exports = new (function()
 		}
 	})();
 
+//##[[EXPORTJS-INCLUDE engine/TStringBuilder.js
 //##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //##[[EXPORTJS-INCLUDE engine/TAMEError.js
 //##[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
