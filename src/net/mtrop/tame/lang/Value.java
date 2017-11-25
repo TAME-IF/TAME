@@ -708,7 +708,7 @@ public class Value implements Comparable<Value>, Saveable
 	}
 	
 	/**
-	 * Returns if this value is a literal value.
+	 * Returns if this value is a literal value (or list).
 	 * @return true if so, false if not.
 	 */
 	public boolean isLiteral()
@@ -717,7 +717,8 @@ public class Value implements Comparable<Value>, Saveable
 			type == ValueType.BOOLEAN
 			|| type == ValueType.INTEGER
 			|| type == ValueType.FLOAT
-			|| type == ValueType.STRING;
+			|| type == ValueType.STRING
+			|| type == ValueType.LIST;
 	}
 	
 	/**

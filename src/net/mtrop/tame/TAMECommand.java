@@ -474,6 +474,63 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * [INTERNAL] Pushes a new empty list.
+	 * Pops nothing.
+	 * Pushes a new list. 
+	 */
+	PUSHNEWLIST (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			request.pushValue(Value.createEmptyList());
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Pushes a new list, initialized with values.
+	 * First POP is length, then POPs [length] values and fills backwards.
+	 * Pushes a new list. 
+	 */
+	PUSHINITLIST (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			Value length = request.popValue();
+
+			if (!length.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in PUSHINITLIST call.");
+
+			int size = (int)length.asLong();
+			Value list = Value.createEmptyList(size);
+			while (size-- > 0)
+			{
+				Value popped = request.popValue();
+				if (!(popped.isLiteral() || popped.isList()))
+					throw new UnexpectedValueTypeException("Expected literal or list type in PUSHINITLIST call.");
+				list.listAddAt(0, popped);
+			}
+			
+			request.pushValue(list);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
 	 * [INTERNAL] Clears a variable from blocklocal or object member.
 	 * Operand0 is the variable. 
 	 * Returns nothing.

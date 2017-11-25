@@ -57,6 +57,18 @@ TLogic.getValue = function(valueHash, variableName)
 };
 
 /**
+ * Checks that a value exists on a variable hash.
+ * @param valueHash the hash that contains the variables.
+ * @param variableName the variable name.
+ * @return true if so, false if not.
+ */
+TLogic.containsValue = function(valueHash, variableName)
+{
+	variableName = variableName.toLowerCase();
+	return valueHash[variableName] ? true : false;
+};
+
+/**
  * Clears a value on a variable hash.
  * @param valueHash the hash that contains the variables.
  * @param variableName the variable name.

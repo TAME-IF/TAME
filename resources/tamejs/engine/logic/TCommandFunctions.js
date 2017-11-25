@@ -58,7 +58,7 @@ var TCommandFunctions =
 
 			var variableName = TValue.asString(varvalue);
 			
-			if (blockLocal[variableName.toLowerCase()])
+			if (TLogic.containsValue(blockLocal, variableName))
 				TLogic.setValue(blockLocal, variableName, value);
 			else
 				TLogic.setValue(request.peekContext().variables, variableName, value);
@@ -104,6 +104,97 @@ var TCommandFunctions =
 		}
 	},
 
+	/* POPLISTVALUE */
+	{
+		"name": 'POPLISTVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var variable = command.operand0;
+			var value = request.popValue();
+			var index = request.popValue();
+			
+			if (!TValue.isLiteral(index))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPLISTVALUE call.");
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPLISTVALUE call.");
+			if (!TValue.isVariable(variable))
+				throw TAMEError.UnexpectedValueType("Expected variable type in POPLISTVALUE call.");
+			
+			var variableName = TValue.asString(varvalue);
+			var listValue;
+			
+			if (TLogic.containsValue(blockLocal, variableName))
+				listValue = TLogic.getValue(blockLocal, variableName);
+			else
+				listValue = TLogic.getValue(request.peekContext().variables, variableName);
+
+			if (!TValue.isList(listValue))
+				return;
+			
+			TValue.listSet(TValue.asLong(index), value);
+		}
+	},
+	
+	/* POPLOCALLISTVALUE */
+	{
+		"name": 'POPLOCALLISTVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var variable = command.operand0;
+			var value = request.popValue();
+			var index = request.popValue();
+			
+			if (!TValue.isLiteral(index))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPLOCALLISTVALUE call.");
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPLOCALLISTVALUE call.");
+			if (!TValue.isVariable(variable))
+				throw TAMEError.UnexpectedValueType("Expected variable type in POPLOCALLISTVALUE call.");
+			
+			var variableName = TValue.asString(variable);
+			
+			if (!TLogic.containsValue(blockLocal, variableName))
+				return;
+
+			var listValue = TLogic.getValue(blockLocal, variableName);
+			
+			if (!TValue.isList(listValue))
+				return;
+			
+			TValue.listSet(listValue, TValue.asLong(index), value);
+		}
+	},
+	
+	/* POPELEMENTLISTVALUE */
+	{
+		"name": 'POPELEMENTLISTVALUE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var varElement = command.operand0;
+			var variable = command.operand1;
+			var value = request.popValue();
+			var index = request.popValue();
+			
+			if (!TValue.isLiteral(index))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPELEMENTLISTVALUE call.");
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in POPELEMENTLISTVALUE call.");
+			if (!TValue.isVariable(variable))
+				throw TAMEError.UnexpectedValueType("Expected variable type in POPELEMENTLISTVALUE call.");
+			if (!TValue.isElement(varElement))
+				throw TAMEError.UnexpectedValueType("Expected element type in POPELEMENTLISTVALUE call.");
+
+			var objectName = TValue.asString(varObject);
+			var valueHash = request.moduleContext.resolveElementContext(objectName).variables;
+			var listValue = TLogic.getValue(valueHash, variableName);
+			
+			if (!TValue.isList(listValue))
+				return;
+			
+			TValue.listSet(listValue, TValue.asLong(index), value);
+		}
+	},
+	
 	/* PUSHVALUE */
 	{
 		"name": 'PUSHVALUE', 
@@ -145,6 +236,14 @@ var TCommandFunctions =
 		}
 	},
 
+	/*
+		TODO:
+		PUSHLISTVALUE
+		PUSHELEMENTLISTVALUE
+		PUSHNEWLIST
+		PUSHINITLIST
+	*/
+	
 	/* CLEARVALUE */
 	{
 		"name": 'CLEARVALUE', 

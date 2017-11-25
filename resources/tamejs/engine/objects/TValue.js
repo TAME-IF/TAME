@@ -663,7 +663,7 @@ TValue.isList = function(value)
 };
 
 /**
- * Returns if this value is a literal value.
+ * Returns if this value is a literal value (or list).
  * @return true if so, false if not.
  */
 TValue.isLiteral = function(value)
@@ -671,7 +671,8 @@ TValue.isLiteral = function(value)
 	return value.type === TValue.Type.BOOLEAN
 		|| value.type === TValue.Type.INTEGER
 		|| value.type === TValue.Type.FLOAT
-		|| value.type === TValue.Type.STRING;
+		|| value.type === TValue.Type.STRING
+		|| value.type === TValue.Type.LIST;
 };
 
 /**
