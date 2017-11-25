@@ -193,6 +193,137 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 
 	/**
+	 * [INTERNAL] Sets an index in a list-valued variable on a object.
+	 * Operand0 is the variable. 
+	 * First POP is the value.
+	 * Second POP is the index.
+	 */
+	POPLISTVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			Value variable = command.getOperand0();
+			Value value = request.popValue();
+			Value index = request.popValue();
+			
+			if (!index.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPLISTVALUE call.");
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPLISTVALUE call.");
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPLISTVALUE call.");
+			
+			String variableName = variable.asString();
+			Value listValue;
+			if (blockLocal.containsKey(variableName))
+				listValue = blockLocal.get(variableName);
+			else
+				listValue = request.peekContext().getValue(variableName);
+			
+			if (!listValue.isList())
+				return;
+			
+			listValue.listSet((int)index.asLong(), value);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Sets an index in a list-valued variable on a object.
+	 * Operand0 is the variable. 
+	 * First POP is the value.
+	 * Second POP is the index.
+	 */
+	POPLOCALLISTVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			Value variable = command.getOperand0();
+			Value value = request.popValue();
+			Value index = request.popValue();
+			
+			if (!index.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPLOCALLISTVALUE call.");
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPLOCALLISTVALUE call.");
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPLOCALLISTVALUE call.");
+			
+			String variableName = variable.asString();
+			Value listValue;
+			
+			if (!blockLocal.containsKey(variableName))
+				return;
+
+			listValue = blockLocal.get(variableName);
+			
+			if (!listValue.isList())
+				return;
+			
+			listValue.listSet((int)index.asLong(), value);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Sets an index in a list-valued variable on a object.
+	 * Operand0 is the object. 
+	 * Operand1 is the variable. 
+	 * First POP is the value.
+	 * Second POP is the index.
+	 */
+	POPELEMENTLISTVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			Value varElement = command.getOperand0();
+			Value variable = command.getOperand1();
+			Value value = request.popValue();
+			Value index = request.popValue();
+			
+			if (!index.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPELEMENTLISTVALUE call.");
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPELEMENTLISTVALUE call.");
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in POPELEMENTLISTVALUE call.");
+			if (!varElement.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in POPELEMENTLISTVALUE call.");
+
+			String variableName = variable.asString();
+			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement); 
+			Value listValue = context.getValue(variableName);
+
+			if (!listValue.isList())
+				return;
+			
+			listValue.listSet((int)index.asLong(), value);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
 	 * [INTERNAL] Pushes a value or variable from the topmost context.
 	 * Operand0 is the variable or value. 
 	 * Pushes the value. If variable, it is resolved before the push.
@@ -251,6 +382,87 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement); 
 
 			request.pushValue(context.getValue(variableName));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Pushes a list-valued variable from the topmost context.
+	 * First POP is the index.
+	 * Second POP is the list.
+	 * Pushes the value. If variable, it is resolved before the push.
+	 */
+	PUSHLISTVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) 
+		{
+			Value index = request.popValue();
+			Value variable = request.popValue();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in PUSHLISTVALUE call.");
+			if (!index.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in PUSHLISTVALUE call.");
+			
+			String variableName = variable.asString();
+			Value listValue;
+			if (blockLocal.containsKey(variableName))
+				listValue = blockLocal.get(variableName);
+			else
+				listValue = request.peekContext().getValue(variableName);
+			
+			if (!listValue.isList())
+				request.pushValue(Value.create(false));
+			else
+				request.pushValue(listValue.listGet((int)index.asLong()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return null;
+		}
+		
+	},
+	
+	/**
+	 * [INTERNAL] Resolves value of a list-valued variable on an object and pushes the value.
+	 * Operand0 is the element. 
+	 * First POP is the index.
+	 * Second POP is the list.
+	 * Pushes the resolved value. 
+	 */
+	PUSHELEMENTLISTVALUE (true)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		{
+			Value varElement = command.getOperand0();
+			Value index = request.popValue();
+			Value variable = request.popValue();
+
+			if (!variable.isVariable())
+				throw new UnexpectedValueTypeException("Expected variable type in PUSHELEMENTLISTVALUE call.");
+			if (!varElement.isElement())
+				throw new UnexpectedValueTypeException("Expected element type in PUSHELEMENTLISTVALUE call.");
+			if (!index.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in PUSHELEMENTLISTVALUE call.");
+
+			String variableName = variable.asString();
+			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement); 
+			Value listValue = context.getValue(variableName);
+
+			if (!listValue.isList())
+				request.pushValue(Value.create(false));
+			else
+				request.pushValue(listValue.listGet((int)index.asLong()));
 		}
 		
 		@Override

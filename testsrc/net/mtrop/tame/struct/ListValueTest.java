@@ -61,47 +61,45 @@ public final class ListValueTest
 	public static void main(String[] args) 
 	{
 		PrintStream out = System.out;
-		
+	
 		Value list = Value.createEmptyList();
 		for (Value v : TEST_VALUES)
 			list.listAdd(v);
 
-		Common.noop();
+		out.println(list.asString());
 
 		for (Value v : TEST_VALUES)
 			list.listRemove(v);
 		
-		Common.noop();
+		out.println(list.asString());
 		
 		for (Value v : TEST_VALUES)
 			list.listAddAt(0, v);
 		
-		Common.noop();
+		out.println(list.asString());
 
 		while (!list.isEmpty())
 			list.listRemoveAt(0);
 		
-		Common.noop();
+		out.println(list.asString());
 		
 		list.listAdd(Value.create(false));
 
 		for (Value v : TEST_VALUES)
 			list.listSet(0, v);
 		
-		Common.noop();
+		out.println(list.asString());
 
 		list = Value.createEmptyList();
 		for (Value v : TEST_VALUES)
 			list.listAdd(v);
 
-		Common.noop();
+		out.println(list.asString());
 		
 		for (Value v : TEST_VALUES)
 			out.println(list.listIndexOf(v));
 
-		Common.noop();
-		
-		out.println(list.length());
 		out.println(list.asString());
+		out.println(list.length());
 	}
 }
