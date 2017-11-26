@@ -85,12 +85,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.popValue();
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 
 	/**
@@ -119,12 +113,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				request.peekContext().setValue(variableName, value);
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -147,12 +135,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 			String variableName = varvalue.asString();
 			blockLocal.put(variableName, value);
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -184,141 +166,34 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			context.setValue(variableName, value);
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 
 	/**
 	 * [INTERNAL] Sets an index in a list-valued variable on a object.
-	 * Operand0 is the variable. 
 	 * First POP is the value.
 	 * Second POP is the index.
+	 * Third POP is the list.
 	 */
 	POPLISTVALUE (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
 		{
-			Value variable = command.getOperand0();
 			Value value = request.popValue();
 			Value index = request.popValue();
+			Value listValue = request.popValue();
 			
 			if (!index.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in POPLISTVALUE call.");
 			if (!value.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in POPLISTVALUE call.");
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in POPLISTVALUE call.");
-			
-			String variableName = variable.asString();
-			Value listValue;
-			if (blockLocal.containsKey(variableName))
-				listValue = blockLocal.get(variableName);
-			else
-				listValue = request.peekContext().getValue(variableName);
+			if (!listValue.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in POPLISTVALUE call.");
 			
 			if (!listValue.isList())
 				return;
 			
 			listValue.listSet((int)index.asLong(), value);
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
-	},
-	
-	/**
-	 * [INTERNAL] Sets an index in a list-valued variable on a object.
-	 * Operand0 is the variable. 
-	 * First POP is the value.
-	 * Second POP is the index.
-	 */
-	POPLOCALLISTVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
-		{
-			Value variable = command.getOperand0();
-			Value value = request.popValue();
-			Value index = request.popValue();
-			
-			if (!index.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPLOCALLISTVALUE call.");
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPLOCALLISTVALUE call.");
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in POPLOCALLISTVALUE call.");
-			
-			String variableName = variable.asString();
-			Value listValue;
-			
-			if (!blockLocal.containsKey(variableName))
-				return;
-
-			listValue = blockLocal.get(variableName);
-			
-			if (!listValue.isList())
-				return;
-			
-			listValue.listSet((int)index.asLong(), value);
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
-	},
-	
-	/**
-	 * [INTERNAL] Sets an index in a list-valued variable on a object.
-	 * Operand0 is the object. 
-	 * Operand1 is the variable. 
-	 * First POP is the value.
-	 * Second POP is the index.
-	 */
-	POPELEMENTLISTVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
-		{
-			Value varElement = command.getOperand0();
-			Value variable = command.getOperand1();
-			Value value = request.popValue();
-			Value index = request.popValue();
-			
-			if (!index.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPELEMENTLISTVALUE call.");
-			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in POPELEMENTLISTVALUE call.");
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in POPELEMENTLISTVALUE call.");
-			if (!varElement.isElement())
-				throw new UnexpectedValueTypeException("Expected element type in POPELEMENTLISTVALUE call.");
-
-			String variableName = variable.asString();
-			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement); 
-			Value listValue = context.getValue(variableName);
-
-			if (!listValue.isList())
-				return;
-			
-			listValue.listSet((int)index.asLong(), value);
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -351,12 +226,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -384,12 +253,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(context.getValue(variableName));
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -404,71 +267,17 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) 
 		{
 			Value index = request.popValue();
-			Value variable = request.popValue();
+			Value listValue = request.popValue();
 
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in PUSHLISTVALUE call.");
+			if (!listValue.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in PUSHLISTVALUE call.");
 			if (!index.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in PUSHLISTVALUE call.");
 			
-			String variableName = variable.asString();
-			Value listValue;
-			if (blockLocal.containsKey(variableName))
-				listValue = blockLocal.get(variableName);
-			else
-				listValue = request.peekContext().getValue(variableName);
-			
 			if (!listValue.isList())
 				request.pushValue(Value.create(false));
 			else
 				request.pushValue(listValue.listGet((int)index.asLong()));
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
-	},
-	
-	/**
-	 * [INTERNAL] Resolves value of a list-valued variable on an object and pushes the value.
-	 * Operand0 is the element. 
-	 * First POP is the index.
-	 * Second POP is the list.
-	 * Pushes the resolved value. 
-	 */
-	PUSHELEMENTLISTVALUE (true)
-	{
-		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
-		{
-			Value varElement = command.getOperand0();
-			Value index = request.popValue();
-			Value variable = request.popValue();
-
-			if (!variable.isVariable())
-				throw new UnexpectedValueTypeException("Expected variable type in PUSHELEMENTLISTVALUE call.");
-			if (!varElement.isElement())
-				throw new UnexpectedValueTypeException("Expected element type in PUSHELEMENTLISTVALUE call.");
-			if (!index.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in PUSHELEMENTLISTVALUE call.");
-
-			String variableName = variable.asString();
-			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement); 
-			Value listValue = context.getValue(variableName);
-
-			if (!listValue.isList())
-				request.pushValue(Value.create(false));
-			else
-				request.pushValue(listValue.listGet((int)index.asLong()));
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -484,12 +293,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
 		{
 			request.pushValue(Value.createEmptyList());
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -522,12 +325,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			request.pushValue(list);
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -550,12 +347,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				blockLocal.removeUsingKey(variableName);
 			else
 				request.peekContext().clearValue(variableName);
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -590,12 +381,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -623,12 +408,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new ModuleExecutionException("Internal error - invalid object type for PUSHTHIS.");
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -650,12 +429,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			TAMELogic.doArithmeticStackFunction(request, response, (int)functionValue.asLong());
 		}
 
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -709,12 +482,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -762,12 +529,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			boolean out = value.asBoolean();
 			response.trace(request, "Result %s evaluates %b.", value, out);
 			return out; 
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	}, 
@@ -833,12 +594,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			return out; 
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	}, 
 	
 	/**
@@ -854,12 +609,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			throw new BreakInterrupt();
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -873,12 +622,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		{
 			response.trace(request, "Throwing continue interrupt...");
 			throw new ContinueInterrupt();
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -897,12 +640,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			throw new QuitInterrupt();
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -918,12 +655,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			throw new FinishInterrupt();
 		}
 		
-		@Override
-		public String getGrouping()
-		{
-			return null;
-		}
-		
 	},
 	
 	/**
@@ -937,12 +668,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		{
 			response.trace(request, "Throwing end interrupt...");
 			throw new EndInterrupt();
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -961,12 +686,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			blockLocal.put(RETURN_VARIABLE, retVal);
 			response.trace(request, "Throwing end interrupt...");
 			throw new EndInterrupt();
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -989,12 +708,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in CALLFUNCTION call.");
 
 			request.pushValue(TAMELogic.callElementFunction(request, response, varFunctionName.asString(), request.peekContext()));
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -1021,12 +734,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in CALLELEMENTFUNCTION call.");
 			
 			request.pushValue(TAMELogic.callElementFunction(request, response, varFunctionName.asString(), request.getModuleContext().resolveElementContext(varElement)));
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return null;
 		}
 		
 	},
@@ -3835,7 +3542,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * Gets the grouping name for this command (for documentation sorting).
 	 * @return the grouping name.
 	 */
-	public abstract String getGrouping();
+	public String getGrouping()
+	{
+		return null;
+	}
 	
 	/**
 	 * Increments the runaway command counter and calls the command.  

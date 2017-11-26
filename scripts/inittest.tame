@@ -14,7 +14,7 @@ object o_base
 }
 
 object o_obj1 : o_base {}
-object o_obj2 : o_base { init() {x=2;}}
+object o_obj2 : o_base { override init() {x=2;}}
 object o_obj3 : o_obj2 {}
 object o_obj4 : o_obj1 {}
 object o_obj5 : o_obj3 {}

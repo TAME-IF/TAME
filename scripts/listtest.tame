@@ -1,0 +1,56 @@
+module
+{
+	title = "List Test";
+}
+
+container c_test
+{
+	init()
+	{
+		a = [1,2,3,4];
+	}
+}
+
+world
+{
+	start()
+	{
+		a = [6,7,8,10.0, "asdf"];
+		b = [6,7,8,10.0, "asdf"];
+		c = b;
+		
+		textln(a == b); // false
+		textln(a == c); // false
+		textln(b == c); // true
+
+		textln(a === b); // false
+		textln(a === c); // false
+		textln(b === c); // true
+		
+		d = [
+			[1,2,3,4],
+			[5,6,7,8]
+		];
+
+		textln(d[0]);
+		textln(d[1]);
+		textln(d[0][0]);
+		textln(d[0][1]);
+		textln(d[0][2]);
+		textln(d[0][3]);
+
+		clear d;
+		
+		textln(d[0]);
+		textln(d[1]);
+		textln(d[0][0]);
+		textln(d[0][1]);
+		textln(d[0][2]);
+		textln(d[0][3]);
+		
+		quit;
+	}
+	
+	
+	
+}

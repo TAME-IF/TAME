@@ -119,7 +119,9 @@ TValue.areEqualIgnoreType = function(v1, v2)
 {
 	if (TValue.isLiteral(v1) && TValue.isLiteral(v2))
 	{
-		if (TValue.isString(v1) && TValue.isString(v2))
+		if (TValue.isList(v1) || TValue.isList(v2))
+			return TValue.areEqual(v1, v2);
+		else if (TValue.isString(v1) && TValue.isString(v2))
 			return v1.value == v2.value;
 		else
 			return TValue.asDouble(v1) == TValue.asDouble(v2);

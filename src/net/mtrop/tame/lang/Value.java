@@ -335,7 +335,9 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (isLiteral() && otherValue.isLiteral())
 		{
-			if (isString() && otherValue.isString())
+			if (isList() || otherValue.isList())
+				return equals(otherValue); 
+			else if (isString() && otherValue.isString())
 				return value.equals(otherValue.value);
 			else
 				return asDouble() == otherValue.asDouble();

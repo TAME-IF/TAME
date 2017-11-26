@@ -16,7 +16,7 @@ object archetype o_vehicle
 
 object o_boat : o_vehicle named "boat"
 {
-	onaction(a_drive)
+	override onaction(a_drive)
 	{
 		textln(identity(this) +": BLUBLUBLUB");
 	}

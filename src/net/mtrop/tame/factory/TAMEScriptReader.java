@@ -2129,20 +2129,59 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 					}
-					
-					// else, not function.
-					
-					if (!matchType(TSKernel.TYPE_EQUAL))
+					// list index assignment.
+					else if (currentType(TSKernel.TYPE_LBRACK))
+					{
+						block.add(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, variable));
+						
+						while (currentType(TSKernel.TYPE_LBRACK))
+						{
+							nextToken();
+							if (!parseExpression(currentElement, block))
+								return false;
+
+							if (!matchType(TSKernel.TYPE_RBRACK))
+							{
+								addErrorMessage("Expected \"]\" after a list index expression.");
+								return false;
+							}
+
+							// another dimension incoming?
+							if (currentType(TSKernel.TYPE_LBRACK))
+							{
+								block.add(Command.create(TAMECommand.PUSHLISTVALUE));
+							}
+						}
+						
+						int assignmentType = currentToken().getType();
+						if (assignmentType != TSKernel.TYPE_EQUAL)
+						{
+							addErrorMessage("Expected assignment operator after a list reference.");
+							return false;
+						}
+						nextToken();
+						
+						if (!parseExpression(currentElement, block))
+							return false;
+						
+						block.add(Command.create(TAMECommand.POPLISTVALUE));
+						return true;
+					}
+					// else, not function nor list.
+					else if (matchType(TSKernel.TYPE_EQUAL))
+					{
+						if (!parseExpression(currentElement, block))
+							return false;
+						
+						block.add(Command.create(TAMECommand.POPELEMENTVALUE, identToken, variable));
+						return true;
+					}
+					// else, not function nor list.
+					else
 					{
 						addErrorMessage("Statement error - expected assignment operator after variable.");
 						return false;
 					}
-
-					if (!parseExpression(currentElement, block))
-						return false;
-					
-					block.add(Command.create(TAMECommand.POPELEMENTVALUE, identToken, variable));
-					return true;
 				}
 				else if (identToken.isVariable())
 				{
@@ -2193,6 +2232,46 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 					}
+					// list index assignment.
+					else if (currentType(TSKernel.TYPE_LBRACK))
+					{
+						block.add(Command.create(TAMECommand.PUSHVALUE, Value.createVariable(identName)));
+						
+						while (currentType(TSKernel.TYPE_LBRACK))
+						{
+							nextToken();
+							if (!parseExpression(currentElement, block))
+								return false;
+
+							if (!matchType(TSKernel.TYPE_RBRACK))
+							{
+								addErrorMessage("Expected \"]\" after a list index expression.");
+								return false;
+							}
+
+							// another dimension incoming?
+							if (currentType(TSKernel.TYPE_LBRACK))
+							{
+								block.add(Command.create(TAMECommand.PUSHLISTVALUE));
+							}
+							
+						}
+						
+						int assignmentType = currentToken().getType();
+						if (assignmentType != TSKernel.TYPE_EQUAL)
+						{
+							addErrorMessage("Expected assignment operator after a list reference.");
+							return false;
+						}
+						nextToken();
+						
+						if (!parseExpression(currentElement, block))
+							return false;
+						
+						block.add(Command.create(TAMECommand.POPLISTVALUE));
+						return true;
+					}
+					// assignment operator
 					else if (matchType(TSKernel.TYPE_EQUAL))
 					{
 						if (!parseExpression(currentElement, block))
@@ -3022,6 +3101,34 @@ public final class TAMEScriptReader implements TAMEConstants
 								return false;
 							}
 						}
+						// list index assignment.
+						else if (currentType(TSKernel.TYPE_LBRACK))
+						{
+							block.add(Command.create(TAMECommand.PUSHVALUE, identToken));
+							
+							while (currentType(TSKernel.TYPE_LBRACK))
+							{
+								nextToken();
+								if (!parseExpression(currentElement, block))
+									return false;
+
+								if (!matchType(TSKernel.TYPE_RBRACK))
+								{
+									addErrorMessage("Expected \"]\" after a list index expression.");
+									return false;
+								}
+
+								// another dimension incoming?
+								if (currentType(TSKernel.TYPE_LBRACK))
+								{
+									block.add(Command.create(TAMECommand.PUSHLISTVALUE));
+								}
+							}
+							
+							block.add(Command.create(TAMECommand.PUSHLISTVALUE));
+							expressionValueCounter[0] += 1;
+							lastWasValue = true;
+						}
 						else
 						{
 							block.add(Command.create(TAMECommand.PUSHVALUE, identToken));
@@ -3057,6 +3164,41 @@ public final class TAMEScriptReader implements TAMEConstants
 
 					expressionValueCounter[0] += 1;
 					lastWasValue = true;
+				}
+				// literal list.
+				else if (matchType(TSKernel.TYPE_LBRACK))
+				{
+					// empty list?
+					if (matchType(TSKernel.TYPE_RBRACK))
+					{
+						block.add(Command.create(TAMECommand.PUSHNEWLIST));
+						expressionValueCounter[0] += 1;
+						lastWasValue = true;
+					}
+					else
+					{
+						if (!parseExpression(currentElement, block))
+							return false;
+						
+						int length = 1;
+						while (matchType(TSKernel.TYPE_COMMA))
+						{
+							if (!parseExpression(currentElement, block))
+								return false;
+							length++;
+						}
+						
+						if (!matchType(TSKernel.TYPE_RBRACK))
+						{
+							addErrorMessage("Expression error - expected \"]\" to terminate list, or \",\" to add another element.");
+							return false;
+						}
+						
+						block.add(Command.create(TAMECommand.PUSHVALUE, Value.create(length)));
+						block.add(Command.create(TAMECommand.PUSHINITLIST));
+						expressionValueCounter[0] += 1;
+						lastWasValue = true;
+					}
 				}
 				else if (isValidLiteralType())
 				{
