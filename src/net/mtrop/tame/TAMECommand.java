@@ -600,7 +600,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * [INTERNAL] Throws a BREAK interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
-	BREAK ()
+	BREAK (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -615,7 +615,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * [INTERNAL] Throws a CONTINUE interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
-	CONTINUE ()
+	CONTINUE (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -630,7 +630,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * [INTERNAL] Adds a QUIT cue to the response and throws a QUIT interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
-	QUIT ()
+	QUIT (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -646,7 +646,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * [INTERNAL] Throws a FINISH interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
-	FINISH ()
+	FINISH (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -661,7 +661,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	 * [INTERNAL] Throws an END interrupt.
 	 * Is keyword. Returns nothing. 
 	 */
-	END ()
+	END (true)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -1286,11 +1286,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Gets the length of a string.
-	 * POP is the value, cast to a string. 
+	 * Gets the length of a value.
+	 * POP is the value. 
 	 * Returns integer. 
 	 */
-	STRLENGTH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	LENGTH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -1298,9 +1298,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRLENGTH call.");
+				throw new UnexpectedValueTypeException("Expected literal type in LENGTH call.");
 
-			request.pushValue(Value.create(value.asString().length()));
+			request.pushValue(Value.create(value.length()));
 		}
 		
 		@Override
@@ -1853,6 +1853,240 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		
 	},
 	
+	/**
+	 * Adds a value to the end of the list.
+	 * First POP is the value to add. 
+	 * Second POP is the list. 
+	 * Returns boolean. 
+	 */
+	LISTADD (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			Value list = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTADD call.");
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTADD call.");
+
+			request.pushValue(Value.create(list.listAdd(value)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "List Operations";
+		}
+		
+	},
+		
+	/**
+	 * Adds a value to an index in the list, shifting contents.
+	 * First POP is the target index. 
+	 * Second POP is the value to add. 
+	 * Third POP is the list. 
+	 * Returns boolean. 
+	 */
+	LISTADDAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value index = request.popValue();
+			Value value = request.popValue();
+			Value list = request.popValue();
+			
+			if (!index.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTADDAT call.");
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTADDAT call.");
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTADDAT call.");
+
+			request.pushValue(Value.create(list.listAddAt((int)index.asLong(), value)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "List Operations";
+		}
+		
+	},
+		
+	/**
+	 * Removes a value from the list, if the value is found in it, shifting contents.
+	 * First POP is the value to add. 
+	 * Second POP is the list. 
+	 * Returns boolean. 
+	 */
+	LISTREMOVE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			Value list = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTREMOVE call.");
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTREMOVE call.");
+
+			request.pushValue(Value.create(list.listRemove(value)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "List Operations";
+		}
+		
+	},
+		
+	/**
+	 * Removes a value from the list by index, shifting contents.
+	 * First POP is the index. 
+	 * Second POP is the list. 
+	 * Returns the value removed. 
+	 */
+	LISTREMOVEAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value index = request.popValue();
+			Value list = request.popValue();
+			
+			if (!index.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTREMOVEAT call.");
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTREMOVEAT call.");
+
+			request.pushValue(list.listRemoveAt((int)index.asLong()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "List Operations";
+		}
+		
+	},
+		
+	/**
+	 * Concatenates two lists and creates a new list.
+	 * First POP is the value/list to append. 
+	 * Second POP is the source list. 
+	 * Returns the value removed. 
+	 */
+	LISTCONCAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value appendix = request.popValue();
+			Value list = request.popValue();
+			
+			if (!appendix.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTCONCAT call.");
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTCONCAT call.");
+
+			if (!list.isList())
+			{
+				Value v = list;
+				list = Value.createEmptyList(1);
+				list.listAdd(v);
+			}
+
+			if (!appendix.isList())
+			{
+				Value v = appendix;
+				appendix = Value.createEmptyList(1);
+				appendix.listAdd(v);
+			}
+			
+			Value out = Value.createEmptyList();
+			for (int i = 0; i < list.length(); i++)
+				out.listAdd(list.listGet(i));
+			for (int i = 0; i < appendix.length(); i++)
+				out.listAdd(appendix.listGet(i));
+			
+			request.pushValue(out);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "List Operations";
+		}
+		
+	},
+		
+	/**
+	 * Gets the index of a value in the list, starting from the beginning.
+	 * First POP is the value to search for. 
+	 * Second POP is the list. 
+	 * Returns integer. 
+	 */
+	LISTINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			Value list = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTINDEX call.");
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTINDEX call.");
+
+			request.pushValue(Value.create(list.listIndexOf(value)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "List Operations";
+		}
+		
+	},
+		
+	/**
+	 * Searches for the existence of a value in the list, starting from the beginning.
+	 * First POP is the value to search for. 
+	 * Second POP is the list. 
+	 * Returns boolean. 
+	 */
+	LISTCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			Value list = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTCONTAINS call.");
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTCONTAINS call.");
+
+			request.pushValue(Value.create(list.listContains(value)));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "List Operations";
+		}
+		
+	},
+		
 	/**
 	 * Gets the arithmetic floor of a number.
 	 * POP is the number. 
@@ -3485,11 +3719,6 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	private ArgumentType returnType;
 	private ArgumentType[] argumentTypes;
 	
-	private TAMECommand()
-	{
-		this(true, null, null);
-	}
-
 	private TAMECommand(boolean internal)
 	{
 		this(internal, null, null);

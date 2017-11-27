@@ -819,17 +819,17 @@ var TCommandFunctions =
 		}
 	},
 
-	/* STRLENGTH */
+	/* LENGTH */
 	{
-		"name": 'STRLENGTH', 
+		"name": 'LENGTH', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRLENGTH call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in LENGTH call.");
 
-			request.pushValue(TValue.createInteger(TValue.asString(value).length));
+			request.pushValue(TValue.createInteger(TValue.length(value)));
 		}
 	},
 
@@ -1151,6 +1151,149 @@ var TCommandFunctions =
 		}
 	},
 
+	/* LISTADD */
+	{
+		"name": 'LISTADD', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value = request.popValue();
+			var list = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTADD call.");
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTADD call.");
+
+			request.pushValue(TValue.createBoolean(TValue.listAdd(list, value)));
+		}
+	},
+		
+	/* LISTADDAT */
+	{
+		"name": 'LISTADDAT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var index = request.popValue();
+			var value = request.popValue();
+			var list = request.popValue();
+			
+			if (!TValue.isLiteral(index))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTADDAT call.");
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTADDAT call.");
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTADDAT call.");
+
+			request.pushValue(TValue.createBoolean(TValue.listAddAt(list, TValue.asLong(index), value)));
+		}
+	},
+		
+	/* LISTREMOVE */
+	{
+		"name": 'LISTREMOVE', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value = request.popValue();
+			var list = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTREMOVE call.");
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTREMOVE call.");
+
+			request.pushValue(TValue.createBoolean(TValue.listRemove(list, value)));
+		}
+	
+	},
+		
+	/* LISTREMOVEAT */
+	{
+		"name": 'LISTREMOVEAT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var index = request.popValue();
+			var list = request.popValue();
+			
+			if (!TValue.isLiteral(index))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTREMOVEAT call.");
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTREMOVEAT call.");
+
+			request.pushValue(TValue.listRemoveAt(list, TValue.asLong(index)));
+		}
+	},
+		
+	/* LISTCONCAT */
+	{
+		"name": 'LISTCONCAT', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var appendix = request.popValue();
+			var list = request.popValue();
+			
+			if (!TValue.isLiteral(appendix))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTCONCAT call.");
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTCONCAT call.");
+
+			if (!TValue.isList(list))
+			{
+				var v = list;
+				list = TValue.createList([]);
+				TValue.listAdd(list, v);
+			}
+
+			if (!TValue.isList(appendix))
+			{
+				var v = appendix;
+				appendix = TValue.createList([]);
+				TValue.listAdd(appendix, v);
+			}
+			
+			var out = TValue.createList([]);
+			for (var i = 0; i < TValue.length(list); i++)
+				TValue.listAdd(out, TValue.listGet(list, i));
+			for (var i = 0; i < TValue.length(appendix); i++)
+				TValue.listAdd(out, TValue.listGet(appendix, i));
+			
+			request.pushValue(out);
+		}
+	},
+		
+	/* LISTINDEX */
+	{
+		"name": 'LISTINDEX', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value = request.popValue();
+			var list = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTINDEX call.");
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTINDEX call.");
+
+			request.pushValue(TValue.createInteger(TValue.listIndexOf(list, value)));
+		}
+	},
+		
+	/* LISTCONTAINS */
+	{
+		"name": 'LISTCONTAINS', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value = request.popValue();
+			var list = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTCONTAINS call.");
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTCONTAINS call.");
+
+			request.pushValue(TValue.createBoolean(TValue.listContains(list, value)));
+		}
+	},
+		
 	/* FLOOR */
 	{
 		"name": 'FLOOR', 

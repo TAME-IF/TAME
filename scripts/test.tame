@@ -92,7 +92,7 @@ world
 		
 		s = "Apples and Pears";
 		
-		textln(strlength(s));
+		textln(length(s));
 		textln(strconcat("to", "gether")); 
 
 		textln(strreplace(s, "Apples", "Oranges"));
@@ -106,11 +106,11 @@ world
 		textln(strcontains(s, "and") + ":" + strcontains(s, "or")); 
 		textln(strcontainspattern(s, "\\s+")); 
 		textln(strcontainstoken(s, "apples") + ":" + strcontainstoken(s, "ranges")); 
-		textln(substring(s, 0, strlength(s) - 8)); 
+		textln(substring(s, 0, length(s) - 8)); 
 		textln(strlower(s)); 
 		textln(strupper(s)); 
 		textln(strchar(s, 4)); 
-		textln(substring(s, 0, strlength(s) - 8)); 
+		textln(substring(s, 0, length(s) - 8)); 
 		
 		textln(floor(3.5) + ":" + floor(-3.5)); 
 		textln(ceiling(3.5) + ":" + ceiling(-3.5)); 
