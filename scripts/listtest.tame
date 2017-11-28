@@ -26,10 +26,47 @@ world
 		textln(a === b); // false
 		textln(a === c); // false
 		textln(b === c); // true
-		
+
+		textln(a); // false
+		textln(b); // false
+		textln(c); // true
+
+		listadd(a, 100);
+		listadd(b, 200);
+
+		textln(a); // false
+		textln(b); // false
+		textln(c); // true
+
+		listaddat(a, 300, 3);
+		textln(a);
+		listremove(a, 7);
+		textln(a);
+		listremoveat(a, 2);
+		textln(a);
+
+		textln(listconcat(1, 2));
+		textln(listconcat(a, b));
+		textln(listconcat(b, c));
+
+		textln(listindex(a, 100));
+		textln(listindex(a, "asdff"));
+
+		textln(listcontains(a, 100));
+		textln(listcontains(a, "asdff"));
+
+		textln(length(a));
+
+		textln("===========================");
+
 		d = [
 			[1,2,3,4],
 			[5,6,7,8]
+		];
+
+		local d = [
+			[9,10,11,12],
+			[13,14,15,16]
 		];
 
 		textln(d[0]);
@@ -39,6 +76,15 @@ world
 		textln(d[0][2]);
 		textln(d[0][3]);
 
+		clear d;
+		
+		textln(d[0]);
+		textln(d[1]);
+		textln(d[0][0]);
+		textln(d[0][1]);
+		textln(d[0][2]);
+		textln(d[0][3]);
+		
 		clear d;
 		
 		textln(d[0]);
