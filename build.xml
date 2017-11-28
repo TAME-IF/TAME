@@ -119,6 +119,21 @@
 		</copy>
 	</target>
 
+	<target name="dependencies" depends="init.dependencies" description="Downloads and compiles the dependencies.">
+		<git-clone repository="https://github.com/BlackRookSoftware/Common" dest="${dependencies.dir}/Common" />
+		<delete dir="${dependencies.dir}/Common/.git" includeemptydirs="true" casesensitive="false" /> 
+		<ant antfile="${dependencies.dir}/Common/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
+		<git-clone repository="https://github.com/BlackRookSoftware/CommonIO" dest="${dependencies.dir}/CommonIO" />
+		<delete dir="${dependencies.dir}/CommonIO/.git" includeemptydirs="true" casesensitive="false" /> 
+		<ant antfile="${dependencies.dir}/CommonIO/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
+		<git-clone repository="https://github.com/BlackRookSoftware/CommonLang" dest="${dependencies.dir}/CommonLang" />
+		<delete dir="${dependencies.dir}/CommonLang/.git" includeemptydirs="true" casesensitive="false" /> 
+		<ant antfile="${dependencies.dir}/CommonLang/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
+		<echo message="Writing to build.properties...." />
+		<echo message="dev.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
+		<echo message="libs.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
+	</target>
+
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
         <javadoc access="protected" 
         	additionalparam="-J-Xmx512m  " author="true" 
