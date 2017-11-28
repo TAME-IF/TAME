@@ -10,6 +10,9 @@ https://ant.apache.org/bindownload.cgi
 
 The build script (build.xml) contains multiple targets of note, including:
 
+dependencies
+	Pulls dependencies into the dependency folders and adds them to 
+	build.properties for "dev.base" and "lib.base".
 clean 
 	Cleans the build directory contents.
 compile
@@ -38,9 +41,17 @@ build.version.appendix
 dev.base
 	The base directory for other projects that need including for the build.
 	Default: ".."
+lib.base
+	The base directory for other binaries of projects that need including for
+	the build.
+	Default: ".."
 build.dir
 	The base directory for built resources.
 	Default: "build"
+dependencies.base:
+	The base directory for other binaries of projects that need including for 
+	the build.
+	Default: "deps"
 launch4j.dir
 	The base directory for Launch4J (for Win32 EXEs).
 	Default: "${lib.base}/launch4j"
