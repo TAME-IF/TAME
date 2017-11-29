@@ -30,28 +30,28 @@ TAction.createObject2 = function(action, object1, object2) { return new TAction(
 
 TAction.prototype.toString = function()
 {
-	var out = "ActionItem ";
-	
-	out += "[";
+	var sb = new TStringBuilder();
+	sb.append("ActionItem ");
+	sb.append("[");
 	if (this.action)
-		out += this.action.identity;
+		sb.append(this.action.identity);
 
 	if (this.target)
-		out += ", " + this.target;
+		sb.append(", ").append(this.target);
 
 	if (this.object1)
-		out += ", " + this.object1.identity;
+		sb.append(", ").append(this.object1.identity);
 
 	if (this.object2)
 	{
 		if (this.object1.identity)
-			out += ", ";
-		out += this.object2.identity;
+			sb.append(", ");
+		sb.append(this.object2.identity);
 	}
 	
-	out += "]";
+	sb.append("]");
 	
-	return out;
+	return sb.toString();
 };
 
 

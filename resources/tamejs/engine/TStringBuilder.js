@@ -26,6 +26,7 @@ TStringBuilder.prototype.append = function(value)
 {
 	if (typeof value !== 'undefined' && value !== null)
 		this.buffer.push(value.toString());
+	return this;
 };
 
 /**

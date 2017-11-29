@@ -16,6 +16,7 @@ var TRequest = TRequest || ((typeof require) !== 'undefined' ? require('./object
 var TResponse = TResponse || ((typeof require) !== 'undefined' ? require('./objects/TResponse.js') : null);
 var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefined' ? require('./logic/TArithmeticFunctions.js') : null);
 var TCommandFunctions = TCommandFunctions || ((typeof require) !== 'undefined' ? require('./logic/TCommandFunctions.js') : null);
+var TStringBuilder = TStringBuilder || ((typeof require) !== 'undefined' ? require('./TStringBuilder.js') : null);
 // ======================================================================================================
 
 //##[[EXPORTJS-START
@@ -86,23 +87,23 @@ TLogic.clearValue = function(valueHash, variableName)
  */
 TLogic.commandToString = function(cmdObject)
 {
-	var out = TCommandFunctions[cmdObject.opcode].name;
+	var sb = new TStringBuilder();
+	sb.append(TCommandFunctions[cmdObject.opcode].name);
 	if (cmdObject.operand0 != null)
-		out += ' ' + TValue.toString(cmdObject.operand0);
+		sb.append(' ').append(TValue.toString(cmdObject.operand0));
 	if (cmdObject.operand1 != null)
-		out += ' ' + TValue.toString(cmdObject.operand1);
+		sb.append(' ').append(TValue.toString(cmdObject.operand1));
 	if (cmdObject.initBlock != null)
-		out += " [INIT]";
+		sb.append(" [INIT]");
 	if (cmdObject.conditionalBlock != null)
-		out += " [CONDITIONAL]";
+		sb.append(" [CONDITIONAL]");
 	if (cmdObject.stepBlock != null)
-		out += " [STEP]";
+		sb.append(" [STEP]");
 	if (cmdObject.successBlock != null)
-		out += " [SUCCESS]";
+		sb.append(" [SUCCESS]");
 	if (cmdObject.failureBlock != null)
-		out += " [FAILURE]";
-	
-	return out;
+		sb.append(" [FAILURE]");
+	return sb.toString();
 };
 
 /**
