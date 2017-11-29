@@ -86,14 +86,6 @@
 		includesfile="build-tame-exe-include.def" 
 	/>
 	
-	<!-- Taskdefs -->
-
-	<taskdef 
-		name="launch4j"
-		classname="net.sf.launch4j.ant.Launch4jTask"
-		classpath="${launch4j.lib.jar}${S}${launch4j.xstream.lib.jar}"
-	/>
-	
 	<target name="clean.exe" description="Cleans up the exe builds.">
 		<delete dir="${exe.dir}" includeemptydirs="true" casesensitive="false" /> 
 	</target>
@@ -119,19 +111,77 @@
 		</copy>
 	</target>
 
-	<target name="dependencies" depends="init.dependencies" description="Downloads and compiles the dependencies.">
+	<target name="dependency.common">
 		<git-clone repository="https://github.com/BlackRookSoftware/Common" dest="${dependencies.dir}/Common" />
 		<delete dir="${dependencies.dir}/Common/.git" includeemptydirs="true" casesensitive="false" /> 
 		<ant antfile="${dependencies.dir}/Common/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
+	</target>
+
+	<target name="dependency.commonio">
 		<git-clone repository="https://github.com/BlackRookSoftware/CommonIO" dest="${dependencies.dir}/CommonIO" />
 		<delete dir="${dependencies.dir}/CommonIO/.git" includeemptydirs="true" casesensitive="false" /> 
 		<ant antfile="${dependencies.dir}/CommonIO/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
+	</target>
+
+	<target name="dependency.commonlang">
 		<git-clone repository="https://github.com/BlackRookSoftware/CommonLang" dest="${dependencies.dir}/CommonLang" />
 		<delete dir="${dependencies.dir}/CommonLang/.git" includeemptydirs="true" casesensitive="false" /> 
 		<ant antfile="${dependencies.dir}/CommonLang/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
+	</target>
+
+	<target name="dependency.launch4j.clone">
+		<git-clone repository="https://git.code.sf.net/p/launch4j/git" dest="${dependencies.dir}/launch4j" />
+		<delete dir="${dependencies.dir}/launch4j/.git" includeemptydirs="true" casesensitive="false" /> 
+	</target>
+	<target name="dependency.launch4j.getos">
+		<condition property="isWindows" value="true" else="false">
+			<os family="windows" />
+		</condition>
+		<condition property="isOSX" value="true" else="false">
+			<and>
+				<os family="mac" />
+				<os family="unix" />
+			</and>
+		</condition>
+		<condition property="isLinux32" value="true" else="false">
+			<and>
+				<os family="unix" />
+				<os arch="x86" />
+			</and>
+		</condition>
+		<condition property="isLinux64" value="true" else="false">
+			<and>
+				<os family="unix" />
+				<os arch="x64" />
+			</and>
+		</condition>
+	</target>
+	<target name="dependency.launch4j.win32" if="${isWindows}">
+		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-win32" />
+		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
+	</target>
+	<target name="dependency.launch4j.linux32" if="${isLinux32}">
+		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-linux" />
+		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
+	</target>
+	<target name="dependency.launch4j.linux64" if="${isLinux64}">
+		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-linux-x64" />
+		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
+	</target>
+	<target name="dependency.launch4j.osx32" if="${isOSX}">
+		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-macosx-x86" />
+		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
+	</target>
+	<target name="dependency.launch4j" depends="dependency.launch4j.clone, dependency.launch4j.getos, dependency.launch4j.win32, dependency.launch4j.linux32, dependency.launch4j.linux64, dependency.launch4j.osx32">
+	</target>
+	<target name="dependency.properties">
 		<echo message="Writing to build.properties...." />
 		<echo message="dev.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
 		<echo message="libs.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
+		<echo message="launch4j.dir=${dependencies.dir}/launch4j&#10;" file="build.properties" append="true" />
+	</target>
+	
+	<target name="dependencies" depends="init.dependencies, dependency.common, dependency.commonio, dependency.commonlang, dependency.launch4j, dependency.properties" description="Downloads and compiles the dependencies.">
 	</target>
 
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
@@ -244,7 +294,15 @@
 	<target name="jar" depends="init.jar, jar.tame, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min" description="Make all JARs.">
 	</target>
 
-	<target name="exe.compiler" depends="jar.tame.compiler.one.min, clean.exe, init.exe">
+	<target name="exe.taskdef">
+		<taskdef 
+			name="launch4j"
+			classname="net.sf.launch4j.ant.Launch4jTask"
+			classpath="${launch4j.lib.jar}${S}${launch4j.xstream.lib.jar}"
+		/>
+	</target>
+	
+	<target name="exe.compiler" depends="jar.tame.compiler.one.min, clean.exe, init.exe, exe.taskdef">
 		<delete file="${exe.dir}/${exe.compiler.filename}" />
 		<launch4j 
 			configFile="./launch4j/TAMECompiler.xml" 
@@ -257,7 +315,7 @@
 		/>
 	</target>
 	
-	<target name="exe.console.client" depends="jar.tame.console.client.one.min, clean.exe, init.exe">
+	<target name="exe.console.client" depends="jar.tame.console.client.one.min, clean.exe, init.exe, exe.taskdef">
 		<delete file="${exe.dir}/${exe.console.client.filename}" />
 		<launch4j 
 			configFile="./launch4j/TAMEConsoleClient.xml" 
@@ -269,20 +327,26 @@
 			txtProductVersion="${exe.version}"
 		/>
 	</target>
-	
+
 	<target name="exe" depends="exe.compiler, exe.console.client" description="Make all EXEs.">
-		<condition property="exe.output.dir.set" else="false">
-			<isset property="exe.output.dir"/>
+		<condition property="exe.deploy.dir.set" else="false">
+			<isset property="exe.deploy.dir"/>
 		</condition>
 	</target>
 
-	<target name="exe.deploy" depends="exe" if="exe.output.dir.set" description="Deploys EXEs if output directory specified.">
+	<target name="exe.deploy.true" if="${exe.deploy.dir.set}">
 		<copy overwrite="true" todir="${exe.deploy.dir}">
 			<fileset dir="${exe.dir}"/>
 		</copy>
 	</target>
+	<target name="exe.deploy.false" unless="${exe.deploy.dir.set}">
+		<echo message="Skipping deploy: exe.deploy.dir property not set!" />
+	</target>
+
+	<target name="exe.deploy" depends="exe, exe.deploy.true, exe.deploy.false" description="Makes and deploys EXEs if output directory specified.">
+	</target>
 	
-	<target name="zip.exe" depends="exe">
+	<target name="zip.exe" depends="exe" description="Makes and zips the EXEs.">
 		<delete file="${zip.dir}/${zip.exe.filename}" />
 		<zip basedir="${exe.dir}" destfile="${zip.dir}/${zip.exe.filename}"></zip>
 		<zip destfile="${zip.dir}/${zip.exe.filename}" update="true">
@@ -290,7 +354,7 @@
 		</zip>
 	</target>
 
-	<target name="zip.jar" depends="init.zip, jar" description="Archives the JARs.">
+	<target name="zip.jar" depends="init.zip, jar" description="Makes and zips the JARs.">
 		<delete file="${zip.dir}/${zip.filename}" />
 		<zip destfile="${zip.dir}/${zip.filename}">
 			<fileset dir="${jar.dir}" />
@@ -298,10 +362,10 @@
 		</zip>
 	</target>
 
-	<target name="zip" depends="zip.jar, zip.docs, zip.exe" description="Creates all archives.">
+	<target name="zip" depends="zip.jar, zip.docs, zip.exe" description="Creates all zips.">
 	</target>
 	
-	<target name="release" depends="zip, exe, exe.deploy">
+	<target name="release" depends="zip, exe.deploy">
 	</target>
 
 </project>
