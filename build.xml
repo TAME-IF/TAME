@@ -110,6 +110,9 @@
 		<echo message="java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.console.TAMEConsoleClientMain $@&#10;" file="tame.sh" append="true" />
 		<echo message="#!/bin/bash&#10;" file="tamec.sh" />
 		<echo message="java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.compiler.TAMECompilerMain $@&#10;" file="tamec.sh" append="true" />
+		<!-- Set permissions -->
+		<chmod file="tame.sh" perm="ugo+rx"/>
+		<chmod file="tamec.sh" perm="ugo+rx"/>
 	</target>
 
 	<target name="compile" depends="init.compile, get.os, compile.scripts.windows, compile.scripts.bash" description="Compiles the project, including test classes.">
