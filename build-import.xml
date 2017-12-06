@@ -25,8 +25,6 @@
 	<property name="examples.dir" value="examples" />
 	<property name="bin.dir" value="bin" />
 
-	<property name="dependencies.dir" value="deps" />
-
 	<property name="build.dir" value="build" />
 
 	<property name="jar.dir" value="${build.dir}/jar" />
@@ -41,50 +39,6 @@
 	<property name="zip.sources.filename" value="${project.archive}-src-${build.version}.zip" />
 	<property name="zip.javadoc.filename" value="${project.archive}-javadocs-${build.version}.zip" />
 
-	<!-- Macros -->
-	
-	<macrodef name="git">
-		<attribute name="command" />
-		<attribute name="dir" default="" />
-		<element name="args" optional="true" />
-		<sequential>
-			<echo message="git @{command}" />
-			<exec executable="git" dir="@{dir}">
-				<arg value="@{command}" />
-				<args/>
-			</exec>
-		</sequential>
-	</macrodef>
-
-	<macrodef name="git-clone">
-		<attribute name="repository" />
-		<attribute name="dest" />
-		<sequential>
-			<git command="clone">
-				<args>
-					<arg value="@{repository}" />
-					<arg value="@{dest}" />
-				</args>
-			</git>
-		</sequential>
-	</macrodef>
-	
-	<macrodef name="git-pull">
-		<attribute name="dest" />
-		<sequential>
-			<git command="pull" dir="@{dest}" />
-		</sequential>
-	</macrodef>
-
-	<macrodef name="git-clone-pull">
-		<attribute name="repository" />
-		<attribute name="dest" />
-		<sequential>
-			<git-clone repository="@{repository}" dest="@{dest}" />
-			<git-pull dest="@{dest}" />
-		</sequential>
-	</macrodef>
-
 	<!-- Filesets -->
 	
 	<patternset id="pattern.documents">
@@ -98,13 +52,37 @@
 	</fileset>
 	
 	<!-- Targets -->
-
-	<target name="clean.dependencies" description="Cleans up the dependencies.">
-		<delete quiet="true" includeemptydirs="true">
-			<fileset dir="${dependencies.dir}" includes="**/*" defaultexcludes="false" />
-		</delete>
+	
+	<target name="get.os">
+		<condition property="os.isWindows" value="true" else="false">
+			<os family="windows" />
+		</condition>
+		<condition property="os.isOSX" value="true" else="false">
+			<and>
+				<os family="mac" />
+				<os family="unix" />
+			</and>
+		</condition>
+		<condition property="os.isLinux32" value="true" else="false">
+			<and>
+				<os family="unix" />
+				<os arch="x86" />
+			</and>
+		</condition>
+		<condition property="os.isLinux64" value="true" else="false">
+			<and>
+				<os family="unix" />
+				<os arch="x64" />
+			</and>
+		</condition>
+		<condition property="os.bash" value="true" else="false">
+			<or>
+				<os family="mac" />
+				<os family="unix" />
+			</or>
+		</condition>
 	</target>
-
+	
 	<target name="clean.compile" description="Cleans up the compiled binaries.">
 		<delete dir="${bin.dir}" includeemptydirs="true" casesensitive="false"/>
 	</target>
@@ -124,10 +102,6 @@
 	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile"  description="Cleans up everything.">
 	</target>
 	
-	<target name="init.dependencies" depends="clean.dependencies" description="Initializes the dependencies folders.">
-		<mkdir dir="${dependencies.dir}" />
-	</target>
-
 	<target name="init.compile" depends="clean.compile" description="Initializes the compilation folders.">
 		<mkdir dir="${bin.dir}" />
 	</target>

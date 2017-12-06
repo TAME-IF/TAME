@@ -10,3 +10,5 @@ versions.properties
 *.ipr
 *.iml
 *.iws
+*.cmd
+*.sh

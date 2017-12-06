@@ -21,6 +21,8 @@ javadoc
 	Creates the Javadocs for this library.
 jar
 	JARs up the binaries, source, and docs into separate JARs.
+win32
+	Creates Win32 executables (still requires Java).
 zip
 	ZIPs up the project contents into separate ZIP files (binaries, source, 
 	and docs).
@@ -29,7 +31,7 @@ release
 
 The build script also contains multiple properties of note, including:
 
-exe.version
+win32.version
 	The version written to the EXEs. Must be x.y.z.w
 	Default: "0.0.0.0"
 build.version.number

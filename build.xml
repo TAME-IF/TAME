@@ -50,17 +50,18 @@
 	"/>
 	
 	<import file="build-import.xml" />
+	<import file="build-dependencies.xml" />
 
 	<!-- Folders and File Names -->
 	<property name="src.test.dir" value="testsrc" />
 	<property name="package.base.dir" value="net/mtrop/tame" />
 	<property name="resource.dir" value="resources" />
 	<property name="replace.dir" value="${build.dir}/replace" />
-	<property name="zip.exe.filename" value="${project.archive}-exe-${build.version}.zip" />
+	<property name="zip.win32.filename" value="${project.archive}-win32-${build.version}.zip" />
 	<property name="tamedox.dir" value="${build.dir}/tamedox" />
 
 	<!-- Versions -->
-	<property name="exe.version" value="0.0.0.0" />
+	<property name="win32.version" value="0.0.0.0" />
 	
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
 	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${build.version}.jar" />
@@ -68,9 +69,9 @@
 	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${build.version}-min.jar" />
 	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${build.version}-min.jar" />	
 
-	<property name="exe.dir" value="${build.dir}/win32" />
-	<property name="exe.compiler.filename" value="tamec.exe" />
-	<property name="exe.console.client.filename" value="tame.exe" />
+	<property name="win32.dir" value="${build.dir}/win32" />
+	<property name="win32.compiler.filename" value="tamec.win32" />
+	<property name="win32.console.client.filename" value="tame.win32" />
 	
 	<!-- Filesets -->
 	
@@ -86,18 +87,32 @@
 		includesfile="build-tame-exe-include.def" 
 	/>
 	
-	<target name="clean.exe" description="Cleans up the exe builds.">
-		<delete dir="${exe.dir}" includeemptydirs="true" casesensitive="false" /> 
+	<target name="clean.win32" description="Cleans up the exe builds.">
+		<delete dir="${win32.dir}" includeemptydirs="true" casesensitive="false" /> 
 	</target>
 
-	<target name="init.exe" depends="clean.exe" description="Initializes the EXE folders.">
-		<mkdir dir="${exe.dir}" />
+	<target name="init.win32" depends="clean.win32" description="Initializes the EXE folders.">
+		<mkdir dir="${win32.dir}" />
 	</target>
 
-	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.exe"  description="Cleans up everything.">
+	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.win32"  description="Cleans up everything.">
+	</target>
+
+	<target name="compile.scripts.windows" if="${os.isWindows}">
+		<!-- Windows Commands -->
+		<echo message="@java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.console.TAMEConsoleClientMain %*&#10;" file="tame.cmd" />
+		<echo message="@java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.compiler.TAMECompilerMain %*&#10;" file="tamec.cmd" />
 	</target>
 	
-	<target name="compile" depends="init.compile" description="Compiles the project, including test classes.">
+	<target name="compile.scripts.bash" if="${os.bash}">
+		<!-- Bash Shell Commands -->
+		<echo message="#!/bin/bash&#10;" file="tame.sh" />
+		<echo message="java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.console.TAMEConsoleClientMain $@&#10;" file="tame.sh" append="true" />
+		<echo message="#!/bin/bash&#10;" file="tamec.sh" />
+		<echo message="java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.compiler.TAMECompilerMain $@&#10;" file="tamec.sh" append="true" />
+	</target>
+
+	<target name="compile" depends="init.compile, get.os, compile.scripts.windows, compile.scripts.bash" description="Compiles the project, including test classes.">
 		<javac 
 			source="1.8"
 			srcdir="${src.dir}${S}${src.test.dir}" 
@@ -112,67 +127,40 @@
 	</target>
 
 	<target name="dependency.common">
-		<git-clone repository="https://github.com/BlackRookSoftware/Common" dest="${dependencies.dir}/Common" />
-		<delete dir="${dependencies.dir}/Common/.git" includeemptydirs="true" casesensitive="false" /> 
+		<git-export repository="https://github.com/BlackRookSoftware/Common" dest="${dependencies.dir}/Common" />
 		<ant antfile="${dependencies.dir}/Common/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
 	</target>
 
 	<target name="dependency.commonio">
-		<git-clone repository="https://github.com/BlackRookSoftware/CommonIO" dest="${dependencies.dir}/CommonIO" />
-		<delete dir="${dependencies.dir}/CommonIO/.git" includeemptydirs="true" casesensitive="false" /> 
+		<git-export repository="https://github.com/BlackRookSoftware/CommonIO" dest="${dependencies.dir}/CommonIO" />
 		<ant antfile="${dependencies.dir}/CommonIO/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
 	</target>
 
 	<target name="dependency.commonlang">
-		<git-clone repository="https://github.com/BlackRookSoftware/CommonLang" dest="${dependencies.dir}/CommonLang" />
-		<delete dir="${dependencies.dir}/CommonLang/.git" includeemptydirs="true" casesensitive="false" /> 
+		<git-export repository="https://github.com/BlackRookSoftware/CommonLang" dest="${dependencies.dir}/CommonLang" />
 		<ant antfile="${dependencies.dir}/CommonLang/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
 	</target>
 
 	<target name="dependency.launch4j.clone">
-		<git-clone repository="https://git.code.sf.net/p/launch4j/git" dest="${dependencies.dir}/launch4j" />
-		<delete dir="${dependencies.dir}/launch4j/.git" includeemptydirs="true" casesensitive="false" /> 
+		<git-export repository="https://git.code.sf.net/p/launch4j/git" dest="${dependencies.dir}/launch4j" />
 	</target>
-	<target name="dependency.launch4j.getos">
-		<condition property="isWindows" value="true" else="false">
-			<os family="windows" />
-		</condition>
-		<condition property="isOSX" value="true" else="false">
-			<and>
-				<os family="mac" />
-				<os family="unix" />
-			</and>
-		</condition>
-		<condition property="isLinux32" value="true" else="false">
-			<and>
-				<os family="unix" />
-				<os arch="x86" />
-			</and>
-		</condition>
-		<condition property="isLinux64" value="true" else="false">
-			<and>
-				<os family="unix" />
-				<os arch="x64" />
-			</and>
-		</condition>
-	</target>
-	<target name="dependency.launch4j.win32" if="${isWindows}">
+	<target name="dependency.launch4j.win32" if="${os.isWindows}">
 		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-win32" />
 		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
 	</target>
-	<target name="dependency.launch4j.linux32" if="${isLinux32}">
+	<target name="dependency.launch4j.linux32" if="${os.isLinux32}">
 		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-linux" />
 		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
 	</target>
-	<target name="dependency.launch4j.linux64" if="${isLinux64}">
+	<target name="dependency.launch4j.linux64" if="${os.isLinux64}">
 		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-linux-x64" />
 		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
 	</target>
-	<target name="dependency.launch4j.osx32" if="${isOSX}">
+	<target name="dependency.launch4j.osx32" if="${os.isOSX}">
 		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-macosx-x86" />
 		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
 	</target>
-	<target name="dependency.launch4j" depends="dependency.launch4j.clone, dependency.launch4j.getos, dependency.launch4j.win32, dependency.launch4j.linux32, dependency.launch4j.linux64, dependency.launch4j.osx32">
+	<target name="dependency.launch4j" depends="dependency.launch4j.clone, get.os, dependency.launch4j.win32, dependency.launch4j.linux32, dependency.launch4j.linux64, dependency.launch4j.osx32">
 	</target>
 	<target name="dependency.properties">
 		<echo message="Writing to build.properties...." />
@@ -294,7 +282,7 @@
 	<target name="jar" depends="init.jar, jar.tame, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min" description="Make all JARs.">
 	</target>
 
-	<target name="exe.taskdef">
+	<target name="win32.taskdef">
 		<taskdef 
 			name="launch4j"
 			classname="net.sf.launch4j.ant.Launch4jTask"
@@ -302,54 +290,54 @@
 		/>
 	</target>
 	
-	<target name="exe.compiler" depends="jar.tame.compiler.one.min, clean.exe, init.exe, exe.taskdef">
-		<delete file="${exe.dir}/${exe.compiler.filename}" />
+	<target name="win32.compiler" depends="jar.tame.compiler.one.min, clean.win32, init.win32, win32.taskdef">
+		<delete file="${win32.dir}/${win32.compiler.filename}" />
 		<launch4j 
 			configFile="./launch4j/TAMECompiler.xml" 
 			jar="${jar.dir}/${jar.compiler.one.min.filename}"
-			outfile="${exe.dir}/${exe.compiler.filename}"
-			fileVersion="${exe.version}" 
-			txtFileVersion="${exe.version}" 
-			productVersion="${exe.version}" 
-			txtProductVersion="${exe.version}"
+			outfile="${win32.dir}/${win32.compiler.filename}"
+			fileVersion="${win32.version}" 
+			txtFileVersion="${win32.version}" 
+			productVersion="${win32.version}" 
+			txtProductVersion="${win32.version}"
 		/>
 	</target>
 	
-	<target name="exe.console.client" depends="jar.tame.console.client.one.min, clean.exe, init.exe, exe.taskdef">
-		<delete file="${exe.dir}/${exe.console.client.filename}" />
+	<target name="win32.console.client" depends="jar.tame.console.client.one.min, clean.win32, init.win32, win32.taskdef">
+		<delete file="${win32.dir}/${win32.console.client.filename}" />
 		<launch4j 
 			configFile="./launch4j/TAMEConsoleClient.xml" 
 			jar="${jar.dir}/${jar.console.client.one.min.filename}"
-			outfile="${exe.dir}/${exe.console.client.filename}"
-			fileVersion="${exe.version}" 
-			txtFileVersion="${exe.version}" 
-			productVersion="${exe.version}" 
-			txtProductVersion="${exe.version}"
+			outfile="${win32.dir}/${win32.console.client.filename}"
+			fileVersion="${win32.version}" 
+			txtFileVersion="${win32.version}" 
+			productVersion="${win32.version}" 
+			txtProductVersion="${win32.version}"
 		/>
 	</target>
 
-	<target name="exe" depends="exe.compiler, exe.console.client" description="Make all EXEs.">
-		<condition property="exe.deploy.dir.set" else="false">
-			<isset property="exe.deploy.dir"/>
+	<target name="win32" depends="win32.compiler, win32.console.client" description="Make all EXEs.">
+		<condition property="win32.deploy.dir.set" else="false">
+			<isset property="win32.deploy.dir"/>
 		</condition>
 	</target>
 
-	<target name="exe.deploy.true" if="${exe.deploy.dir.set}">
-		<copy overwrite="true" todir="${exe.deploy.dir}">
-			<fileset dir="${exe.dir}"/>
+	<target name="win32.deploy.true" if="${win32.deploy.dir.set}">
+		<copy overwrite="true" todir="${win32.deploy.dir}">
+			<fileset dir="${win32.dir}"/>
 		</copy>
 	</target>
-	<target name="exe.deploy.false" unless="${exe.deploy.dir.set}">
-		<echo message="Skipping deploy: exe.deploy.dir property not set!" />
+	<target name="win32.deploy.false" unless="${win32.deploy.dir.set}">
+		<echo message="Skipping deploy: win32.deploy.dir property not set!" />
 	</target>
 
-	<target name="exe.deploy" depends="exe, exe.deploy.true, exe.deploy.false" description="Makes and deploys EXEs if output directory specified.">
+	<target name="win32.deploy" depends="win32, win32.deploy.true, win32.deploy.false" description="Makes and deploys EXEs if output directory specified.">
 	</target>
 	
-	<target name="zip.exe" depends="exe" description="Makes and zips the EXEs.">
-		<delete file="${zip.dir}/${zip.exe.filename}" />
-		<zip basedir="${exe.dir}" destfile="${zip.dir}/${zip.exe.filename}"></zip>
-		<zip destfile="${zip.dir}/${zip.exe.filename}" update="true">
+	<target name="zip.win32" depends="win32" description="Makes and zips the EXEs.">
+		<delete file="${zip.dir}/${zip.win32.filename}" />
+		<zip basedir="${win32.dir}" destfile="${zip.dir}/${zip.win32.filename}"></zip>
+		<zip destfile="${zip.dir}/${zip.win32.filename}" update="true">
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -362,10 +350,10 @@
 		</zip>
 	</target>
 
-	<target name="zip" depends="zip.jar, zip.docs, zip.exe" description="Creates all zips.">
+	<target name="zip" depends="zip.jar, zip.docs, zip.win32" description="Creates all zips.">
 	</target>
 	
-	<target name="release" depends="zip, exe.deploy">
+	<target name="release" depends="zip, win32.deploy">
 	</target>
 
 </project>
