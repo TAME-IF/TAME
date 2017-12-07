@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-    Copyright (c) 2015-2017 Matt Tropiano
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Lesser Public License v2.1
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
-   
-    Contributors:
-        Matt Tropiano - initial API and implementation
- -->
 <!DOCTYPE project>
 <!-- ====================================================================== 
      Text Adventure Module Engine   
      Matt Tropiano                                                                
      ====================================================================== -->
-<project name="build" default="compile">
+<project name="tame" default="compile">
 
 	<description>TAME</description>
 
@@ -133,17 +123,14 @@
 		<git-export repository="https://github.com/BlackRookSoftware/Common" dest="${dependencies.dir}/Common" />
 		<ant antfile="${dependencies.dir}/Common/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
 	</target>
-
 	<target name="dependency.commonio">
 		<git-export repository="https://github.com/BlackRookSoftware/CommonIO" dest="${dependencies.dir}/CommonIO" />
 		<ant antfile="${dependencies.dir}/CommonIO/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
 	</target>
-
 	<target name="dependency.commonlang">
 		<git-export repository="https://github.com/BlackRookSoftware/CommonLang" dest="${dependencies.dir}/CommonLang" />
 		<ant antfile="${dependencies.dir}/CommonLang/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
 	</target>
-
 	<target name="dependency.launch4j.clone">
 		<git-export repository="https://git.code.sf.net/p/launch4j/git" dest="${dependencies.dir}/launch4j" />
 	</target>
@@ -200,7 +187,8 @@
         </javadoc>
     </target>	
 
-	<target name="write.version" description="Generates the version resource.">
+	<!-- Generates the version resource. -->
+	<target name="write.version">
 		<delete file="${bin.dir}/TAMEVersion.txt" />
 		<echo message="${build.version}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
 	</target>

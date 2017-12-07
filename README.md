@@ -23,6 +23,46 @@ Contained in this release is a series of libraries that allow reading, compiling
 writing, and executing TAME module files/archives, found in the **net.mtrop.tame**
 packages.
 
+### Compiling with Ant
+
+To download the dependencies for this project (if you didn't set that up yourself already), type:
+
+	ant dependencies
+
+A *build.properties* file will be created/appended to with the *dev.base, libs.base,* 
+and *launch4j.dir* properties set.
+	
+To compile this project, type:
+
+	ant compile
+
+Shell scripts (CMD/Bash) will also be created in the project directory that will run the main
+entry points of the compiled code, depending on your OS.
+	
+To make a JAR of just TAME's classes (no bundled dependencies), and the stand-alones (both main programs
+with entry points and necessary dependencies) type:
+
+	ant jar
+
+Jars will be placed in the *build/jar* directory by default.
+
+Win32 EXEs can be made via **launch4j**. To make Win32 executables of both programs, type:
+
+	ant win32
+
+EXEs will be placed in the *build/win32* directory by default.
+	
+To make Win32 executables and deploy them to a directory of your choosing via 
+etting the *win32.deploy.dir* property, type:
+
+	ant win32.deploy
+
+The EXEs will not be deployed if the *win32.deploy.dir* property is not set!
+
+### Quick Language Rundown
+
+***TODO***
+
 ### Other
 
 This program and the accompanying materials
