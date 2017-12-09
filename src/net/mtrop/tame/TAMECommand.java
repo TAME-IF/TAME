@@ -1286,6 +1286,34 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * Casts a value to a list with one .
+	 * POP is the value to convert. 
+	 * Returns value as string. 
+	 */
+	ASLIST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in ASLIST call.");
+
+			Value out = Value.createEmptyList(2);
+			out.listAdd(value);
+			request.pushValue(out);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Values";
+		}
+		
+	},
+	
+	/**
 	 * Gets the length of a value.
 	 * POP is the value. 
 	 * Returns integer. 
@@ -1306,7 +1334,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 		@Override
 		public String getGrouping()
 		{
-			return "String Operations";
+			return "Values";
 		}
 		
 	},

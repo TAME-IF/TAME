@@ -819,6 +819,22 @@ var TCommandFunctions =
 		}
 	},
 
+	/* ASLIST */
+	{
+		"name": 'ASLIST', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var value = request.popValue();
+			
+			if (!TValue.isLiteral(value))
+				throw TAMEError.UnexpectedValueType("Expected literal type in ASLIST call.");
+			
+			var out = TValue.createList([]);
+			TValue.listAdd(out, value);
+			request.pushValue(out);
+		}
+	},
+
 	/* LENGTH */
 	{
 		"name": 'LENGTH', 

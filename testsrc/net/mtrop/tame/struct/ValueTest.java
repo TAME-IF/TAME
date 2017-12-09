@@ -39,6 +39,7 @@ public final class ValueTest
 		Value.create(-10.5),
 		Value.create(-3.5),
 		Value.create(""),
+		Value.create(" "),
 		Value.create("0"),
 		Value.create("0.0"),
 		Value.create("10"),
@@ -55,6 +56,8 @@ public final class ValueTest
 		Value.create("-3.5"),
 		Value.create("apple"),
 		Value.create("banana"),
+		Value.createEmptyList(),
+		Value.createList(Value.create(true), Value.create(3), Value.create(5.0), Value.create("orange")),
 	};
 	
 	public static void main(String[] args) 

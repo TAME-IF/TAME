@@ -151,6 +151,19 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
+	 * Creates a list value.
+	 * @param capacity the initial capacity.
+	 * @return the new value.
+	 */
+	public static Value createList(Value ... values)
+	{
+		Value out = createEmptyList(values.length);
+		for (Value v : values)
+			out.listAdd(Value.create(v));
+		return out;
+	}
+
+	/**
 	 * Creates an object value.
 	 * @param identity the object identity.
 	 * @return the new value.
