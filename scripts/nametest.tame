@@ -8,7 +8,7 @@ object o_test2;
 
 world
 {
-	init()
+	start()
 	{
 		removeObjectName(o_test2, "butt");
 		addObjectName(o_test2, "butt");
@@ -45,4 +45,5 @@ world
 
 		quit;
 	}
+	
 }

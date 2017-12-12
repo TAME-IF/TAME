@@ -7,7 +7,7 @@ object archetype o_ball
 
 object o_basketball : o_ball
 {
-	function dribble() 
+	override function dribble() 
 	{
 		textln("bounce, bounce, bounce!");
 	}
@@ -15,7 +15,7 @@ object o_basketball : o_ball
 
 object o_bowlingball : o_ball
 {
-	function dribble() 
+	override function dribble() 
 	{
 		textln("CLUNK, CLUNK, CLUNK!");
 	}
@@ -47,7 +47,7 @@ world
 		local out = 0;
 		while (rolls > 1)
 		{
-			out = out + random(die) + 1;
+			out = out + irandom(die) + 1;
 			rolls = rolls - 1;
 		}
 		return out;

@@ -8,7 +8,6 @@ action general a_text named "text";
 action general a_textf named "textf";
 action general a_pause named "pause";
 action general a_wait named "wait";
-action general a_trace named "trace";
 action general a_error named "error";
 action general a_fatal named "fatal";
  
@@ -22,7 +21,7 @@ world
    onAction(a_textf)	textln("[style]This is some formatted text.[/]");
    onAction(a_pause)	{textln("One"); pause(); textln("Two");}
    onAction(a_wait)		{textln("One"); wait(1000); textln("Two");}
-   onAction(a_error)	addCue("ERROR","Some horseshit happened!");
-   onAction(a_fatal)	addCue("FATAL","OH LORDY YOU DONE FUCKED UP, NOW!");
+   onAction(a_error)	addCue("ERROR","Some error happened!");
+   onAction(a_fatal)	addCue("FATAL","OH LORDY YOU DONE SCREWED UP, NOW!");
    
 }

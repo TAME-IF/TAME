@@ -60,7 +60,7 @@ world
 	{
 	}
 
-	onUnknownAction()
+	onUnhandledAction()
 	{
 		textln("I don't understand.");
 	}

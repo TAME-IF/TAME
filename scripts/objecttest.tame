@@ -8,9 +8,14 @@ action transitive a_shred;
 
 object archetype o_food
 {
+	function getName()
+	{
+		return "(FOOD)";
+	}
+
 	init()
 	{
-		name = "((FOOD))";
+		name = getName();
 	}
 	
 	onAction(a_mash)
@@ -32,30 +37,30 @@ object archetype o_food
 
 object o_apple : o_food named "apple", "green apple" tagged "food", "fruit"
 {
-	init()
+	override function getName()
 	{
-		name = "apple";
+		return "apple";
 	}
 }
 object o_banana : o_food named "banana" tagged "food", "fruit"
 {
-	init()
+	override function getName()
 	{
-		name = "banana";
+		return "banana";
 	}
 }
 object o_cucumber : o_food named "cucumber" tagged "food", "vegetable"
 {
-	init()
+	override function getName()
 	{
-		name = "cucumber";
+		return "cucumber";
 	}
 }
 object o_eggplant : o_food named "eggplant", "aubergine" tagged "food", "vegetable"
 {
-	init()
+	override function getName()
 	{
-		name = "eggplant";
+		return "eggplant";
 	}
 }
 
@@ -65,7 +70,7 @@ container c_garbage;
 
 world
 {
-	init()
+	start()
 	{
 		giveobject(c_basket, o_apple);
 		giveobject(c_basket, o_banana);
@@ -132,6 +137,7 @@ world
 
 		queueActionForObjectsIn(a_mash, c_basket);
 		queueActionForTaggedObjectsIn(a_shred, c_basket, "fruit");
+		quit;
 	}
 	
 }

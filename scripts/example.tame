@@ -11,8 +11,8 @@ action general a_test named "test";
 action general a_counter named "counter";
 action general a_tick;
 
-object o_1984;
-object o_twilight;
+object o_1984 named "old book", "book", "the book";
+object o_twilight named "awful book", "book", "the book";
 
 object o_incinerator named "incinerator", "huge incinerator"
 {
@@ -44,7 +44,7 @@ object o_incinerator named "incinerator", "huge incinerator"
 		
 }
 
-object o_1984 named "old book", "book", "the book"
+extend object o_1984
 {
 	init()
 	{
@@ -100,7 +100,7 @@ object o_1984 named "old book", "book", "the book"
 	}
 }
 
-object o_twilight named "shitty book", "book", "the book"
+extend object o_twilight
 {
 	init()
 	{
@@ -144,7 +144,7 @@ object o_twilight named "shitty book", "book", "the book"
 		if (exam)
 			textln("Twilight is here. I wish it wasn't.");
 		else
-			textln("A shitty book is here.");
+			textln("An awful book is here.");
 	}
 
 	onPlayerBrowse()
@@ -152,7 +152,7 @@ object o_twilight named "shitty book", "book", "the book"
 		if (exam)
 			textln("Twilight.");
 		else
-			textln("A shitty book.");
+			textln("An awful book.");
 	}
 }
 
@@ -187,13 +187,6 @@ player p_default
 
 room r_room
 {
-	init()
-	{
-		giveObject(r_room, o_1984);
-		giveObject(r_room, o_twilight);
-		giveObject(r_room, o_incinerator);
-	}
-
 	onAction(a_look)
 	{
 		textln("You look around the room.");
@@ -206,9 +199,18 @@ world
 {
 	init()
 	{
+		counter = 0;
+	}
+	
+	start()
+	{
 		setplayer(p_default);
 		setroom(p_default, r_room);
-		counter = 0;
+		giveObject(r_room, o_1984);
+		giveObject(r_room, o_twilight);
+		giveObject(r_room, o_incinerator);
+		
+		queueAction(a_look);
 	}
 	
 	onAction(a_inv)

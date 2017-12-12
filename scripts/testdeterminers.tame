@@ -39,7 +39,7 @@ object o_balls named "balls" uses determiners "my", "the"
 
 world
 {
-	AfterModuleInit()
+	start()
 	{
 		GiveObject(world, o_balls);
 		browse(world);

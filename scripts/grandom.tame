@@ -8,7 +8,7 @@ world
 {
 	init()
 	{
-		local max = 5000;
+		local max = 1000;
 		local x = 0;
 		while (x < max)
 		{

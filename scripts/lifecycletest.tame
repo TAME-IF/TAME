@@ -13,14 +13,20 @@ world
 		textln("Start");
 	}
 	
-	onAction(a_test)
+	onAction(a_quit)
 	{
-		textln("test");
+		textln("quit!");
+		quit;
 	}
 	
-	onUnknownAction()
+	onUnknownCommand()
 	{
 		textln("unknown!");
+	}
+	
+	onUnhandledAction()
+	{
+		textln("unhandled!");
 	}
 	
 	afterSuccessfulCommand()
