@@ -48,7 +48,7 @@
 	<property name="resource.dir" value="resources" />
 	<property name="replace.dir" value="${build.dir}/replace" />
 	<property name="zip.win32.filename" value="${project.archive}-win32-${build.version}.zip" />
-	<property name="tamedox.dir" value="${build.dir}/tamedox" />
+	<property name="tamedocs.dir" value="${build.dir}/tamedocs" />
 
 	<!-- Versions -->
 	<property name="win32.version" value="0.0.0.0" />

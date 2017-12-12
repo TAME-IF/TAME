@@ -1,6 +1,7 @@
 /bin
 /build
 /deps
+/dist
 /.idea
 build.properties
 versions.properties

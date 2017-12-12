@@ -1,5 +1,5 @@
 # TAME #
-#### &copy; 2016 Matthew Tropiano ####
+#### &copy; 2016-2017 Matthew Tropiano ####
 
 ## 1. What is TAME? ##
 
