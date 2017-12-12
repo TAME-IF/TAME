@@ -38,6 +38,8 @@ var TEST_VALUES = [
 	TValue.createString("-3.5"),
 	TValue.createString("apple"),
 	TValue.createString("banana"),
+	TValue.createList([]),
+	TValue.createList([TValue.createBoolean(true), TValue.createInteger(3), TValue.createFloat(5.0), TValue.createString("orange")]),
 ];
 
 function printEmpty(v1)
@@ -118,45 +120,3 @@ for (var x in TArithmeticFunctions.Type) if (TArithmeticFunctions.Type.hasOwnPro
 	}
 	console.log("-------------------------------");
 }
-
-var listValue = TValue.createList([]);
-
-for (i = 0; i < TEST_VALUES.length; i++)
-	TValue.listAdd(listValue, TEST_VALUES[i]);
-
-console.log(TValue.asString(listValue));
-
-for (i = 0; i < TEST_VALUES.length; i++)
-	TValue.listRemove(listValue, TEST_VALUES[i]);
-
-console.log(TValue.asString(listValue));
-
-for (i = 0; i < TEST_VALUES.length; i++)
-	TValue.listAddAt(listValue, 0, TEST_VALUES[i]);
-
-console.log(TValue.asString(listValue));
-
-while (!TValue.isEmpty(listValue))
-	TValue.listRemoveAt(listValue, 0);
-
-console.log(TValue.asString(listValue));
-
-TValue.listAdd(listValue, TValue.createBoolean(false));
-
-for (i = 0; i < TEST_VALUES.length; i++)
-	TValue.listSet(listValue, 0, TEST_VALUES[i]);
-
-console.log(TValue.asString(listValue));
-
-listValue = TValue.createList([]);
-for (i = 0; i < TEST_VALUES.length; i++)
-	TValue.listAdd(listValue, TEST_VALUES[i]);
-
-console.log(TValue.asString(listValue));
-
-for (i = 0; i < TEST_VALUES.length; i++)
-	console.log(TValue.listIndexOf(listValue, TEST_VALUES[i]));
-
-console.log(TValue.asString(listValue));
-console.log(TValue.length(listValue));
-
