@@ -7,7 +7,7 @@
  * 
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
-package net.mtrop.tame.struct;
+package com.tameif.tame.struct;
 
 import com.tameif.tame.lang.FormatParser;
 

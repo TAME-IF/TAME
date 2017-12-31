@@ -7,7 +7,7 @@
  * 
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
-package net.mtrop.tame;
+package com.tameif.tame;
 
 import java.io.PrintStream;
 import java.util.Arrays;
