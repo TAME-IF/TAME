@@ -24,12 +24,13 @@
 	<property name="src.dir" value="src" />
 	<property name="examples.dir" value="examples" />
 	<property name="bin.dir" value="bin" />
+	<property name="dist.dir" value="dist" />
 
 	<property name="build.dir" value="build" />
 
 	<property name="jar.dir" value="${build.dir}/jar" />
 	<property name="docs.dir" value="${build.dir}/docs" />
-	<property name="zip.dir" value="${build.dir}/zip" />
+	<property name="zip.dir" value="${dist.dir}" />
 
 	<property name="jar.filename" value="${project.archive}-${build.version}.jar" />
 	<property name="jar.sources.filename" value="${project.archive}-${build.version}-sources.jar" />

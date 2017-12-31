@@ -60,8 +60,8 @@
 	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${build.version}-min.jar" />	
 
 	<property name="win32.dir" value="${build.dir}/win32" />
-	<property name="win32.compiler.filename" value="tamec.win32" />
-	<property name="win32.console.client.filename" value="tame.win32" />
+	<property name="win32.compiler.filename" value="tamec.exe" />
+	<property name="win32.console.client.filename" value="tame.exe" />
 	
 	<!-- Filesets -->
 	

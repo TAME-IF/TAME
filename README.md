@@ -1,6 +1,6 @@
 # TAME (Text Adventure Module Engine)
 
-Copyright (c) 2015-2017 Matt Tropiano. All rights reserved.  
+Copyright (c) 2015-2018 Matt Tropiano. All rights reserved.  
 
 ### Required Libraries
 
@@ -16,6 +16,10 @@ Black Rook Common Lang 2.9.1+
 ### Introduction
 
 This library reads, compiles, and executes TAME modules.
+
+**WARNING:** TAME is in an incomplete state. The commands in the language, its structure, 
+and their behavior may change before version 1.0, but it is completely functional and consistent
+in both the Java and JS implementations.
 
 ### Library
 
@@ -39,8 +43,8 @@ To compile this project, type:
 Shell scripts (CMD/Bash) will also be created in the project directory that will run the main
 entry points of the compiled code, depending on your OS.
 	
-To make a JAR of just TAME's classes (no bundled dependencies), and the stand-alones (both main programs
-with entry points and necessary dependencies) type:
+To make a JAR of just TAME's classes (no bundled dependencies), and the stand-alones 
+(both main programs with entry points and necessary dependencies) type:
 
 	ant jar
 
@@ -58,6 +62,13 @@ etting the *win32.deploy.dir* property, type:
 	ant win32.deploy
 
 The EXEs will not be deployed if the *win32.deploy.dir* property is not set!
+
+### Other Files
+
+There is a Notepad++ Syntax Highlighter config in *docs/UDL.xml*.
+
+The *docs/TAME.md* file is not only incomplete, but obsolete due to the construction
+of the main documentation at [https://github.com/TAME-IF/TAMEDocs](https://github.com/TAME-IF/TAMEDocs).
 
 ### Other
 
