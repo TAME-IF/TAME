@@ -117,7 +117,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a value typed as string.
 	 * @param value the string value.
 	 * @return the new value.
-	 * @throws UnexpectedValueException if value is null.
+	 * @throws IllegalArgumentException if value is null.
 	 */
 	public static Value create(String value)
 	{
@@ -166,7 +166,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates an object value.
 	 * @param identity the object identity.
 	 * @return the new value.
-	 * @throws UnexpectedValueException if identity is null.
+	 * @throws IllegalArgumentException if identity is null.
 	 */
 	public static Value createObject(String identity)
 	{
@@ -179,7 +179,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a container value.
 	 * @param identity the container identity.
 	 * @return the new value.
-	 * @throws UnexpectedValueException if identity is null.
+	 * @throws IllegalArgumentException if identity is null.
 	 */
 	public static Value createContainer(String identity)
 	{
@@ -192,7 +192,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a room value.
 	 * @param identity the room identity.
 	 * @return the new value.
-	 * @throws UnexpectedValueException if identity is null.
+	 * @throws IllegalArgumentException if identity is null.
 	 */
 	public static Value createRoom(String identity)
 	{
@@ -205,7 +205,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a player value.
 	 * @param identity the player identity.
 	 * @return the new value.
-	 * @throws UnexpectedValueException if identity is null.
+	 * @throws IllegalArgumentException if identity is null.
 	 */
 	public static Value createPlayer(String identity)
 	{
@@ -218,7 +218,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * Creates a action value.
 	 * @param identity the action identity.
 	 * @return the new value.
-	 * @throws UnexpectedValueException if identity is null.
+	 * @throws IllegalArgumentException if identity is null.
 	 */
 	public static Value createAction(String identity)
 	{
