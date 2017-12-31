@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Matt Tropiano
+ * Copyright (c) 2016-2018 Matt Tropiano
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -625,7 +625,7 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 
 	var entry = context.resolveFunction(originContext.identity, functionName);
 	if (entry == null)
-		throw TAMEError.UnexpectedValue("No such function ("+functionName+") in lineage of element " + TLogic.elementToString(element));
+		throw TAMEError.Module("No such function ("+functionName+") in lineage of element " + TLogic.elementToString(element));
 
 	response.trace(request, "Calling function \""+functionName+"\"...");
 	var blockLocal = {};
@@ -954,7 +954,7 @@ TLogic.checkObjectAccessibility = function(request, response, playerIdentity, ob
 TLogic.doArithmeticStackFunction = function(request, response, functionType)
 {
 	if (functionType < 0 || functionType >= TArithmeticFunctions.COUNT)
-		throw TAMEError.UnexpectedValue("Expected arithmetic function type, got illegal value "+functionType+".");
+		throw TAMEError.ModuleExecution("Expected arithmetic function type, got illegal value "+functionType+".");
 	
 	var operator = TArithmeticFunctions[functionType];
 	response.trace(request, "Function is " + operator.name);

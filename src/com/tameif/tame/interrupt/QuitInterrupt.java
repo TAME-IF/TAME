@@ -17,7 +17,7 @@ import com.tameif.tame.TAMEInterrupt;
  */
 public class QuitInterrupt extends TAMEInterrupt
 {
-	private static final long serialVersionUID = -8027918516813618299L;
+	private static final long serialVersionUID = -8310668453377717262L;
 
 	public QuitInterrupt()
 	{

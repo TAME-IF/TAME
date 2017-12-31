@@ -3795,6 +3795,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		
 	}
 
+	// No constructor.
+	private TAMEScriptReader(){}
+
 	/**
 	 * Reads TAMEModule objects from a String of text into a new module.
 	 * @param text the String to read from.

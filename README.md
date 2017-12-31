@@ -21,6 +21,9 @@ This library reads, compiles, and executes TAME modules.
 and their behavior may change before version 1.0, but it is completely functional and consistent
 in both the Java and JS implementations.
 
+Until otherwise specified, any changes to the TAME commands set may invalidate TAME modules that are compiled
+to the serialized format or JS modules (but not embedded ones - those are safe).
+
 ### Library
 
 Contained in this release is a series of libraries that allow reading, compiling,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Matt Tropiano
+ * Copyright (c) 2016-2018 Matt Tropiano
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -27,7 +27,6 @@ TAMEError.Type =
 	"Arithmetic": "Arithmetic",
 	"ArithmeticStackState": "ArithmeticStackState",
 	"RunawayRequest": "RunawayRequest",
-	"UnexpectedValue": "UnexpectedValue",
 	"UnexpectedValueType": "UnexpectedValueType"
 };
 
@@ -44,7 +43,6 @@ TAMEError.ModuleState = function(message) {return new TAMEError(TAMEError.Type.M
 TAMEError.Arithmetic = function(message) {return new TAMEError(TAMEError.Type.Arithmetic, message);};
 TAMEError.ArithmeticStackState = function(message) {return new TAMEError(TAMEError.Type.ArithmeticStackState, message);};
 TAMEError.RunawayRequest = function(message) {return new TAMEError(TAMEError.Type.RunawayRequest, message);};
-TAMEError.UnexpectedValue = function(message) {return new TAMEError(TAMEError.Type.UnexpectedValue, message);};
 TAMEError.UnexpectedValueType = function(message) {return new TAMEError(TAMEError.Type.UnexpectedValueType, message);};
 
 //##[[EXPORTJS-END

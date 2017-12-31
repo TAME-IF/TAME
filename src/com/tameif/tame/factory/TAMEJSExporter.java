@@ -100,11 +100,14 @@ public final class TAMEJSExporter
 	/** Default writer options. */
 	private static final TAMEJSExporterOptions DEFAULT_OPTIONS = new DefaultJSExporterOptions();
 	
+	// No constructor.
+	private TAMEJSExporter(){}
+	
 	/**
 	 * Exports a TAME Module to a stand-alone JavaScript module with default options.
-	 * @param file the output file.
 	 * @param module the module to export.
 	 * @throws IOException if a write error occurs.
+	 * @return a String that contains the entirety of the generated code.
 	 */
 	public static String exportToString(TAMEModule module) throws IOException
 	{
@@ -115,9 +118,9 @@ public final class TAMEJSExporter
 	
 	/**
 	 * Exports a TAME Module to a stand-alone JavaScript module.
-	 * @param file the output file.
 	 * @param module the module to export.
 	 * @param options the exporter options.
+	 * @return a String that contains the entirety of the generated code.
 	 * @throws IOException if a write error occurs.
 	 */
 	public static String exportToString(TAMEModule module, TAMEJSExporterOptions options) throws IOException

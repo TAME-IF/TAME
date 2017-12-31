@@ -12,7 +12,7 @@ package com.tameif.tame.exception;
 import com.tameif.tame.TAMEFatalException;
 
 /**
- * Thrown when a module state read/write exception occurs.
+ * Thrown when a generic module exception occurs.
  * @author Matthew Tropiano
  */
 public class ModuleException extends TAMEFatalException

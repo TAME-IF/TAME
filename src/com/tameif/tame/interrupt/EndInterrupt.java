@@ -12,7 +12,7 @@ package com.tameif.tame.interrupt;
 import com.tameif.tame.TAMEInterrupt;
 
 /**
- * Interrupt for ending a request action.
+ * Interrupt for ending a block call or returning from a function.
  * @author Matthew Tropiano
  */
 public class EndInterrupt extends TAMEInterrupt

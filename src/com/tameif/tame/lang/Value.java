@@ -22,7 +22,7 @@ import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.exception.ModuleException;
-import com.tameif.tame.exception.UnexpectedValueException;
+import com.tameif.tame.exception.UnexpectedValueTypeException;
 
 /**
  * All values in the interpreter are of this type, which stores a type.
@@ -151,7 +151,7 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates a list value.
-	 * @param capacity the initial capacity.
+	 * @param values the values to set in the list (converted to {@link Value}s).
 	 * @return the new value.
 	 */
 	public static Value createList(Value ... values)
@@ -287,7 +287,7 @@ public class Value implements Comparable<Value>, Saveable
 			case VARIABLE:
 				return createVariable((String)inputValue.value);
 			default:
-				throw new UnexpectedValueException("Unknown value type.");
+				throw new UnexpectedValueTypeException("Unknown value type.");
 		}
 	}
 
@@ -308,12 +308,12 @@ public class Value implements Comparable<Value>, Saveable
 	 * Sets the value type and value.
 	 * @param type the value type.
 	 * @param value the underlying object value.
-	 * @throws UnexpectedValueException if value is null.
+	 * @throws IllegalArgumentException if value is null.
 	 */
 	private void set(ValueType type, Object value)
 	{
 		if (value == null)
-			throw new UnexpectedValueException("Value cannot be null!");
+			throw new IllegalArgumentException("Value cannot be null!");
 		this.type = type;
 		this.value = value;
 		this.hash = 0;
@@ -782,11 +782,11 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Gets if this value is "empty."
-	 * <br/>If boolean, this returns true if and only if this is false.
-	 * <br/>If numeric, this returns true if and only if the value is 0 or NaN.
-	 * <br/>If string, this returns true if and only if this value, trimmed, is length 0.
-	 * <br/>If list, this returns true if and only if this list is length 0.
-	 * <br/>Otherwise, false.
+	 * <br>If boolean, this returns true if and only if this is false.
+	 * <br>If numeric, this returns true if and only if the value is 0 or NaN.
+	 * <br>If string, this returns true if and only if this value, trimmed, is length 0.
+	 * <br>If list, this returns true if and only if this list is length 0.
+	 * <br>Otherwise, false.
 	 * @return true if this value is "empty", false if not.
 	 */
 	public boolean isEmpty()
@@ -811,9 +811,9 @@ public class Value implements Comparable<Value>, Saveable
 	
 	/**
 	 * Gets the length of this value.
-	 * <br/>If string, this returns the string length in characters.
-	 * <br/>If list, this returns the cardinality.
-	 * <br/>Otherwise, 1.
+	 * <br>If string, this returns the string length in characters.
+	 * <br>If list, this returns the cardinality.
+	 * <br>Otherwise, 1.
 	 * @return the length.
 	 */
 	public int length()

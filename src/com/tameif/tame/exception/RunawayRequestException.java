@@ -13,9 +13,8 @@ import com.tameif.tame.TAMEFatalException;
 
 /**
  * This type of interrupt is thrown too many commands are executed on
- * one request, in order to catch infinite loops. This will terminate a
- * request abruptly, so the context may be left in an undesirable state.
- * But then again, maybe you should fix those infinite loops!
+ * one request (in order to catch possible infinite loops), or when the 
+ * function call stack gets too deep (to prevent stack overflows).
  * @author Matthew Tropiano
  */
 public class RunawayRequestException extends TAMEFatalException

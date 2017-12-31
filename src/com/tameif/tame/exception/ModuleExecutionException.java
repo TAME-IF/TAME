@@ -10,7 +10,7 @@
 package com.tameif.tame.exception;
 
 /**
- * Thrown when a module has unexpected structures.
+ * Thrown if a problem happens during module execution.
  * @author Matthew Tropiano
  */
 public class ModuleExecutionException extends ModuleException

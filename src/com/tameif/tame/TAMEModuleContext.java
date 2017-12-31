@@ -48,7 +48,6 @@ import com.tameif.tame.lang.Value;
 
 /**
  * A mutable context for a module.
- * FIXME: Do resolve element without using resolve context to avoid archetype search issues.
  * @author Matthew Tropiano
  */
 public class TAMEModuleContext implements TAMEConstants, Saveable
@@ -368,7 +367,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	/**
 	 * Returns all objects in the accessible area by an object name read from the interpreter.
 	 * The output stops if the size of the output array is reached.
-	 * @param moduleContext the module context.
 	 * @param name the name from the interpreter.
 	 * @param outputArray the output vector of found objects.
 	 * @param arrayOffset the starting offset into the array to put them.

@@ -31,7 +31,7 @@ import com.tameif.tame.element.context.TPlayerContext;
 import com.tameif.tame.element.context.TRoomContext;
 import com.tameif.tame.element.context.TWorldContext;
 import com.tameif.tame.exception.ModuleException;
-import com.tameif.tame.exception.UnexpectedValueException;
+import com.tameif.tame.exception.ModuleExecutionException;
 import com.tameif.tame.interrupt.EndInterrupt;
 import com.tameif.tame.interrupt.FinishInterrupt;
 import com.tameif.tame.interrupt.QuitInterrupt;
@@ -125,7 +125,7 @@ public final class TAMELogic implements TAMEConstants
 		long nanos;
 		
 		nanos = System.nanoTime();
-		TAMEInterpreterContext interpreterContext = interpret(request.getModuleContext(), request.getInputMessage());
+		InterpreterContext interpreterContext = interpret(request.getModuleContext(), request.getInputMessage());
 		response.setInterpretNanos(System.nanoTime() - nanos);
 	
 		nanos = System.nanoTime();
@@ -219,13 +219,14 @@ public final class TAMELogic implements TAMEConstants
 
 	/**
 	 * Interprets the input on the request.
-	 * @param request the request.
+	 * Requires a context, as objects may need to be parsed.
+	 * @param moduleContext the module context to use (for object availability).
 	 * @param inputMessage the input message to interpret.
 	 * @return a new interpreter context using the input.
 	 */
-	public static TAMEInterpreterContext interpret(TAMEModuleContext moduleContext, String inputMessage)
+	public static InterpreterContext interpret(TAMEModuleContext moduleContext, String inputMessage)
 	{
-		TAMEInterpreterContext interpreterContext = new TAMEInterpreterContext(inputMessage);
+		InterpreterContext interpreterContext = new InterpreterContext(inputMessage);
 		
 		interpretAction(moduleContext, interpreterContext);
 		
@@ -264,7 +265,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
 	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	public static boolean enqueueInterpretedAction(TAMERequest request, TAMEResponse response, TAMEInterpreterContext interpreterContext) throws TAMEInterrupt 
+	public static boolean enqueueInterpretedAction(TAMERequest request, TAMEResponse response, InterpreterContext interpreterContext) throws TAMEInterrupt 
 	{
 		TAction action = interpreterContext.getAction();
 		if (action == null)
@@ -452,7 +453,6 @@ public final class TAMELogic implements TAMEConstants
 	 * @param response the response object.
 	 * @param context the context that the block is executed through.
 	 * @param block the block to execute.
-	 * @param localValues the local values to set on invoke.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
 	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block) throws TAMEInterrupt
@@ -579,11 +579,12 @@ public final class TAMELogic implements TAMEConstants
 	 * @param request the request context.
 	 * @param response the response object.
 	 * @param functionType the function type.
+	 * @throws ModuleExecutionException if functionType is less than 0 or greater than or equal to <code>ArithmeticOperator.VALUES.length</code>. 
 	 */
 	public static void doArithmeticStackFunction(TAMERequest request, TAMEResponse response, int functionType)
 	{
 		if (functionType < 0 || functionType >= ArithmeticOperator.VALUES.length)
-			throw new UnexpectedValueException("Expected arithmetic function type, got illegal value %d.", functionType);
+			throw new ModuleExecutionException("Expected arithmetic function type, got illegal value "+functionType+".");
 	
 		ArithmeticOperator operator =  ArithmeticOperator.VALUES[functionType];
 		response.trace(request, "Function is %s", operator.name());
@@ -1784,7 +1785,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param moduleContext the module context.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static void interpretAction(TAMEModuleContext moduleContext, TAMEInterpreterContext interpreterContext)
+	private static void interpretAction(TAMEModuleContext moduleContext, InterpreterContext interpreterContext)
 	{
 		TAMEModule module = moduleContext.getModule();
 		StringBuilder sb = new StringBuilder();
@@ -1811,7 +1812,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param action the action to use.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static void interpretMode(TAction action, TAMEInterpreterContext interpreterContext)
+	private static void interpretMode(TAction action, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1839,7 +1840,7 @@ public final class TAMELogic implements TAMEConstants
 	 * Interprets open target.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static void interpretOpen(TAMEInterpreterContext interpreterContext)
+	private static void interpretOpen(InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1863,7 +1864,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param action the action to use.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static boolean interpretConjugate(TAction action, TAMEInterpreterContext interpreterContext)
+	private static boolean interpretConjugate(TAction action, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1899,7 +1900,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param moduleContext the module context.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static boolean interpretObject1(TAMEModuleContext moduleContext, TAMEInterpreterContext interpreterContext)
+	private static boolean interpretObject1(TAMEModuleContext moduleContext, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1941,7 +1942,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param moduleContext the module context.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static boolean interpretObject2(TAMEModuleContext moduleContext, TAMEInterpreterContext interpreterContext)
+	private static boolean interpretObject2(TAMEModuleContext moduleContext, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1975,9 +1976,8 @@ public final class TAMELogic implements TAMEConstants
 	
 	/**
 	 * Context used when some input is getting parsed/interpreted.
-	 * @author Matthew Tropiano
 	 */
-	public static class TAMEInterpreterContext 
+	private static class InterpreterContext 
 	{
 		private String[] tokens;
 		private int tokenOffset;
@@ -1995,7 +1995,7 @@ public final class TAMELogic implements TAMEConstants
 		private TObject object2;
 		private boolean objectAmbiguous;
 		
-		TAMEInterpreterContext(String input)
+		private InterpreterContext(String input)
 		{
 			input = input.replaceAll("\\s+", " ").trim();
 			
