@@ -24,7 +24,7 @@ in both the Java and JS implementations.
 ### Library
 
 Contained in this release is a series of libraries that allow reading, compiling,
-writing, and executing TAME module files/archives, found in the **net.mtrop.tame**
+writing, and executing TAME module files/archives, found in the **com.tameif.tame**
 packages.
 
 ### Compiling with Ant
@@ -65,10 +65,12 @@ The EXEs will not be deployed if the *win32.deploy.dir* property is not set!
 
 ### Other Files
 
-There is a Notepad++ Syntax Highlighter config in *docs/UDL.xml*.
+There is a Notepad++ Syntax Highlighter config in `docs/UDL.xml`.
 
-The *docs/TAME.md* file is not only incomplete, but obsolete due to the construction
+The `docs/TAME.md` file is not only incomplete, but obsolete due to the construction
 of the main documentation at [https://github.com/TAME-IF/TAMEDocs](https://github.com/TAME-IF/TAMEDocs).
+
+The files in the `js` directory are executed via NodeJS.
 
 ### Other
 

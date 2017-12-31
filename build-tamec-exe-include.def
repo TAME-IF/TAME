@@ -1,4 +1,4 @@
-net/mtrop/tame/**
+com/tameif/tame/**
 tamejs/**
 com/blackrook/commons/AbstractArrayStorage.class
 com/blackrook/commons/AbstractChainedHash.class

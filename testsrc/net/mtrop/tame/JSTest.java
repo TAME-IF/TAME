@@ -13,10 +13,9 @@ import java.io.File;
 import java.io.PrintWriter;
 
 import com.blackrook.commons.Common;
-
-import net.mtrop.tame.factory.TAMEJSExporter;
-import net.mtrop.tame.factory.TAMEJSExporterOptions;
-import net.mtrop.tame.factory.TAMEScriptReader;
+import com.tameif.tame.factory.TAMEJSExporter;
+import com.tameif.tame.factory.TAMEJSExporterOptions;
+import com.tameif.tame.factory.TAMEScriptReader;
 
 /**
  * A test JS exporter.

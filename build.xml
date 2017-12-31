@@ -28,15 +28,15 @@
 	<property name="project.javadoc.title" value="TAME" />
 	<property name="project.classpath" value="${common.lib}${S}${common.io.lib}${S}${common.lang.lib}" />
 	<property name="project.javadoc.packages" value="
-		net.mtrop.tame,
-		net.mtrop.tame.compiler,
-		net.mtrop.tame.console,
-		net.mtrop.tame.element,
-		net.mtrop.tame.element.context,
-		net.mtrop.tame.exception,
-		net.mtrop.tame.factory,
-		net.mtrop.tame.interrupt,
-		net.mtrop.tame.lang
+		com.tameif.tame,
+		com.tameif.tame.compiler,
+		com.tameif.tame.console,
+		com.tameif.tame.element,
+		com.tameif.tame.element.context,
+		com.tameif.tame.exception,
+		com.tameif.tame.factory,
+		com.tameif.tame.interrupt,
+		com.tameif.tame.lang
 	"/>
 	
 	<import file="build-import.xml" />
@@ -90,16 +90,16 @@
 
 	<target name="compile.scripts.windows" if="${os.isWindows}">
 		<!-- Windows Commands -->
-		<echo message="@java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.console.TAMEConsoleClientMain %*&#10;" file="tame.cmd" />
-		<echo message="@java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.compiler.TAMECompilerMain %*&#10;" file="tamec.cmd" />
+		<echo message="@java -cp ${project.classpath}${S}${bin.dir} com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="tame.cmd" />
+		<echo message="@java -cp ${project.classpath}${S}${bin.dir} com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="tamec.cmd" />
 	</target>
 	
 	<target name="compile.scripts.bash" if="${os.bash}">
 		<!-- Bash Shell Commands -->
 		<echo message="#!/bin/bash&#10;" file="tame.sh" />
-		<echo message="java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.console.TAMEConsoleClientMain $@&#10;" file="tame.sh" append="true" />
+		<echo message="java -cp ${project.classpath}${S}${bin.dir} com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="tame.sh" append="true" />
 		<echo message="#!/bin/bash&#10;" file="tamec.sh" />
-		<echo message="java -cp ${project.classpath}${S}${bin.dir} net.mtrop.tame.compiler.TAMECompilerMain $@&#10;" file="tamec.sh" append="true" />
+		<echo message="java -cp ${project.classpath}${S}${bin.dir} com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="tamec.sh" append="true" />
 		<!-- Set permissions -->
 		<chmod file="tame.sh" perm="ugo+rx"/>
 		<chmod file="tamec.sh" perm="ugo+rx"/>
@@ -180,10 +180,10 @@
         	nonavbar="false" 
         	notree="false"
     		>
-            <link href="http://blackrooksoftware.com/docs/common/"/>
-            <link href="http://blackrooksoftware.com/docs/commonio/"/>
-            <link href="http://blackrooksoftware.com/docs/commonlang/"/>
-            <link href="http://download.oracle.com/javase/7/docs/api/"/>
+            <link href="https://blackrooksoftware.com/docs/common/"/>
+            <link href="https://blackrooksoftware.com/docs/commonio/"/>
+            <link href="https://blackrooksoftware.com/docs/commonlang/"/>
+            <link href="https://docs.oracle.com/javase/9/docs/api/"/>
         </javadoc>
     </target>	
 
@@ -210,7 +210,7 @@
 		<delete file="${jar.dir}/${jar.compiler.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.compiler.one.filename}">
 			<manifest>
-		    	<attribute name="Main-Class" value="net.mtrop.tame.compiler.TAMECompilerMain"/>
+		    	<attribute name="Main-Class" value="com.tameif.tame.compiler.TAMECompilerMain"/>
             </manifest>
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/console/" />
@@ -233,7 +233,7 @@
 		<delete file="${jar.dir}/${jar.console.client.one.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.console.client.one.filename}">
 			<manifest>
-		    	<attribute name="Main-Class" value="net.mtrop.tame.console.TAMEConsoleClientMain"/>
+		    	<attribute name="Main-Class" value="com.tameif.tame.console.TAMEConsoleClientMain"/>
             </manifest>
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/compiler/" />
@@ -254,7 +254,7 @@
 		<delete file="${jar.dir}/${jar.compiler.one.min.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.compiler.one.min.filename}">
 			<manifest>
-		    	<attribute name="Main-Class" value="net.mtrop.tame.compiler.TAMECompilerMain"/>
+		    	<attribute name="Main-Class" value="com.tameif.tame.compiler.TAMECompilerMain"/>
             </manifest>
 			<zipfileset refid="fileset.compiler.min" />
 		</jar>
@@ -264,7 +264,7 @@
 		<delete file="${jar.dir}/${jar.console.client.one.min.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.console.client.one.min.filename}">
 			<manifest>
-		    	<attribute name="Main-Class" value="net.mtrop.tame.console.TAMEConsoleClientMain"/>
+		    	<attribute name="Main-Class" value="com.tameif.tame.console.TAMEConsoleClientMain"/>
             </manifest>
 			<zipfileset refid="fileset.client.min" />
 		</jar>

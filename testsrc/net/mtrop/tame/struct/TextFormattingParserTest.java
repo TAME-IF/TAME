@@ -9,7 +9,7 @@
  ******************************************************************************/
 package net.mtrop.tame.struct;
 
-import net.mtrop.tame.lang.FormatParser;
+import com.tameif.tame.lang.FormatParser;
 
 /**
  * What it says on the box.

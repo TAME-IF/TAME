@@ -12,7 +12,8 @@ package net.mtrop.tame;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import net.mtrop.tame.lang.BlockEntryType;
+import com.tameif.tame.TAMECommand;
+import com.tameif.tame.lang.BlockEntryType;
 
 /**
  * Dump all commands and stuff to STDOUT.

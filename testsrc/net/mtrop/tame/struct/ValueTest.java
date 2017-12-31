@@ -11,8 +11,8 @@ package net.mtrop.tame.struct;
 
 import java.io.PrintStream;
 
-import net.mtrop.tame.lang.ArithmeticOperator;
-import net.mtrop.tame.lang.Value;
+import com.tameif.tame.lang.ArithmeticOperator;
+import com.tameif.tame.lang.Value;
 
 /**
  * Test all value functions and output.

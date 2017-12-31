@@ -11,7 +11,7 @@ package net.mtrop.tame.struct;
 
 import java.io.PrintStream;
 
-import net.mtrop.tame.lang.Value;
+import com.tameif.tame.lang.Value;
 
 /**
  * Test lists.

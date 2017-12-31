@@ -18,14 +18,14 @@
   <chdir></chdir>
   <priority>normal</priority>
   <downloadUrl>http://java.com/download</downloadUrl>
-  <supportUrl>https://github.com/MTrop/TAME</supportUrl>
+  <supportUrl>https://github.com/TAME-IF/TAME</supportUrl>
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
   <manifest></manifest>
   <icon></icon>
   <jre>
     <path></path>
-    <minVersion>1.7.0</minVersion>
+    <minVersion>1.8.0</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <initialHeapSize>16</initialHeapSize>
@@ -35,7 +35,7 @@
     <fileVersion>0.0.0.0</fileVersion>
     <txtFileVersion>0.0.0.0</txtFileVersion>
     <fileDescription>TAME Command Line Compiler</fileDescription>
-    <copyright>Matt Tropiano 2016</copyright>
+    <copyright>Matt Tropiano 2018</copyright>
     <productVersion>0.0.0.0</productVersion>
     <txtProductVersion>0.0.0.0</txtProductVersion>
     <productName>TAME Compiler</productName>
