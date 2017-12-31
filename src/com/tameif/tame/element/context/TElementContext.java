@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
 
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.element.TElement;
@@ -95,6 +96,15 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 		return Value.create(false);
 	}
 
+	/**
+	 * Returns an iterator of this context's value names.
+	 * @return an iterator of each set value.
+	 */
+	public Iterator<String> values()
+	{
+		return variables.keyIterator();
+	}
+	
 	/**
 	 * Clears a variable's value on this context.
 	 * @param variableName the variable name.

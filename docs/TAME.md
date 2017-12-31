@@ -196,6 +196,7 @@ Gets the absolute value of a numeric value. Non-numerics are changed to not-a-nu
 	+15.532
 	+"apple" // equals NaN  
 
+***NOT DONE***
 
 #### Variable Declarations
 
@@ -270,4 +271,4 @@ Example:
 Actions define the main verbs that TAME understands or can queue later in execution. Each type is 
 both parsed and handled differently.
 
-
+***NOT DONE***

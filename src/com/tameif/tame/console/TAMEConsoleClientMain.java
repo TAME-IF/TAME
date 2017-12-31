@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Iterator;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.list.List;
@@ -23,6 +24,7 @@ import com.tameif.tame.TAMEModule;
 import com.tameif.tame.TAMEModuleContext;
 import com.tameif.tame.TAMEResponse;
 import com.tameif.tame.TAMEResponseReader;
+import com.tameif.tame.element.context.TElementContext;
 import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.exception.ModuleStateException;
 import com.tameif.tame.factory.DefaultReaderOptions;
@@ -40,7 +42,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 	
 	private static void printHelp(PrintStream out)
 	{
-		out.println("TAME Console Client v"+TAMELogic.getVersion()+" by Matt Tropiano (C) 2016");
+		out.println("TAME Console Client v"+TAMELogic.getVersion()+" by Matt Tropiano");
 		out.println("Usage: tame [help | module] <switches> <gameload> <other>");
 		out.println("[help]:");
 		out.println("    -h                       Display help.");
@@ -61,6 +63,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		out.println("    --load-game [statefile]");
 		out.println("<other>:");
 		out.println("    --debug                  Show received cues.");
+		out.println("    --inspect                Enable inspector.");
 		out.println("    --trace                  If debug, also show trace cues.");
 	}
 
@@ -73,6 +76,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		boolean help = false;
 		boolean script = false;
 		boolean debug = false;
+		boolean inspector = false;
 		boolean trace = false;
 		boolean load = false;
 		boolean defines = false;
@@ -105,6 +109,8 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				load = true;
 			else if (arg.equalsIgnoreCase("--debug"))
 				debug = true;
+			else if (arg.equalsIgnoreCase("--inspect"))
+				inspector = true;
 			else if (arg.equalsIgnoreCase("--trace"))
 				trace = true;
 			else if (script)
@@ -168,7 +174,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		
 		moduleContext = new TAMEModuleContext(module);
 		
-		Context context = new Context(moduleContext, System.out, debug, trace);
+		Context context = new Context(moduleContext, System.out, debug, inspector, trace);
 		
 		if (loadpath != null)
 		{
@@ -346,6 +352,55 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		}
 	}
 	
+	private static void inspect(Context context, String inspectString)
+	{
+		String[] split = inspectString.split("\\.", 2);
+		if (split.length < 1 || Common.isEmpty(split[0]))
+		{
+			context.out.println("?> Must specify a variable.");
+		}
+		else if (split.length < 2 || Common.isEmpty(split[1]))
+		{
+			TElementContext<?> ec = null;
+			
+			if (split[0].equalsIgnoreCase("world"))
+				ec = context.context.getWorldContext();
+			else
+				ec = context.context.getContextByIdentity(split[0]);
+
+			if (ec == null)
+			{
+				context.out.println("?> Context \""+split[0]+"\" not found.");
+			}
+			else
+			{
+				Iterator<String> it = ec.values();
+				while (it.hasNext())
+				{
+					String v = it.next();
+					context.out.println("?> "+split[0]+"."+v+" = "+ec.getValue(v));
+				}
+			}
+		}
+		else
+		{
+			TElementContext<?> ec = null;
+			
+			if (split[0].equalsIgnoreCase("world"))
+				ec = context.context.getWorldContext();
+			else
+				ec = context.context.getContextByIdentity(split[0]);
+			
+			if (ec == null)
+				context.out.println("?> Context \""+split[0]+"\" not found.");
+			else
+				context.out.println("?> "+split[0]+"."+split[1]+" = "+ec.getValue(split[1]));
+			
+		}
+		
+		context.out.println();
+	}
+
 	/**
 	 * Game context.
 	 */
@@ -356,13 +411,15 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		boolean paused;
 		boolean quit;
 		boolean debug;
+		boolean inspector;
 		boolean trace;
 		
-		Context(TAMEModuleContext context, PrintStream out, boolean debug, boolean trace)
+		Context(TAMEModuleContext context, PrintStream out, boolean debug, boolean inspector, boolean trace)
 		{
 			this.context = context;
 			this.out = out;
 			this.debug = debug;
+			this.inspector = inspector;
 			this.trace = trace;
 
 			this.paused = false;
@@ -373,6 +430,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		{
 			final String COMMAND_SAVE = "!save ";
 			final String COMMAND_LOAD = "!load ";
+			final String INSPECTOR_PREFIX = "?";
 			
 			boolean good = true;
 			String line;
@@ -383,7 +441,9 @@ public class TAMEConsoleClientMain implements TAMEConstants
 				{
 					out.println();
 					line = line.replaceAll("\\s+", " ").trim();
-					if (line.toLowerCase().startsWith(COMMAND_SAVE))
+					if (inspector && line.startsWith(INSPECTOR_PREFIX))
+						inspect(this, line.substring(INSPECTOR_PREFIX.length()));
+					else if (line.toLowerCase().startsWith(COMMAND_SAVE))
 						saveGame(context, line.substring(COMMAND_SAVE.length())+".sav");
 					else if (line.toLowerCase().startsWith(COMMAND_LOAD))
 						loadGame(context, line.substring(COMMAND_LOAD.length())+".sav");

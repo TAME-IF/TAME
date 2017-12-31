@@ -280,6 +280,27 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 
 	/**
+	 * Gets an element context by element name.
+	 * @param identity the identity to use for the lookup.
+	 * @return the matching context, or null if no match.
+	 */
+	public TElementContext<?> getContextByIdentity(String identity)
+	{
+		if (TAMEConstants.IDENTITY_CURRENT_WORLD.equalsIgnoreCase(identity))
+			return worldContext;
+		else if (playerContextHash.containsKey(identity))
+			return playerContextHash.get(identity);
+		else if (roomContextHash.containsKey(identity))
+			return roomContextHash.get(identity);
+		else if (objectContextHash.containsKey(identity))
+			return objectContextHash.get(identity);
+		else if (containerContextHash.containsKey(identity))
+			return containerContextHash.get(identity);
+		else
+			return null;
+	}
+
+	/**
 	 * Gets a player context by player name.
 	 * @param identity the identity to use for the lookup.
 	 * @return the matching context.
