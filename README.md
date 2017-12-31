@@ -13,8 +13,8 @@ Black Rook Common I/O 2.5.0+
 Black Rook Common Lang 2.9.1+  
 [https://github.com/BlackRookSoftware/CommonLang](https://github.com/BlackRookSoftware/CommonLang)
 
-Launch4J 3.x
-[http://launch4j.sourceforge.net/](http://launch4j.sourceforge.net/)
+Launch4J 3.x+  
+[http://launch4j.sourceforge.net/](http://launch4j.sourceforge.net/)  
 [https://sourceforge.net/p/launch4j/git/ci/master/tree/](https://sourceforge.net/p/launch4j/git/ci/master/tree/)
 
 ### Introduction
