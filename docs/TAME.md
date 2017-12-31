@@ -78,3 +78,196 @@ All TAME Clients, when running this module, should print "Hello, World!" to the 
 
 TAME’s language is compiled before it is executed. The language is turned into a series of abstract bytes by a compiler to read later by the engine. Compiling reduces the potential size of a completed module and obfuscates the content.
 
+#### Comments ####
+
+Single-line comments in TAMEScript are prefixed with `//`.
+
+Multi-line comments in TAMEScript are started with `/*` and ended with `*/`.
+
+	// this is a comment.
+	/* This is too */
+	/*
+		So is
+		this.
+	*/ 
+
+
+#### Values ####
+
+Values in TAME are represented in several ways.
+
+Booleans:
+	
+	true
+	false
+
+Integers:
+
+	5
+	77
+	3679
+	20000
+	
+Hexadecimal Integers (integer-typed):
+
+	0x0
+	0x0ff
+	0x0343
+	0xc452
+
+Floating-point ("floats"):
+
+	3.4
+	2.0
+	0.08
+	3456.1234
+
+Exponented Floating-point (float-typed):
+
+	2e4
+	1.53e-3
+	
+Strings:
+
+	"apple"
+	"pear"
+	"Buzz Aldrin"
+
+And some *abstract values* (these are technically floating-point, internally):
+
+	NaN
+	Infinity
+
+And also *lists*, which can store all sorts of values, not just one type:
+
+	[5, 6, 7, 8]
+	[4.8, 9.3, 5, "orange", false]
+
+
+#### Expressions ####
+
+Expressions are a means of combining values and operators in order to convey more complex values.
+These are evaluated at execution time.
+
+Examples:
+
+	5 + 2
+	3.0 - 5.5
+	4 * 2.9
+	2.0 / 3.0
+	!5
+	-3.77
+	true | false
+	"apple" + "sauce"
+	"ice" + 9
+
+#### Expression Operators ####
+
+The values in expressions can be combined or manipulated using several operators. Some values
+can be legally manipulated (booleans, integers, floating-point, and strings in some cases), while others cannot (lists).
+
+**Caution:** Values of one type can be *promoted* implicitly to another type during evaluation, i.e. 5 will be promoted to a float (5.0)
+if combined with one (5 + 6.0, yields 11.0, 3 + "apple" yields "3apple").
+
+
+##### Logical Not (!) #####
+
+Flips a boolean value to its opposite value (true to false, false to true). Works on all types that can resolve to a boolean.  
+
+	!false     // equals true
+	!5         // equals false
+	!0.0       // equals true
+
+##### Negate (-) #####
+
+Negates a numeric value. Non-numerics are changed to not-a-number `NaN`.
+
+	-5
+	-234
+	-5.5
+	-"apple" // equals NaN  
+	                                      
+##### Absolute (+) #####
+
+Gets the absolute value of a numeric value. Non-numerics are changed to not-a-number `NaN`.
+
+	+(-3)    // equals 3
+	+5
+	+15.532
+	+"apple" // equals NaN  
+
+
+#### Variable Declarations
+
+Values can be saved in variables.
+
+	VARNAME = EXPRESSION ;
+	
+Examples:
+	
+	x = 5;
+	y = 2.0;
+	z = "apple";
+	w = false;
+	q = 5 + 7.0;
+
+*Varname* is set on the current context until **clear**ed.
+
+Example:
+
+	x = 3;
+	textln(x); // prints 3
+	clear x;
+	textln(x); // prints false - no corresponding value on the context.
+	
+Variable names are *case-insensitive*.
+
+Example:
+
+	val = 5;
+	textln(val); // prints 5
+	textln(VAL); // prints 5
+	textln(VaL); // prints 5
+	vAL = 9;
+	textln(val); // prints 9
+	
+Variables can be made "local" (not persisted on a context) if they are declared using the **local** keyword.
+
+Example:
+
+	local x = 3;
+	x = 9; // still "local."
+
+The **clear** keyword clears *local* variables first, then context ones. Be careful!
+
+Example:
+
+	x = 9;
+	local x = 4;
+	textln(x); // prints 4
+	clear x;
+	textln(x); // prints 9
+	clear x;
+	textln(x); // prints false - no corresponding value on the context.
+
+*Local* variables take precedence on resolution!
+
+### TAME Elements
+
+#### Actions
+
+    general action ACTIONNAME;
+    general action ACTIONNAME named "action";
+    modal action ACTIONNAME uses modes "mode0", "mode1", "mode2";
+    modal action ACTIONNAME named "action" uses modes "mode0", "mode1", "mode2";
+    open action ACTIONNAME uses target TARGETVAR;
+    open action ACTIONNAME named "action" uses target TARGETVAR;
+    transitive action ACTIONNAME;
+    transitive action ACTIONNAME named "action";
+    ditransitive action ACTIONNAME;
+    ditransitive action ACTIONNAME named "action" uses conjunctions "with";
+
+Actions define the main verbs that TAME understands or can queue later in execution. Each type is 
+both parsed and handled differently.
+
+

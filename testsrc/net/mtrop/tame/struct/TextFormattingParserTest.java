@@ -11,6 +11,10 @@ package net.mtrop.tame.struct;
 
 import net.mtrop.tame.lang.FormatParser;
 
+/**
+ * What it says on the box.
+ * @author Matthew Tropiano
+ */
 public final class TextFormattingParserTest
 {
 	public static void main(String[] args) 

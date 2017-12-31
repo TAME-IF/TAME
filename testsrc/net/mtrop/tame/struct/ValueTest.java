@@ -14,6 +14,10 @@ import java.io.PrintStream;
 import net.mtrop.tame.lang.ArithmeticOperator;
 import net.mtrop.tame.lang.Value;
 
+/**
+ * Test all value functions and output.
+ * @author Matthew Tropiano
+ */
 public final class ValueTest 
 {
 

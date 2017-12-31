@@ -14,6 +14,10 @@ import java.util.Arrays;
 
 import net.mtrop.tame.lang.BlockEntryType;
 
+/**
+ * Dump all commands and stuff to STDOUT.
+ * @author Matthew Tropiano
+ */
 public final class CommandDump 
 {
 

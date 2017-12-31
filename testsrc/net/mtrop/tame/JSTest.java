@@ -18,6 +18,10 @@ import net.mtrop.tame.factory.TAMEJSExporter;
 import net.mtrop.tame.factory.TAMEJSExporterOptions;
 import net.mtrop.tame.factory.TAMEScriptReader;
 
+/**
+ * A test JS exporter.
+ * @author Matthew Tropiano
+ */
 public final class JSTest 
 {
 

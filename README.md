@@ -59,10 +59,6 @@ etting the *win32.deploy.dir* property, type:
 
 The EXEs will not be deployed if the *win32.deploy.dir* property is not set!
 
-### Overview
-
-***TODO***
-
 ### Other
 
 This program and the accompanying materials

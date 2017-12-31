@@ -11,10 +11,12 @@ package net.mtrop.tame.struct;
 
 import java.io.PrintStream;
 
-import com.blackrook.commons.Common;
-
 import net.mtrop.tame.lang.Value;
 
+/**
+ * Test lists.
+ * @author Matthew Tropiano
+ */
 public final class ListValueTest 
 {
 
