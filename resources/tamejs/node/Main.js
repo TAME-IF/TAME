@@ -12,8 +12,8 @@
 
 //##[[EXPORTJS-INCLUDE Libs.js
 
-const readline = require('readline');
-const fs = require('fs');
+var readline = require('readline');
+var fs = require('fs');
 
 var debug = false;
 var trace = false;
@@ -34,7 +34,7 @@ for (var x in args) if (args.hasOwnProperty(x))
 // Create context.
 var tamectx = TAME.newContext();
 
-const rl = readline.createInterface ({
+var rl = readline.createInterface ({
 	input: process.stdin,
 	output: process.stdout
 });
@@ -209,8 +209,8 @@ function startResponse(response)
 	responseStop(responseRead());
 }
 
-const COMMAND_SAVE = '!save';
-const COMMAND_LOAD = '!load';
+var COMMAND_SAVE = '!save';
+var COMMAND_LOAD = '!load';
 
 // Loop.
 rl.on('line', function(line){
