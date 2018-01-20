@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import com.blackrook.commons.math.RMath;
+import com.blackrook.lang.path.PatternParseException;
 import com.tameif.tame.element.ObjectContainer;
 import com.tameif.tame.element.TAction;
 import com.tameif.tame.element.TContainer;
@@ -1433,7 +1434,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String pattern = value2.asString();
 			String source = value1.asString();
 
-			request.pushValue(Value.create(source.replaceFirst(pattern, replacement)));
+			try {
+				request.pushValue(Value.create(source.replaceFirst(pattern, replacement)));
+			} catch (PatternParseException e) {
+				throw new UnexpectedValueTypeException("Expected valid RegEx in STRREPLACEPATTERN call.");
+			}
 		}
 		
 		@Override
@@ -1471,7 +1476,11 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			String pattern = value2.asString();
 			String source = value1.asString();
 
-			request.pushValue(Value.create(source.replaceAll(pattern, replacement)));
+			try {
+				request.pushValue(Value.create(source.replaceAll(pattern, replacement)));
+			} catch (PatternParseException e) {
+				throw new UnexpectedValueTypeException("Expected valid RegEx in STRREPLACEPATTERNALL call.");
+			}
 		}
 		
 		@Override
@@ -1582,7 +1591,8 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Returns if a character sequence matching a regular expression exists in a given string. True if so.
+	 * Returns if a character sequence matching a regular expression exists in a given string. 
+	 * True if so. False if not. Fatal error on bad pattern.
 	 * First POP is what to search for (RegEx). 
 	 * Second POP is the string. 
 	 * Returns boolean.
@@ -1622,13 +1632,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
-	 * Returns if a string token exists in the given string (case-insensitive).
-	 * A token is a whitespace-broken piece of a string.
-	 * First POP is what to search for. 
+	 * Returns a string split into a list of strings using a regular expression for matching the delimitation.
+	 * First POP is the regular expression. 
 	 * Second POP is the string. 
-	 * Returns boolean.
+	 * Returns a list or FALSE if the pattern is not a regular expression.
 	 */
-	STRCONTAINSTOKEN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
@@ -1637,21 +1646,68 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			Value value1 = request.popValue();
 			
 			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINSTOKEN call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRSPLIT call.");
 			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINSTOKEN call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRSPLIT call.");
 
-			String token = value2.asString();
+			String pattern = value2.asString();
 			String str = value1.asString();
-
-			for (String t : str.split("\\s+"))
-				if (t.equalsIgnoreCase(token))
-				{
-					request.pushValue(Value.create(true));
-					return;
-				}
 			
-			request.pushValue(Value.create(false));
+			try {
+				String[] tokens = str.split(pattern);
+				Value out = Value.createEmptyList(tokens.length);
+				for (String s : tokens)
+					out.listAdd(Value.create(s));
+				request.pushValue(out);
+			} catch (PatternParseException e) {
+				throw new UnexpectedValueTypeException("Expected valid RegEx in STRSPLIT call.");
+			}
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
+	},
+	
+	/**
+	 * Returns a string that is the result of joining a list of strings together with a string in between each element.
+	 * First POP is the string to put in between tokens. 
+	 * Second POP is the list of values to treat as strings. 
+	 * Returns a single string.
+	 */
+	STRJOIN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value joiner = request.popValue();
+			Value list = request.popValue();
+			
+			if (!joiner.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRJOIN call.");
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRJOIN call.");
+
+			String str = joiner.asString();
+			
+			if (!list.isList() || list.length() == 1)
+				request.pushValue(Value.create(list.asString()));
+			else
+			{
+				StringBuilder sb = new StringBuilder();
+				int len = list.length();
+				for (int i = 0; i < len; i++)
+				{
+					sb.append(list.listGet(i).asString());
+					if (i < len - 1)
+						sb.append(str);
+				}
+				request.pushValue(Value.create(sb.toString()));
+			}
+			
 		}
 		
 		@Override

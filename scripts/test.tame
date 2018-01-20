@@ -105,7 +105,8 @@ world
 		textln(strlastindex(s, "s")); 
 		textln(strcontains(s, "and") + ":" + strcontains(s, "or")); 
 		textln(strcontainspattern(s, "\\s+")); 
-		textln(strcontainstoken(s, "apples") + ":" + strcontainstoken(s, "ranges")); 
+		textln(strsplit(s, "\\s+")); 
+		textln(strjoin(["This", "is", "a", "kebab", true, 5, 7.8], "-")); 
 		textln(substring(s, 0, length(s) - 8)); 
 		textln(strlower(s)); 
 		textln(strupper(s)); 

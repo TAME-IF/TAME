@@ -910,7 +910,11 @@ var TCommandFunctions =
 			var pattern = TValue.asString(value2);
 			var source = TValue.asString(value1);
 			
-			request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'm'), replacement)));
+			try {
+				request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'm'), replacement)));
+			} catch (err) {
+				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRREPLACEPATTERN call.");
+			}
 		}
 	},
 
@@ -934,7 +938,11 @@ var TCommandFunctions =
 			var pattern = TValue.asString(value2);
 			var source = TValue.asString(value1);
 			
-			request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'gm'), replacement)));
+			try {
+				request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'gm'), replacement)));
+			} catch (err) {
+				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRREPLACEPATTERNALL call.");
+			}
 		}
 	},
 
@@ -1013,31 +1021,77 @@ var TCommandFunctions =
 			
 			var pattern = TValue.asString(value2);
 			var str = TValue.asString(value1);
-
-			request.pushValue(TValue.createBoolean((new RegExp(pattern, 'gm')).test(str)));
+			
+			try {
+				var regex = new RegExp(pattern, 'gm');
+				request.pushValue(TValue.createBoolean(regex.test(str)));
+			} catch (err) {
+				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRCONTAINSPATTERN call.");
+			}
 		}
 	},
 
-	/* STRCONTAINSTOKEN */
+	/* STRSPLIT */
 	{
-		"name": 'STRCONTAINSTOKEN', 
+		"name": 'STRSPLIT', 
 		"doCommand": function(request, response, blockLocal, command)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSTOKEN call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRSPLIT call.");
 			if (!TValue.isLiteral(value2))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSTOKEN call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRSPLIT call.");
 			
-			var token = TValue.asString(value2).toLowerCase();
-			var str = TValue.asString(value1).toLowerCase();
+			var pattern = TValue.asString(value2);
+			var str = TValue.asString(value1);
 
-			request.pushValue(TValue.createBoolean(str.split(/\s+/).indexOf(token) >= 0));
+			try {
+				var regex = new RegExp(pattern, 'gm');
+				var tokens = str.split(regex);
+				var out = TValue.createList([]);
+				for (var x in tokens)
+					TValue.listAdd(out, TValue.createString(tokens[x]));
+				request.pushValue(out);
+			} catch (err) {
+				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRSPLIT call.");
+			}
 		}
 	},
 
+	/* STRJOIN */
+	{
+		"name": 'STRJOIN', 
+		"doCommand": function(request, response, blockLocal, command)
+		{
+			var joiner = request.popValue();
+			var list = request.popValue();
+
+			if (!TValue.isLiteral(joiner))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRJOIN call.");
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRJOIN call.");
+			
+			var str = TValue.asString(joiner);
+
+			if (!TValue.isList(list) || TValue.length(list) == 1)
+				request.pushValue(TValue.createString(TValue.asString(list)));
+			else
+			{
+				var sb = new TStringBuilder();
+				var len = TValue.length(list);
+				for (var i = 0; i < len; i++)
+				{
+					sb.append(TValue.asString(TValue.listGet(list, i)));
+					if (i < len - 1)
+						sb.append(str);
+				}
+				request.pushValue(TValue.createString(sb.toString()));
+			}
+		}
+	},
+	
 	/* STRSTARTSWITH */
 	{
 		"name": 'STRSTARTSWITH', 

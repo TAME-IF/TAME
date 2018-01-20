@@ -35,7 +35,7 @@ TStringBuilder.prototype.append = function(value)
  */
 TStringBuilder.prototype.clear = function()
 {
-	this.buffer.length = 1;
+	this.buffer.length = 0;
 };
 
 /**
