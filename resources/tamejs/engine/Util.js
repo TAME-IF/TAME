@@ -376,10 +376,10 @@ Util.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 		}
 	}
 	
-	const STATE_TEXT = 0;
-	const STATE_TAG_MAYBE = 1;
-	const STATE_TAG = 2;
-	const STATE_TAG_END_MAYBE = 3;
+	var STATE_TEXT = 0;
+	var STATE_TAG_MAYBE = 1;
+	var STATE_TAG = 2;
+	var STATE_TAG_END_MAYBE = 3;
 	
 	var state = STATE_TEXT;
 	var len = sequence.length, i = 0;
