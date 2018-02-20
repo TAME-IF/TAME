@@ -44,7 +44,7 @@
 
 	<!-- Folders and File Names -->
 	<property name="src.test.dir" value="testsrc" />
-	<property name="package.base.dir" value="net/mtrop/tame" />
+	<property name="package.base.dir" value="com/tameif/tame" />
 	<property name="resource.dir" value="resources" />
 	<property name="replace.dir" value="${build.dir}/replace" />
 	<property name="zip.win32.filename" value="${project.archive}-win32-${build.version}.zip" />

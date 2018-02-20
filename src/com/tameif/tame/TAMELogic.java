@@ -64,7 +64,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		InputStream in = null;
 		try {
-			in = Common.openResource("net/mtrop/tame/TAMEVersion.txt");
+			in = Common.openResource("com/tameif/tame/TAMEVersion.txt");
 			if (in != null)
 				VERSION = Common.getTextualContents(in, "UTF-8").trim();
 		} catch (IOException e) {
