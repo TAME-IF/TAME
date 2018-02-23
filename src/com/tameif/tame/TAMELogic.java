@@ -14,8 +14,6 @@ import java.io.InputStream;
 import java.util.Iterator;
 
 import com.blackrook.commons.Common;
-import com.blackrook.commons.CommonTokenizer;
-import com.blackrook.commons.linkedlist.Queue;
 import com.tameif.tame.element.ObjectContainer;
 import com.tameif.tame.element.TAction;
 import com.tameif.tame.element.TContainer;
@@ -218,6 +216,17 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	/**
+	 * Tokenizes the input string into tokens based on module settings.
+	 * @param moduleContext the module context to use (for object availability).
+	 * @param inputMessage the input message to tokenize.
+	 * @return the tokens to parse.
+	 */
+	public static String[] tokenizeInput(TAMEModuleContext moduleContext, String inputMessage)
+	{
+		return inputMessage.trim().split("\\s+");
+	}
+
+	/**
 	 * Interprets the input on the request.
 	 * Requires a context, as objects may need to be parsed.
 	 * @param moduleContext the module context to use (for object availability).
@@ -226,7 +235,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static InterpreterContext interpret(TAMEModuleContext moduleContext, String inputMessage)
 	{
-		InterpreterContext interpreterContext = new InterpreterContext(inputMessage);
+		InterpreterContext interpreterContext = new InterpreterContext(TAMELogic.tokenizeInput(moduleContext, inputMessage));
 		
 		interpretAction(moduleContext, interpreterContext);
 		
@@ -1995,17 +2004,9 @@ public final class TAMELogic implements TAMEConstants
 		private TObject object2;
 		private boolean objectAmbiguous;
 		
-		private InterpreterContext(String input)
+		private InterpreterContext(String[] tokens)
 		{
-			input = input.replaceAll("\\s+", " ").trim();
-			
-			Queue<String> tokenQueue = new Queue<>();
-			CommonTokenizer ct = new CommonTokenizer(input);
-			while (ct.hasMoreTokens())
-				tokenQueue.add(ct.nextToken());
-			this.tokens = new String[tokenQueue.size()];
-			tokenQueue.toArray(tokens);
-			
+			this.tokens = tokens;
 			this.tokenOffset = 0;
 			this.objects = new TObject[2];
 			this.action = null;

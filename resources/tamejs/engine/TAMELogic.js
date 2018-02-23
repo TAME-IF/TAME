@@ -518,6 +518,18 @@ TLogic.handleInit = function(context, tracing)
 	return response;
 };
 
+
+/**
+ * Tokenizes the input string into tokens based on module settings.
+ * @param context (object) the module context to use (for object availability).
+ * @param inputMessage (string) the input message to tokenize.
+ * @return (string[]) the tokens to parse.
+ */
+TLogic.tokenizeInput = function(context, input)
+{
+	return input.trim().toLowerCase().split(/\s+/);
+};
+
 /**
  * Handles interpretation and performs actions.
  * @param context (object) the module context.
@@ -531,7 +543,7 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 	var response = new TResponse();
 
 	var time = Util.nanoTime();
-	var interpreterContext = TLogic.interpret(context, inputMessage);
+	var interpreterContext = TLogic.interpret(context, TLogic.tokenizeInput(context, inputMessage));
 	response.interpretNanos = Util.nanoTime() - time; 
 
 	time = Util.nanoTime();
@@ -648,12 +660,11 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 /**
  * Interprets the input on the request.
  * @param context (TModuleContext) the module context.
- * @param input (string) the input text.
+ * @param tokens (string) the input tokens.
  * @return a new interpreter context using the input.
  */
-TLogic.interpret = function(context, input)
+TLogic.interpret = function(context, tokens)
 {
-	var tokens = input.toLowerCase().split(/\s+/);
 	var interpreterContext = 
 	{
 		"tokens": tokens,
@@ -710,18 +721,18 @@ TLogic.interpret = function(context, input)
 TLogic.interpretAction = function(moduleContext, interpreterContext)
 {
 	var module = moduleContext.module;
-	var sb = '';
+	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
 	var tokens = interpreterContext.tokens;
 
 	while (index < tokens.length)
 	{
-		if (sb.length > 0)
-			sb += ' ';
-		sb += tokens[index];
+		if (sb.length() > 0)
+			sb.append(' ');
+		sb.append(tokens[index]);
 		index++;
 
-		var next = module.getActionByName(sb);
+		var next = module.getActionByName(sb.toString());
 		if (next != null)
 		{
 			interpreterContext.action = next;
@@ -739,21 +750,21 @@ TLogic.interpretAction = function(moduleContext, interpreterContext)
  */
 TLogic.interpretMode = function(action, interpreterContext)
 {
-	var sb = '';
+	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
 	var tokens = interpreterContext.tokens;
 
 	while (index < tokens.length)
 	{
-		if (sb.length > 0)
-			sb += ' ';
-		sb += tokens[index];
+		if (sb.length() > 0)
+			sb.append(' ');
+		sb.append(tokens[index]);
 		index++;
 
 		interpreterContext.modeLookedUp = true;
-		var next = sb;
+		var next = sb.toString();
 		
-		if (action.extraStrings.indexOf(sb) >= 0)
+		if (action.extraStrings.indexOf(next) >= 0)
 		{
 			interpreterContext.mode = next;
 			interpreterContext.tokenOffset = index;
@@ -769,20 +780,21 @@ TLogic.interpretMode = function(action, interpreterContext)
  */
 TLogic.interpretOpen = function(interpreterContext)
 {
-	var sb = '';
+	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
 	var tokens = interpreterContext.tokens;
 	
 	while (index < tokens.length)
 	{
 		interpreterContext.targetLookedUp = true;
-		if (sb.length > 0)
-			sb += ' ';
-		sb += tokens[index];
+		if (sb.length() > 0)
+			sb.append(' ');
+		sb.append(tokens[index]);
 		index++;
 	}
 	
-	interpreterContext.target = sb.length > 0 ? sb : null;
+	var out = sb.toString();
+	interpreterContext.target = out.length > 0 ? out : null;
 	interpreterContext.tokenOffset = index;
 };
 
@@ -793,20 +805,20 @@ TLogic.interpretOpen = function(interpreterContext)
  */
 TLogic.interpretConjugate = function(action, interpreterContext)
 {
-	var sb = '';
+	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
 	var tokens = interpreterContext.tokens;
 	var out = false;
 
 	while (index < tokens.length)
 	{
-		if (sb.length > 0)
-			sb += ' ';
-		sb += tokens[index];
+		if (sb.length() > 0)
+			sb.append(' ');
+		sb.append(tokens[index]);
 		index++;
 		
 		interpreterContext.conjugateLookedUp = true;
-		if (action.extraStrings.indexOf(sb) >= 0)
+		if (action.extraStrings.indexOf(sb.toString()) >= 0)
 		{
 			interpreterContext.tokenOffset = index;
 			out = true;
@@ -829,19 +841,19 @@ TLogic.interpretConjugate = function(action, interpreterContext)
  */
 TLogic.interpretObject1 = function(moduleContext, interpreterContext)
 {
-	var sb = '';
+	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
 	var tokens = interpreterContext.tokens;
 
 	while (index < tokens.length)
 	{
-		if (sb.length > 0)
-			sb += ' ';
-		sb += tokens[index];
+		if (sb.length() > 0)
+			sb.append(' ');
+		sb.append(tokens[index]);
 		index++;
 		
 		interpreterContext.object1LookedUp = true;
-		var out = moduleContext.getAccessibleObjectsByName(sb, interpreterContext.objects, 0);
+		var out = moduleContext.getAccessibleObjectsByName(sb.toString(), interpreterContext.objects, 0);
 		if (out > 1)
 		{
 			interpreterContext.objectAmbiguous = true;
@@ -870,19 +882,19 @@ TLogic.interpretObject1 = function(moduleContext, interpreterContext)
  */
 TLogic.interpretObject2 = function(moduleContext, interpreterContext)
 {
-	var sb = '';
+	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
 	var tokens = interpreterContext.tokens;
 
 	while (index < tokens.length)
 	{
 		if (sb.length > 0)
-			sb += ' ';
-		sb += tokens[index];
+			sb.append(' ');
+		sb.append(tokens[index]);
 		index++;
 		
 		interpreterContext.object2LookedUp = true;
-		var out = moduleContext.getAccessibleObjectsByName(sb, interpreterContext.objects, 0);
+		var out = moduleContext.getAccessibleObjectsByName(sb.toString(), interpreterContext.objects, 0);
 		if (out > 1)
 		{
 			interpreterContext.objectAmbiguous = true;

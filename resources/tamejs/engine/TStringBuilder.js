@@ -39,12 +39,19 @@ TStringBuilder.prototype.clear = function()
 };
 
 /**
- * Clears the builder.
- * @param value the value to add. Must be defined and not null.
+ * @return the resultant string.
  */
 TStringBuilder.prototype.toString = function()
 {
 	return this.buffer.join("");
+};
+
+/**
+ * @return the length of the resultant string.
+ */
+TStringBuilder.prototype.length = function()
+{
+	return this.toString().length;
 };
 
 //##[[EXPORTJS-END
