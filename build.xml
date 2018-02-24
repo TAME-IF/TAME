@@ -105,18 +105,32 @@
 		<chmod file="tamec.sh" perm="ugo+rx"/>
 	</target>
 
-	<target name="compile" depends="init.compile, get.os, compile.scripts.windows, compile.scripts.bash" description="Compiles the project, including test classes.">
+	<target name="compile" depends="init.compile, get.os, compile.scripts.windows, compile.scripts.bash" description="Compiles the project, excluding test classes.">
 		<javac 
 			source="1.8"
-			srcdir="${src.dir}${S}${src.test.dir}" 
+			srcdir="${src.dir}" 
 			destdir="${bin.dir}"
             includeAntRuntime="false"
 			classpath="${project.classpath}"
 			debug="off" 
-			/>
+		/>
 		<copy todir="${bin.dir}">
 			<fileset dir="${resource.dir}" />
 		</copy>
+	</target>
+
+	<target name="compile.tests.only" description="Compiles test classes.">
+		<javac 
+			source="1.8"
+			srcdir="${src.test.dir}" 
+			destdir="${bin.dir}"
+            includeAntRuntime="false"
+			classpath="${project.classpath}${S}${bin.dir}"
+			debug="off" 
+		/>
+	</target>
+
+	<target name="compile.all" depends="compile, compile.tests.only" description="Compiles everything.">
 	</target>
 
 	<target name="dependency.common">
