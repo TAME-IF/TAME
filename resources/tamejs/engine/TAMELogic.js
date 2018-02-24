@@ -574,7 +574,7 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
  * Creates a viable blocklocal object for use in callBlock.
  * @param localValues (object) map of name to value. 
  */
-TLogic.createBlockLocal = function(localValues)
+TLogic.createBlockLocal = function(request, response, localValues)
 {
 	var out = {};
 	// set locals
@@ -888,7 +888,7 @@ TLogic.interpretObject2 = function(moduleContext, interpreterContext)
 
 	while (index < tokens.length)
 	{
-		if (sb.length > 0)
+		if (sb.length() > 0)
 			sb.append(' ');
 		sb.append(tokens[index]);
 		index++;
@@ -1860,7 +1860,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 					// just get the first one.
 					var localmap = {};
 					localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-					TLogic.callBlock(request, response, currentRoomContext, blockToCall, false, TLogic.createBlockLocal(localmap));
+					TLogic.callBlock(request, response, currentRoomContext, blockToCall, false, TLogic.createBlockLocal(request, response, localmap));
 				}
 				else
 					TLogic.callBlock(request, response, currentRoomContext, blockToCall);
@@ -1879,7 +1879,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 				// just get the first one.
 				var localmap = {};
 				localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-				TLogic.callBlock(request, response, currentPlayerContext, blockToCall, false, TLogic.createBlockLocal(localmap));
+				TLogic.callBlock(request, response, currentPlayerContext, blockToCall, false, TLogic.createBlockLocal(request, response, localmap));
 			}
 			else
 				TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
@@ -1901,7 +1901,7 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 			// just get the first one.
 			var localmap = {};
 			localmap[action.extraStrings[0]] = TValue.createString(openTarget);
-			TLogic.callBlock(request, response, worldContext, blockToCall, false, TLogic.createBlockLocal(localmap));
+			TLogic.callBlock(request, response, worldContext, blockToCall, false, TLogic.createBlockLocal(request, response, localmap));
 		}
 		else
 			TLogic.callBlock(request, response, worldContext, blockToCall);
