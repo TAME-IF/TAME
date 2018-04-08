@@ -565,11 +565,15 @@ public class Value implements Comparable<Value>, Saveable
 			return (Long)value;
 		if (isFloatingPoint())
 			return (long)(double)(Double)value;
-		try {
-			return Long.parseLong(asString());
-		} catch (NumberFormatException e) {
-			return (long)asDouble();
+		if (isString())
+		{
+			try {
+				return Long.parseLong(asString());
+			} catch (NumberFormatException e) {
+				return (long)asDouble();
+			}
 		}
+		return 0L;
 	}
 
 	/**

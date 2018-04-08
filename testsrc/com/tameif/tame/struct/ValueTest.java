@@ -60,6 +60,8 @@ public final class ValueTest
 		Value.create("-3.5"),
 		Value.create("apple"),
 		Value.create("banana"),
+		Value.create("NaN"),
+		Value.create("infinity"),
 		Value.createEmptyList(),
 		Value.createList(Value.create(true), Value.create(3), Value.create(5.0), Value.create("orange")),
 	};
@@ -68,12 +70,6 @@ public final class ValueTest
 	{
 		PrintStream out = System.out;
 		
-		for (int i = 0; i < TEST_VALUES.length; i++)
-			printEmpty(out, TEST_VALUES[i]);
-		out.println("-------------------------------");
-		for (int i = 0; i < TEST_VALUES.length; i++)
-			printLength(out, TEST_VALUES[i]);
-		out.println("-------------------------------");
 		for (int i = 0; i < TEST_VALUES.length; i++)
 			printBoolean(out, TEST_VALUES[i]);
 		out.println("-------------------------------");
@@ -85,6 +81,18 @@ public final class ValueTest
 		out.println("-------------------------------");
 		for (int i = 0; i < TEST_VALUES.length; i++)
 			printString(out, TEST_VALUES[i]);
+		out.println("-------------------------------");
+		for (int i = 0; i < TEST_VALUES.length; i++)
+			printEmpty(out, TEST_VALUES[i]);
+		out.println("-------------------------------");
+		for (int i = 0; i < TEST_VALUES.length; i++)
+			printNaN(out, TEST_VALUES[i]);
+		out.println("-------------------------------");
+		for (int i = 0; i < TEST_VALUES.length; i++)
+			printInfinite(out, TEST_VALUES[i]);
+		out.println("-------------------------------");
+		for (int i = 0; i < TEST_VALUES.length; i++)
+			printLength(out, TEST_VALUES[i]);
 		out.println("-------------------------------");
 		
 		for (ArithmeticOperator op : ArithmeticOperator.VALUES)
@@ -108,6 +116,16 @@ public final class ValueTest
 	private static void printEmpty(PrintStream out, Value v1)
 	{
 		out.println(v1 + " > EMPTY? > " +v1.isEmpty());
+	}
+
+	private static void printNaN(PrintStream out, Value v1)
+	{
+		out.println(v1 + " > NaN? > " +v1.isNaN());
+	}
+
+	private static void printInfinite(PrintStream out, Value v1)
+	{
+		out.println(v1 + " > Infinite? > " +v1.isInfinite());
 	}
 
 	private static void printLength(PrintStream out, Value v1)

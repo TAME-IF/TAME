@@ -96,7 +96,7 @@ Util.mapify = function(objlist, memberKey, multi)
 			var chain = out[objlist[x][memberKey]];
 			if (multi && chain)
 			{
-				if (Object.prototype.toString.call(chain) === '[object Array]')
+				if (Util.isArray(chain))
 					chain.push(objlist[x]); 
 				else
 					out[objlist[x][memberKey]] = [out[objlist[x][memberKey]], objlist[x]]; 

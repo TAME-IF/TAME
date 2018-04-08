@@ -554,6 +554,12 @@ TValue.less = function(value1, value2)
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
+	else if (TValue.isString(value1) || TValue.isString(value2))
+	{
+		var v1 = TValue.asString(value1);
+		var v2 = TValue.asString(value2);
+		return TValue.createBoolean(v1.localeCompare(v2) < 0);
+	}
 	else 
 		return TValue.createBoolean(TValue.compare(value1, value2) < 0);
 };
@@ -808,7 +814,7 @@ TValue.asLong = function(value)
 	else if (TValue.isFloatingPoint(value))
 		return parseInt(value.value, 10);
 	else if (TValue.isString(value))
-		return parseInt(TValue.asString(value).toLowerCase(), 10);
+		return parseInt(TValue.asDouble(value), 10);
 	else
 		return 0;
 };
@@ -827,15 +833,15 @@ TValue.asDouble = function(value)
 		return value.value;
 	else if (TValue.isString(value))
 	{
-		var vlower = Util.fromBase64(value.value).toLowerCase();
-		if (vlower === "nan")
+		var str = Util.fromBase64(value.value).toLowerCase();
+		if (str === "nan")
 			return NaN;
-		else if (vlower === "infinity")
+		else if (str === "infinity")
 			return Infinity;
-		else if (vlower === "-infinity")
+		else if (str === "-infinity")
 			return -Infinity;
 		else
-			return parseFloat(value.value);
+			return parseFloat(str);
 	}
 	else
 		return NaN;
@@ -929,7 +935,26 @@ TValue.isTrue = function(value)
  */
 TValue.toString = function(value)
 {
-	return value.type + "[" + Util.withEscChars(TValue.asString(value)) + "]";
+	var sb = new TStringBuilder();
+	sb.append(value.type);
+	sb.append('[');
+	if (TValue.isList(value))
+	{
+		sb.append('[');
+		for (var i = 0; i < value.value.length; i++)
+		{
+			sb.append(TValue.toString(value.value[i]));
+			if (i < value.value.length - 1)
+				sb.append(', ');
+		}
+		sb.append(']');
+	}
+	else
+	{
+		sb.append(Util.withEscChars(TValue.asString(value)));
+	}
+	sb.append(']');
+	return sb.toString();
 };
 
 /**

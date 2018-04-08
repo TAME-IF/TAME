@@ -22,6 +22,7 @@ var TEST_VALUES = [
 	TValue.createFloat(-10.5),
 	TValue.createFloat(-3.5),
 	TValue.createString(""),
+	TValue.createString(" "),
 	TValue.createString("0"),
 	TValue.createString("0.0"),
 	TValue.createString("10"),
@@ -38,6 +39,8 @@ var TEST_VALUES = [
 	TValue.createString("-3.5"),
 	TValue.createString("apple"),
 	TValue.createString("banana"),
+	TValue.createString("NaN"),
+	TValue.createString("infinity"),
 	TValue.createList([]),
 	TValue.createList([TValue.createBoolean(true), TValue.createInteger(3), TValue.createFloat(5.0), TValue.createString("orange")]),
 ];
@@ -45,6 +48,16 @@ var TEST_VALUES = [
 function printEmpty(v1)
 {
 	console.log(TValue.toString(v1) + " > EMPTY? > " + TValue.isEmpty(v1));
+}
+
+function printNaN(v1)
+{
+	console.log(TValue.toString(v1) + " > NaN? > " + TValue.isNaN(v1));
+}
+
+function printInfinite(v1)
+{
+	console.log(TValue.toString(v1) + " > Infinite? > " + TValue.isInfinite(v1));
 }
 
 function printLength(v1)
@@ -64,7 +77,8 @@ function printInteger(v1)
 
 function printFloat(v1)
 {
-	var s = TValue.asDouble(v1) % 1 == 0 ? TValue.asDouble(v1)+'.0' : TValue.asDouble(v1)+''
+	var d = TValue.asDouble(v1)
+	var s = d % 1 == 0 ? d+'.0' : d+''
 	console.log(TValue.toString(v1) + " > FLOAT > " +(s));
 }
 
@@ -85,12 +99,6 @@ function print2(op, opSign, v1, v2)
 
 var i;
 for (i = 0; i < TEST_VALUES.length; i++)
-	printEmpty(TEST_VALUES[i]);
-console.log("-------------------------------");
-for (i = 0; i < TEST_VALUES.length; i++)
-	printLength(TEST_VALUES[i]);
-console.log("-------------------------------");
-for (i = 0; i < TEST_VALUES.length; i++)
 	printBoolean(TEST_VALUES[i]);
 console.log("-------------------------------");
 for (i = 0; i < TEST_VALUES.length; i++)
@@ -101,6 +109,18 @@ for (i = 0; i < TEST_VALUES.length; i++)
 console.log("-------------------------------");
 for (i = 0; i < TEST_VALUES.length; i++)
 	printString(TEST_VALUES[i]);
+console.log("-------------------------------");
+for (i = 0; i < TEST_VALUES.length; i++)
+	printEmpty(TEST_VALUES[i]);
+console.log("-------------------------------");
+for (i = 0; i < TEST_VALUES.length; i++)
+	printNaN(TEST_VALUES[i]);
+console.log("-------------------------------");
+for (i = 0; i < TEST_VALUES.length; i++)
+	printInfinite(TEST_VALUES[i]);
+console.log("-------------------------------");
+for (i = 0; i < TEST_VALUES.length; i++)
+	printLength(TEST_VALUES[i]);
 console.log("-------------------------------");
 
 for (var x in TArithmeticFunctions.Type) if (TArithmeticFunctions.Type.hasOwnProperty(x))
