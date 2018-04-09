@@ -166,11 +166,15 @@ TValue.compare = function(v1, v2)
 	{
 		d1 = TValue.asString(v1);
 		d2 = TValue.asString(v2);
+		// special case
+		return Util.strcmp(d1, d2);
 	}
 	else if (TValue.isString(v1) || TValue.isString(v2))
 	{
 		d1 = TValue.asString(v1);
 		d2 = TValue.asString(v2);
+		// special case
+		return Util.strcmp(d1, d2);
 	}
 	else if (TValue.isFloatingPoint(v1) || TValue.isFloatingPoint(v2))
 	{
@@ -558,10 +562,10 @@ TValue.less = function(value1, value2)
 	{
 		var v1 = TValue.asString(value1);
 		var v2 = TValue.asString(value2);
-		return TValue.createBoolean(v1.localeCompare(v2) < 0);
+		return TValue.createBoolean(Util.strcmp(v1, v2) < 0);
 	}
 	else 
-		return TValue.createBoolean(TValue.compare(value1, value2) < 0);
+		return TValue.createBoolean(TValue.asDouble(value1) < TValue.asDouble(value2));
 };
 
 /**
@@ -577,8 +581,14 @@ TValue.lessOrEqual = function(value1, value2)
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
+	else if (TValue.isString(value1) || TValue.isString(value2))
+	{
+		var v1 = TValue.asString(value1);
+		var v2 = TValue.asString(value2);
+		return TValue.createBoolean(Util.strcmp(v1, v2) <= 0);
+	}
 	else 
-		return TValue.createBoolean(TValue.compare(value1, value2) <= 0);
+		return TValue.createBoolean(TValue.asDouble(value1) <= TValue.asDouble(value2));
 };
 
 /**
@@ -594,8 +604,14 @@ TValue.greater = function(value1, value2)
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
+	else if (TValue.isString(value1) || TValue.isString(value2))
+	{
+		var v1 = TValue.asString(value1);
+		var v2 = TValue.asString(value2);
+		return TValue.createBoolean(Util.strcmp(v1, v2) > 0);
+	}
 	else 
-		return TValue.createBoolean(TValue.compare(value1, value2) > 0);
+		return TValue.createBoolean(TValue.asDouble(value1) > TValue.asDouble(value2));
 };
 
 /**
@@ -611,8 +627,14 @@ TValue.greaterOrEqual = function(value1, value2)
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
+	else if (TValue.isString(value1) || TValue.isString(value2))
+	{
+		var v1 = TValue.asString(value1);
+		var v2 = TValue.asString(value2);
+		return TValue.createBoolean(Util.strcmp(v1, v2) >= 0);
+	}
 	else 
-		return TValue.createBoolean(TValue.compare(value1, value2) >= 0);
+		return TValue.createBoolean(TValue.asDouble(value1) >= TValue.asDouble(value2));
 };
 
 /**

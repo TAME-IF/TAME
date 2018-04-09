@@ -39,6 +39,25 @@ Util.each = function(obj, func)
 			func(obj[x], x, obj.length);
 };
 
+// String compare.
+// Adapted from Java - java.lang.String.compareTo(String).
+Util.strcmp = function(s1, s2)
+{
+    var len1 = s1.length;
+    var len2 = s2.length;
+    var lim = Math.min(len1, len2);
+    var k = 0;
+    while (k < lim)
+    {
+        var c1 = s1.charCodeAt(k);
+        var c2 = s2.charCodeAt(k);
+        if (c1 != c2) 
+            return c1 - c2;
+        k++;
+    }
+    return len1 - len2;
+};
+
 // Array remove
 Util.arrayRemove = function(arr, obj)
 {
