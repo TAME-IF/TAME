@@ -1340,6 +1340,32 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	},
 	
 	/**
+	 * Gets if a a value is "empty."
+	 * POP is the value. 
+	 * Returns boolean. 
+	 */
+	EMPTY (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		{
+			Value value = request.popValue();
+			
+			if (!value.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in EMPTY call.");
+
+			request.pushValue(Value.create(value.isEmpty()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "Values";
+		}
+		
+	},
+	
+	/**
 	 * Concatenates two strings together.
 	 * POP is the second value, cast to a string. 
 	 * POP is the first value, cast to a string. 
