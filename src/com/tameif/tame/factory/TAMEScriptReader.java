@@ -3313,7 +3313,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 						// negate conditional - "if" pops and evaluates.
 						Block conditional = new Block();
-						conditional.add(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(ArithmeticOperator.NEGATE.ordinal())));
+						conditional.add(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(ArithmeticOperator.LOGICAL_NOT.ordinal())));
 
 						Block successBlock;
 						if ((successBlock = parseBlockExpression(currentElement)) == null)
