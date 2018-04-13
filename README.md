@@ -28,6 +28,10 @@ in both the Java and JS implementations.
 Until otherwise specified, any changes to the TAME commands set may invalidate TAME modules that are compiled
 to the serialized format or JS modules (but not embedded ones - those are safe).
 
+### Known Issues
+
+* With the introduction of the **List** type, TAME does not yet have a way to preserve values that are referential across state saves in both the Java and JS implementation. This fix is next to tackle. 
+
 ### Library
 
 Contained in this release is a series of libraries that allow reading, compiling,
