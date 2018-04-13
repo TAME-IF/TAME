@@ -360,7 +360,7 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Returns if this value is equal to another: PERFECTLY EQUAL, type strict.
-	 * Note: NaN is never equal.
+	 * Note: NaN is never equal to anything, even itself.
 	 * @param otherValue the other value.
 	 * @return true if so, false if not.
 	 */
@@ -369,6 +369,10 @@ public class Value implements Comparable<Value>, Saveable
 		if (isStrictlyNaN())
 			return false;
 		else if (otherValue.isStrictlyNaN())
+			return false;
+		else if (isList())
+			return false;
+		else if (otherValue.isList())
 			return false;
 		
 		return type == otherValue.type && value.equals(otherValue.value);
@@ -386,29 +390,32 @@ public class Value implements Comparable<Value>, Saveable
 	@Override
 	public int compareTo(Value v)
 	{
-		if (equals(v))
+		if (this.equals(v))
 			return 0;
 
-		if (isList() || v.isList())
-			return -1;
-		
 		if (!isLiteral() || !v.isLiteral())
-			return asString().compareTo(v.asString());
+			return Integer.MIN_VALUE;
+		
+		if (isList() || v.isList())
+			return Integer.MIN_VALUE;
 		
 		if (isString() || v.isString())
 			return asString().compareTo(v.asString());
+		
 		if (isFloatingPoint() || v.isFloatingPoint())
 		{
 			double d1 = asDouble();
 			double d2 = v.asDouble();
 			return d1 == d2 ? 0 : (d1 < d2 ? -1 : 1);
 		}
+		
 		if (isInteger() || v.isInteger())
 		{
 			long d1 = asLong();
 			long d2 = v.asLong();
 			return d1 == d2 ? 0 : (d1 < d2 ? -1 : 1);
 		}
+		
 		if (isBoolean() || v.isBoolean())
 		{
 			boolean d1 = asBoolean();
@@ -1318,14 +1325,8 @@ public class Value implements Comparable<Value>, Saveable
 			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
-		else if (value1.isString() || value2.isString())
-		{
-			String v1 = value1.asString();
-			String v2 = value2.asString();
-			return create(v1.compareTo(v2) < 0);
-		}
 		else
-			return create(value1.asDouble() < value2.asDouble());
+			return create(value1.compareTo(value2) < 0);
 	}
 
 	/**
@@ -1343,14 +1344,8 @@ public class Value implements Comparable<Value>, Saveable
 			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
-		else if (value1.isString() || value2.isString())
-		{
-			String v1 = value1.asString();
-			String v2 = value2.asString();
-			return create(v1.compareTo(v2) <= 0);
-		}
 		else
-			return create(value1.asDouble() <= value2.asDouble());
+			return create(value1.compareTo(value2) <= 0);
 	}
 
 	/**
@@ -1368,14 +1363,8 @@ public class Value implements Comparable<Value>, Saveable
 			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
-		else if (value1.isString() || value2.isString())
-		{
-			String v1 = value1.asString();
-			String v2 = value2.asString();
-			return create(v1.compareTo(v2) > 0);
-		}
 		else
-			return create(value1.asDouble() > value2.asDouble());
+			return create(value1.compareTo(value2) > 0);
 	}
 
 	/**
@@ -1391,16 +1380,12 @@ public class Value implements Comparable<Value>, Saveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			return create(false);
+		else if (value1.isList() || value2.isList())
+			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
-		else if (value1.isString() || value2.isString())
-		{
-			String v1 = value1.asString();
-			String v2 = value2.asString();
-			return create(v1.compareTo(v2) >= 0);
-		}
 		else
-			return create(value1.asDouble() >= value2.asDouble());
+			return create(value1.compareTo(value2) >= 0);
 	}
 	
 }

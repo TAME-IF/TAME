@@ -138,7 +138,16 @@ TValue.areEqualIgnoreType = function(v1, v2)
  */
 TValue.areEqual = function(v1, v2)
 {
-	return v1.type === v2.type && v1.value === v2.value;
+	if (TValue.isStrictlyNaN(v1))
+		return false;
+	else if (TValue.isStrictlyNaN(v2))
+		return false;
+	else if (TValue.isList(v1))
+		return false;
+	else if (TValue.isList(v2))
+		return false;
+	else
+		return v1.type === v2.type && v1.value === v2.value;
 };
 
 /**
@@ -149,53 +158,44 @@ TValue.areEqual = function(v1, v2)
  */
 TValue.compare = function(v1, v2)
 {
-	// complete equality.
 	if (TValue.areEqual(v1, v2))
 		return 0;
 	
-	var d1 = null;
-	var d2 = null;
+	if (!TValue.isLiteral(v1) || !TValue.isLiteral(v2))
+		return -Number.MAX_VALUE;
 
-	// one is a list
 	if (TValue.isList(v1) || TValue.isList(v2))
+		return -Number.MAX_VALUE;
+	
+	if (TValue.isString(v1) || TValue.isString(v2))
 	{
-		return -1;
-	}
-	// one is not a literal
-	else if (!TValue.isLiteral(v1) || !TValue.isLiteral(v2))
-	{
-		d1 = TValue.asString(v1);
-		d2 = TValue.asString(v2);
-		// special case
+		var d1 = TValue.asString(v1);
+		var d2 = TValue.asString(v2);
 		return Util.strcmp(d1, d2);
 	}
-	else if (TValue.isString(v1) || TValue.isString(v2))
+	
+	if (TValue.isFloatingPoint(v1) || TValue.isFloatingPoint(v2))
 	{
-		d1 = TValue.asString(v1);
-		d2 = TValue.asString(v2);
-		// special case
-		return Util.strcmp(d1, d2);
+		var d1 = TValue.asDouble(v1);
+		var d2 = TValue.asDouble(v2);
+		return d1 === d2 ? 0 : (d1 < d2 ? -1 : 1);
 	}
-	else if (TValue.isFloatingPoint(v1) || TValue.isFloatingPoint(v2))
+	
+	if (TValue.isInteger(v1) || TValue.isInteger(v2))
 	{
-		d1 = TValue.asDouble(v1);
-		d2 = TValue.asDouble(v2);
+		var d1 = TValue.asLong(v1);
+		var d2 = TValue.asLong(v2);
+		return d1 === d2 ? 0 : (d1 < d2 ? -1 : 1);
 	}
-	else if (TValue.isInteger(v1) || TValue.isInteger(v2))
+	
+	if (TValue.isBoolean(v1) || TValue.isBoolean(v2))
 	{
-		d1 = TValue.asLong(v1);
-		d2 = TValue.asLong(v2);
-	}
-	else if (TValue.isBoolean(v1) || TValue.isBoolean(v2))
-	{
-		d1 = TValue.asBoolean(v1);
-		d2 = TValue.asBoolean(v2);
-		// special case
+		var d1 = TValue.asBoolean(v1);
+		var d2 = TValue.asBoolean(v2);
 		return d1 === d2 ? 0 : (!d1 ? -1 : 1);
 	}
 	
-	return d1 === d2 ? 0 : (d1 < d2 ? -1 : 1);
-	
+	return 0;
 };
 
 /**
@@ -558,14 +558,8 @@ TValue.less = function(value1, value2)
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
-	else if (TValue.isString(value1) || TValue.isString(value2))
-	{
-		var v1 = TValue.asString(value1);
-		var v2 = TValue.asString(value2);
-		return TValue.createBoolean(Util.strcmp(v1, v2) < 0);
-	}
 	else 
-		return TValue.createBoolean(TValue.asDouble(value1) < TValue.asDouble(value2));
+		return TValue.createBoolean(TValue.compare(value1, value2) < 0);
 };
 
 /**
@@ -581,14 +575,8 @@ TValue.lessOrEqual = function(value1, value2)
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
-	else if (TValue.isString(value1) || TValue.isString(value2))
-	{
-		var v1 = TValue.asString(value1);
-		var v2 = TValue.asString(value2);
-		return TValue.createBoolean(Util.strcmp(v1, v2) <= 0);
-	}
 	else 
-		return TValue.createBoolean(TValue.asDouble(value1) <= TValue.asDouble(value2));
+		return TValue.createBoolean(TValue.compare(value1, value2) <= 0);
 };
 
 /**
@@ -604,14 +592,8 @@ TValue.greater = function(value1, value2)
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
-	else if (TValue.isString(value1) || TValue.isString(value2))
-	{
-		var v1 = TValue.asString(value1);
-		var v2 = TValue.asString(value2);
-		return TValue.createBoolean(Util.strcmp(v1, v2) > 0);
-	}
 	else 
-		return TValue.createBoolean(TValue.asDouble(value1) > TValue.asDouble(value2));
+		return TValue.createBoolean(TValue.compare(value1, value2) > 0);
 };
 
 /**
@@ -627,14 +609,8 @@ TValue.greaterOrEqual = function(value1, value2)
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
-	else if (TValue.isString(value1) || TValue.isString(value2))
-	{
-		var v1 = TValue.asString(value1);
-		var v2 = TValue.asString(value2);
-		return TValue.createBoolean(Util.strcmp(v1, v2) >= 0);
-	}
 	else 
-		return TValue.createBoolean(TValue.asDouble(value1) >= TValue.asDouble(value2));
+		return TValue.createBoolean(TValue.compare(value1, value2) >= 0);
 };
 
 /**
