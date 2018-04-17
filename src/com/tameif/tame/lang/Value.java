@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.list.List;
@@ -30,11 +31,16 @@ import com.tameif.tame.exception.UnexpectedValueTypeException;
  */
 public class Value implements Comparable<Value>, Saveable
 {
+	private static AtomicLong NEXTREFID = new AtomicLong(0); 
+	
+	/** Reference id - used for tracking values with same memory reference. */
+	private long refid;
 	/** Value type. */
 	protected ValueType type;
 	/** Value itself. */
 	protected Object value;
 	
+	/** Generated hashcode - created only when necessary. */
 	private int hash;
 	
 	/**
@@ -42,9 +48,10 @@ public class Value implements Comparable<Value>, Saveable
 	 */
 	private Value()
 	{
-		type = null;
-		value = null;
-		hash = 0;
+		this.refid = NEXTREFID.getAndIncrement();
+		this.type = null;
+		this.value = null;
+		this.hash = 0;
 	}
 	
 	/**
@@ -319,6 +326,16 @@ public class Value implements Comparable<Value>, Saveable
 		this.hash = 0;
 	}
 
+	/**
+	 * Gets this value's reference id (generated on construction).
+	 * Only useful during serialization.
+	 * @return the reference id.
+	 */
+	public long getRefId()
+	{
+		return refid;
+	}
+	
 	@Override
 	public int hashCode()
 	{
@@ -487,7 +504,10 @@ public class Value implements Comparable<Value>, Saveable
 			{
 				int len = sr.readInt();
 				value = new List<Value>(len);
-				listAdd(create(in));
+				while (len-- > 0)
+				{
+					listAdd(create(in));
+				}
 				break;
 			}
 			case STRING:

@@ -1,0 +1,39 @@
+module
+{
+	title = "List Instance Test";
+}
+
+action general a_test named "test";
+action general a_quit named "quit";
+
+world
+{
+	function printLists()
+	{
+		textln("a = "+a);
+		textln("b = "+b);
+		textln("c = "+c);
+	} 
+	
+	start()
+	{
+		nextint = 0;
+		a = [6,7,8,10.0, "asdf"];
+		b = [6,7,8,10.0, "asdf"];
+		c = b;
+		printLists();
+	}
+	
+	onAction(a_test)
+	{
+		nextint = nextint + 1;
+		listAdd(c, nextint);
+		printLists();
+	}
+	
+	onAction(a_quit)
+	{
+		quit;
+	}
+	
+}

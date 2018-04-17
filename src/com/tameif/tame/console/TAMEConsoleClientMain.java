@@ -276,6 +276,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			return false;
 		} catch (IOException e) {
 			System.out.println("ERROR: Could not write "+file.getPath());
+			e.printStackTrace(System.err);
 			return false;
 		} finally {
 			Common.close(out);
@@ -305,6 +306,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			return false;
 		} catch (IOException e) {
 			System.out.println("ERROR: Could not read from "+file.getPath());
+			e.printStackTrace(System.err);
 			return false;
 		} finally {
 			Common.close(in);

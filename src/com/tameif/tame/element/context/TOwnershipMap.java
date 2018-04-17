@@ -521,7 +521,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	private HashMap<TObject, CaseInsensitiveHash> readStringMap(TAMEModule module, SuperReader sr) throws IOException 
 	{
 		int objsize = sr.readInt();
-		HashMap<TObject, CaseInsensitiveHash> out = new HashMap<TObject, CaseInsensitiveHash>(objsize);
+		HashMap<TObject, CaseInsensitiveHash> out = objsize <= 0 
+				? new HashMap<TObject, CaseInsensitiveHash>() 
+				: new HashMap<TObject, CaseInsensitiveHash>(objsize);
 		while (objsize-- > 0)
 		{
 			String id = sr.readString("UTF-8");
