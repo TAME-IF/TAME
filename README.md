@@ -7,7 +7,7 @@ Copyright (c) 2015-2018 Matt Tropiano. All rights reserved.
 Black Rook Commons 2.31.0+  
 [https://github.com/BlackRookSoftware/Common](https://github.com/BlackRookSoftware/Common)
 
-Black Rook Common I/O 2.5.0+  
+Black Rook Common I/O 2.5.1+  
 [https://github.com/BlackRookSoftware/CommonIO](https://github.com/BlackRookSoftware/CommonIO)
 
 Black Rook Common Lang 2.9.1+  

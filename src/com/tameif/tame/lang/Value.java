@@ -259,13 +259,20 @@ public class Value implements Comparable<Value>, Saveable
 
 	/**
 	 * Creates a copy of a value.
-	 * List-typed values only copy their reference. This does NOT create a new list!
+	 * Reference-passed values only copy their reference, not creating new.
 	 * @param inputValue the input value.
 	 * @return the new value that is a copy of the input value.
+	 * @see #isReferencePassed()
 	 */
 	public static Value create(Value inputValue)
 	{
-		switch (inputValue.type)
+		if (inputValue.isReferencePassed())
+		{
+			Value out = new Value();
+			out.set(inputValue.type, inputValue.value);
+			return out;
+		}
+		else switch (inputValue.type)
 		{
 			case BOOLEAN:
 				return create((Boolean)inputValue.value);
@@ -275,10 +282,6 @@ public class Value implements Comparable<Value>, Saveable
 				return create((Double)inputValue.value);
 			case STRING:
 				return create((String)inputValue.value);
-			case LIST:
-				Value out = new Value();
-				out.set(ValueType.LIST, inputValue.value);
-				return out;
 			case OBJECT:
 				return createObject((String)inputValue.value);
 			case PLAYER:
@@ -764,6 +767,16 @@ public class Value implements Comparable<Value>, Saveable
 			|| type == ValueType.FLOAT
 			|| type == ValueType.STRING
 			|| type == ValueType.LIST;
+	}
+	
+	/**
+	 * Returns if this value is intended to be passed around by reference internally.
+	 * This affects how it is stored in a serialized context state. 
+	 * @return true if so, false if not.
+	 */
+	public boolean isReferencePassed()
+	{
+		return type == ValueType.LIST;
 	}
 	
 	/**
