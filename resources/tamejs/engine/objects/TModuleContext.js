@@ -75,6 +75,24 @@ var TModuleContext = function(module)
 };
 
 /**
+ * Returns a serialized version of the context state.
+ * @return a string that represents the state.
+ */
+TModuleContext.prototype.stateSave = function()
+{
+	return JSON.parse(this.state);
+};
+
+/**
+ * Restores the context from a serialized version of the context state.
+ * @param stateData the state data to use for restoration.
+ */
+TModuleContext.prototype.stateRestore = function(stateData)
+{
+	this.state = JSON.parse(stateData);
+};
+
+/**
  * Sets the current player.
  * @param playerIdentity the player identity, or null.
  * @throws TAMEError if no such player.

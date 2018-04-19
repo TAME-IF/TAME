@@ -223,7 +223,7 @@ rl.on('line', function(line){
 		{
 			var name = line.substring(COMMAND_SAVE.length).trim();
 			try {
-				fs.writeFileSync(name+'.json', JSON.stringify(tamectx.state), {"encoding": 'utf8'});
+				fs.writeFileSync(name+'.json', tamectx.stateSave(), {"encoding": 'utf8'});
 				println("State saved: "+name+'.json');
 			} catch (err) {
 				println(err);
@@ -235,7 +235,7 @@ rl.on('line', function(line){
 			var name = line.substring(COMMAND_LOAD.length).trim();
 			try {
 				var stateData = fs.readFileSync(name+'.json', {"encoding": 'utf8'});
-				tamectx.state = JSON.parse(stateData);
+				tamectx.stateRestore(stateData);
 				println("State loaded: "+name+'.json');
 			} catch (err) {
 				println(err);

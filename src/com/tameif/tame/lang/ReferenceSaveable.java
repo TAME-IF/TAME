@@ -15,48 +15,43 @@ import java.io.OutputStream;
 
 import com.blackrook.commons.AbstractMap;
 import com.blackrook.commons.AbstractSet;
-import com.tameif.tame.TAMEModule;
 
 /**
- * Describes an object whose state that can be saved/loaded.
+ * Describes an object that can be saved/loaded but preserves value references.
  * @author Matthew Tropiano
  */
-public interface StateSaveable
+public interface ReferenceSaveable
 {
 	/**
-	 * Exports this object's state to bytes.
-	 * @param module the source module for reference.
+	 * Exports this object to bytes, preserving up value references from a map.
 	 * @param referenceSet the reference set to use for "seen" value references.
 	 * @param out the output stream to write to.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public void writeStateBytes(TAMEModule module, AbstractSet<Long> referenceMap, OutputStream out) throws IOException;
+	public void writeReferentialBytes(AbstractSet<Long> referenceSet, OutputStream out) throws IOException;
 	
 	/**
-	 * Imports this object's state from bytes.
-	 * @param module the source module for reference.
+	 * Imports this object from bytes, looking up value references in a map.
 	 * @param referenceMap the reference map to use for "seen" value references.
 	 * @param in the input stream to read from.
 	 * @throws IOException if a read problem occurs.
 	 */
-	public void readStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException;
+	public void readReferentialBytes(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException;
 	
 	/**
-	 * Gets this object's state representation as bytes.
-	 * @param module the source module for reference.
+	 * Gets this object's representation as bytes, preserving up value references from a map.
 	 * @param referenceSet the reference set to use for "seen" value references.
 	 * @return the byte array of state bytes.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public byte[] toStateBytes(TAMEModule module, AbstractSet<Long> referenceMap) throws IOException;
+	public byte[] toReferentialBytes(AbstractSet<Long> referenceSet) throws IOException;
 	
 	/**
-	 * Reads this object's state representation from a byte array.
-	 * @param module the source module for reference.
+	 * Reads this object's representation from a byte array, looking up value references in a map.
 	 * @param referenceMap the reference map to use for "seen" value references.
 	 * @param data the data to read.
 	 * @throws IOException if a read problem occurs.
 	 */
-	public void fromStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException;
+	public void fromReferentialBytes(AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException;
 	
 }

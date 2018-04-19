@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import com.blackrook.commons.AbstractMap;
+import com.blackrook.commons.AbstractSet;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.element.TElement;
 import com.tameif.tame.lang.StateSaveable;
@@ -51,27 +53,6 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	public T getElement()
 	{
 		return element;
-	}
-
-	/**
-	 * Reads in a bunch of bytes that represent the current context state.
-	 * The context is changed after the call.
-	 * @param in the input stream to read from.
-	 * @throws IOException if a read error occurs.
-	 */
-	protected void read(InputStream in) throws IOException
-	{
-		variables.readBytes(in);
-	}
-
-	/**
-	 * Writes a bunch of bytes that represent the current context state.
-	 * @param out the output stream to write from.
-	 * @throws IOException if a write error occurs.
-	 */
-	protected void write(OutputStream out) throws IOException
-	{
-		variables.writeBytes(out);
 	}
 
 	/**
@@ -122,30 +103,30 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 	
 	@Override
-	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
+	public void writeStateBytes(TAMEModule module, AbstractSet<Long> referenceSet, OutputStream out) throws IOException 
 	{
-		variables.writeBytes(out);
+		variables.writeReferentialBytes(referenceSet, out);
 	}
 
 	@Override
-	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
+	public void readStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException 
 	{
-		variables.readBytes(in);
+		variables.readReferentialBytes(referenceMap, in);
 	}
 
 	@Override
-	public byte[] toStateBytes(TAMEModule module) throws IOException
+	public byte[] toStateBytes(TAMEModule module, AbstractSet<Long> referenceSet) throws IOException
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeStateBytes(module, bos);
+		writeStateBytes(module, referenceSet, bos);
 		return bos.toByteArray();
 	}
 
 	@Override
-	public void fromStateBytes(TAMEModule module, byte[] data) throws IOException 
+	public void fromStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException 
 	{
 		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readStateBytes(module, bis);
+		readStateBytes(module, referenceMap, bis);
 		bis.close();
 	}
 	

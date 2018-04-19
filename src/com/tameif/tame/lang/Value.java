@@ -55,6 +55,17 @@ public class Value implements Comparable<Value>, Saveable
 	}
 	
 	/**
+	 * Creates a blank value with a ref id.
+	 */
+	private Value(long refid)
+	{
+		this.refid = refid;
+		this.type = null;
+		this.value = null;
+		this.hash = 0;
+	}
+	
+	/**
 	 * Creates a boolean value, typed as integer.
 	 * @param value the boolean value.
 	 * @return the new value.
@@ -262,13 +273,13 @@ public class Value implements Comparable<Value>, Saveable
 	 * Reference-passed values only copy their reference, not creating new.
 	 * @param inputValue the input value.
 	 * @return the new value that is a copy of the input value.
-	 * @see #isReferencePassed()
+	 * @see #isReferenceCopied()
 	 */
 	public static Value create(Value inputValue)
 	{
-		if (inputValue.isReferencePassed())
+		if (inputValue.isReferenceCopied())
 		{
-			Value out = new Value();
+			Value out = new Value(inputValue.refid);
 			out.set(inputValue.type, inputValue.value);
 			return out;
 		}
@@ -451,6 +462,8 @@ public class Value implements Comparable<Value>, Saveable
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		
+		sw.writeVariableLengthLong(refid);
 		sw.writeByte((byte)type.ordinal());
 		
 		switch (type)
@@ -490,6 +503,7 @@ public class Value implements Comparable<Value>, Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		refid = sr.readVariableLengthLong();
 		type = ValueType.VALUES[sr.readByte()];
 		
 		switch (type)
@@ -774,7 +788,7 @@ public class Value implements Comparable<Value>, Saveable
 	 * This affects how it is stored in a serialized context state. 
 	 * @return true if so, false if not.
 	 */
-	public boolean isReferencePassed()
+	public boolean isReferenceCopied()
 	{
 		return type == ValueType.LIST;
 	}

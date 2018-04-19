@@ -30,7 +30,7 @@ to the serialized format or JS modules (but not embedded ones - those are safe).
 
 ### Known Issues
 
-* With the introduction of the **List** type, TAME does not yet have a way to preserve values that are referential across state saves in both the Java and JS implementation. This fix is next to tackle. 
+* With the introduction of the **List** type, TAME does not yet have a way to preserve values that are referential across state saves in the JS/Node implementation. This fix is next to tackle.
 
 ### Library
 

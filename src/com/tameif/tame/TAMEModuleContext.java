@@ -698,39 +698,41 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		if ((digest = module.getDigest()) == null)
 			digest = module.calculateDigest();
 		sw.writeBytes(digest);
+
+		Hash<Long> refSet = new Hash<>(16);
 		
 		sw.writeString(worldContext.getElement().getIdentity(), "UTF-8");
-		worldContext.writeStateBytes(module, out);
+		worldContext.writeStateBytes(module, refSet, out);
 		
 		sw.writeInt(playerContextHash.size());
 		for (ObjectPair<String, TPlayerContext> entry : playerContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
-			entry.getValue().writeStateBytes(module, out);
+			entry.getValue().writeStateBytes(module, refSet, out);
 		}
 
 		sw.writeInt(roomContextHash.size());
 		for (ObjectPair<String, TRoomContext> entry : roomContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
-			entry.getValue().writeStateBytes(module, out);
+			entry.getValue().writeStateBytes(module, refSet, out);
 		}
 		
 		sw.writeInt(objectContextHash.size());
 		for (ObjectPair<String, TObjectContext> entry : objectContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
-			entry.getValue().writeStateBytes(module, out);
+			entry.getValue().writeStateBytes(module, refSet, out);
 		}
 
 		sw.writeInt(containerContextHash.size());
 		for (ObjectPair<String, TContainerContext> entry : containerContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
-			entry.getValue().writeStateBytes(module, out);
+			entry.getValue().writeStateBytes(module, refSet, out);
 		}
 
-		ownershipMap.writeStateBytes(module, out);
+		ownershipMap.writeStateBytes(module, refSet, out);
 	}
 
 	@Override
@@ -753,10 +755,12 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		if (!Arrays.equals(digest, moduleDigest))
 			throw new ModuleStateException("Module and state digests do not match. Save state may not be for this module.");
 		
+		HashMap<Long, Value> refMap = new HashMap<>(16);
+
 		identity = sr.readString("UTF-8");
 		if (!identity.equals(IDENTITY_CURRENT_WORLD))
 			throw new ModuleStateException("Expected world '%s' in module context!", identity);
-		worldContext.readStateBytes(module, in);	
+		worldContext.readStateBytes(module, refMap, in);	
 		
 		size = sr.readInt();
 		while (size-- > 0)
@@ -765,7 +769,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			if (!playerContextHash.containsKey(identity))
 				throw new ModuleStateException("Expected player '%s' in module context!", identity);
 			else
-				playerContextHash.get(identity).readStateBytes(module, in);
+				playerContextHash.get(identity).readStateBytes(module, refMap, in);
 		}
 		
 		size = sr.readInt();
@@ -775,7 +779,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			if (!roomContextHash.containsKey(identity))
 				throw new ModuleStateException("Expected room '%s' in module context!", identity);
 			else
-				roomContextHash.get(identity).readStateBytes(module, in);
+				roomContextHash.get(identity).readStateBytes(module, refMap, in);
 		}
 
 		size = sr.readInt();
@@ -785,7 +789,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			if (!objectContextHash.containsKey(identity))
 				throw new ModuleStateException("Expected object '%s' in module context!", identity);
 			else
-				objectContextHash.get(identity).readStateBytes(module, in);
+				objectContextHash.get(identity).readStateBytes(module, refMap, in);
 		}
 		
 		size = sr.readInt();
@@ -795,10 +799,10 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			if (!containerContextHash.containsKey(identity))
 				throw new ModuleStateException("Expected container '%s' in module context!", identity);
 			else
-				containerContextHash.get(identity).readStateBytes(module, in);
+				containerContextHash.get(identity).readStateBytes(module, refMap, in);
 		}
 		
-		ownershipMap.readStateBytes(module, in);
+		ownershipMap.readStateBytes(module, refMap, in);
 	}
 
 	@Override

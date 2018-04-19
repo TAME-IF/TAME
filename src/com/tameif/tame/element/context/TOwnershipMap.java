@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import com.blackrook.commons.AbstractMap;
+import com.blackrook.commons.AbstractSet;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.hash.HashMap;
@@ -33,6 +35,7 @@ import com.tameif.tame.element.TPlayer;
 import com.tameif.tame.element.TRoom;
 import com.tameif.tame.exception.ModuleStateException;
 import com.tameif.tame.lang.StateSaveable;
+import com.tameif.tame.lang.Value;
 
 /**
  * An ownership map for all objects.
@@ -393,7 +396,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	@Override
-	public void writeStateBytes(TAMEModule module, OutputStream out) throws IOException 
+	public void writeStateBytes(TAMEModule module, AbstractSet<Long> referenceMap, OutputStream out) throws IOException 
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 
@@ -452,7 +455,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	@Override
-	public void readStateBytes(TAMEModule module, InputStream in) throws IOException 
+	public void readStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException 
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		reset();
@@ -540,18 +543,18 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	@Override
-	public byte[] toStateBytes(TAMEModule module) throws IOException
+	public byte[] toStateBytes(TAMEModule module, AbstractSet<Long> referenceMap) throws IOException
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeStateBytes(module, bos);
+		writeStateBytes(module, referenceMap, bos);
 		return bos.toByteArray();
 	}
 
 	@Override
-	public void fromStateBytes(TAMEModule module, byte[] data) throws IOException 
+	public void fromStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException 
 	{
 		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readStateBytes(module, bis);
+		readStateBytes(module, referenceMap, bis);
 		bis.close();
 	}
 	
