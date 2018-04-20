@@ -13,14 +13,18 @@ world
 		textln("a = "+a);
 		textln("b = "+b);
 		textln("c = "+c);
+		textln("d = "+d);
+		textln("e = "+e);
 	} 
 	
 	start()
 	{
-		nextint = 0;
+		nextint = 100;
 		a = [6,7,8,10.0, "asdf"];
 		b = [6,7,8,10.0, "asdf"];
 		c = b;
+		d = [1,2,3];
+		e = [d,d,d];
 		printLists();
 	}
 	
@@ -28,6 +32,7 @@ world
 	{
 		nextint = nextint + 1;
 		listAdd(c, nextint);
+		listAdd(d, nextint);
 		printLists();
 	}
 	
