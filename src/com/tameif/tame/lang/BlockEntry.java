@@ -165,7 +165,7 @@ public class BlockEntry implements Saveable
 		entryType = BlockEntryType.VALUES[sr.readByte()];
 		values = new Value[sr.readInt()];
 		for (int i = 0; i < values.length; i++)
-			values[i] = Value.create(in);
+			values[i] = Value.read(in);
 	}
 
 	@Override

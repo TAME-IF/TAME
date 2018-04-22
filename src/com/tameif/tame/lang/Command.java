@@ -290,9 +290,9 @@ public class Command implements CallableType, Saveable
 		byte objectbits = sr.readByte();
 		
 		if ((objectbits & 0x01) != 0)
-			this.operand0 = Value.create(in);
+			this.operand0 = Value.read(in);
 		if ((objectbits & 0x02) != 0)
-			this.operand1 = Value.create(in);
+			this.operand1 = Value.read(in);
 	
 		if ((objectbits & 0x04) != 0)
 			this.initBlock = Block.create(in);

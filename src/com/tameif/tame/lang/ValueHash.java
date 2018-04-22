@@ -21,8 +21,6 @@ import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
-import com.tameif.tame.exception.ModuleStateException;
-
 
 /**
  * Convenience class for Value lookup tables.
@@ -71,30 +69,7 @@ public class ValueHash extends CaseInsensitiveHashMap<Value> implements Referenc
 		for (ObjectPair<String, Value> hp : this)
 		{
 			sw.writeString(hp.getKey(), "UTF-8");
-			Value value = hp.getValue();
-
-			// look up in refmap. Add if not in the map.
-			if (value.isReferenceCopied())
-			{
-				long refid = value.getRefId();
-				if (referenceSet.contains(refid))
-				{
-					sw.writeBoolean(true);
-					sw.writeVariableLengthLong(refid);
-				}
-				else
-				{
-					referenceSet.put(refid);
-					sw.writeBoolean(false);
-					value.writeBytes(out);
-				}
-				
-			}
-			else
-			{
-				sw.writeBoolean(false);
-				value.writeBytes(out);
-			}
+			hp.getValue().writeReferentialBytes(referenceSet, out);
 		}
 	}
 	
@@ -107,24 +82,7 @@ public class ValueHash extends CaseInsensitiveHashMap<Value> implements Referenc
 		for (int i = 0; i < x; i++)
 		{
 			String name = sr.readString("UTF-8");
-			boolean isRef = sr.readBoolean();
-			Value value = null;
-			if (isRef)
-			{
-				long refid = sr.readVariableLengthLong();
-				if (!referenceMap.containsKey(refid))
-					throw new ModuleStateException("State read error! Value reference id "+refid+" was not seen.");
-				
-				value = Value.create(referenceMap.get(refid));
-				
-			}
-			else
-			{
-				value = Value.create(in);
-				if (value.isReferenceCopied())
-					referenceMap.put(value.getRefId(), value);
-			}
-			
+			Value value = Value.read(referenceMap, in);
 			put(name, value);
 		}
 		

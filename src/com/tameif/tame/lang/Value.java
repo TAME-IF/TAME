@@ -17,19 +17,22 @@ import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.blackrook.commons.AbstractMap;
+import com.blackrook.commons.AbstractSet;
 import com.blackrook.commons.Common;
 import com.blackrook.commons.list.List;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.exception.ModuleException;
+import com.tameif.tame.exception.ModuleStateException;
 import com.tameif.tame.exception.UnexpectedValueTypeException;
 
 /**
  * All values in the interpreter are of this type, which stores a type.
  * @author Matthew Tropiano
  */
-public class Value implements Comparable<Value>, Saveable
+public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 {
 	private static AtomicLong NEXTREFID = new AtomicLong(0); 
 	
@@ -313,15 +316,29 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	/**
-	 * Reads a value from an input stream.
+	 * Reads a value from an input stream, using a reference map to pick up seen references.
 	 * @param in the stream to read from.
 	 * @return a new value.
 	 * @throws IOException if a value could not be read.
 	 */
-	public static Value create(InputStream in) throws IOException
+	public static Value read(InputStream in) throws IOException
 	{
-		Value out = new Value();
+		Value out = new Value(-1L);
 		out.readBytes(in);
+		return out;
+	}
+
+	/**
+	 * Reads a value from an input stream, using a reference map to pick up seen references.
+	 * @param referenceMap the reference map to use for "seen" value references.
+	 * @param in the stream to read from.
+	 * @return a new value.
+	 * @throws IOException if a value could not be read.
+	 */
+	public static Value read(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
+	{
+		Value out = new Value(-1L);
+		out.readReferentialBytes(referenceMap, in);
 		return out;
 	}
 
@@ -458,11 +475,110 @@ public class Value implements Comparable<Value>, Saveable
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
-	public void writeBytes(OutputStream out) throws IOException
+	public void writeReferentialBytes(AbstractSet<Long> referenceSet, OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		
+		// look up in refmap. Add if not in the map.
+		if (isReferenceCopied())
+		{
+			long refid = getRefId();
+			if (referenceSet.contains(refid))
+			{
+				sw.writeBoolean(true);
+				sw.writeVariableLengthLong(refid);
+			}
+			else
+			{
+				referenceSet.put(refid);
+				sw.writeBoolean(false);
+				writeValueData(referenceSet, out);
+			}
+			
+		}
+		else
+		{
+			sw.writeBoolean(false);
+			writeValueData(referenceSet, out);
+		}
+		
+	}
+
+	@Override
+	public void readReferentialBytes(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
+	{
+		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		
+		boolean isRef = sr.readBoolean();
+
+		if (isRef)
+		{
+			long refid = sr.readVariableLengthLong();
+			if (!referenceMap.containsKey(refid))
+				throw new ModuleStateException("State read error! Value reference id "+refid+" was not seen.");
+			
+			Value refValue = referenceMap.get(refid);
+			this.refid = refid; 
+			set(refValue.type, refValue.value);
+		}
+		else
+		{
+			readValueData(referenceMap, in);
+			if (isReferenceCopied())
+				referenceMap.put(getRefId(), this);
+		}
+		
+	}
+
+	@Override
+	public byte[] toReferentialBytes(AbstractSet<Long> referenceSet) throws IOException 
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeReferentialBytes(referenceSet, bos);
+		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromReferentialBytes(AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readReferentialBytes(referenceMap, bis);
+		bis.close();
+	}
+
+	@Override
+	public void writeBytes(OutputStream out) throws IOException
+	{
+		writeValueData(null, out);
+	}
+
+	@Override
+	public void readBytes(InputStream in) throws IOException 
+	{
+		readValueData(null, in);
+	}
+
+	@Override
+	public byte[] toBytes() throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeBytes(bos);
+		return bos.toByteArray();
+	}
+
+	@Override
+	public void fromBytes(byte[] data) throws IOException
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readBytes(bis);
+		bis.close();
+	}
+
+	// Writes the value data.
+	@SuppressWarnings("unchecked")
+	private void writeValueData(AbstractSet<Long> referenceSet, OutputStream out) throws IOException
+	{
+		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeVariableLengthLong(refid);
 		sw.writeByte((byte)type.ordinal());
 		
@@ -483,7 +599,12 @@ public class Value implements Comparable<Value>, Saveable
 				List<Value> list = (List<Value>)value;
 				sw.writeInt(list.size());
 				for (Value v : list)
-					v.writeBytes(out);
+				{
+					if (referenceSet != null)
+						v.writeReferentialBytes(referenceSet, out);
+					else
+						v.writeBytes(out);
+				}
 				break;
 			case STRING:
 			case OBJECT:
@@ -493,14 +614,16 @@ public class Value implements Comparable<Value>, Saveable
 			case WORLD:
 			case ACTION:
 			case VARIABLE:
+				if (value.toString().equals("Door is already open."))
+					Common.noop();
 				sw.writeString(value.toString(), "UTF-8");
 				break;
-		}
-		
-	}
+		}	
 	
-	@Override
-	public void readBytes(InputStream in) throws IOException
+	}
+
+	// Reads the value data.
+	private void readValueData(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		refid = sr.readVariableLengthLong();
@@ -523,7 +646,7 @@ public class Value implements Comparable<Value>, Saveable
 				value = new List<Value>(len);
 				while (len-- > 0)
 				{
-					listAdd(create(in));
+					listAdd(referenceMap != null ? read(referenceMap, in) : read(in));
 				}
 				break;
 			}
@@ -540,23 +663,7 @@ public class Value implements Comparable<Value>, Saveable
 			default:
 				throw new ModuleException("Bad value type. Internal error!");
 		}
-
-	}
-
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
+	
 	}
 
 	/**
