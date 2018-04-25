@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.AbstractSet;
 import com.blackrook.commons.Common;
 import com.blackrook.commons.list.List;
 import com.blackrook.io.SuperReader;
@@ -33,11 +32,7 @@ import com.tameif.tame.exception.UnexpectedValueTypeException;
  * @author Matthew Tropiano
  */
 public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
-{
-	private static AtomicLong NEXTREFID = new AtomicLong(0); 
-	
-	/** Reference id - used for tracking values with same memory reference. */
-	private long refid;
+{ 	
 	/** Value type. */
 	protected ValueType type;
 	/** Value itself. */
@@ -51,18 +46,6 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	private Value()
 	{
-		this.refid = NEXTREFID.getAndIncrement();
-		this.type = null;
-		this.value = null;
-		this.hash = 0;
-	}
-	
-	/**
-	 * Creates a blank value with a ref id.
-	 */
-	private Value(long refid)
-	{
-		this.refid = refid;
 		this.type = null;
 		this.value = null;
 		this.hash = 0;
@@ -282,7 +265,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	{
 		if (inputValue.isReferenceCopied())
 		{
-			Value out = new Value(inputValue.refid);
+			Value out = new Value();
 			out.set(inputValue.type, inputValue.value);
 			return out;
 		}
@@ -323,7 +306,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value read(InputStream in) throws IOException
 	{
-		Value out = new Value(-1L);
+		Value out = new Value();
 		out.readBytes(in);
 		return out;
 	}
@@ -337,7 +320,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value read(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
 	{
-		Value out = new Value(-1L);
+		Value out = new Value();
 		out.readReferentialBytes(referenceMap, in);
 		return out;
 	}
@@ -357,16 +340,6 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 		this.hash = 0;
 	}
 
-	/**
-	 * Gets this value's reference id (generated on construction).
-	 * Only useful during serialization.
-	 * @return the reference id.
-	 */
-	public long getRefId()
-	{
-		return refid;
-	}
-	
 	@Override
 	public int hashCode()
 	{
@@ -475,31 +448,33 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	}
 
 	@Override
-	public void writeReferentialBytes(AbstractSet<Long> referenceSet, OutputStream out) throws IOException
+	public void writeReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		
 		// look up in refmap. Add if not in the map.
 		if (isReferenceCopied())
 		{
-			long refid = getRefId();
-			if (referenceSet.contains(refid))
+			if (referenceSet.containsKey(value))
 			{
 				sw.writeBoolean(true);
-				sw.writeVariableLengthLong(refid);
+				sw.writeVariableLengthLong(referenceSet.get(value));
 			}
 			else
 			{
-				referenceSet.put(refid);
+				long refid = referenceCounter.getAndIncrement();
+				referenceSet.put(value, refid);
 				sw.writeBoolean(false);
-				writeValueData(referenceSet, out);
+				sw.writeVariableLengthLong(refid);
+				writeValueData(referenceCounter, referenceSet, out);
 			}
 			
 		}
 		else
 		{
 			sw.writeBoolean(false);
-			writeValueData(referenceSet, out);
+			sw.writeVariableLengthLong(referenceCounter.getAndIncrement());
+			writeValueData(referenceCounter, referenceSet, out);
 		}
 		
 	}
@@ -518,23 +493,23 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 				throw new ModuleStateException("State read error! Value reference id "+refid+" was not seen.");
 			
 			Value refValue = referenceMap.get(refid);
-			this.refid = refid; 
 			set(refValue.type, refValue.value);
 		}
 		else
 		{
+			long refid = sr.readVariableLengthLong();
 			readValueData(referenceMap, in);
 			if (isReferenceCopied())
-				referenceMap.put(getRefId(), this);
+				referenceMap.put(refid, this);
 		}
 		
 	}
 
 	@Override
-	public byte[] toReferentialBytes(AbstractSet<Long> referenceSet) throws IOException 
+	public byte[] toReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException 
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeReferentialBytes(referenceSet, bos);
+		writeReferentialBytes(referenceCounter, referenceSet, bos);
 		return bos.toByteArray();
 	}
 
@@ -549,7 +524,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		writeValueData(null, out);
+		writeValueData(null, null, out);
 	}
 
 	@Override
@@ -576,10 +551,9 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 
 	// Writes the value data.
 	@SuppressWarnings("unchecked")
-	private void writeValueData(AbstractSet<Long> referenceSet, OutputStream out) throws IOException
+	private void writeValueData(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeVariableLengthLong(refid);
 		sw.writeByte((byte)type.ordinal());
 		
 		switch (type)
@@ -601,7 +575,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 				for (Value v : list)
 				{
 					if (referenceSet != null)
-						v.writeReferentialBytes(referenceSet, out);
+						v.writeReferentialBytes(referenceCounter, referenceSet, out);
 					else
 						v.writeBytes(out);
 				}
@@ -626,7 +600,6 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	private void readValueData(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		refid = sr.readVariableLengthLong();
 		type = ValueType.VALUES[sr.readByte()];
 		
 		switch (type)

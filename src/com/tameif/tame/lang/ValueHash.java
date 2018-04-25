@@ -14,9 +14,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.AbstractSet;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.io.SuperReader;
@@ -62,14 +62,14 @@ public class ValueHash extends CaseInsensitiveHashMap<Value> implements Referenc
 	}
 
 	@Override
-	public void writeReferentialBytes(AbstractSet<Long> referenceSet, OutputStream out) throws IOException
+	public void writeReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 		sw.writeInt(size());
 		for (ObjectPair<String, Value> hp : this)
 		{
 			sw.writeString(hp.getKey(), "UTF-8");
-			hp.getValue().writeReferentialBytes(referenceSet, out);
+			hp.getValue().writeReferentialBytes(referenceCounter, referenceSet, out);
 		}
 	}
 	
@@ -89,10 +89,10 @@ public class ValueHash extends CaseInsensitiveHashMap<Value> implements Referenc
 	}
 
 	@Override
-	public byte[] toReferentialBytes(AbstractSet<Long> referenceSet) throws IOException
+	public byte[] toReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeReferentialBytes(referenceSet, bos);
+		writeReferentialBytes(referenceCounter, referenceSet, bos);
 		return bos.toByteArray();
 	}
 

@@ -12,9 +12,9 @@ package com.tameif.tame.lang;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.AbstractSet;
 import com.tameif.tame.TAMEModule;
 
 /**
@@ -26,11 +26,12 @@ public interface StateSaveable
 	/**
 	 * Exports this object's state to bytes.
 	 * @param module the source module for reference.
-	 * @param referenceSet the reference set to use for "seen" value references.
+	 * @param referenceCounter the reference counter to use for when unique values are seen.
+	 * @param referenceSet the reference set to use for "seen" value references - maps object reference to counter value.
 	 * @param out the output stream to write to.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public void writeStateBytes(TAMEModule module, AbstractSet<Long> referenceMap, OutputStream out) throws IOException;
+	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException;
 	
 	/**
 	 * Imports this object's state from bytes.
@@ -44,11 +45,12 @@ public interface StateSaveable
 	/**
 	 * Gets this object's state representation as bytes.
 	 * @param module the source module for reference.
-	 * @param referenceSet the reference set to use for "seen" value references.
+	 * @param referenceCounter the reference counter to use for when unique values are seen.
+	 * @param referenceSet the reference set to use for "seen" value references - maps object reference to counter value.
 	 * @return the byte array of state bytes.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public byte[] toStateBytes(TAMEModule module, AbstractSet<Long> referenceMap) throws IOException;
+	public byte[] toStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException;
 	
 	/**
 	 * Reads this object's state representation from a byte array.

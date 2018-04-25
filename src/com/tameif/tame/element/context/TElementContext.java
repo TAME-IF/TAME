@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.AbstractSet;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.element.TElement;
 import com.tameif.tame.lang.StateSaveable;
@@ -103,9 +103,9 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 	
 	@Override
-	public void writeStateBytes(TAMEModule module, AbstractSet<Long> referenceSet, OutputStream out) throws IOException 
+	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException 
 	{
-		variables.writeReferentialBytes(referenceSet, out);
+		variables.writeReferentialBytes(referenceCounter, referenceSet, out);
 	}
 
 	@Override
@@ -115,10 +115,10 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 
 	@Override
-	public byte[] toStateBytes(TAMEModule module, AbstractSet<Long> referenceSet) throws IOException
+	public byte[] toStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeStateBytes(module, referenceSet, bos);
+		writeStateBytes(module, referenceCounter, referenceSet, bos);
 		return bos.toByteArray();
 	}
 

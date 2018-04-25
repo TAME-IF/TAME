@@ -14,9 +14,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.AbstractSet;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.hash.HashMap;
@@ -396,7 +396,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	@Override
-	public void writeStateBytes(TAMEModule module, AbstractSet<Long> referenceMap, OutputStream out) throws IOException 
+	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException 
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
 
@@ -543,10 +543,10 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	@Override
-	public byte[] toStateBytes(TAMEModule module, AbstractSet<Long> referenceMap) throws IOException
+	public byte[] toStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException
 	{
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeStateBytes(module, referenceMap, bos);
+		writeStateBytes(module, referenceCounter, referenceSet, bos);
 		return bos.toByteArray();
 	}
 

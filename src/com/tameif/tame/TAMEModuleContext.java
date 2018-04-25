@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
@@ -699,40 +700,41 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 			digest = module.calculateDigest();
 		sw.writeBytes(digest);
 
-		Hash<Long> refSet = new Hash<>(16);
+		AtomicLong refCounter = new AtomicLong(0L);
+		HashMap<Object, Long> refSet = new HashMap<>(16);
 		
 		sw.writeString(worldContext.getElement().getIdentity(), "UTF-8");
-		worldContext.writeStateBytes(module, refSet, out);
+		worldContext.writeStateBytes(module, refCounter, refSet, out);
 		
 		sw.writeInt(playerContextHash.size());
 		for (ObjectPair<String, TPlayerContext> entry : playerContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
-			entry.getValue().writeStateBytes(module, refSet, out);
+			entry.getValue().writeStateBytes(module, refCounter, refSet, out);
 		}
 
 		sw.writeInt(roomContextHash.size());
 		for (ObjectPair<String, TRoomContext> entry : roomContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
-			entry.getValue().writeStateBytes(module, refSet, out);
+			entry.getValue().writeStateBytes(module, refCounter, refSet, out);
 		}
 		
 		sw.writeInt(objectContextHash.size());
 		for (ObjectPair<String, TObjectContext> entry : objectContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
-			entry.getValue().writeStateBytes(module, refSet, out);
+			entry.getValue().writeStateBytes(module, refCounter, refSet, out);
 		}
 
 		sw.writeInt(containerContextHash.size());
 		for (ObjectPair<String, TContainerContext> entry : containerContextHash)
 		{
 			sw.writeString(entry.getKey(), "UTF-8");
-			entry.getValue().writeStateBytes(module, refSet, out);
+			entry.getValue().writeStateBytes(module, refCounter, refSet, out);
 		}
 
-		ownershipMap.writeStateBytes(module, refSet, out);
+		ownershipMap.writeStateBytes(module, refCounter, refSet, out);
 	}
 
 	@Override
