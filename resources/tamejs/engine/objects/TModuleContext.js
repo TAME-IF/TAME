@@ -80,7 +80,7 @@ var TModuleContext = function(module)
  */
 TModuleContext.prototype.stateSave = function()
 {
-	return JSON.parse(this.state);
+	return JSON.stringify(this.state);
 };
 
 /**
