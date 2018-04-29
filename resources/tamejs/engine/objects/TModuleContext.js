@@ -104,7 +104,7 @@ TModuleContext.prototype.stateSave = function()
 				}
 				
 				let id = (atomicRef[0] += 1);
-				targetRefmap[id] = tvalue.value;
+				targetRefmap[id] = tvalue;
 				referenceSet.set(tvalue.value, id);
 				return {"refid": id};
 			}
@@ -123,7 +123,6 @@ TModuleContext.prototype.stateSave = function()
 	
 	let state = this.state;
 	state.refMap = {};
-	state.refVariables = {};
 	let curRef = [0];
 	let vmap = new WeakMap();
 
@@ -159,18 +158,44 @@ TModuleContext.prototype.stateRestore = function(stateData)
 	if (!state.refMap)
 		throw TAMEError.ModuleState("Context state is missing required member: refMap");
 
+	/*
+	 * tvalue: TAME value structure.
+	 * refmap (object): integer -> value map.
+	 * Returns: resultant value to set in place of a value. 
+	 */
+	var REFSWAP = function(tvalue, refmap) 
+	{
+		if (tvalue.refid)
+		{
+			let out = refmap[tvalue.refid];
+
+			// handle lists recursively.
+			if (out.type === TValue.Type.LIST)
+			{
+				let ls = out.value;
+				for (let i = 0; i < ls.length; i++)
+					ls[i] = REFSWAP(ls[i], refmap);
+			}
+			return out;
+		}
+		else
+		{
+			return tvalue;
+		}
+	};
+	
 	for (let identity in state.elements) if (state.elements.hasOwnProperty(identity))
 	{
 		let element = state.elements[identity];
 		for (let valueName in element.variables) if (element.variables.hasOwnProperty(valueName))
 		{
-			let value = element.variables[valueName];
-			if (value.refid)
-				element.variables[valueName] = state.refMap[value.refid];
+			element.variables[valueName] = REFSWAP(element.variables[valueName], state.refMap);
 		}
 	}
+		
+	delete state['refMap'];
 	
-	delete state.refMap;
+	console.log(JSON.stringify(state));
 };
 
 /**
