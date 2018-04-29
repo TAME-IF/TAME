@@ -231,13 +231,13 @@ public final class TAMECompilerMain
 		out.println("    --js-wrapper [name]  use for the JavaScript exporter.");
 		out.println();
 		out.println("                         browser    - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 5 capable browsers (default,");
+		out.println("                                      ECMAScript 6 capable browsers (default,");
 		out.println("                                      if no name declared).");
 		out.println("                         html       - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 5 capable browsers with");
+		out.println("                                      ECMAScript 6 capable browsers with");
 		out.println("                                      interface.");
 		out.println("                         html-debug - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 5 capable browsers with");
+		out.println("                                      ECMAScript 6 capable browsers with");
 		out.println("                                      interface, in debug mode.");
 		out.println("                         node       - Exports an embedded NodeJS program.");
 		out.println("                         module     - Exports just module data to feed into a");

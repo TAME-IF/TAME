@@ -669,6 +669,15 @@ TValue.isList = function(value)
 };
 
 /**
+ * Returns if this value is copy-by-reference.
+ * @return true if so, false if not.
+ */
+TValue.isReferenceCopied = function(value)
+{
+	return value.type === TValue.Type.LIST;
+};
+
+/**
  * Returns if this value is a literal value (or list).
  * @return true if so, false if not.
  */

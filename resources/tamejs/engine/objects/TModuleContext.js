@@ -80,7 +80,71 @@ var TModuleContext = function(module)
  */
 TModuleContext.prototype.stateSave = function()
 {
-	return JSON.stringify(this.state);
+	/*
+	 * tvalue: TAME value structure.
+	 * atomicref: is an array with one index (integer reference: next refid).
+	 * referenceSet (WeakMap): value -> integer - reference to id map
+	 * targetRefmap (object): integer -> value - output set to add to state.
+	 * Returns: resultant value to write in place of a value. 
+	 */
+	var REFADD = function(tvalue, atomicRef, referenceSet, targetRefmap) 
+	{
+		// if referential
+		if (TValue.isReferenceCopied(tvalue))
+		{
+			// if we've not seen the object yet,
+			if (!referenceSet.has(tvalue.value))
+			{
+				// handle lists recursively.
+				if (tvalue.type === TValue.Type.LIST)
+				{
+					let ls = tvalue.value;
+					for (let i = 0; i < ls.length; i++)
+						ls[i] = REFADD(ls[i], atomicRef, referenceSet, targetRefmap);
+				}
+				
+				let id = (atomicRef[0] += 1);
+				targetRefmap[id] = tvalue.value;
+				referenceSet.set(tvalue.value, id);
+				return {"refid": id};
+			}
+			// else if we have,
+			else
+			{
+				return {"refid": referenceSet.get(tvalue.value)};
+			}
+		}
+		// if not reference-copied, return itself. (no change)
+		else
+		{
+			return tvalue;
+		}
+	};
+	
+	let state = this.state;
+	state.refMap = {};
+	state.refVariables = {};
+	let curRef = [0];
+	let vmap = new WeakMap();
+
+	// For each element context...
+	for (let identity in state.elements) if (state.elements.hasOwnProperty(identity))
+	{
+		let element = state.elements[identity];
+
+		// For each variable in the element context...
+		for (let valueName in element.variables) if (element.variables.hasOwnProperty(valueName))
+		{
+			element.variables[valueName] = REFADD(element.variables[valueName], curRef, vmap, state.refMap);
+		}
+	}
+
+	let output = JSON.stringify(state);
+	
+	// horrible hack incoming
+	this.stateRestore(output);
+	
+	return output;
 };
 
 /**
@@ -90,6 +154,23 @@ TModuleContext.prototype.stateSave = function()
 TModuleContext.prototype.stateRestore = function(stateData)
 {
 	this.state = JSON.parse(stateData);
+	var state = this.state;
+	
+	if (!state.refMap)
+		throw TAMEError.ModuleState("Context state is missing required member: refMap");
+
+	for (let identity in state.elements) if (state.elements.hasOwnProperty(identity))
+	{
+		let element = state.elements[identity];
+		for (let valueName in element.variables) if (element.variables.hasOwnProperty(valueName))
+		{
+			let value = element.variables[valueName];
+			if (value.refid)
+				element.variables[valueName] = state.refMap[value.refid];
+		}
+	}
+	
+	delete state.refMap;
 };
 
 /**
