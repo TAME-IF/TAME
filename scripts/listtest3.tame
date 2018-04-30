@@ -1,0 +1,16 @@
+action general a_quit named "quit";
+
+world
+{
+	onAction(a_quit)
+	{
+		quit;
+	}
+
+	start()
+	{
+		a = [];
+		b = [a];
+		listadd(a, b);
+	}
+}
