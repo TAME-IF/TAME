@@ -579,7 +579,7 @@ TLogic.createBlockLocal = function(request, response, localValues)
 	var out = {};
 	// set locals
 	Util.each(localValues, function(value, key){
-		response.trace(request, "Setting local variable \""+key+"\" to \""+value+"\"");
+		response.trace(request, "Setting local variable \""+key+"\" to \""+TValue.toString(value)+"\"");
 		TLogic.setValue(out, key, value);
 	});
 
@@ -645,7 +645,7 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 	for (var i = args.length - 1; i >= 0; i--)
 	{
 		var localValue = request.popValue();
-		response.trace(request, "Setting local variable \""+args[i]+"\" to \""+localValue+"\"");
+		response.trace(request, "Setting local variable \""+args[i]+"\" to \""+TValue.toString(localValue)+"\"");
 		blockLocal[args[i]] = localValue;
 	}
 	
