@@ -17,6 +17,10 @@ Launch4J 3.x+
 [http://launch4j.sourceforge.net/](http://launch4j.sourceforge.net/)  
 [https://sourceforge.net/p/launch4j/git/ci/master/tree/](https://sourceforge.net/p/launch4j/git/ci/master/tree/)
 
+### Required Java Modules
+
+[java.base](https://docs.oracle.com/javase/10/docs/api/java.base-summary.html)
+
 ### Introduction
 
 This library reads, compiles, and executes TAME modules.
