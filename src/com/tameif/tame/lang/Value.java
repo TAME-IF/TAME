@@ -71,7 +71,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	public static Value create(int value)
 	{
 		Value out = new Value();
-		out.set(ValueType.INTEGER, new Long(value));
+		out.set(ValueType.INTEGER, Long.valueOf(value));
 		return out;
 	}
 
