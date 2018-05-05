@@ -49,6 +49,7 @@
 	<property name="replace.dir" value="${build.dir}/replace" />
 	<property name="zip.win32.filename" value="${project.archive}-win32-${build.version}.zip" />
 	<property name="tamedocs.dir" value="${build.dir}/tamedocs" />
+	<property name="jlink.dir" value="${build.dir}/jre" />
 
 	<!-- Versions -->
 	<property name="win32.version" value="0.0.0.0" />
