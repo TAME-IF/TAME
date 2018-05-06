@@ -4,7 +4,7 @@ Copyright (c) 2015-2018 Matt Tropiano. All rights reserved.
 
 ### Required Libraries
 
-Black Rook Commons 2.31.0+  
+Black Rook Commons 2.31.2+  
 [https://github.com/BlackRookSoftware/Common](https://github.com/BlackRookSoftware/Common)
 
 Black Rook Common I/O 2.5.1+  
