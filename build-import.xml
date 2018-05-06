@@ -30,6 +30,7 @@
 
 	<property name="jar.dir" value="${build.dir}/jar" />
 	<property name="docs.dir" value="${build.dir}/docs" />
+	<property name="jlink.dir" value="${build.dir}/jre" />
 	<property name="zip.dir" value="${dist.dir}" />
 
 	<property name="jar.filename" value="${project.archive}-${build.version}.jar" />
