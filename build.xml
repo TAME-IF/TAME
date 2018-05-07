@@ -50,20 +50,16 @@
 	<property name="replace.dir" value="${build.dir}/replace" />
 	<property name="zip.win32.filename" value="${project.archive}-win32-${build.version}.zip" />
 	<property name="tamedocs.dir" value="${build.dir}/tamedocs" />
-	<property name="embedded.dir" value="${build.dir}/embedded" />
-
-	<property name="win64.jre.dir" value="${jlink.dir}" />
-	<property name="osx.jre.dir" value="${jlink.dir}" />
-	<property name="linux64.jre.dir" value="${jlink.dir}" />
+	<property name="jre.dir" value="${build.dir}/jre" />
 
 	<!-- Versions -->
 	<property name="win32.version" value="0.0.0.0" />
 	
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
-	<property name="jar.one.filename" value="${project.archive}-all-${build.version}.jar" />
+	<property name="jar.one.filename" value="${project.archive}-one-${build.version}.jar" />
+	<property name="jar.one.min.filename" value="${project.archive}-one-${build.version}-min.jar" />
 	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${build.version}.jar" />
 	<property name="jar.console.client.one.filename" value="${project.archive}-client-${build.version}.jar" />	
-	<property name="jar.one.min.filename" value="${project.archive}-all-${build.version}-min.jar" />
 	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${build.version}-min.jar" />
 	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${build.version}-min.jar" />	
 
@@ -99,7 +95,7 @@
 		<mkdir dir="${win32.dir}" />
 	</target>
 
-	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.win32"  description="Cleans up everything.">
+	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.win32, clean.jre"  description="Cleans up everything.">
 	</target>
 
 	<target name="compile.scripts.windows" if="${os.isWindows}">
@@ -122,6 +118,7 @@
 	<target name="compile" depends="init.compile, get.os, compile.scripts.windows, compile.scripts.bash" description="Compiles the project, excluding test classes.">
 		<javac 
 			source="1.8"
+			target="1.8"
 			srcdir="${src.dir}" 
 			destdir="${bin.dir}"
             includeAntRuntime="false"
@@ -136,6 +133,7 @@
 	<target name="compile.tests.only" description="Compiles test classes.">
 		<javac 
 			source="1.8"
+			target="1.8"
 			srcdir="${src.test.dir}" 
 			destdir="${bin.dir}"
             includeAntRuntime="false"
@@ -159,27 +157,6 @@
 		<git-export repository="https://github.com/BlackRookSoftware/CommonLang" dest="${dependencies.dir}/CommonLang" />
 		<ant antfile="${dependencies.dir}/CommonLang/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
 	</target>
-	<target name="dependency.launch4j.clone">
-		<git-export repository="https://github.com/mirror/launch4j" dest="${dependencies.dir}/launch4j" />
-	</target>
-	<target name="dependency.launch4j.win32" if="${os.isWindows}">
-		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-win32" />
-		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
-	</target>
-	<target name="dependency.launch4j.linux32" if="${os.isLinux32}">
-		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-linux" />
-		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
-	</target>
-	<target name="dependency.launch4j.linux64" if="${os.isLinux64}">
-		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-linux-x64" />
-		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
-	</target>
-	<target name="dependency.launch4j.osx32" if="${os.isOSX}">
-		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="binutils-macosx-x86" />
-		<ant antfile="${dependencies.dir}/launch4j/build-private.xml" useNativeBasedir="true" inheritAll="false" target="jar" />
-	</target>
-	<target name="dependency.launch4j" depends="dependency.launch4j.clone, get.os, dependency.launch4j.win32, dependency.launch4j.linux32, dependency.launch4j.linux64, dependency.launch4j.osx32">
-	</target>
 	<target name="dependency.properties">
 		<echo message="Writing to build.properties...." />
 		<echo message="dev.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
@@ -187,7 +164,7 @@
 		<echo message="launch4j.dir=${dependencies.dir}/launch4j&#10;" file="build.properties" append="true" />
 	</target>
 	
-	<target name="dependencies" depends="init.dependencies, dependency.common, dependency.commonio, dependency.commonlang, dependency.launch4j, dependency.properties" description="Downloads and compiles the dependencies.">
+	<target name="dependencies" depends="init.dependencies, dependency.common, dependency.commonio, dependency.commonlang, dependency.properties" description="Downloads and compiles the dependencies.">
 	</target>
 
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
@@ -329,66 +306,6 @@
 	<target name="jar" depends="init.jar, jar.tame, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min" description="Make all JARs.">
 	</target>
 
-	<target name="win32.taskdef">
-		<taskdef 
-			name="launch4j"
-			classname="net.sf.launch4j.ant.Launch4jTask"
-			classpath="${launch4j.lib.jar}${S}${launch4j.xstream.lib.jar}"
-		/>
-	</target>
-	
-	<target name="win32.compiler" depends="jar.tame.compiler.one.min, clean.win32, init.win32, win32.taskdef">
-		<delete file="${win32.dir}/${win32.compiler.filename}" />
-		<launch4j 
-			configFile="./launch4j/TAMECompiler.xml" 
-			jar="${jar.dir}/${jar.compiler.one.min.filename}"
-			outfile="${win32.dir}/${win32.compiler.filename}"
-			fileVersion="${win32.version}" 
-			txtFileVersion="${win32.version}" 
-			productVersion="${win32.version}" 
-			txtProductVersion="${win32.version}"
-		/>
-	</target>
-	
-	<target name="win32.console.client" depends="jar.tame.console.client.one.min, clean.win32, init.win32, win32.taskdef">
-		<delete file="${win32.dir}/${win32.console.client.filename}" />
-		<launch4j 
-			configFile="./launch4j/TAMEConsoleClient.xml" 
-			jar="${jar.dir}/${jar.console.client.one.min.filename}"
-			outfile="${win32.dir}/${win32.console.client.filename}"
-			fileVersion="${win32.version}" 
-			txtFileVersion="${win32.version}" 
-			productVersion="${win32.version}" 
-			txtProductVersion="${win32.version}"
-		/>
-	</target>
-
-	<target name="win32" depends="win32.compiler, win32.console.client" description="Make all EXEs.">
-		<condition property="win32.deploy.dir.set" else="false">
-			<isset property="win32.deploy.dir"/>
-		</condition>
-	</target>
-
-	<target name="win32.deploy.true" if="${win32.deploy.dir.set}">
-		<copy overwrite="true" todir="${win32.deploy.dir}">
-			<fileset dir="${win32.dir}"/>
-		</copy>
-	</target>
-	<target name="win32.deploy.false" unless="${win32.deploy.dir.set}">
-		<echo message="Skipping deploy: win32.deploy.dir property not set!" />
-	</target>
-
-	<target name="win32.deploy" depends="win32, win32.deploy.true, win32.deploy.false" description="Makes and deploys EXEs if output directory specified.">
-	</target>
-	
-	<target name="zip.win32" depends="win32" description="Makes and zips the EXEs.">
-		<delete file="${zip.dir}/${zip.win32.filename}" />
-		<zip basedir="${win32.dir}" destfile="${zip.dir}/${zip.win32.filename}"></zip>
-		<zip destfile="${zip.dir}/${zip.win32.filename}" update="true">
-			<fileset refid="fileset.documents" />
-		</zip>
-	</target>
-
 	<target name="zip.jar" depends="init.zip, jar" description="Makes and zips the JARs.">
 		<delete file="${zip.dir}/${zip.filename}" />
 		<zip destfile="${zip.dir}/${zip.filename}">
@@ -397,46 +314,80 @@
 		</zip>
 	</target>
 
-	<target name="zip" depends="zip.jar, zip.docs, zip.win32" description="Creates all zips.">
+	<target name="zip" depends="zip.jar, zip.docs" description="Creates all zips.">
 	</target>
 	
 	<!-- JRE Embedded Deployment Targets -->
 
-	<target name="init.jre.deploy">
-		<delete dir="${embedded.dir}" includeemptydirs="true" casesensitive="false" /> 
-		<mkdir dir="${embedded.dir}" />
+	<target name="clean.jre" description="Creates the a minified JRE via JLink (JDK 9+).">
+		<delete dir="${jre.dir}" includeemptydirs="true" casesensitive="false" /> 
 	</target>
 
-	<target name="jre.deploy.scripts.windows" if="${os.isWindows}">
+	<target name="init.jre" depends="clean.jre">
+		<mkdir dir="${jre.dir}" />
+	</target>
+
+	<target name="jre.win32" if="os.isWindows32">
+		<property name="embedded.win32.dir" value="${jre.dir}/win32" />
+		<property name="embedded.dir" value="${embedded.win32.dir}" />
+	</target>
+
+	<target name="jre.win64" if="os.isWindows64">
+		<property name="embedded.win64.dir" value="${jre.dir}/win64" />
+		<property name="embedded.dir" value="${embedded.win64.dir}" />
+	</target>
+
+	<target name="jre.osx" if="os.isOSX">
+		<property name="embedded.osx.dir" value="${jre.dir}/osx" />
+		<property name="embedded.dir" value="${embedded.osx.dir}" />
+	</target>
+
+	<target name="jre.linux32" if="os.isLinux32">
+		<property name="embedded.linux32.dir" value="${jre.dir}/linux32" />
+		<property name="embedded.dir" value="${embedded.linux32.dir}" />
+	</target>
+
+	<target name="jre.linux64" if="os.isLinux64">
+		<property name="embedded.linux64.dir" value="${jre.dir}/linux64" />
+		<property name="embedded.dir" value="${embedded.linux64.dir}" />
+	</target>
+
+
+	<target name="jre.scripts.windows">
 		<!-- Windows Commands -->
-		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${embedded.dir}/tame.cmd" />
-		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${embedded.dir}/tamec.cmd" />
+		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${jre.dir}/tame.cmd" />
+		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${jre.dir}/tamec.cmd" />
 	</target>
 	
-	<target name="jre.deploy.scripts.bash" if="${os.bash}">
+	<target name="jre.scripts.bash">
 		<!-- Bash Shell Commands -->
-		<echo message="#!/bin/bash&#10;" file="tame.sh" />
-		<echo message="java -cp ${jar.one.min.filename} com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${embedded.dir}/tame.sh" append="true" />
-		<echo message="#!/bin/bash&#10;" file="tamec.sh" />
-		<echo message="java -cp ${jar.one.min.filename} com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${embedded.dir}/tamec.sh" append="true" />
+		<echo message="#!/bin/bash&#10;" file="${jre.dir}/tame.sh" />
+		<echo message="java -cp ${jar.one.min.filename} com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${jre.dir}/tame.sh" append="true" />
+		<echo message="#!/bin/bash&#10;" file="${jre.dir}/tamec.sh" />
+		<echo message="java -cp ${jar.one.min.filename} com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${jre.dir}/tamec.sh" append="true" />
 		<!-- Set permissions -->
-		<chmod file="${embedded.dir}/tame.sh" perm="ugo+rx"/>
-		<chmod file="${embedded.dir}/tamec.sh" perm="ugo+rx"/>
+		<chmod file="${jre.dir}/tame.sh" perm="ugo+rx"/>
+		<chmod file="${jre.dir}/tamec.sh" perm="ugo+rx"/>
 	</target>
 
-	<target name="jre.deploy" depends="init.jre.deploy, jre, jar.tame.one.min, jre.deploy.scripts.windows, jre.deploy.scripts.bash" description="Builds the embedded JRE deployment - must have JLINK.">
-		<copy file="${jar.dir}/${jar.one.min.filename}" todir="${embedded.dir}" />
+	<target name="jre.scripts" depends="init.jre, jre.scripts.windows, jre.scripts.bash" description="Builds the embedded JRE deployment - must have JLINK.">
+		
 	</target>
 
-	<!--
-	<target name="zip.jre.deploy" depends="jre.deploy" description="Builds the embedded JRE deployment and Zips it up.">
-		<copy file="${jar.dir}/${jar.one.min.filename}" todir="${embedded.dir}" />
+	<target name="jre" depends="init.jre, get.os, jre.win64, jre.win32, jre.osx, jre.linux64, jre.linux32, init.jre" description="Creates the a minified JRE via JLink (JDK 9+).">
+		<exec executable="jlink">
+			<arg line="--output &quot;${embedded.dir}&quot; --compress=2 --add-modules ${project.java.modules}" />
+		</exec>
 	</target>
-	-->
+	
+	<!-- ==== Java Deployment Targets ==== -->
 
-	<!-- ================================ -->
+	
+	
+		
+	<!-- ================================= -->
 
-	<target name="release" depends="zip, win32.deploy">
+	<target name="release" depends="zip">
 	</target>
 
 </project>

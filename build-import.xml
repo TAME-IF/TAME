@@ -30,7 +30,6 @@
 
 	<property name="jar.dir" value="${build.dir}/jar" />
 	<property name="docs.dir" value="${build.dir}/docs" />
-	<property name="jlink.dir" value="${build.dir}/jre" />
 	<property name="zip.dir" value="${dist.dir}" />
 
 	<property name="jar.filename" value="${project.archive}-${build.version}.jar" />
@@ -58,6 +57,18 @@
 	<target name="get.os">
 		<condition property="os.isWindows" value="true" else="false">
 			<os family="windows" />
+		</condition>
+		<condition property="os.isWindows32" value="true" else="false">
+			<and>
+				<os family="windows" />
+				<os arch="x86" />
+			</and>
+		</condition>
+		<condition property="os.isWindows64" value="true" else="false">
+			<and>
+				<os family="windows" />
+				<os arch="x64" />
+			</and>
 		</condition>
 		<condition property="os.isOSX" value="true" else="false">
 			<and>
@@ -99,10 +110,6 @@
 
 	<target name="clean.zip" description="Cleans up the zipped archives.">
 		<delete dir="${zip.dir}" includeemptydirs="true" casesensitive="false" /> 
-	</target>
-
-	<target name="clean.jre" description="Creates the a minified JRE via JLink (JDK 9+).">
-		<delete dir="${jlink.dir}" includeemptydirs="true" casesensitive="false" />
 	</target>
 
 	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile"  description="Cleans up everything.">
@@ -194,12 +201,6 @@
 	</target>
 	
 	<target name="zip" depends="zip.jar, zip.docs, zip.src" description="Creates all archives.">
-	</target>
-
-	<target name="jre" depends="clean.jre" description="Creates the a minified JRE via JLink (JDK 9+).">
-		<exec executable="jlink">
-			<arg line="--output &quot;${jlink.dir}&quot; --compress=2 --add-modules ${project.java.modules}" />
-		</exec>
 	</target>
 
 	<target name="release" depends="zip">
