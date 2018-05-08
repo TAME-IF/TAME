@@ -324,10 +324,10 @@
 		<chmod file="${scripts.dir}/tamec" perm="ugo+rx"/>
 	</target>
 
-	<target name="jar.scripts" depends="init.jar.scripts, jar.scripts.windows, jar.scripts.bash">
+	<target name="jar.scripts" depends="init.jar.scripts, jar.scripts.windows, jar.scripts.bash" description="Creates the scripts for running the standalone minified JAR.">
 	</target>
 
-	<target name="jar" depends="init.jar, jar.tame, jar.tame.one, jar.tame.one.min, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min, jar.scripts" description="Make all JARs.">
+	<target name="jar" depends="init.jar, jar.tame, jar.tame.one, jar.tame.one.min, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min" description="Make all JARs.">
 	</target>
 
 	<target name="zip.jar" depends="init.zip, jar" description="Makes and zips the JARs.">
@@ -412,10 +412,10 @@
 		<chmod file="${jre.scripts.dir}/tamec" perm="ugo+rx"/>
 	</target>
 
-	<target name="jre.scripts" depends="init.jre, init.jre.scripts, jre.scripts.windows, jre.scripts.bash">
+	<target name="jre.scripts" depends="init.jre.scripts, jre.scripts.windows, jre.scripts.bash" description="Creates the scripts for running a minified JRE.">
 	</target>
 
-	<target name="jre" depends="get.os, init.jre, jre.scripts, jre.win64, jre.win32, jre.osx, jre.linux64, jre.linux32" description="Creates the a minified JRE via JLink (JDK 9+).">
+	<target name="jre" depends="get.os, init.jre, jre.win64, jre.win32, jre.osx, jre.linux64, jre.linux32" description="Creates the a minified JRE via JLink (JDK 9+).">
 	</target>
 	
 	<!-- ==== Java Deployment Targets ==== -->
