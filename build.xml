@@ -48,12 +48,17 @@
 	<property name="package.base.dir" value="com/tameif/tame" />
 	<property name="resource.dir" value="resources" />
 	<property name="replace.dir" value="${build.dir}/replace" />
-	<property name="zip.win32.filename" value="${project.archive}-win32-${build.version}.zip" />
 	<property name="tamedocs.dir" value="${build.dir}/tamedocs" />
 	<property name="jre.dir" value="${build.dir}/jre" />
+	<property name="jre.scripts.dir" value="${jre.dir}/scripts" />
+	<property name="scripts.dir" value="${build.dir}/scripts" />
 
-	<!-- Versions -->
-	<property name="win32.version" value="0.0.0.0" />
+	<property name="zip.jar.filename" value="${project.archive}-${build.version}.zip" />
+	<property name="zip.jre.win32.filename" value="${project.archive}-jre-win32-${build.version}.zip" />
+	<property name="zip.jre.win64.filename" value="${project.archive}-jre-win64-${build.version}.zip" />
+	<property name="zip.jre.osx.filename" value="${project.archive}-jre-osx-${build.version}.dmg" />
+	<property name="zip.jre.linux32.filename" value="${project.archive}-jre-linux32-${build.version}.tar.gz" />
+	<property name="zip.jre.linux64.filename" value="${project.archive}-jre-linux64-${build.version}.tar.gz" />
 	
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
 	<property name="jar.one.filename" value="${project.archive}-one-${build.version}.jar" />
@@ -63,28 +68,24 @@
 	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${build.version}-min.jar" />
 	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${build.version}-min.jar" />	
 
-	<property name="win32.dir" value="${build.dir}/win32" />
-	<property name="win32.compiler.filename" value="tamec.exe" />
-	<property name="win32.console.client.filename" value="tame.exe" />
-	
 	<!-- Filesets -->
 	
 	<zipfileset 
 		id="fileset.all.min" 
 		src="${jar.dir}/${jar.one.filename}" 
-		includesfile="build-tame-one-include.def" 
+		includesfile="build-tame-one-min-include.def" 
 	/>
 
 	<zipfileset 
 		id="fileset.compiler.min" 
 		src="${jar.dir}/${jar.compiler.one.filename}" 
-		includesfile="build-tamec-exe-include.def" 
+		includesfile="build-tamec-min-include.def" 
 	/>
 
 	<zipfileset 
 		id="fileset.client.min" 
 		src="${jar.dir}/${jar.console.client.one.filename}" 
-		includesfile="build-tame-exe-include.def" 
+		includesfile="build-tame-min-include.def" 
 	/>
 	
 	<target name="clean.win32" description="Cleans up the exe builds.">
@@ -206,8 +207,6 @@
 			    <exclude name="**/compiler/" />
 			    <exclude name="**/test/" />
 			</fileset>
-			<fileset dir="${resource.dir}">
-			</fileset>
 		</jar>
 	</target>
 	
@@ -217,8 +216,6 @@
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/test/" />
 			</fileset>
-			<fileset dir="${resource.dir}">
-			</fileset>
 		</jar>
 		<jar destfile="${jar.dir}/${jar.one.filename}" update="true">
 			<fileset dir="${common.lib}" >
@@ -226,8 +223,6 @@
 			<fileset dir="${common.io.lib}" >
 			</fileset>
 			<fileset dir="${common.lang.lib}" >
-			</fileset>
-			<fileset dir="${resource.dir}">
 			</fileset>
 		</jar>
 	</target>
@@ -256,8 +251,6 @@
 			<fileset dir="${common.io.lib}" >
 			</fileset>
 			<fileset dir="${common.lang.lib}" >
-			</fileset>
-			<fileset dir="${resource.dir}">
 			</fileset>
 		</jar>
 	</target>
@@ -303,7 +296,38 @@
 		</jar>
 	</target>
 
-	<target name="jar" depends="init.jar, jar.tame, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min" description="Make all JARs.">
+	<target name="clean.jar.scripts">
+		<delete dir="${scripts.dir}" includeemptydirs="true" casesensitive="false" />
+	</target>
+
+	<target name="init.jar.scripts" depends="clean.jar.scripts">
+		<mkdir dir="${scripts.dir}" />
+	</target>
+
+	<target name="jar.scripts.windows">
+		<!-- Windows Commands -->
+		<echo message="@java -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${scripts.dir}/tame.cmd" />
+		<echo message="@java -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${scripts.dir}/tamec.cmd" />
+	</target>
+	
+	<target name="jar.scripts.bash">
+		<!-- Bash Shell Commands -->
+		<echo message="#!/bin/bash&#10;" file="${scripts.dir}/tame" />
+		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="${scripts.dir}/tame" append="true" />
+		<echo message="java -cp &quot;$SCRIPTDIR/${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${scripts.dir}/tame" append="true" />
+		
+		<echo message="#!/bin/bash&#10;" file="${scripts.dir}/tamec" />
+		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="${scripts.dir}/tamec" append="true" />
+		<echo message="java -cp &quot;$SCRIPTDIR/${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${scripts.dir}/tamec" append="true" />
+		<!-- Set permissions -->
+		<chmod file="${scripts.dir}/tame" perm="ugo+rx"/>
+		<chmod file="${scripts.dir}/tamec" perm="ugo+rx"/>
+	</target>
+
+	<target name="jar.scripts" depends="init.jar.scripts, jar.scripts.windows, jar.scripts.bash">
+	</target>
+
+	<target name="jar" depends="init.jar, jar.tame, jar.tame.one, jar.tame.one.min, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min, jar.scripts" description="Make all JARs.">
 	</target>
 
 	<target name="zip.jar" depends="init.zip, jar" description="Makes and zips the JARs.">
@@ -317,9 +341,11 @@
 	<target name="zip" depends="zip.jar, zip.docs" description="Creates all zips.">
 	</target>
 	
-	<!-- JRE Embedded Deployment Targets -->
+	<!-- JRE Embedded Targets -->
 
-	<target name="clean.jre" description="Creates the a minified JRE via JLink (JDK 9+).">
+	<property name="jlink.options" value="--compress=2" />
+	
+	<target name="clean.jre">
 		<delete dir="${jre.dir}" includeemptydirs="true" casesensitive="false" /> 
 	</target>
 
@@ -327,63 +353,75 @@
 		<mkdir dir="${jre.dir}" />
 	</target>
 
-	<target name="jre.win32" if="os.isWindows32">
+	<target name="init.jre.scripts" depends="init.jre">
+		<mkdir dir="${jre.scripts.dir}" />
+	</target>
+
+	<target name="jre.win32" if="${os.isWindows32}">
 		<property name="embedded.win32.dir" value="${jre.dir}/win32" />
-		<property name="embedded.dir" value="${embedded.win32.dir}" />
+		<exec executable="jlink">
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.win32.dir}&quot;" />
+		</exec>
 	</target>
 
-	<target name="jre.win64" if="os.isWindows64">
+	<target name="jre.win64" if="${os.isWindows64}">
 		<property name="embedded.win64.dir" value="${jre.dir}/win64" />
-		<property name="embedded.dir" value="${embedded.win64.dir}" />
+		<exec executable="jlink">
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.win64.dir}&quot;" />
+		</exec>
 	</target>
 
-	<target name="jre.osx" if="os.isOSX">
+	<target name="jre.osx" if="${os.isOSX}">
 		<property name="embedded.osx.dir" value="${jre.dir}/osx" />
-		<property name="embedded.dir" value="${embedded.osx.dir}" />
+		<exec executable="jlink">
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.osx.dir}&quot;" />
+		</exec>
 	</target>
 
-	<target name="jre.linux32" if="os.isLinux32">
+	<target name="jre.linux32" if="${os.isLinux32}">
 		<property name="embedded.linux32.dir" value="${jre.dir}/linux32" />
-		<property name="embedded.dir" value="${embedded.linux32.dir}" />
+		<exec executable="jlink">
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.linux32.dir}&quot;" />
+		</exec>
 	</target>
 
-	<target name="jre.linux64" if="os.isLinux64">
+	<target name="jre.linux64" if="${os.isLinux64}">
 		<property name="embedded.linux64.dir" value="${jre.dir}/linux64" />
-		<property name="embedded.dir" value="${embedded.linux64.dir}" />
+		<exec executable="jlink">
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.linux64.dir}&quot;" />
+		</exec>
 	</target>
-
 
 	<target name="jre.scripts.windows">
 		<!-- Windows Commands -->
-		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${jre.dir}/tame.cmd" />
-		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${jre.dir}/tamec.cmd" />
+		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${jre.scripts.dir}/tame.cmd" />
+		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${jre.scripts.dir}/tamec.cmd" />
 	</target>
 	
 	<target name="jre.scripts.bash">
 		<!-- Bash Shell Commands -->
-		<echo message="#!/bin/bash&#10;" file="${jre.dir}/tame.sh" />
-		<echo message="java -cp ${jar.one.min.filename} com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${jre.dir}/tame.sh" append="true" />
-		<echo message="#!/bin/bash&#10;" file="${jre.dir}/tamec.sh" />
-		<echo message="java -cp ${jar.one.min.filename} com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${jre.dir}/tamec.sh" append="true" />
-		<!-- Set permissions -->
-		<chmod file="${jre.dir}/tame.sh" perm="ugo+rx"/>
-		<chmod file="${jre.dir}/tamec.sh" perm="ugo+rx"/>
-	</target>
-
-	<target name="jre.scripts" depends="init.jre, jre.scripts.windows, jre.scripts.bash" description="Builds the embedded JRE deployment - must have JLINK.">
+		<echo message="#!/bin/bash&#10;" file="${jre.scripts.dir}/tame" />
+		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="${jre.scripts.dir}/tame" append="true" />
+		<echo message="$SCRIPTDIR/jre/bin/java -cp &quot;$SCRIPTDIR/${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${jre.scripts.dir}/tame" append="true" />
 		
+		<echo message="#!/bin/bash&#10;" file="${jre.scripts.dir}/tamec" />
+		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="${jre.scripts.dir}/tamec" append="true" />
+		<echo message="$SCRIPTDIR/jre/bin/java -cp &quot;$SCRIPTDIR/${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${jre.scripts.dir}/tamec" append="true" />
+		<!-- Set permissions -->
+		<chmod file="${jre.scripts.dir}/tame" perm="ugo+rx"/>
+		<chmod file="${jre.scripts.dir}/tamec" perm="ugo+rx"/>
 	</target>
 
-	<target name="jre" depends="init.jre, get.os, jre.win64, jre.win32, jre.osx, jre.linux64, jre.linux32, init.jre" description="Creates the a minified JRE via JLink (JDK 9+).">
-		<exec executable="jlink">
-			<arg line="--output &quot;${embedded.dir}&quot; --compress=2 --add-modules ${project.java.modules}" />
-		</exec>
+	<target name="jre.scripts" depends="init.jre, init.jre.scripts, jre.scripts.windows, jre.scripts.bash">
+	</target>
+
+	<target name="jre" depends="get.os, init.jre, jre.scripts, jre.win64, jre.win32, jre.osx, jre.linux64, jre.linux32" description="Creates the a minified JRE via JLink (JDK 9+).">
 	</target>
 	
 	<!-- ==== Java Deployment Targets ==== -->
 
-	
-	
+	<target name="jre.win32.deploy" if="embedded.win32.dir">
+	</target>
 		
 	<!-- ================================= -->
 

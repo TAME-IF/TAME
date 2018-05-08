@@ -67,7 +67,7 @@
 		<condition property="os.isWindows64" value="true" else="false">
 			<and>
 				<os family="windows" />
-				<os arch="x64" />
+				<os arch="amd64" />
 			</and>
 		</condition>
 		<condition property="os.isOSX" value="true" else="false">
@@ -85,7 +85,7 @@
 		<condition property="os.isLinux64" value="true" else="false">
 			<and>
 				<os family="unix" />
-				<os arch="x64" />
+				<os arch="amd64" />
 			</and>
 		</condition>
 		<condition property="os.bash" value="true" else="false">
