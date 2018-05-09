@@ -267,38 +267,38 @@
 		<mkdir dir="${jre.scripts.dir}" />
 	</target>
 
-	<target name="jre.win32" if="${os.isWindows32}">
-		<property name="embedded.win32.dir" value="${jre.dir}/win32" />
+	<target name="jre.win32" if="${os.isWindows32}" unless="jre.win32.dir">
+		<property name="jre.win32.dir" value="${jre.dir}/win32" />
 		<exec executable="jlink">
-			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.win32.dir}&quot;" />
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${jre.win32.dir}&quot;" />
 		</exec>
 	</target>
 
-	<target name="jre.win64" if="${os.isWindows64}">
-		<property name="embedded.win64.dir" value="${jre.dir}/win64" />
+	<target name="jre.win64" if="${os.isWindows64}" unless="jre.win64.dir">
+		<property name="jre.win64.dir" value="${jre.dir}/win64" />
 		<exec executable="jlink">
-			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.win64.dir}&quot;" />
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${jre.win64.dir}&quot;" />
 		</exec>
 	</target>
 
-	<target name="jre.osx" if="${os.isOSX}">
-		<property name="embedded.osx.dir" value="${jre.dir}/osx" />
+	<target name="jre.osx" if="${os.isOSX}" unless="jre.osx.dir">
+		<property name="jre.osx.dir" value="${jre.dir}/osx" />
 		<exec executable="jlink">
-			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.osx.dir}&quot;" />
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${jre.osx.dir}&quot;" />
 		</exec>
 	</target>
 
-	<target name="jre.linux32" if="${os.isLinux32}">
-		<property name="embedded.linux32.dir" value="${jre.dir}/linux32" />
+	<target name="jre.linux32" if="${os.isLinux32}" unless="jre.linux32.dir">
+		<property name="jre.linux32.dir" value="${jre.dir}/linux32" />
 		<exec executable="jlink">
-			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.linux32.dir}&quot;" />
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${jre.linux32.dir}&quot;" />
 		</exec>
 	</target>
 
-	<target name="jre.linux64" if="${os.isLinux64}">
-		<property name="embedded.linux64.dir" value="${jre.dir}/linux64" />
+	<target name="jre.linux64" if="${os.isLinux64}" unless="jre.linux64.dir">
+		<property name="jre.linux64.dir" value="${jre.dir}/linux64" />
 		<exec executable="jlink">
-			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${embedded.linux64.dir}&quot;" />
+			<arg line="${jlink.options} --add-modules ${project.java.modules} --output &quot;${jre.linux64.dir}&quot;" />
 		</exec>
 	</target>
 
@@ -347,50 +347,50 @@
 		</zip>
 	</target>
 
-	<target name="zip.jre.win32" if="embedded.win32.dir" depends="jar.tame.one.min">
+	<target name="zip.jre.win32" if="jre.win32.dir" depends="jar.tame.one.min">
 		<delete file="${zip.dir}/${zip.jre.win32.filename}" />
 		<zip destfile="${zip.dir}/${zip.jre.win32.filename}" compress="true" level="9">
-			<zipfileset dir="${embedded.win32.dir}" prefix="jre/"/>
+			<zipfileset dir="${jre.win32.dir}" prefix="jre/"/>
 			<fileset refid="fileset.documents" />
 			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 			<fileset dir="${jre.scripts.dir}" />
 		</zip>
 	</target>
 
-	<target name="zip.jre.win64" if="embedded.win64.dir" depends="jar.tame.one.min">
+	<target name="zip.jre.win64" if="jre.win64.dir" depends="jar.tame.one.min">
 		<delete file="${zip.dir}/${zip.jre.win64.filename}" />
 		<zip destfile="${zip.dir}/${zip.jre.win64.filename}" compress="true" level="9">
-			<zipfileset dir="${embedded.win64.dir}" prefix="jre/"/>
+			<zipfileset dir="${jre.win64.dir}" prefix="jre/"/>
 			<fileset refid="fileset.documents" />
 			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 			<fileset dir="${jre.scripts.dir}" />
 		</zip>
 	</target>
 
-	<target name="zip.jre.osx" if="embedded.osx.dir" depends="jar.tame.one.min">
+	<target name="zip.jre.osx" if="jre.osx.dir" depends="jar.tame.one.min">
 		<delete file="${zip.dir}/${zip.jre.osx.filename}" />
 		<zip destfile="${zip.dir}/${zip.jre.osx.filename}" compress="true" level="9">
-			<zipfileset dir="${embedded.osx.dir}" prefix="jre/"/>
+			<zipfileset dir="${jre.osx.dir}" prefix="jre/"/>
 			<fileset refid="fileset.documents" />
 			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 			<fileset dir="${jre.scripts.dir}" />
 		</zip>
 	</target>
 
-	<target name="zip.jre.linux32" if="embedded.linux32.dir" depends="jar.tame.one.min">
+	<target name="zip.jre.linux32" if="jre.linux32.dir" depends="jar.tame.one.min">
 		<delete file="${zip.dir}/${zip.jre.linux32.filename}" />
 		<zip destfile="${zip.dir}/${zip.jre.linux32.filename}" compress="true" level="9">
-			<zipfileset dir="${embedded.linux32.dir}" prefix="jre/"/>
+			<zipfileset dir="${jre.linux32.dir}" prefix="jre/"/>
 			<fileset refid="fileset.documents" />
 			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 			<fileset dir="${jre.scripts.dir}" />
 		</zip>
 	</target>
 
-	<target name="zip.jre.linux64" if="embedded.linux64.dir" depends="jar.tame.one.min">
+	<target name="zip.jre.linux64" if="jre.linux64.dir" depends="jar.tame.one.min">
 		<delete file="${zip.dir}/${zip.jre.linux64.filename}" />
 		<zip destfile="${zip.dir}/${zip.jre.linux64.filename}" compress="true" level="9">
-			<zipfileset dir="${embedded.linux64.dir}" prefix="jre/"/>
+			<zipfileset dir="${jre.linux64.dir}" prefix="jre/"/>
 			<fileset refid="fileset.documents" />
 			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 			<fileset dir="${jre.scripts.dir}" />
