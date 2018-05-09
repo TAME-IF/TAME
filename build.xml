@@ -397,7 +397,7 @@
 		</zip>
 	</target>
 
-		<target name="zip.jre" depends="jre, jre.scripts, zip.jre.win32, zip.jre.win64">
+	<target name="zip.jre" depends="jre, jre.scripts, zip.jre.win32, zip.jre.win64">
 	</target>
 
 	<target name="zip.src" depends="init.zip" description="Archives the source code.">
@@ -409,7 +409,7 @@
 		</zip>
 	</target>
 
-	<target name="zip" depends="zip.src, zip.docs, zip.jar, zip.jre" description="Creates all zips.">
+	<target name="zip" depends="zip.src, zip.docs, zip.jar.tame, zip.jar.tame.one, zip.jre" description="Creates all zips.">
 	</target>
 	
 	<!-- ================================= -->
