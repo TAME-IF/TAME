@@ -397,7 +397,7 @@
 		</zip>
 	</target>
 
-	<target name="zip.jre" depends="jre, jre.scripts, zip.jre.win32, zip.jre.win64">
+	<target name="zip.jre" depends="jre, jre.scripts, zip.jre.win32, zip.jre.win64, zip.jre.osx, zip.jre.linux32, zip.jre.linux64">
 	</target>
 
 	<target name="zip.src" depends="init.zip" description="Archives the source code.">
