@@ -54,6 +54,7 @@
 	<property name="scripts.dir" value="${build.dir}/scripts" />
 
 	<property name="zip.jar.filename" value="${project.archive}-${build.version}.zip" />
+	<property name="zip.jar.one.filename" value="${project.archive}-standalone-${build.version}.zip" />
 	<property name="zip.jre.win32.filename" value="${project.archive}-jre-win32-${build.version}.zip" />
 	<property name="zip.jre.win64.filename" value="${project.archive}-jre-win64-${build.version}.zip" />
 	<property name="zip.jre.osx.filename" value="${project.archive}-jre-osx-${build.version}.dmg" />
@@ -61,32 +62,9 @@
 	<property name="zip.jre.linux64.filename" value="${project.archive}-jre-linux64-${build.version}.tar.gz" />
 	
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
-	<property name="jar.one.filename" value="${project.archive}-one-${build.version}.jar" />
-	<property name="jar.one.min.filename" value="${project.archive}-one-${build.version}-min.jar" />
-	<property name="jar.compiler.one.filename" value="${project.archive}-compiler-${build.version}.jar" />
-	<property name="jar.console.client.one.filename" value="${project.archive}-client-${build.version}.jar" />	
-	<property name="jar.compiler.one.min.filename" value="${project.archive}-compiler-${build.version}-min.jar" />
-	<property name="jar.console.client.one.min.filename" value="${project.archive}-client-${build.version}-min.jar" />	
+	<property name="jar.tame.one.filename" value="${project.archive}-standalone-${build.version}.jar" />
 
 	<!-- Filesets -->
-	
-	<zipfileset 
-		id="fileset.all.min" 
-		src="${jar.dir}/${jar.one.filename}" 
-		includesfile="build-tame-one-min-include.def" 
-	/>
-
-	<zipfileset 
-		id="fileset.compiler.min" 
-		src="${jar.dir}/${jar.compiler.one.filename}" 
-		includesfile="build-tamec-min-include.def" 
-	/>
-
-	<zipfileset 
-		id="fileset.client.min" 
-		src="${jar.dir}/${jar.console.client.one.filename}" 
-		includesfile="build-tame-min-include.def" 
-	/>
 	
 	<target name="clean.win32" description="Cleans up the exe builds.">
 		<delete dir="${win32.dir}" includeemptydirs="true" casesensitive="false" /> 
@@ -96,21 +74,25 @@
 		<mkdir dir="${win32.dir}" />
 	</target>
 
-	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.win32, clean.jre"  description="Cleans up everything.">
+	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.win32, clean.jre, clean.jar.scripts"  description="Cleans up everything.">
 	</target>
 
 	<target name="compile.scripts.windows" if="${os.isWindows}">
 		<!-- Windows Commands -->
-		<echo message="@java -cp ${project.classpath}${S}${bin.dir} com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="tame.cmd" />
-		<echo message="@java -cp ${project.classpath}${S}${bin.dir} com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="tamec.cmd" />
+		<echo message="@java -cp &quot;%~dp0\${project.classpath}${S}${bin.dir}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="tame.cmd" />
+		<echo message="@java -cp &quot;%~dp0\${project.classpath}${S}${bin.dir}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="tamec.cmd" />
 	</target>
 	
 	<target name="compile.scripts.bash" if="${os.bash}">
 		<!-- Bash Shell Commands -->
 		<echo message="#!/bin/bash&#10;" file="tame.sh" />
-		<echo message="java -cp ${project.classpath}${S}${bin.dir} com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="tame.sh" append="true" />
+		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="tame.sh" append="true" />
+		<echo message="java -cp &quot;$SCRIPTDIR/${project.classpath}${S}${bin.dir}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="tame.sh" append="true" />
+
 		<echo message="#!/bin/bash&#10;" file="tamec.sh" />
-		<echo message="java -cp ${project.classpath}${S}${bin.dir} com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="tamec.sh" append="true" />
+		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="tamec.sh" append="true" />
+		<echo message="java -cp &quot;$SCRIPTDIR/${project.classpath}${S}${bin.dir}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="tamec.sh" append="true" />
+		
 		<!-- Set permissions -->
 		<chmod file="tame.sh" perm="ugo+rx"/>
 		<chmod file="tamec.sh" perm="ugo+rx"/>
@@ -161,8 +143,6 @@
 	<target name="dependency.properties">
 		<echo message="Writing to build.properties...." />
 		<echo message="dev.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
-		<echo message="libs.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
-		<echo message="launch4j.dir=${dependencies.dir}/launch4j&#10;" file="build.properties" append="true" />
 	</target>
 	
 	<target name="dependencies" depends="init.dependencies, dependency.common, dependency.commonio, dependency.commonlang, dependency.properties" description="Downloads and compiles the dependencies.">
@@ -170,7 +150,7 @@
 
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
         <javadoc access="protected" 
-        	additionalparam="-J-Xmx512m  " author="true" 
+        	additionalparam="-J-Xmx512m" author="true" 
         	classpath="${project.classpath}${path.separator}${bin.dir}" 
         	doctitle="${project.javadoc.title}" 
         	sourcepath="${src.dir}" 
@@ -185,7 +165,7 @@
         	noindex="false" 
         	nonavbar="false" 
         	notree="false"
-    		>
+   			>
             <link href="https://blackrooksoftware.com/docs/common/"/>
             <link href="https://blackrooksoftware.com/docs/commonio/"/>
             <link href="https://blackrooksoftware.com/docs/commonlang/"/>
@@ -199,7 +179,7 @@
 		<echo message="${build.version}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
 	</target>
 
-	<target name="jar.tame" depends="compile, write.version" description="Jars up TAME classes. Nothing executable.">
+	<target name="jar.tame" depends="compile, write.version, init.jar" description="Jars up TAME classes. Nothing executable.">
 		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" /> 
 		<jar destfile="${jar.dir}/${jar.tame.filename}">
 			<fileset dir="${bin.dir}" >
@@ -210,14 +190,14 @@
 		</jar>
 	</target>
 	
-	<target name="jar.tame.one" depends="compile, write.version" description="Jars up all classes needed to run the compiler and console in one standalone JAR.">
-		<delete file="${jar.dir}/${jar.one.filename}" casesensitive="false" /> 
-		<jar destfile="${jar.dir}/${jar.one.filename}">
+	<target name="jar.tame.one" depends="compile, write.version, init.jar" description="Jars up all classes needed to run the compiler and console in one standalone JAR.">
+		<delete file="${jar.dir}/tame-temp-standalone.jar" casesensitive="false" /> 
+		<jar destfile="${jar.dir}/tame-temp-standalone.jar">
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/test/" />
 			</fileset>
 		</jar>
-		<jar destfile="${jar.dir}/${jar.one.filename}" update="true">
+		<jar destfile="${jar.dir}/tame-temp-standalone.jar" update="true">
 			<fileset dir="${common.lib}" >
 			</fileset>
 			<fileset dir="${common.io.lib}" >
@@ -228,74 +208,15 @@
 	</target>
 	
 	<target name="jar.tame.one.min" depends="jar.tame.one" description="Jars up all classes needed to run the compiler and console in one standalone JAR.">
-		<delete file="${jar.dir}/${jar.one.min.filename}" casesensitive="false" /> 
-		<jar destfile="${jar.dir}/${jar.one.min.filename}">
-			<zipfileset refid="fileset.all.min" />
+		<delete file="${jar.dir}/${jar.tame.one.filename}" casesensitive="false" /> 
+		<jar destfile="${jar.dir}/${jar.tame.one.filename}">
+			<zipfileset 
+				src="${jar.dir}/tame-temp-standalone.jar" 
+				includesfile="build-tame-one-min-include.def" 
+			/>
 		</jar>
 	</target>
 	
-	<target name="jar.tame.compiler.one" depends="compile, write.version" description="Jars up all classes needed to run the compiler and console in one standalone JAR, minified.">
-		<delete file="${jar.dir}/${jar.compiler.one.filename}" casesensitive="false" />
-		<jar destfile="${jar.dir}/${jar.compiler.one.filename}">
-			<manifest>
-		    	<attribute name="Main-Class" value="com.tameif.tame.compiler.TAMECompilerMain"/>
-            </manifest>
-			<fileset dir="${bin.dir}" >
-			    <exclude name="**/console/" />
-			    <exclude name="**/test/" />
-			</fileset>
-		</jar>
-		<jar destfile="${jar.dir}/${jar.compiler.one.filename}" update="true">
-			<fileset dir="${common.lib}" >
-			</fileset>
-			<fileset dir="${common.io.lib}" >
-			</fileset>
-			<fileset dir="${common.lang.lib}" >
-			</fileset>
-		</jar>
-	</target>
-
-	<target name="jar.tame.compiler.one.min" depends="jar.tame.compiler.one" description="Jars up the minified set of classes needed to run the compiler in one standalone JAR.">
-		<delete file="${jar.dir}/${jar.compiler.one.min.filename}" casesensitive="false" />
-		<jar destfile="${jar.dir}/${jar.compiler.one.min.filename}">
-			<manifest>
-		    	<attribute name="Main-Class" value="com.tameif.tame.compiler.TAMECompilerMain"/>
-            </manifest>
-			<zipfileset refid="fileset.compiler.min" />
-		</jar>
-	</target>
-	
-	<target name="jar.tame.console.client.one" depends="compile, write.version" description="Jars up all classes needed to run the console client in one standalone JAR.">
-		<delete file="${jar.dir}/${jar.console.client.one.filename}" casesensitive="false" />
-		<jar destfile="${jar.dir}/${jar.console.client.one.filename}">
-			<manifest>
-		    	<attribute name="Main-Class" value="com.tameif.tame.console.TAMEConsoleClientMain"/>
-            </manifest>
-			<fileset dir="${bin.dir}" >
-			    <exclude name="**/compiler/" />
-			    <exclude name="**/test/" />
-			</fileset>
-		</jar>
-		<jar destfile="${jar.dir}/${jar.console.client.one.filename}" update="true">
-			<fileset dir="${common.lib}" >
-			</fileset>
-			<fileset dir="${common.io.lib}" >
-			</fileset>
-			<fileset dir="${common.lang.lib}" >
-			</fileset>
-		</jar>
-	</target>
-
-	<target name="jar.tame.console.client.one.min" depends="jar.tame.console.client.one" description="Jars up the minified set of classes needed to run the console client in one standalone JAR.">
-		<delete file="${jar.dir}/${jar.console.client.one.min.filename}" casesensitive="false" />
-		<jar destfile="${jar.dir}/${jar.console.client.one.min.filename}">
-			<manifest>
-		    	<attribute name="Main-Class" value="com.tameif.tame.console.TAMEConsoleClientMain"/>
-            </manifest>
-			<zipfileset refid="fileset.client.min" />
-		</jar>
-	</target>
-
 	<target name="clean.jar.scripts">
 		<delete dir="${scripts.dir}" includeemptydirs="true" casesensitive="false" />
 	</target>
@@ -306,19 +227,19 @@
 
 	<target name="jar.scripts.windows">
 		<!-- Windows Commands -->
-		<echo message="@java -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${scripts.dir}/tame.cmd" />
-		<echo message="@java -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${scripts.dir}/tamec.cmd" />
+		<echo message="@java -cp &quot;%~dp0\${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${scripts.dir}/tame.cmd" />
+		<echo message="@java -cp &quot;%~dp0\${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${scripts.dir}/tamec.cmd" />
 	</target>
 	
 	<target name="jar.scripts.bash">
 		<!-- Bash Shell Commands -->
 		<echo message="#!/bin/bash&#10;" file="${scripts.dir}/tame" />
 		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="${scripts.dir}/tame" append="true" />
-		<echo message="java -cp &quot;$SCRIPTDIR/${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${scripts.dir}/tame" append="true" />
+		<echo message="java -cp &quot;$SCRIPTDIR/${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${scripts.dir}/tame" append="true" />
 		
 		<echo message="#!/bin/bash&#10;" file="${scripts.dir}/tamec" />
 		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="${scripts.dir}/tamec" append="true" />
-		<echo message="java -cp &quot;$SCRIPTDIR/${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${scripts.dir}/tamec" append="true" />
+		<echo message="java -cp &quot;$SCRIPTDIR/${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${scripts.dir}/tamec" append="true" />
 		<!-- Set permissions -->
 		<chmod file="${scripts.dir}/tame" perm="ugo+rx"/>
 		<chmod file="${scripts.dir}/tamec" perm="ugo+rx"/>
@@ -327,20 +248,9 @@
 	<target name="jar.scripts" depends="init.jar.scripts, jar.scripts.windows, jar.scripts.bash" description="Creates the scripts for running the standalone minified JAR.">
 	</target>
 
-	<target name="jar" depends="init.jar, jar.tame, jar.tame.one, jar.tame.one.min, jar.tame.compiler.one, jar.tame.compiler.one.min, jar.tame.console.client.one, jar.tame.console.client.one.min" description="Make all JARs.">
+	<target name="jar" depends="init.jar, jar.tame, jar.tame.one, jar.tame.one.min" description="Make all JARs.">
 	</target>
 
-	<target name="zip.jar" depends="init.zip, jar" description="Makes and zips the JARs.">
-		<delete file="${zip.dir}/${zip.filename}" />
-		<zip destfile="${zip.dir}/${zip.filename}">
-			<fileset dir="${jar.dir}" />
-			<fileset refid="fileset.documents" />
-		</zip>
-	</target>
-
-	<target name="zip" depends="zip.jar, zip.docs" description="Creates all zips.">
-	</target>
-	
 	<!-- JRE Embedded Targets -->
 
 	<property name="jlink.options" value="--compress=2" />
@@ -394,19 +304,19 @@
 
 	<target name="jre.scripts.windows">
 		<!-- Windows Commands -->
-		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${jre.scripts.dir}/tame.cmd" />
-		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${jre.scripts.dir}/tamec.cmd" />
+		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${jre.scripts.dir}/tame.cmd" />
+		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${jre.scripts.dir}/tamec.cmd" />
 	</target>
 	
 	<target name="jre.scripts.bash">
 		<!-- Bash Shell Commands -->
 		<echo message="#!/bin/bash&#10;" file="${jre.scripts.dir}/tame" />
 		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="${jre.scripts.dir}/tame" append="true" />
-		<echo message="$SCRIPTDIR/jre/bin/java -cp &quot;$SCRIPTDIR/${jar.one.min.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${jre.scripts.dir}/tame" append="true" />
+		<echo message="&quot;$SCRIPTDIR/jre/bin/java&quot; -cp &quot;$SCRIPTDIR/${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${jre.scripts.dir}/tame" append="true" />
 		
 		<echo message="#!/bin/bash&#10;" file="${jre.scripts.dir}/tamec" />
 		<echo message="SCRIPTDIR=$(dirname $(readlink -f $0))&#10;" file="${jre.scripts.dir}/tamec" append="true" />
-		<echo message="$SCRIPTDIR/jre/bin/java -cp &quot;$SCRIPTDIR/${jar.one.min.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${jre.scripts.dir}/tamec" append="true" />
+		<echo message="&quot;$SCRIPTDIR/jre/bin/java&quot; -cp &quot;$SCRIPTDIR/${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${jre.scripts.dir}/tamec" append="true" />
 		<!-- Set permissions -->
 		<chmod file="${jre.scripts.dir}/tame" perm="ugo+rx"/>
 		<chmod file="${jre.scripts.dir}/tamec" perm="ugo+rx"/>
@@ -418,11 +328,90 @@
 	<target name="jre" depends="get.os, init.jre, jre.win64, jre.win32, jre.osx, jre.linux64, jre.linux32" description="Creates the a minified JRE via JLink (JDK 9+).">
 	</target>
 	
-	<!-- ==== Java Deployment Targets ==== -->
+	<!-- ==== Zip stuff ==== -->
 
-	<target name="jre.win32.deploy" if="embedded.win32.dir">
+	<target name="zip.jar.tame" depends="init.zip, jar" description="Makes and zips the core TAME JAR.">
+		<delete file="${zip.dir}/${zip.jar.filename}" />
+		<zip destfile="${zip.dir}/${zip.jar.filename}" compress="true" level="9">
+			<fileset file="${jar.dir}/${jar.tame.filename}" />
+			<fileset refid="fileset.documents" />
+		</zip>
 	</target>
-		
+
+	<target name="zip.jar.tame.one" depends="init.zip, jar, jar.scripts" description="Makes and zips the standalone TAME JAR plus scripts to execute.">
+		<delete file="${zip.dir}/${zip.jar.one.filename}" />
+		<zip destfile="${zip.dir}/${zip.jar.one.filename}" compress="true" level="9">
+			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
+			<fileset dir="${scripts.dir}" />
+			<fileset refid="fileset.documents" />
+		</zip>
+	</target>
+
+	<target name="zip.jre.win32" if="embedded.win32.dir" depends="jar.tame.one.min">
+		<delete file="${zip.dir}/${zip.jre.win32.filename}" />
+		<zip destfile="${zip.dir}/${zip.jre.win32.filename}" compress="true" level="9">
+			<zipfileset dir="${embedded.win32.dir}" prefix="jre/"/>
+			<fileset refid="fileset.documents" />
+			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
+			<fileset dir="${jre.scripts.dir}" />
+		</zip>
+	</target>
+
+	<target name="zip.jre.win64" if="embedded.win64.dir" depends="jar.tame.one.min">
+		<delete file="${zip.dir}/${zip.jre.win64.filename}" />
+		<zip destfile="${zip.dir}/${zip.jre.win64.filename}" compress="true" level="9">
+			<zipfileset dir="${embedded.win64.dir}" prefix="jre/"/>
+			<fileset refid="fileset.documents" />
+			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
+			<fileset dir="${jre.scripts.dir}" />
+		</zip>
+	</target>
+
+	<target name="zip.jre.osx" if="embedded.osx.dir" depends="jar.tame.one.min">
+		<delete file="${zip.dir}/${zip.jre.osx.filename}" />
+		<zip destfile="${zip.dir}/${zip.jre.osx.filename}" compress="true" level="9">
+			<zipfileset dir="${embedded.osx.dir}" prefix="jre/"/>
+			<fileset refid="fileset.documents" />
+			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
+			<fileset dir="${jre.scripts.dir}" />
+		</zip>
+	</target>
+
+	<target name="zip.jre.linux32" if="embedded.linux32.dir" depends="jar.tame.one.min">
+		<delete file="${zip.dir}/${zip.jre.linux32.filename}" />
+		<zip destfile="${zip.dir}/${zip.jre.linux32.filename}" compress="true" level="9">
+			<zipfileset dir="${embedded.linux32.dir}" prefix="jre/"/>
+			<fileset refid="fileset.documents" />
+			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
+			<fileset dir="${jre.scripts.dir}" />
+		</zip>
+	</target>
+
+	<target name="zip.jre.linux64" if="embedded.linux64.dir" depends="jar.tame.one.min">
+		<delete file="${zip.dir}/${zip.jre.linux64.filename}" />
+		<zip destfile="${zip.dir}/${zip.jre.linux64.filename}" compress="true" level="9">
+			<zipfileset dir="${embedded.linux64.dir}" prefix="jre/"/>
+			<fileset refid="fileset.documents" />
+			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
+			<fileset dir="${jre.scripts.dir}" />
+		</zip>
+	</target>
+
+		<target name="zip.jre" depends="jre, jre.scripts, zip.jre.win32, zip.jre.win64">
+	</target>
+
+	<target name="zip.src" depends="init.zip" description="Archives the source code.">
+		<delete file="${zip.dir}/${zip.sources.filename}" />
+		<zip destfile="${zip.dir}/${zip.sources.filename}" compress="true" level="9">
+			<zipfileset dir="${src.dir}" prefix="src"/>
+			<zipfileset dir="${resource.dir}" prefix="resources"/>
+			<fileset refid="fileset.documents" />
+		</zip>
+	</target>
+
+	<target name="zip" depends="zip.src, zip.docs, zip.jar, zip.jre" description="Creates all zips.">
+	</target>
+	
 	<!-- ================================= -->
 
 	<target name="release" depends="zip">

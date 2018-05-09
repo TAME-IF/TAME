@@ -195,12 +195,12 @@
 	<target name="zip.src" depends="init.zip" description="Archives the source code.">
 		<delete file="${zip.dir}/${zip.sources.filename}" />
 		<zip basedir="${src.dir}" destfile="${zip.dir}/${zip.sources.filename}" compress="true"></zip>
-		<zip destfile="${zip.dir}/${zip.filename}" update="true">
+		<zip destfile="${zip.dir}/${zip.sources.filename}" update="true">
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
 	
-	<target name="zip" depends="zip.jar, zip.docs, zip.src" description="Creates all archives.">
+	<target name="zip" depends="zip.docs, zip.jar, zip.src" description="Creates all archives.">
 	</target>
 
 	<target name="release" depends="zip">
