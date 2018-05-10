@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import com.blackrook.commons.math.RMath;
-import com.blackrook.lang.path.PatternParseException;
 import com.tameif.tame.element.ObjectContainer;
 import com.tameif.tame.element.TAction;
 import com.tameif.tame.element.TContainer;
@@ -1462,7 +1461,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			try {
 				request.pushValue(Value.create(source.replaceFirst(pattern, replacement)));
-			} catch (PatternParseException e) {
+			} catch (PatternSyntaxException e) {
 				throw new UnexpectedValueTypeException("Expected valid RegEx in STRREPLACEPATTERN call.");
 			}
 		}
@@ -1504,7 +1503,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 
 			try {
 				request.pushValue(Value.create(source.replaceAll(pattern, replacement)));
-			} catch (PatternParseException e) {
+			} catch (PatternSyntaxException e) {
 				throw new UnexpectedValueTypeException("Expected valid RegEx in STRREPLACEPATTERNALL call.");
 			}
 		}
@@ -1685,7 +1684,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 				for (String s : tokens)
 					out.listAdd(Value.create(s));
 				request.pushValue(out);
-			} catch (PatternParseException e) {
+			} catch (PatternSyntaxException e) {
 				throw new UnexpectedValueTypeException("Expected valid RegEx in STRSPLIT call.");
 			}
 		}

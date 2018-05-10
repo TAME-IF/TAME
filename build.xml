@@ -25,7 +25,7 @@
 	
 	<!-- Project Info -->
 	<property name="project.archive" value="tame" />
-	<property name="project.java.modules" value="java.base" />	
+	<property name="project.java.modules" value="java.base,java.sql" />	
 	<property name="project.javadoc.title" value="TAME" />
 	<property name="project.classpath" value="${common.lib}${S}${common.io.lib}${S}${common.lang.lib}" />
 	<property name="project.javadoc.packages" value="

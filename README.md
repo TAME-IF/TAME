@@ -4,7 +4,7 @@ Copyright (c) 2015-2018 Matt Tropiano. All rights reserved.
 
 ### Required Libraries
 
-Black Rook Commons 2.31.2+  
+Black Rook Commons 2.31.3+  
 [https://github.com/BlackRookSoftware/Common](https://github.com/BlackRookSoftware/Common)
 
 Black Rook Common I/O 2.5.1+  
@@ -15,7 +15,8 @@ Black Rook Common Lang 2.9.1+
 
 ### Required Java Modules
 
-[java.base](https://docs.oracle.com/javase/10/docs/api/java.base-summary.html)
+[java.base](https://docs.oracle.com/javase/10/docs/api/java.base-summary.html)  
+[java.sql](https://docs.oracle.com/javase/10/docs/api/java.sql-summary.html)
 
 ### Introduction
 
