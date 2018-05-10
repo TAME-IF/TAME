@@ -32,6 +32,7 @@ to the serialized format or JS modules (but not embedded ones - those are safe).
 ### Known Issues
 
 * Serialization of game state that has circular references in its structure is not handled as gracefully as it should be.
+* The build process for Embedded JREs still "not ready for primetime" yet.
 
 ### Library
 
