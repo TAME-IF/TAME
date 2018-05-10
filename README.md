@@ -55,24 +55,12 @@ Shell scripts (CMD/Bash) will also be created in the project directory that will
 entry points of the compiled code, depending on your OS.
 	
 To make a JAR of just TAME's classes (no bundled dependencies), and the stand-alones 
-(both main programs with entry points and necessary dependencies) type:
+(both main programs with entry points and necessary dependencies) plus scripts to run them, type:
 
 	ant jar
 
 Jars will be placed in the *build/jar* directory by default.
 
-Win32 EXEs can be made via **launch4j**. To make Win32 executables of both programs, type:
-
-	ant win32
-
-EXEs will be placed in the *build/win32* directory by default.
-	
-To make Win32 executables and deploy them to a directory of your choosing via 
-etting the *win32.deploy.dir* property, type:
-
-	ant win32.deploy
-
-The EXEs will not be deployed if the *win32.deploy.dir* property is not set!
 
 ### Other Files
 
