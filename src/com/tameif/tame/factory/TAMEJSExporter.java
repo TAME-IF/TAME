@@ -100,6 +100,9 @@ public final class TAMEJSExporter
 	/** Default writer options. */
 	private static final TAMEJSExporterOptions DEFAULT_OPTIONS = new DefaultJSExporterOptions();
 	
+	/** Written to header: year */
+	private static final String HEADER_COPYRIGHT_YEAR = "2018";
+	
 	// No constructor.
 	private TAMEJSExporter(){}
 	
@@ -462,7 +465,7 @@ public final class TAMEJSExporter
 			writer.append(" * TAME Engine v"+TAMELogic.getVersion()+"\n");
 		else
 			writer.append(" * TAME v"+TAMELogic.getVersion()+" with Embedded Module\n");
-		writer.append(" * (C) 2016-2017 Matthew Tropiano\n");
+		writer.append(" * (C) 2016-").append(HEADER_COPYRIGHT_YEAR).append(" Matthew Tropiano\n");
 		writer.append(" * https://tame-if.com\n");
 		if (module != null)
 		{
