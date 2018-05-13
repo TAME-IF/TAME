@@ -48,7 +48,7 @@ public interface TAMEConstants
 
 	/** Default runaway max. */
 	public static final int DEFAULT_RUNAWAY_THRESHOLD = 100000;
-	/** Default runaway max. */
+	/** Default function depth max. */
 	public static final int DEFAULT_FUNCTION_DEPTH = 256;
 
 	/* ========= Standard headers that affect things. ========= */

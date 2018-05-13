@@ -75,7 +75,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 
 	/** Command runaway max from the Header. */
 	private long commandRunawayMax;
-	/** Command runaway max from the Header. */
+	/** Function call depth max from the Header. */
 	private long functionDepthMax;
 	
 	/**
