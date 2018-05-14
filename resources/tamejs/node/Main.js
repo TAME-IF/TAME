@@ -236,6 +236,7 @@ rl.on('line', function(line){
 		else if (COMMAND_QUIT == line.substring(0, COMMAND_QUIT.length))
 		{
 			stop = true;
+			rl.close();
 		}
 		else
 			startResponse(TAME.interpret(tamectx, line.trim(), trace));
