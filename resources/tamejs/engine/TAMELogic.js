@@ -1255,12 +1255,18 @@ TLogic.initializeContext = function(request, response)
 			roomContexts.push(elementContext);
 	});
 	
-	TLogic.callInitOnContexts(request, response, containerContexts);
-	TLogic.callInitOnContexts(request, response, objectContexts);
-	TLogic.callInitOnContexts(request, response, roomContexts);
-	TLogic.callInitOnContexts(request, response, playerContexts);
-	TLogic.callInitBlock(request, response, context.resolveElementContext("world"));
-	TLogic.callStartBlock(request, response);
+	try {
+		TLogic.callInitOnContexts(request, response, containerContexts);
+		TLogic.callInitOnContexts(request, response, objectContexts);
+		TLogic.callInitOnContexts(request, response, roomContexts);
+		TLogic.callInitOnContexts(request, response, playerContexts);
+		TLogic.callInitBlock(request, response, context.resolveElementContext("world"));
+		TLogic.callStartBlock(request, response);
+	} catch (err) {
+		// catch finish interrupt, throw everything else.
+		if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.Finish)
+			throw err;
+	}
 };
 
 /**

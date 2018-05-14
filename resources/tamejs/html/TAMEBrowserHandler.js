@@ -12,10 +12,6 @@
  * 			Should prompt for continuation, then call resume().
  * 		onQuitCue: fn(): called when a "quit" cue is encountered.
  * 			Should stop input. 
- * 		onInfoCue: fn(message): called when an "info" cue is encountered.
- * 			Should make a message appear on screen. Dismissable. 
- * 		onTipCue: fn(message): called when a "tip" cue is encountered.
- * 			Should make a message appear on screen. Dismissable, but user should have the option to display them. 
  * 		onErrorCue: fn(message): called when an "error" cue is encountered.
  * 			Should make a message appear on screen. Dismissable. 
  * 		onFatalCue: fn(message): called when a "fatal" cue is encountered.

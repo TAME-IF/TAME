@@ -27,10 +27,6 @@ public interface TAMEConstants
 	public static final String CUE_PAUSE = "PAUSE";
 	/** Trace cue. */
 	public static final String CUE_TRACE = "TRACE";
-	/** Tip cue. */
-	public static final String CUE_TIP = "TIP";
-	/** Info cue. */
-	public static final String CUE_INFO = "INFO";
 	/** Error cue. */
 	public static final String CUE_ERROR = "ERROR";
 	/** Fatal cue. */

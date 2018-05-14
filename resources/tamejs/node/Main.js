@@ -116,16 +116,6 @@ function doCue(cue)
 			// Ignore trace.
 			return true;
 
-		case 'tip':	
-			println('(TIP: '+content+')');
-			lastColumn = 0;
-			return true;
-
-		case 'info':	
-			println('INFO: '+content);
-			lastColumn = 0;
-			return true;
-
 		case 'error':	
 			println('\n!ERROR! '+content);
 			lastColumn = 0;
@@ -209,8 +199,9 @@ function startResponse(response)
 	responseStop(responseRead());
 }
 
-var COMMAND_SAVE = '!save';
-var COMMAND_LOAD = '!load';
+const COMMAND_SAVE = '!save';
+const COMMAND_LOAD = '!load';
+const COMMAND_QUIT = '!quit';
 
 // Loop.
 rl.on('line', function(line){
@@ -241,6 +232,10 @@ rl.on('line', function(line){
 				println(err);
 			}
 			rl.prompt();
+		}
+		else if (COMMAND_QUIT == line.substring(0, COMMAND_QUIT.length))
+		{
+			stop = true;
 		}
 		else
 			startResponse(TAME.interpret(tamectx, line.trim(), trace));

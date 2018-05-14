@@ -432,6 +432,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		{
 			final String COMMAND_SAVE = "!save ";
 			final String COMMAND_LOAD = "!load ";
+			final String COMMAND_QUIT = "!quit";
 			final String INSPECTOR_PREFIX = "?";
 			
 			boolean good = true;
@@ -449,6 +450,8 @@ public class TAMEConsoleClientMain implements TAMEConstants
 						saveGame(context, line.substring(COMMAND_SAVE.length())+".sav");
 					else if (line.toLowerCase().startsWith(COMMAND_LOAD))
 						loadGame(context, line.substring(COMMAND_LOAD.length())+".sav");
+					else if (line.toLowerCase().startsWith(COMMAND_QUIT))
+						good = false;
 					else
 					{
 						processResponse(TAMELogic.handleRequest(context, line, trace), this);
@@ -513,14 +516,6 @@ public class TAMEConsoleClientMain implements TAMEConstants
 					context.paused = true;
 					lastColumn = 0;
 					return false;
-				case CUE_TIP:
-					context.out.println("(TIP: " + cue.getContent() + ")");
-					lastColumn = 0;
-					return true;
-				case CUE_INFO:
-					context.out.println("INFO: " + cue.getContent());
-					lastColumn = 0;
-					return true;
 				case CUE_ERROR:
 					context.out.println("ERROR: " + cue.getContent());
 					lastColumn = 0;
