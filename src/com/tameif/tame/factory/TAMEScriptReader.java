@@ -2376,23 +2376,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseStatementList(TElement currentElement, Block block)
 		{
-			if (!currentType(
-					TSKernel.TYPE_SEMICOLON, 
-					TSKernel.TYPE_IDENTIFIER,
-					TSKernel.TYPE_LOCAL,
-					TSKernel.TYPE_CLEAR,
-					TSKernel.TYPE_WORLD,
-					TSKernel.TYPE_PLAYER,
-					TSKernel.TYPE_ROOM,
-					TSKernel.TYPE_IF, 
-					TSKernel.TYPE_WHILE, 
-					TSKernel.TYPE_FOR,
-					TSKernel.TYPE_QUIT,
-					TSKernel.TYPE_END,
-					TSKernel.TYPE_BREAK,
-					TSKernel.TYPE_CONTINUE,
-					TSKernel.TYPE_RETURN
-				))
+			if (!isValidStatementType())
 				return true;
 			
 			if (currentType(TSKernel.TYPE_SEMICOLON))
@@ -2561,6 +2545,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[BREAK]
 		 * 		[CONTINUE]
 		 * 		[END]
+		 * 		[FINISH]
 		 * 		[Statement]
 		 */
 		private boolean parseExecutableStatement(TElement currentElement, Block block) 
@@ -3603,6 +3588,36 @@ public final class TAMEScriptReader implements TAMEConstants
 		private TAMECommand getCommand(String name)
 		{
 			return Reflect.getEnumInstance(name.toUpperCase(), TAMECommand.class);
+		}
+		
+		// Return true if token type starts a statement.
+		private boolean isValidStatementType()
+		{
+			if (currentToken() == null)
+				return false;
+			
+			switch (currentToken().getType())
+			{
+				case TSKernel.TYPE_SEMICOLON: 
+				case TSKernel.TYPE_IDENTIFIER:
+				case TSKernel.TYPE_LOCAL:
+				case TSKernel.TYPE_CLEAR:
+				case TSKernel.TYPE_WORLD:
+				case TSKernel.TYPE_PLAYER:
+				case TSKernel.TYPE_ROOM:
+				case TSKernel.TYPE_IF: 
+				case TSKernel.TYPE_WHILE: 
+				case TSKernel.TYPE_FOR:
+				case TSKernel.TYPE_QUIT:
+				case TSKernel.TYPE_END:
+				case TSKernel.TYPE_FINISH:
+				case TSKernel.TYPE_BREAK:
+				case TSKernel.TYPE_CONTINUE:
+				case TSKernel.TYPE_RETURN:
+					return true;
+				default:
+					return false;
+			}
 		}
 		
 		// Return true if token type can be a unary operator.
