@@ -2564,13 +2564,18 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 			else if (currentType(TSKernel.TYPE_END))
 			{
+				if (functionDepth != 0)
+				{
+					addErrorMessage("Command \"end\" used inside of a function.");
+					return false;
+				}
+				
 				nextToken();
 				block.add(Command.create(TAMECommand.END));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_RETURN))
 			{
-				nextToken();
 
 				if (functionDepth == 0)
 				{
@@ -2578,6 +2583,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
+				nextToken();
 				if (!parseExpression(currentElement, block))
 					return false;
 				
