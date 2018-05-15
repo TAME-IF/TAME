@@ -52,7 +52,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	}
 	
 	/**
-	 * Creates a boolean value, typed as integer.
+	 * Creates a boolean value.
 	 * @param value the boolean value.
 	 * @return the new value.
 	 */

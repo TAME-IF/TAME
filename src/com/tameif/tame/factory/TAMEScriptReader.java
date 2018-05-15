@@ -2068,7 +2068,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * [Statement] := 
 		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		[IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
-		 * 		"local" [IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
+		 * 		"local" [IDENTIFIER] [ [ASSIGNMENTOPERATOR] [EXPRESSION] ]
 		 * 		"clear" [IDENTIFIER];
 		 * 		[COMMANDEXPRESSION]
 		 *		[e]
@@ -2317,10 +2317,12 @@ public final class TAMEScriptReader implements TAMEConstants
 					block.add(Command.create(TAMECommand.POPLOCALVALUE, identToken));
 					return true;
 				}
+				// if no assignment, then initialize as false.
 				else
 				{
-					addErrorMessage("Expression error - expected assignment operator.");
-					return false;
+					block.add(Command.create(TAMECommand.PUSHVALUE, Value.create(false)));
+					block.add(Command.create(TAMECommand.POPLOCALVALUE, identToken));
+					return true;
 				}
 
 			}
