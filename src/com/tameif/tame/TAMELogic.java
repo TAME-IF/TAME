@@ -1564,14 +1564,14 @@ public final class TAMELogic implements TAMEConstants
 		// get forbid block.
 		Block forbidBlock = null;
 	
-		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION, Value.createAction(action.getIdentity())))) != null)
+		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONPLAYERFORBIDDENACTION, Value.createAction(action.getIdentity())))) != null)
 		{
 			response.trace(request, "Got specific forbid block in player %s lineage, action %s", player.getIdentity(), action.getIdentity());
 			callBlock(request, response, context, forbidBlock);
 			return true;
 		}
 		
-		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONFORBIDDENACTION))) != null)
+		if ((forbidBlock = player.resolveBlock(BlockEntry.create(BlockEntryType.ONPLAYERFORBIDDENACTION))) != null)
 		{
 			response.trace(request, "Got default forbid block in player %s lineage.", player.getIdentity());
 			callBlock(request, response, context, forbidBlock);

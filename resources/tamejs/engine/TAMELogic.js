@@ -1464,14 +1464,14 @@ TLogic.callPlayerActionForbiddenBlock = function(request, response, action, play
 	// get forbid block.
 	var forbidBlock = null;
 
-	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONFORBIDDENACTION", [TValue.createAction(action.identity)])) != null)
+	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONPLAYERFORBIDDENACTION", [TValue.createAction(action.identity)])) != null)
 	{
 		response.trace(request, "Got specific forbid block in player "+playerContext.identity+" lineage, action "+action.identity);
 		TLogic.callBlock(request, response, playerContext, forbidBlock);
 		return true;
 	}
 	
-	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONFORBIDDENACTION")) != null)
+	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONPLAYERFORBIDDENACTION")) != null)
 	{
 		response.trace(request, "Got default forbid block in player "+playerContext.identity+" lineage.");
 		TLogic.callBlock(request, response, playerContext, forbidBlock);

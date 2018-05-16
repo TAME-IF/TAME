@@ -70,7 +70,7 @@ public class TPlayer extends TElement implements ForbiddenHandler, ObjectContain
 			case ONMALFORMEDCOMMAND:
 			case ONMODALACTION:
 			case ONUNHANDLEDACTION:
-			case ONFORBIDDENACTION:
+			case ONPLAYERFORBIDDENACTION:
 			case ONROOMFORBIDDENACTION:
 			case ONINCOMPLETECOMMAND:
 			case ONAMBIGUOUSCOMMAND:
