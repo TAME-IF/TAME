@@ -510,6 +510,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param response the response object.
 	 * @param functionName the function to execute.
 	 * @param originContext the origin context (and then element).
+	 * @throws ModuleException if the function does not exist in the lineage of the target element.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 * @return the return value from the function call. if no return, returns false.
 	 */
