@@ -12,7 +12,6 @@
 
 var TAMEConstants = {};
 TAMEConstants.ActionType = {};
-TAMEConstants.RestrictionType = {};
 TAMEConstants.Cue = {};
 TAMEConstants.Identity = {};
 
@@ -21,9 +20,6 @@ TAMEConstants.ActionType.TRANSITIVE = 1;
 TAMEConstants.ActionType.DITRANSITIVE = 2;
 TAMEConstants.ActionType.MODAL = 3;
 TAMEConstants.ActionType.OPEN = 4;
-
-TAMEConstants.RestrictionType.FORBID = 0;
-TAMEConstants.RestrictionType.ALLOW = 1;
 
 TAMEConstants.Cue.QUIT = "QUIT";
 TAMEConstants.Cue.TEXT = "TEXT";

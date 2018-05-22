@@ -16,7 +16,6 @@
 		type: TAME.ActionType,
 		names: ['name',],
 		extraStrings:['string',],
-		restricted: false
 	}
 	TWorld:
 	{

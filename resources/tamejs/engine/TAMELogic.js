@@ -117,27 +117,6 @@ TLogic.elementToString = function(elemObject)
 };
 
 /**
- * Checks if an action is allowed on an element (player or room).
- * @param element the element to check.
- * @param action the action that is being called.
- * @return true if allowed, false if not.
- * @throws TAMEInterrupt if an interrupt occurs.
- */
-TLogic.allowsAction = function(element, action)
-{
-	if (!element.permittedActionList)
-		return true;
-	else if (element.permissionType == TAMEConstants.RestrictionType.ALLOW)
-		return element.permittedActionList.indexOf(action.identity) >= 0;
-	else if (action.restricted)
-		return false;
-	else if (element.permissionType == TAMEConstants.RestrictionType.FORBID)
-		return permittedActionList.indexOf(action.identity) < 0;
-	else
-		throw TAMEError.Module("Bad or unknown permission type found: "+permissionType);
-};
-
-/**
  * Executes a block of commands.
  * @param block (Array) the block of commands.
  * @param request (TRequest) the request object.
@@ -1449,127 +1428,6 @@ TLogic.callMalformedCommand = function(request, response, action)
 };
 
 /**
- * Calls the appropriate action forbidden block on a player.
- * @param request the request object.
- * @param response the response object.
- * @param action the action attempted.
- * @param context the player context.
- * @return true if handled by this block, false if not.
- * @throws TAMEInterrupt if an interrupt occurs.
- */
-TLogic.callPlayerActionForbiddenBlock = function(request, response, action, playerContext)
-{
-	var context = request.moduleContext;
-
-	// get forbid block.
-	var forbidBlock = null;
-
-	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONPLAYERFORBIDDENACTION", [TValue.createAction(action.identity)])) != null)
-	{
-		response.trace(request, "Got specific forbid block in player "+playerContext.identity+" lineage, action "+action.identity);
-		TLogic.callBlock(request, response, playerContext, forbidBlock);
-		return true;
-	}
-	
-	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONPLAYERFORBIDDENACTION")) != null)
-	{
-		response.trace(request, "Got default forbid block in player "+playerContext.identity+" lineage.");
-		TLogic.callBlock(request, response, playerContext, forbidBlock);
-		return true;
-	}
-	
-	response.trace(request, "No forbid block on player.");
-	return false;
-};
-
-/**
- * Calls the appropriate room action forbidden block on a player.
- * @param request the request object.
- * @param response the response object.
- * @param action the action attempted.
- * @param context the room context.
- * @return true if handled by this block, false if not.
- * @throws TAMEInterrupt if an interrupt occurs.
- */
-TLogic.callRoomActionForbiddenBlock = function(request, response, action, playerContext)
-{
-	var context = request.moduleContext;
-
-	// get forbid block.
-	var forbidBlock = null;
-
-	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONROOMFORBIDDENACTION", [TValue.createAction(action.identity)])) != null)
-	{
-		response.trace(request, "Calling specific room forbid block in player "+playerContext.identity+" lineage, action "+action.identity);
-		TLogic.callBlock(request, response, playerContext, forbidBlock);
-		return true;
-	}
-	
-	if ((forbidBlock = context.resolveBlock(playerContext.identity, "ONROOMFORBIDDENACTION")) != null)
-	{
-		response.trace(request, "Calling default room forbid block in player "+playerContext.identity+" lineage.");
-		TLogic.callBlock(request, response, playerContext, forbidBlock);
-		return true;
-	}
-	
-	response.trace(request, "No room forbid block on player to call.");
-	return false;
-};
-
-/**
- * Checks and calls the action forbidden blocks.
- * @param request the request object.
- * @param response the response object.
- * @param action the action attempted.
- * @return true if an action is forbidden and steps were taken to call a forbidden block, or false otherwise.
- * @throws TAMEInterrupt if an interrupt occurs.
- */
-TLogic.callCheckActionForbidden = function(request, response, action)
-{
-	var context = request.moduleContext;
-	var currentPlayerContext = context.getCurrentPlayerContext();
-	var currentPlayer = context.getCurrentPlayer();
-
-	if (currentPlayerContext != null)
-	{
-		response.trace(request, "Checking current player "+TLogic.elementToString(currentPlayer)+" for action permission.");
-
-		// check if the action is disallowed by the player.
-		if (!TLogic.allowsAction(currentPlayer, action))
-		{
-			response.trace(request, "Action is forbidden.");
-			if (!TLogic.callPlayerActionForbiddenBlock(request, response, action, currentPlayerContext))
-			{
-				response.addCue(TAMEConstants.Cue.ERROR, "ACTION IS FORBIDDEN (make a better in-universe handler!).");
-				return true;
-			}
-		}
-
-		// try current room.
-		var currentRoomContext = context.getCurrentRoomContext();
-		var currentRoom = context.getCurrentRoom();
-
-		if (currentRoomContext != null)
-		{
-			response.trace(request, "Checking current room "+TLogic.elementToString(currentRoom)+" for action permission.");
-
-			// check if the action is disallowed by the room.
-			if (!TLogic.allowsAction(currentRoom, action))
-			{
-				response.trace(request, "Action is forbidden.");
-				if (!TLogic.callRoomActionForbiddenBlock(request, response, action, currentPlayerContext))
-				{
-					response.addCue(TAMEConstants.Cue.ERROR, "ACTION IS FORBIDDEN IN THIS ROOM (make a better in-universe handler!).");
-					return true;
-				}
-			}
-		}
-	}
-	
-	return false;
-};
-
-/**
  * Calls the appropriate incomplete command block on the world if it exists.
  * @param request the request object.
  * @param response the response object.
@@ -1841,9 +1699,6 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 	var context = request.moduleContext;
 	response.trace(request, "Performing general/open action "+TLogic.elementToString(action));
 
-	if (TLogic.callCheckActionForbidden(request, response, action))
-		return;
-
 	var currentPlayerContext = context.getCurrentPlayerContext();
 	var blockToCall = null;
 
@@ -1931,9 +1786,6 @@ TLogic.doActionModal = function(request, response, action, mode)
 	var context = request.moduleContext;
 	response.trace(request, "Performing modal action "+TLogic.elementToString(action)+", \""+mode+"\"");
 
-	if (TLogic.callCheckActionForbidden(request, response, action))
-		return;
-
 	var currentPlayerContext = context.getCurrentPlayerContext();
 	var blockToCall = null;
 
@@ -1997,20 +1849,72 @@ TLogic.doActionTransitive = function(request, response, action, object)
 	var context = request.moduleContext;
 	response.trace(request, "Performing transitive action "+TLogic.elementToString(action)+" on "+TLogic.elementToString(object));
 	
-	if (TLogic.callCheckActionForbidden(request, response, action))
-		return;
-
 	var currentObjectContext = context.getElementContext(object.identity);
 	var blockToCall = null;
-
+	var actionValue = TValue.createAction(action.identity);
+	
 	// call action on object.
-	if ((blockToCall = context.resolveBlock(object.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(object.identity, "ONACTION", [actionValue])) != null)
 	{
 		response.trace(request, "Found action block on object.");
 		TLogic.callBlock(request, response, currentObjectContext, blockToCall);
 		return;
 	}
 	
+	var currentPlayerContext = context.getCurrentPlayerContext();
+
+	// Call onActionWith(action, object) on current room, then player.
+	if (currentPlayerContext != null)
+	{
+		var currentPlayer = context.getCurrentPlayer();
+		var objectValue = TValue.createObject(object.identity);
+
+		// try current room.
+		var currentRoomContext = context.getCurrentRoomContext();
+		if (currentRoomContext != null)
+		{
+			var currentRoom = context.getCurrentRoom();
+
+			// get on action with block on room.
+			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTIONWITH", [actionValue, objectValue])) != null)
+			{
+				response.trace(request, "Found \"action with\" block on lineage of room "+currentRoom.identity+".");
+				TLogic.callBlock(request, response, currentRoomContext, blockToCall);
+				return;
+			}
+			
+			response.trace(request, "No \"action with\" block on room.");
+		}
+		
+		// get on action with block on player.
+		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTIONWITH", [actionValue, objectValue])) != null)
+		{
+			response.trace(request, "Found \"action with\" block on lineage of player "+currentPlayer.identity+".");
+			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
+			return;
+		}
+		
+		response.trace(request, "No \"action with\" block on player.");
+	}
+
+	// Call onActionWithAncestor(action, object) on current room, then player.
+	if (currentPlayerContext != null)
+	{
+		var currentPlayer = context.getCurrentPlayer();
+
+		// try current room.
+		var currentRoomContext = context.getCurrentRoomContext();
+		if (currentRoomContext != null)
+		{
+			var currentRoom = context.getCurrentRoom();
+			if (TLogic.doActionAncestorSearch(request, response, actionValue, currentRoom, object))
+				return;
+		}
+		
+		if (TLogic.doActionAncestorSearch(request, response, actionValue, currentPlayer, object))
+			return;
+	}
+
 	if (!TLogic.callActionUnhandled(request, response, action))
 		response.addCue(TAMEConstants.Cue.ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
 };
@@ -2021,30 +1925,30 @@ TLogic.doActionTransitive = function(request, response, action, object)
  * @param request the request object.
  * @param response the response object.
  * @param actionValue the action that is being called (value).
- * @param object the object to call the block on.
+ * @param element the element to call the block on.
  * @param start the object to start the search from.
  * @return true if a block was found an called.
  * @throws TAMEInterrupt if an interrupt occurs.
  */
-TLogic.doActionDitransitiveAncestorSearch = function(request, response, actionValue, object, start)
+TLogic.doActionAncestorSearch = function(request, response, actionValue, element, start)
 {
 	var blockToCall = null;
 	var context = request.moduleContext;
 	var ancestor = start.parent != null ? context.getElement(start.parent) : null;
-	var objectContext = context.getElementContext(object.identity);
+	var elementContext = context.getElementContext(element.identity);
 
 	while (ancestor != null)
 	{
-		if ((blockToCall = context.resolveBlock(object.identity, "ONACTIONWITHANCESTOR", [actionValue, TValue.createObject(ancestor.identity)])) != null)
+		if ((blockToCall = context.resolveBlock(element.identity, "ONACTIONWITHANCESTOR", [actionValue, TValue.createObject(ancestor.identity)])) != null)
 		{
-			response.trace(request, "Found \"action with ancestor\" block in object "+TLogic.elementToString(object)+" lineage - ancestor is "+TLogic.elementToString(ancestor)+".");
-			TLogic.callBlock(request, response, objectContext, blockToCall);
+			response.trace(request, "Found \"action with ancestor\" block in element "+TLogic.elementToString(element)+" lineage - ancestor is "+TLogic.elementToString(ancestor)+".");
+			TLogic.callBlock(request, response, elementContext, blockToCall);
 			return true;
 		}
 		ancestor = ancestor.parent != null ? context.getElement(ancestor.parent) : null;
 	}
 	
-	response.trace(request, "No matching \"action with ancestor\" block in object "+TLogic.elementToString(object)+" lineage.");
+	response.trace(request, "No matching \"action with ancestor\" block in element "+TLogic.elementToString(element)+" lineage.");
 	return false;
 };
 
@@ -2061,9 +1965,6 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 {
 	var context = request.moduleContext;
 	response.trace(request, "Performing ditransitive action "+TLogic.elementToString(action)+" on "+TLogic.elementToString(object1)+" with "+TLogic.elementToString(object2));
-
-	if (TLogic.callCheckActionForbidden(request, response, action))
-		return;
 
 	var currentObject1Context = context.getElementContext(object1.identity);
 	var currentObject2Context = context.getElementContext(object2.identity);
@@ -2094,9 +1995,9 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 		response.trace(request, "No matching \"action with\" block in object "+TLogic.elementToString(object2)+" lineage with "+TLogic.elementToString(object1));
 
 	// call action with ancestor on each object. one or both need to succeed for no failure.
-	if (call12 && TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object1, object2))
+	if (call12 && TLogic.doActionAncestorSearch(request, response, actionValue, object1, object2))
 		return;
-	if (call21 && TLogic.doActionDitransitiveAncestorSearch(request, response, actionValue, object2, object1))
+	if (call21 && TLogic.doActionAncestorSearch(request, response, actionValue, object2, object1))
 		return;
 	
 	// attempt action with other on both objects.

@@ -59,8 +59,6 @@ public class TAction implements Comparable<TAction>, Saveable
 	/** What is the group of names of this action? */
 	private CaseInsensitiveHash names;
 	
-	/** Is this action only allowed on players and rooms that exclusively allow it? */
-	private boolean restricted;
 	/** Does the action employ stricter use? */
 	private boolean strict;
 	/** Does the action reverse its strict handling? */
@@ -82,7 +80,6 @@ public class TAction implements Comparable<TAction>, Saveable
 		this.names = new CaseInsensitiveHash();
 		this.extraStrings = new CaseInsensitiveHash();
 		this.type = Type.GENERAL;
-		this.restricted = false;
 		this.strict = false;
 		this.reversed = false;
 	}
@@ -140,24 +137,6 @@ public class TAction implements Comparable<TAction>, Saveable
 		this.type = type;
 	}
 
-	/**
-	 * Checks if this action is restricted - is forbidden unless specifically allowed.
-	 * @return true if restricted, false if not.
-	 */
-	public boolean isRestricted() 
-	{
-		return restricted;
-	}
-	
-	/**
-	 * Sets if this action is restricted - is forbidden unless specifically allowed.
-	 * @param restricted true if restricted, false if not.
-	 */
-	public void setRestricted(boolean restricted) 
-	{
-		this.restricted = restricted;
-	}
-	
 	/**
 	 * Checks if this action is strict. Interpreter (and execution logic) changes if this is set:
 	 * <ul>
@@ -324,7 +303,6 @@ public class TAction implements Comparable<TAction>, Saveable
 		sw.writeString(identity, "UTF-8");
 		sw.writeByte((byte)type.ordinal());
 		
-		sw.writeBit(restricted);
 		sw.writeBit(strict);
 		sw.writeBit(reversed);
 		sw.flushBits();
@@ -348,9 +326,8 @@ public class TAction implements Comparable<TAction>, Saveable
 		type = Type.VALUES[(int)sr.readByte()];
 		
 		byte flags = sr.readByte();
-		restricted = (flags & 0x01) != 0;
-		strict = (flags & 0x02) != 0;
-		reversed = (flags & 0x04) != 0;
+		strict = (flags & 0x01) != 0;
+		reversed = (flags & 0x02) != 0;
 		
 		int size;
 		

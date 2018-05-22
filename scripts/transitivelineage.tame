@@ -1,0 +1,158 @@
+action general a_quit named "quit";
+
+action transitive a_talkto named "talk to", "start a conversation with", "chat with";
+action transitive a_talkabout named "talk about", "ask about", "inquire about";
+action general a_leave named "leave", "leave conversation", "leave the conversation";
+
+/*******************************************************************************/
+
+// all people
+object archetype o_person
+{
+	function startConvo()
+	{
+		// OVERRIDE THIS
+	}
+	
+	onAction(a_talkto)
+	{
+		startConvo();
+	}
+}
+
+/*******************************************************************************/
+
+// all topics
+object archetype o_topic
+{
+	init()
+	{
+		addObjectTag(this, "topic");
+	}
+}
+
+object o_topic_baseball : o_topic named "baseball"
+{
+	onPlayerBrowse()
+	{
+		textln("baseball");
+	}
+}
+
+object o_topic_football : o_topic named "football"
+{
+	onPlayerBrowse()
+	{
+		textln("football");
+	}
+}
+
+
+/*******************************************************************************/
+
+room r_conversations
+{
+	onAction(a_leave)
+	{
+		textln("Left conversation.");
+		player.currentConvo = false; // clear conversation state
+		popRoom(player);
+	}
+
+	onActionWithAncestor(a_talkabout, o_topic)
+	{
+		textln("\"I don't know anything about that topic.\"");
+	}
+	
+}
+
+room r_conversation_bob : r_conversations
+{
+	onActionWith(a_talkabout, o_topic_baseball)
+	{
+		textln("\"Oh yeah I love baseball. My favorite team is the Yankees!\"");
+	}
+}
+
+room r_conversation_susan : r_conversations
+{
+	onActionWith(a_talkabout, o_topic_football)
+	{
+		textln("\"Oh yeah I love football. My favorite team is the Giants!\"");
+	}
+}
+
+
+/*******************************************************************************/
+
+object o_bob : o_person named "bob"
+{
+	override function startConvo()
+	{
+		player.currentConvo = "Bob"; 
+		pushRoom(player, r_conversation_bob);
+	}
+	
+}
+
+object o_susan : o_person named "susan"
+{
+	override function startConvo()
+	{
+		player.currentConvo = "Susan"; 
+		pushRoom(player, r_conversation_susan);
+	}
+}
+
+/*******************************************************************************/
+
+room r_main
+{
+	init()
+	{
+		giveObject(r_main, o_bob);
+		giveObject(r_main, o_susan);
+	}
+}
+
+player p_main
+{
+	init()
+	{
+		currentConvo = false; 
+	}
+}
+
+world
+{
+	init()
+	{
+		setPlayer(p_main);
+		setRoom(player, r_main);
+		giveObject(player, o_topic_baseball);
+		giveObject(player, o_topic_football);
+	}
+	
+	start()
+	{
+		textln("TALK TO Bob or Susan.");
+		textln("You can talk about baseball or football.");
+	}
+	
+	afterEveryCommand()
+	{
+		if (!empty(player.currentConvo))
+		{
+			textln("");
+			textln("You are currently in a conversation with " + player.currentConvo);
+			textln("You can talk about:");
+			browseTagged(player, "topic");
+		}
+	}
+	
+	onAction(a_quit)
+	{
+		quit;
+	}
+}
+

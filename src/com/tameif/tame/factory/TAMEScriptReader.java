@@ -31,7 +31,6 @@ import com.blackrook.lang.ParserException;
 import com.tameif.tame.TAMECommand;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.TAMEModule;
-import com.tameif.tame.element.ForbiddenHandler;
 import com.tameif.tame.element.ObjectContainer;
 import com.tameif.tame.element.TAction;
 import com.tameif.tame.element.TContainer;
@@ -47,7 +46,6 @@ import com.tameif.tame.lang.BlockEntry;
 import com.tameif.tame.lang.BlockEntryType;
 import com.tameif.tame.lang.Command;
 import com.tameif.tame.lang.FunctionEntry;
-import com.tameif.tame.lang.PermissionType;
 import com.tameif.tame.lang.Value;
 
 /**
@@ -737,9 +735,6 @@ public final class TAMEScriptReader implements TAMEConstants
 					if (!parseRoomParent(room))
 						return false;
 					
-					if (!parseActionPermissionClause(room))
-						return false;
-
 					currentModule.addRoom(room);
 				}
 			}
@@ -855,9 +850,6 @@ public final class TAMEScriptReader implements TAMEConstants
 					
 					// parse parent clause if any.
 					if (!parsePlayerParent(player))
-						return false;
-	
-					if (!parseActionPermissionClause(player))
 						return false;
 	
 					currentModule.addPlayer(player);
@@ -1192,7 +1184,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 			if (!element.isValidEntryType(entryType))
 			{
-				addErrorMessage("Entry name \""+entryType.name()+"\"is not valid for a "+elementTypeName+".");
+				addErrorMessage("Entry name \""+entryType.name()+"\" is not valid for a "+elementTypeName+".");
 				return null;
 			}
 			
@@ -1430,15 +1422,12 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseAction()
 		{
-			boolean restricted = false;
 			boolean strict = false;
 			boolean reversed = false;
 
 			// can happen in any order
 			while (currentType(TSKernel.TYPE_RESTRICTED, TSKernel.TYPE_STRICT, TSKernel.TYPE_REVERSED))
 			{
-				if (matchType(TSKernel.TYPE_RESTRICTED))
-					restricted = true;
 				if (matchType(TSKernel.TYPE_STRICT))
 					strict = true;
 				if (matchType(TSKernel.TYPE_REVERSED))
@@ -1461,7 +1450,6 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
-				action.setRestricted(restricted);
 				action.setStrict(strict);
 				action.setReversed(reversed);
 				nextToken();
@@ -1488,7 +1476,6 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
-				action.setRestricted(restricted);
 				action.setStrict(strict);
 				action.setReversed(reversed);
 				nextToken();
@@ -1537,7 +1524,6 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
-				action.setRestricted(restricted);
 				action.setStrict(strict);
 				action.setReversed(reversed);
 				nextToken();
@@ -1579,7 +1565,6 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
-				action.setRestricted(restricted);
 				action.setStrict(strict);
 				action.setReversed(reversed);
 				nextToken();
@@ -1606,7 +1591,6 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				TAction action = new TAction(identity);
 				action.setType(actionType);
-				action.setRestricted(restricted);
 				action.setStrict(strict);
 				action.setReversed(reversed);
 				nextToken();
@@ -1726,75 +1710,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				nextToken();
 				
 				return parseActionAdditionalNameList(action);
-			}
-			
-			return true;
-		}
-		
-		/**
-		 * Parses action permission list.
-		 * [ActionPermissionClause] :=
-		 * 		[EXCLUDES] [ACTION] [ActionPermissionClauseList]
-		 * 		[RESTRICTS] [ACTION] [ActionPermissionClauseList]
-		 * 		[e]
-		 */
-		private boolean parseActionPermissionClause(ForbiddenHandler element)
-		{
-			if (matchType(TSKernel.TYPE_FORBIDS))
-			{
-				element.setPermissionType(PermissionType.FORBID);
-				
-				if (!isAction())
-				{
-					addErrorMessage("Expected action after \"forbids\".");
-					return false;
-				}
-				
-				element.addPermissionAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
-				nextToken();
-				
-				return parseActionPermissionClauseList(element);
-			}
-
-			if (matchType(TSKernel.TYPE_ALLOWS))
-			{
-				element.setPermissionType(PermissionType.ALLOW);
-				
-				if (!isAction())
-				{
-					addErrorMessage("Expected action after \"allows\".");
-					return false;
-				}
-				
-				element.addPermissionAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
-				nextToken();
-				
-				return parseActionPermissionClauseList(element);
-			}
-			
-			return true;
-		}
-
-		/**
-		 * Parses action name list.
-		 * [ActionPermissionClause] :=
-		 * 		"," [ACTION] [ActionPermissionClause]
-		 * 		[e]
-		 */
-		private boolean parseActionPermissionClauseList(ForbiddenHandler element)
-		{
-			if (matchType(TSKernel.TYPE_COMMA))
-			{
-				if (!isAction())
-				{
-					addErrorMessage("Expected action after \",\".");
-					return false;
-				}
-				
-				element.addPermissionAction(currentModule.getActionByIdentity(currentToken().getLexeme()));
-				nextToken();
-				
-				return parseActionPermissionClauseList(element);
 			}
 			
 			return true;

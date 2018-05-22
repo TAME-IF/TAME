@@ -11,14 +11,7 @@ package com.tameif.tame.element;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-
-import com.blackrook.commons.hash.Hash;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
-import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.lang.BlockEntryType;
-import com.tameif.tame.lang.PermissionType;
 
 /**
  * Environmental instance of every adventure game.
@@ -27,18 +20,11 @@ import com.tameif.tame.lang.PermissionType;
  * Players can travel from room to room freely, provided that the world allows them to.
  * @author Matthew Tropiano
  */
-public class TRoom extends TElement implements ForbiddenHandler, ObjectContainer
+public class TRoom extends TElement implements ObjectContainer
 {
-	/** Set function for action list. */
-	private PermissionType permissionType;
-	/** List of actions that are either restricted or excluded. */
-	private Hash<String> permittedActionList;
-
 	private TRoom()
 	{
 		super();
-		this.permissionType = PermissionType.FORBID;
-		this.permittedActionList = new Hash<String>(2);
 	}
 
 	/**
@@ -70,6 +56,8 @@ public class TRoom extends TElement implements ForbiddenHandler, ObjectContainer
 			case INIT:
 			case ONACTION:
 			case ONMODALACTION:
+			case ONACTIONWITH:
+			case ONACTIONWITHANCESTOR:
 			case ONUNHANDLEDACTION:
 				return true;
 			default:
@@ -77,43 +65,6 @@ public class TRoom extends TElement implements ForbiddenHandler, ObjectContainer
 		}
 	}
 
-	@Override
-	public PermissionType getPermissionType()
-	{
-		return permissionType;
-	}
-
-	@Override
-	public void setPermissionType(PermissionType permissionType)
-	{
-		this.permissionType = permissionType;
-	}
-
-	@Override
-	public void addPermissionAction(TAction action)
-	{
-		permittedActionList.put(action.getIdentity());
-	}
-
-	@Override
-	public Iterable<String> getPermissionActions()
-	{
-		return permittedActionList;
-	}
-
-	@Override
-	public boolean allowsAction(TAction action)
-	{
-		if (permissionType == PermissionType.ALLOW)
-			return permittedActionList.contains(action.getIdentity());
-		else if (action.isRestricted())
-			return false;
-		else if (permissionType == PermissionType.FORBID)
-			return !permittedActionList.contains(action.getIdentity());
-		else
-			throw new ModuleException("Bad or unknown permission type found: "+permissionType);
-	}
-	
 	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param in the input stream to read from.
@@ -125,31 +76,6 @@ public class TRoom extends TElement implements ForbiddenHandler, ObjectContainer
 		TRoom out = new TRoom();
 		out.readBytes(in);
 		return out;
-	}
-
-	@Override
-	public void writeBytes(OutputStream out) throws IOException
-	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		super.writeBytes(out);
-		sw.writeByte((byte)permissionType.ordinal());
-
-		sw.writeInt(permittedActionList.size());
-		for (String actionIdentity : permittedActionList)
-			sw.writeString(actionIdentity, "UTF-8");		
-	}
-	
-	@Override
-	public void readBytes(InputStream in) throws IOException
-	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		super.readBytes(in);
-		permissionType = PermissionType.VALUES[sr.readByte()];
-		
-		permittedActionList.clear();
-		int size = sr.readInt();
-		while (size-- > 0)
-			permittedActionList.put(sr.readString("UTF-8"));
 	}
 
 }

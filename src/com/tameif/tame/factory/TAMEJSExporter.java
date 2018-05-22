@@ -547,8 +547,6 @@ public final class TAMEJSExporter
 			out.addMember("tameType", TAction.class.getSimpleName());
 			out.addMember("identity", action.getIdentity());
 			out.addMember("type", action.getType().ordinal());
-			if (action.isRestricted())
-				out.addMember("restricted", true);
 			if (action.isStrict())
 				out.addMember("strict", true);
 			if (action.isReversed())
@@ -687,7 +685,6 @@ public final class TAMEJSExporter
 	private static void generateResourcePlayer(Writer writer, TAMEModule module, TPlayer player) throws IOException
 	{
 		JSONObject out = JSONObject.createEmptyObject();
-		JSONObject arr;
 		
 		out.addMember("tameType", TPlayer.class.getSimpleName());
 		out.addMember("identity", player.getIdentity());
@@ -695,10 +692,6 @@ public final class TAMEJSExporter
 			out.addMember("parent", player.getParent().getIdentity());
 		if (player.isArchetype())
 			out.addMember("archetype", true);
-
-		out.addMember("permissionType", player.getPermissionType().ordinal());
-		if ((arr = JSONObject.create(player.getPermissionActions())).length() > 0)
-			out.addMember("permittedActionList", arr);
 
 		out.addMember("blockTable", convertBlockTable(player.getBlockEntries()));
 		out.addMember("functionTable", convertFunctionTable(player.getFunctionEntries()));
@@ -715,7 +708,6 @@ public final class TAMEJSExporter
 	private static void generateResourceRoom(Writer writer, TAMEModule module, TRoom room) throws IOException
 	{
 		JSONObject out = JSONObject.createEmptyObject();
-		JSONObject arr;
 		
 		out.addMember("tameType", TRoom.class.getSimpleName());
 		out.addMember("identity", room.getIdentity());
@@ -723,10 +715,6 @@ public final class TAMEJSExporter
 			out.addMember("parent", room.getParent().getIdentity());
 		if (room.isArchetype())
 			out.addMember("archetype", true);
-
-		out.addMember("permissionType", room.getPermissionType().ordinal());
-		if ((arr = JSONObject.create(room.getPermissionActions())).length() > 0)
-			out.addMember("permittedActionList", arr);
 
 		out.addMember("blockTable", convertBlockTable(room.getBlockEntries()));
 		out.addMember("functionTable", convertFunctionTable(room.getFunctionEntries()));

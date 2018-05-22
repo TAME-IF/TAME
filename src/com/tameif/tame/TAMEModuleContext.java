@@ -210,14 +210,6 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		{
 			ObjectPair<String, TAction> actionId = it.next();
 			TAction action = module.getActionByIdentity(actionId.getKey());
-			TPlayer player = getCurrentPlayerContext() != null ? getCurrentPlayerContext().getElement() : null;
-			TRoom room = getCurrentRoomContext() != null ? getCurrentRoomContext().getElement() : null;
-			
-			if (room != null && !room.allowsAction(action))
-				continue;
-			if (player != null && !player.allowsAction(action))
-				continue;
-			
 			for (String s : action.getNames())
 				hash.put(s);
 		}
