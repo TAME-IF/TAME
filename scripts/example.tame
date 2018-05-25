@@ -173,11 +173,6 @@ player p_default
 		textln("I don't think I can do that.");
 	}
 		
-	onForbiddenAction()
-	{
-		textln("I can't do that here.");
-	}
-		
 	onAmbiguousCommand()
 	{
 		textln("A lot of things are here that can described using that. Perhaps I should be more specific...");

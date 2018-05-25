@@ -21,6 +21,7 @@ com/blackrook/commons/Reflect$*.class
 com/blackrook/commons/ResettableIterable.class
 com/blackrook/commons/ResettableIterator.class
 com/blackrook/commons/Sizable.class
+com/blackrook/commons/TypeConverter.class
 com/blackrook/commons/hash/CaseInsensitiveHash.class
 com/blackrook/commons/hash/CaseInsensitiveHashMap.class
 com/blackrook/commons/hash/Hash.class
