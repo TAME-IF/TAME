@@ -19,9 +19,6 @@
 	<property name="common.lib" value="${dev.base}/Common/bin" />
 	<property name="common.io.lib" value="${dev.base}/CommonIO/bin" />
 	<property name="common.lang.lib" value="${dev.base}/CommonLang/bin" />
-	<property name="launch4j.dir" value="${lib.base}/launch4j" />
-	<property name="launch4j.lib.jar" value="${launch4j.dir}/launch4j.jar" />
-	<property name="launch4j.xstream.lib.jar" value="${launch4j.dir}/lib/xstream.jar" />
 
 	<!-- Project Info -->
 	<property name="project.archive" value="tame" />
@@ -66,15 +63,7 @@
 
 	<!-- Filesets -->
 
-	<target name="clean.win32" description="Cleans up the exe builds.">
-		<delete dir="${win32.dir}" includeemptydirs="true" casesensitive="false" />
-	</target>
-
-	<target name="init.win32" depends="clean.win32" description="Initializes the EXE folders.">
-		<mkdir dir="${win32.dir}" />
-	</target>
-
-	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.win32, clean.jre, clean.jar.scripts"  description="Cleans up everything.">
+	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.jre, clean.jar.scripts"  description="Cleans up everything.">
 	</target>
 
 	<target name="compile.scripts.windows" if="${os.isWindows}">
