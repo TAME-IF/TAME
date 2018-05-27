@@ -58,7 +58,6 @@ public class TRoom extends TElement implements ObjectContainer
 			case ONMODALACTION:
 			case ONACTIONWITH:
 			case ONACTIONWITHANCESTOR:
-			case ONUNHANDLEDACTION:
 				return true;
 			default:
 				return false;
