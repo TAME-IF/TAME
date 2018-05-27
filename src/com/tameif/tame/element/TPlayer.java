@@ -53,11 +53,11 @@ public class TPlayer extends TElement implements ObjectContainer
 		{
 			case INIT:
 			case ONACTION:
-			case ONMALFORMEDCOMMAND:
-			case ONMODALACTION:
 			case ONACTIONWITH:
 			case ONACTIONWITHANCESTOR:
+			case ONMODALACTION:
 			case ONUNHANDLEDACTION:
+			case ONMALFORMEDCOMMAND:
 			case ONINCOMPLETECOMMAND:
 			case ONAMBIGUOUSCOMMAND:
 			case ONUNKNOWNCOMMAND:
