@@ -1354,7 +1354,7 @@ TLogic.callWorldMalformedCommandBlock = function(request, response, action, worl
 
 	if ((blockToCall = context.resolveBlock('world', "ONMALFORMEDCOMMAND", [TValue.createAction(action.identity)])) != null)
 	{
-		response.trace(request, "Found specific malformed command block on world with action %s.", action.getIdentity());
+		response.trace(request, "Found specific malformed command block on world with action %s.", action.identity);
 		TLogic.callBlock(request, response, worldContext, blockToCall);
 		return true;
 	}
