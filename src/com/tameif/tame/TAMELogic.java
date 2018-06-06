@@ -1087,6 +1087,7 @@ public final class TAMELogic implements TAMEConstants
 		Block blockToCall = null;
 		
 		Value actionValue = Value.createAction(action.getIdentity());
+
 		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONACTION, actionValue);
 		
 		// call action on object.
@@ -1102,8 +1103,10 @@ public final class TAMELogic implements TAMEConstants
 		// Call onActionWith(action, object) on current room, then player.
 		if (currentPlayerContext != null)
 		{
-			blockEntry = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object.getIdentity()));
 			TPlayer currentPlayer = currentPlayerContext.getElement();
+
+			BlockEntry actionWithEntry = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object.getIdentity()));
+			BlockEntry actionWithOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
 
 			// try current room.
 			TRoomContext currentRoomContext = moduleContext.getCurrentRoomContext();
@@ -1112,43 +1115,43 @@ public final class TAMELogic implements TAMEConstants
 				TRoom currentRoom = currentRoomContext.getElement();
 				
 				// get on action with block on room.
-				if ((blockToCall = currentRoom.resolveBlock(blockEntry)) != null)
+				if ((blockToCall = currentRoom.resolveBlock(actionWithEntry)) != null)
 				{
 					response.trace(request, "Found \"action with\" block on lineage of room %s.", currentRoom.getIdentity());
 					callBlock(request, response, currentRoomContext, blockToCall);
 					return;
 				}
+				// get on action with ancestor on room
+				else if (doActionAncestorSearch(request, response, actionValue, currentRoom, object))
+					return;
+				// get on action with block on room.
+				else if ((blockToCall = currentRoom.resolveBlock(actionWithOtherEntry)) != null)
+				{
+					response.trace(request, "Found \"action with other\" block on lineage of room %s.", currentRoom.getIdentity());
+					callBlock(request, response, currentRoomContext, blockToCall);
+					return;
+				}
 				
-				response.trace(request, "No \"action with\" block on room.");
 			}
 			
 			// get on action with block on player.
-			if ((blockToCall = currentPlayer.resolveBlock(blockEntry)) != null)
+			if ((blockToCall = currentPlayer.resolveBlock(actionWithEntry)) != null)
 			{
 				response.trace(request, "Found \"action with\" block on lineage of player %s.", currentPlayer.getIdentity());
 				callBlock(request, response, currentPlayerContext, blockToCall);
 				return;
 			}
-			
-			response.trace(request, "No \"action with\" block on player.");
-		}
-
-		// Call onActionWithAncestor(action, object) on current room, then player.
-		if (currentPlayerContext != null)
-		{
-			TPlayer currentPlayer = currentPlayerContext.getElement();
-
-			// try current room.
-			TRoomContext currentRoomContext = moduleContext.getCurrentRoomContext();
-			if (currentRoomContext != null)
-			{
-				TRoom currentRoom = currentRoomContext.getElement();
-				if (doActionAncestorSearch(request, response, actionValue, currentRoom, object))
-					return;
-			}
-			
-			if (doActionAncestorSearch(request, response, actionValue, currentPlayer, object))
+			// get on action with ancestor on player
+			else if (doActionAncestorSearch(request, response, actionValue, currentPlayer, object))
 				return;
+			// get on action with block on player.
+			else if ((blockToCall = currentPlayer.resolveBlock(actionWithOtherEntry)) != null)
+			{
+				response.trace(request, "Found \"action with other\" block on lineage of player %s.", currentPlayer.getIdentity());
+				callBlock(request, response, currentPlayerContext, blockToCall);
+				return;
+			}
+
 		}
 
 		if (!callActionUnhandled(request, response, action))

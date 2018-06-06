@@ -1882,8 +1882,17 @@ TLogic.doActionTransitive = function(request, response, action, object)
 				TLogic.callBlock(request, response, currentRoomContext, blockToCall);
 				return;
 			}
-			
-			response.trace(request, "No \"action with\" block on room.");
+			// get on action with ancestor block on room.
+			else if (TLogic.doActionAncestorSearch(request, response, actionValue, currentRoom, object))
+				return;
+			// get on action with other block on room.
+			else if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+			{
+				response.trace(request, "Found \"action with other\" block on lineage of room "+currentRoom.identity+".");
+				TLogic.callBlock(request, response, currentRoomContext, blockToCall);
+				return;
+			}
+				
 		}
 		
 		// get on action with block on player.
@@ -1893,26 +1902,17 @@ TLogic.doActionTransitive = function(request, response, action, object)
 			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
 			return;
 		}
-		
-		response.trace(request, "No \"action with\" block on player.");
-	}
-
-	// Call onActionWithAncestor(action, object) on current room, then player.
-	if (currentPlayerContext != null)
-	{
-		var currentPlayer = context.getCurrentPlayer();
-
-		// try current room.
-		var currentRoomContext = context.getCurrentRoomContext();
-		if (currentRoomContext != null)
-		{
-			var currentRoom = context.getCurrentRoom();
-			if (TLogic.doActionAncestorSearch(request, response, actionValue, currentRoom, object))
-				return;
-		}
-		
-		if (TLogic.doActionAncestorSearch(request, response, actionValue, currentPlayer, object))
+		// get on action with ancestor block on player.
+		else if (TLogic.doActionAncestorSearch(request, response, actionValue, currentPlayer, object))
 			return;
+		// get on action with other block on player.
+		else if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+		{
+			response.trace(request, "Found \"action with\" block on lineage of player "+currentPlayer.identity+".");
+			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
+			return;
+		}
+
 	}
 
 	if (!TLogic.callActionUnhandled(request, response, action))

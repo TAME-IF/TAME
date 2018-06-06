@@ -1,0 +1,250 @@
+Interpret:
+	Parse ACTION.
+	If Action is GENERAL,
+		If Strict,
+			If more tokens,
+				-> MALFORMED Command
+				world.afterFailedCommand()
+				-> Action LOOP
+				world.afterEveryCommand()
+				-> Action LOOP
+				FINISH.
+		Enqueue ACTION.
+	Else If Action is OPEN,
+		If no more tokens,
+			-> INCOMPLETE Command
+			world.afterFailedCommand()
+			-> Action LOOP
+			world.afterEveryCommand()
+			-> Action LOOP
+			FINISH.
+		Else,
+			Enqueue ACTION.
+	Else If Action is MODAL,
+		If no more tokens,
+			-> INCOMPLETE Command
+			world.afterFailedCommand()
+			-> Action LOOP
+			world.afterEveryCommand()
+			-> Action LOOP
+			FINISH.
+		If bad mode,
+			-> MALFORMED Command
+			world.afterFailedCommand()
+			-> Action LOOP
+			world.afterEveryCommand()
+			-> Action LOOP
+			FINISH.
+		If Strict,
+			If more tokens,
+				-> MALFORMED Command
+				world.afterFailedCommand()
+				-> Action LOOP
+				world.afterEveryCommand()
+				-> Action LOOP
+				FINISH.
+			Else,
+				Enqueue ACTION.
+		Else,
+			Enqueue ACTION.
+	Else If Action is TRANSITIVE,
+		If no more tokens,
+			-> INCOMPLETE Command
+			world.afterFailedCommand()
+			-> Action LOOP
+			world.afterEveryCommand()
+			-> Action LOOP
+			FINISH.
+		If unknown object,
+			-> MALFORMED Command
+			world.afterFailedCommand()
+			-> Action LOOP
+			world.afterEveryCommand()
+			-> Action LOOP
+			FINISH.
+		Else If Strict,
+			If more tokens,
+				-> MALFORMED Command
+				world.afterFailedCommand()
+				-> Action LOOP
+				world.afterEveryCommand()
+				-> Action LOOP
+				FINISH.
+			Else,
+				Enqueue ACTION.
+		Else,
+			Enqueue ACTION.
+	Else If Action is DITRANSITIVE,
+		If no more tokens,
+			-> INCOMPLETE Command
+			world.afterFailedCommand()
+			-> Action LOOP
+			world.afterEveryCommand()
+			-> Action LOOP
+			FINISH.
+		Read object.
+		If unknown object,
+			-> MALFORMED Command
+			world.afterFailedCommand()
+			-> Action LOOP
+			world.afterEveryCommand()
+			-> Action LOOP
+			FINISH.
+		If no more tokens,
+			Enqueue ACTION (as transitive).
+		Else,
+			Read conjugate.
+			If bad conjugate,
+				-> MALFORMED Command
+				world.afterFailedCommand()
+				-> Action LOOP
+				world.afterEveryCommand()
+				-> Action LOOP
+				FINISH.
+			If no more tokens,
+				-> INCOMPLETE Command
+				world.afterFailedCommand()
+				-> Action LOOP
+				world.afterEveryCommand()
+				-> Action LOOP
+				FINISH.
+			Read object.
+			If unknown object,
+				-> MALFORMED Command
+				world.afterFailedCommand()
+				-> Action LOOP
+				world.afterEveryCommand()
+				-> Action LOOP
+				FINISH.
+			Else,
+				Enqueue ACTION.
+	Else,
+		-> UNKNOWN Command
+		world.afterFailedCommand()
+		-> Action LOOP
+		world.afterEveryCommand()
+		-> Action LOOP
+		FINISH.
+	
+	-> Action LOOP
+	world.afterSuccessfulCommand()
+	-> Action LOOP
+	world.afterEveryCommand()
+	-> Action LOOP
+	FINISH.
+
+
+Action LOOP:
+	While ACTIONS to PROCESS,
+		Fetch next enqueued ACTION.
+		Process ACTION.
+	Return
+
+Process ACTION:
+	If Action is GENERAL,
+		If current room exists,
+			room.onAction(ACTION)
+			Return
+		Else If current player exists,
+			player.onAction(ACTION) -> Return
+		Else,
+			world.onAction(ACTION) -> Return
+		-> UNHANDLED Action
+		Return
+
+	Else If Action is OPEN,
+		If current room exists,
+			room.onAction(ACTION) -> Return
+		Else If current player exists,
+			player.onAction(ACTION) -> Return
+		Else,
+			world.onAction(ACTION) -> Return
+		-> UNHANDLED Action
+		Return
+	Else If Action is MODAL,
+		If current room exists,
+			room.onModalAction(ACTION, MODE) -> Return
+		Else If current player exists,
+			player.onModalAction(ACTION, MODE) -> Return
+		Else,
+			world.onModalAction(ACTION, MODE) -> Return
+		-> UNHANDLED Action
+		Return
+	Else If Action is TRANSITIVE,
+		OBJECT1.onAction(ACTION) -> Return
+		If current room exists,
+			room.onActionWith(ACTION, OBJECT1) -> Return
+			room.onActionWithAncestor(ACTION, OBJECT1-ANCESTOR) -> Return
+			room.onActionWithOther(ACTION) -> Return
+		Else If current player exists,
+			player.onActionWith(ACTION, OBJECT1) -> Return
+			player.onActionWithAncestor(ACTION, OBJECT1-ANCESTOR) -> Return
+			player.onActionWithOther(ACTION) -> Return
+		Else,
+			world.onAction(ACTION) -> Return
+		-> UNHANDLED Action
+		Return
+	Else If Action is DITRANSITIVE,
+		If STRICT,
+			If REVERSED,
+				OBJECT2.onActionWith(ACTION, OBJECT1) -> Return
+				OBJECT2.onActionWithAncestor(ACTION, OBJECT1-ANCESTOR) -> Return
+				OBJECT2.onActionWithOther(ACTION) -> Return
+				-> UNHANDLED Action
+				Return
+			Else,
+				OBJECT1.onActionWith(ACTION, OBJECT2) -> Return
+				OBJECT1.onActionWithAncestor(ACTION, OBJECT2-ANCESTOR) -> Return
+				OBJECT1.onActionWithOther(ACTION) -> Return
+				-> UNHANDLED Action
+				Return
+		Else,
+			OBJECT1.onActionWith(ACTION, OBJECT2) -> Return
+			OBJECT2.onActionWith(ACTION, OBJECT1) -> Return
+			OBJECT1.onActionWithAncestor(ACTION, OBJECT2-ANCESTOR) -> Return
+			OBJECT2.onActionWithAncestor(ACTION, OBJECT1-ANCESTOR) -> Return
+			OBJECT1.onActionWithOther(ACTION) -> Return
+			OBJECT2.onActionWithOther(ACTION) -> Return
+			-> UNHANDLED Action
+			Return
+	Else
+		Return
+
+UNKNOWN Command:
+	If current player exists,
+		player.onUnknownCommand() -> Return
+	world.onUnknownCommand() -> Return
+	[ERROR CUE - UNKNOWN] -> Return
+
+MALFORMED Command:
+	If current player exists,
+		player.onMalformedCommandBlock(ACTION) -> Return
+		player.onMalformedCommandBlock() -> Return
+	world.onMalformedCommandBlock(ACTION) -> Return
+	world.onMalformedCommandBlock() -> Return
+	[ERROR CUE - MALFORMED] -> Return
+
+INCOMPLETE Command:
+	If current player exists,
+		player.onIncompleteCommandBlock(ACTION) -> Return
+		player.onIncompleteCommandBlock() -> Return
+	world.onIncompleteCommandBlock(ACTION) -> Return
+	world.onIncompleteCommandBlock() -> Return
+	[ERROR CUE - INCOMPLETE] -> Return
+
+AMBIGUOUS Command:
+	If current player exists,
+		player.onAmbiguousCommandBlock(ACTION) -> Return
+		player.onAmbiguousCommandBlock() -> Return
+	world.onAmbiguousCommandBlock(ACTION) -> Return
+	world.onAmbiguousCommandBlock() -> Return
+	[ERROR CUE - AMBIGUOUS] -> Return
+
+UNHANDLED Action:
+	If current player exists,
+		player.onUnhandledAction(ACTION) -> Return
+		player.onUnhandledAction() -> Return
+	world.onUnhandledAction(ACTION) -> Return
+	world.onUnhandledAction() -> Return
+	[ERROR CUE - UNHANDLED] -> Return
+
