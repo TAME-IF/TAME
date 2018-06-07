@@ -1915,6 +1915,27 @@ TLogic.doActionTransitive = function(request, response, action, object)
 
 	}
 
+	var worldContext = context.getElementContext('world');
+	var world = context.getElement('world');
+
+	// get on action with block on world.
+	if ((blockToCall = context.resolveBlock(world.identity, "ONACTIONWITH", [actionValue, objectValue])) != null)
+	{
+		response.trace(request, "Found \"action with\" block on the world.");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+		return;
+	}
+	// get on action with ancestor block on world.
+	else if (TLogic.doActionAncestorSearch(request, response, actionValue, world, object))
+		return;
+	// get on action with other block on world.
+	else if ((blockToCall = context.resolveBlock(world.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+	{
+		response.trace(request, "Found \"action with\" block on lineage of player "+world.identity+".");
+		TLogic.callBlock(request, response, worldContext, blockToCall);
+		return;
+	}
+
 	if (!TLogic.callActionUnhandled(request, response, action))
 		response.addCue(TAMEConstants.Cue.ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
 };
