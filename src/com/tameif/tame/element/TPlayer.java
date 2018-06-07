@@ -55,6 +55,7 @@ public class TPlayer extends TElement implements ObjectContainer
 			case ONACTION:
 			case ONACTIONWITH:
 			case ONACTIONWITHANCESTOR:
+			case ONACTIONWITHOTHER:
 			case ONMODALACTION:
 			case ONUNHANDLEDACTION:
 			case ONMALFORMEDCOMMAND:

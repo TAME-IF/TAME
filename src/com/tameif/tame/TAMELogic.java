@@ -1098,6 +1098,9 @@ public final class TAMELogic implements TAMEConstants
 			return;
 		}
 		
+		BlockEntry actionWithEntry = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object.getIdentity()));
+		BlockEntry actionWithOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
+
 		TPlayerContext currentPlayerContext = request.getModuleContext().getCurrentPlayerContext();
 
 		// Call onActionWith(action, object) on current room, then player.
@@ -1105,8 +1108,6 @@ public final class TAMELogic implements TAMEConstants
 		{
 			TPlayer currentPlayer = currentPlayerContext.getElement();
 
-			BlockEntry actionWithEntry = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object.getIdentity()));
-			BlockEntry actionWithOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
 
 			// try current room.
 			TRoomContext currentRoomContext = moduleContext.getCurrentRoomContext();
@@ -1124,7 +1125,7 @@ public final class TAMELogic implements TAMEConstants
 				// get on action with ancestor on room
 				else if (doActionAncestorSearch(request, response, actionValue, currentRoom, object))
 					return;
-				// get on action with block on room.
+				// get on action with other block on room.
 				else if ((blockToCall = currentRoom.resolveBlock(actionWithOtherEntry)) != null)
 				{
 					response.trace(request, "Found \"action with other\" block on lineage of room %s.", currentRoom.getIdentity());
@@ -1144,7 +1145,7 @@ public final class TAMELogic implements TAMEConstants
 			// get on action with ancestor on player
 			else if (doActionAncestorSearch(request, response, actionValue, currentPlayer, object))
 				return;
-			// get on action with block on player.
+			// get on action with other block on player.
 			else if ((blockToCall = currentPlayer.resolveBlock(actionWithOtherEntry)) != null)
 			{
 				response.trace(request, "Found \"action with other\" block on lineage of player %s.", currentPlayer.getIdentity());
@@ -1152,6 +1153,27 @@ public final class TAMELogic implements TAMEConstants
 				return;
 			}
 
+		}
+		
+		TWorldContext worldContext = request.getModuleContext().getWorldContext();
+		TWorld world = worldContext.getElement();
+		
+		// get on action with block on world.
+		if ((blockToCall = world.resolveBlock(actionWithEntry)) != null)
+		{
+			response.trace(request, "Found \"action with\" block on the world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return;
+		}
+		// get on action with ancestor on world
+		else if (doActionAncestorSearch(request, response, actionValue, world, object))
+			return;
+		// get on action with other block on world.
+		else if ((blockToCall = world.resolveBlock(actionWithOtherEntry)) != null)
+		{
+			response.trace(request, "Found \"action with other\" block on the world.");
+			callBlock(request, response, worldContext, blockToCall);
+			return;
 		}
 
 		if (!callActionUnhandled(request, response, action))

@@ -53,7 +53,11 @@ public class TWorld extends TElement implements ObjectContainer
 		switch (type)
 		{
 			case INIT:
+			case START:
 			case ONACTION:
+			case ONACTIONWITH:
+			case ONACTIONWITHANCESTOR:
+			case ONACTIONWITHOTHER:
 			case ONMALFORMEDCOMMAND:
 			case ONMODALACTION:
 			case ONUNHANDLEDACTION:
@@ -63,7 +67,6 @@ public class TWorld extends TElement implements ObjectContainer
 			case AFTERSUCCESSFULCOMMAND:
 			case AFTERFAILEDCOMMAND:
 			case AFTEREVERYCOMMAND:
-			case START:
 				return true;
 			default:
 				return false;
