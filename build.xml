@@ -50,7 +50,7 @@
 	<property name="jre.scripts.dir" value="${jre.dir}/scripts" />
 	<property name="scripts.dir" value="${build.dir}/scripts" />
 
-	<property name="zip.jar.filename" value="${project.archive}-${build.version}.zip" />
+	<property name="zip.jar.filename" value="${project.archive}-jar-${build.version}.zip" />
 	<property name="zip.jar.one.filename" value="${project.archive}-standalone-${build.version}.zip" />
 	<property name="zip.jre.win32.filename" value="${project.archive}-jre-win32-${build.version}.zip" />
 	<property name="zip.jre.win64.filename" value="${project.archive}-jre-win64-${build.version}.zip" />
@@ -414,12 +414,7 @@
 		</zip>
 	</target>
 
-	<target name="zip" depends="zip.src, zip.docs, zip.jar.tame, zip.jar.tame.one, zip.jre" description="Creates all zips.">
-	</target>
-
-	<!-- ================================= -->
-
-	<target name="release" depends="zip">
+	<target name="release" depends="zip.src, zip.docs, zip.jar.tame, zip.jar.tame.one, zip.jre" description="Creates all zips and releases.">
 	</target>
 
 </project>
