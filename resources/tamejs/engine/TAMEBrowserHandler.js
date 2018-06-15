@@ -125,7 +125,7 @@ var TBrowserHandler = function(TAMEENGINE, options)
 /**
  * Resets the cue read state.
  */
-TAMEBrowserHandler.prototype.reset = function()
+TBrowserHandler.prototype.reset = function()
 {
 	this.stop = false;
 	this.pause = false;
@@ -136,7 +136,7 @@ TAMEBrowserHandler.prototype.reset = function()
  * Prepares the response for read.
  * @param response the response from an initialize or interpret call.
  */
-TAMEBrowserHandler.prototype.prepare = function(response)
+TBrowserHandler.prototype.prepare = function(response)
 {
 	this.reset();
 	this.response = response;
@@ -148,7 +148,7 @@ TAMEBrowserHandler.prototype.prepare = function(response)
  * Set with prepareResponse().
  * @return true if more unprocessed cues remain, or false if not. 
  */
-TAMEBrowserHandler.prototype.resume = function()
+TBrowserHandler.prototype.resume = function()
 {
 	if (!this.response)
 		throw 'resume() before prepare()!';
@@ -221,6 +221,6 @@ TAMEBrowserHandler.prototype.resume = function()
 //##[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TAMEBrowserHandler;
+if ((typeof module.exports) !== 'undefined') module.exports = TBrowserHandler;
 // =========================================================================
 
