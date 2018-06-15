@@ -5,7 +5,7 @@
  * @param options options object.
  * 		print: fn(text): called when a string needs printing.
  * 		onStart: fn(): called before cues start processing.
- * 		onEnd: fn(): called before cues stop processing, and the end is reached.
+ * 		onEnd: fn(): called when cues stop processing, and the end is reached.
  * 		onSuspend: fn(): called when a call to process a cue initiates a suspension.
  * 		onResume: fn(): called when cues process again.
  * 		onPauseCue: fn(): called when a "pause" cue is processed. 
@@ -22,7 +22,7 @@
  * 		onEndFormatTag: fn(tagname): called when a formatted string ends a tag.
  * 		onFormatText: fn(tag): called when a formatted string needs to process text.
  */
-function TAMEBrowserHandler(TAME, options)
+var TBrowserHandler = function(TAMEENGINE, options)
 {
 	var self = this;
 	var BLANK_FUNCTION = function(){};
@@ -71,7 +71,7 @@ function TAMEBrowserHandler(TAME, options)
 		
 		"textf": function(content)
 		{
-			TAME.parseFormatted(content, self.options.onStartFormatTag, self.options.onEndFormatTag, self.options.onFormatText);
+			TAMEENGINE.parseFormatted(content, self.options.onStartFormatTag, self.options.onEndFormatTag, self.options.onFormatText);
 			return true;
 		},
 			

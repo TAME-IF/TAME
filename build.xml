@@ -49,7 +49,10 @@
 	<property name="jre.dir" value="${build.dir}/jre" />
 	<property name="jre.scripts.dir" value="${jre.dir}/scripts" />
 	<property name="scripts.dir" value="${build.dir}/scripts" />
+	<property name="js.dir" value="${build.dir}/js" />
 
+	<property name="zip.js.node.filename" value="${project.archive}-nodejs-${build.version}.zip" />
+	<property name="zip.js.browser.filename" value="${project.archive}-browserjs-${build.version}.zip" />
 	<property name="zip.jar.filename" value="${project.archive}-jar-${build.version}.zip" />
 	<property name="zip.jar.one.filename" value="${project.archive}-standalone-${build.version}.zip" />
 	<property name="zip.jre.win32.filename" value="${project.archive}-jre-win32-${build.version}.zip" />
@@ -57,6 +60,9 @@
 	<property name="zip.jre.macos.filename" value="${project.archive}-jre-macos-${build.version}.tar.gz" />
 	<property name="zip.jre.linux32.filename" value="${project.archive}-jre-linux32-${build.version}.tar.gz" />
 	<property name="zip.jre.linux64.filename" value="${project.archive}-jre-linux64-${build.version}.tar.gz" />
+
+	<property name="js.node.filename" value="tame.js" />
+	<property name="js.browser.filename" value="tame-${build.version}.js" />
 
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
 	<property name="jar.tame.one.filename" value="${project.archive}-standalone-${build.version}.jar" />
@@ -240,6 +246,35 @@
 	<target name="jar" depends="init.jar, jar.tame, jar.tame.one, jar.tame.one.min" description="Make all JARs.">
 	</target>
 
+	<!-- JS Build Targets -->
+
+	<target name="clean.js">
+		<delete dir="${js.dir}" includeemptydirs="true" casesensitive="false" />
+	</target>
+
+	<target name="init.js" depends="clean.js">
+		<mkdir dir="${js.dir}" />
+	</target>
+
+	<target name="js.node" depends="init.js, compile">
+		<java classname="com.tameif.tame.compiler.TAMECompilerMain" classpath="${project.classpath}${S}${bin.dir}">
+			<arg value="--js-engine-node" />
+			<arg value="-o" />
+			<arg value="${js.dir}/${js.node.filename}" />
+		</java>
+	</target>
+
+	<target name="js.browser" depends="init.js, compile">
+		<java classname="com.tameif.tame.compiler.TAMECompilerMain" classpath="${project.classpath}${S}${bin.dir}">
+			<arg value="--js-engine" />
+			<arg value="-o" />
+			<arg value="${js.dir}/${js.browser.filename}" />
+		</java>
+	</target>
+
+	<target name="js" depends="js.browser, js.node">
+	</target>
+
 	<!-- JRE Embedded Targets -->
 
 	<property name="jlink.options" value="--compress=2" />
@@ -319,6 +354,22 @@
 	</target>
 
 	<!-- ==== Zip stuff ==== -->
+
+	<target name="zip.js.node" depends="init.zip, js.node" description="Makes and zips the TAME NodeJS version.">
+		<delete file="${zip.dir}/${zip.js.node.filename}" />
+		<zip destfile="${zip.dir}/${zip.js.node.filename}" compress="true" level="9">
+			<fileset file="${js.dir}/${js.node.filename}" />
+			<fileset refid="fileset.documents" />
+		</zip>
+	</target>
+
+	<target name="zip.js.browser" depends="init.zip, js.browser" description="Makes and zips the TAME browser JS version.">
+		<delete file="${zip.dir}/${zip.js.browser.filename}" />
+		<zip destfile="${zip.dir}/${zip.js.browser.filename}" compress="true" level="9">
+			<fileset file="${js.dir}/${js.browser.filename}" />
+			<fileset refid="fileset.documents" />
+		</zip>
+	</target>
 
 	<target name="zip.jar.tame" depends="init.zip, jar" description="Makes and zips the core TAME JAR.">
 		<delete file="${zip.dir}/${zip.jar.filename}" />
@@ -405,6 +456,9 @@
 	<target name="zip.jre" depends="jre, zip.jre.win32, zip.jre.win64, zip.jre.macos, zip.jre.linux32, zip.jre.linux64">
 	</target>
 
+	<target name="zip.js" depends="zip.js.node, zip.js.browser">
+	</target>
+	
 	<target name="zip.src" depends="init.zip" description="Archives the source code.">
 		<delete file="${zip.dir}/${zip.sources.filename}" />
 		<zip destfile="${zip.dir}/${zip.sources.filename}" compress="true" level="9">
@@ -414,7 +468,7 @@
 		</zip>
 	</target>
 
-	<target name="release" depends="zip.src, zip.docs, zip.jar.tame, zip.jar.tame.one, zip.jre" description="Creates all zips and releases.">
+	<target name="release" depends="zip.src, zip.docs, zip.js, zip.jar.tame, zip.jar.tame.one, zip.jre" description="Creates all zips and releases.">
 	</target>
 
 </project>

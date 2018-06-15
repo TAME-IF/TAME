@@ -268,7 +268,11 @@ public final class TAMECompilerMain
 		
 		if (exportJSEngine)
 		{
-			File outJSFile = new File("TAME-"+TAMELogic.getVersion()+".js");
+			// Fill with default if no outfile specified.
+			if (Common.isEmpty(options.fileOutPath))
+				options.fileOutPath = "TAME-"+TAMELogic.getVersion()+".js";
+
+			File outJSFile = new File(options.fileOutPath);
 			try {
 				jsOptions.wrapperName = TAMEJSExporter.WRAPPER_ENGINE;
 				TAMEJSExporter.export(outJSFile, null, jsOptions);
@@ -287,7 +291,11 @@ public final class TAMECompilerMain
 			
 		if (exportJSEngineNode)
 		{
-			File outJSFile = new File("TAME.js");
+			// Fill with default if no outfile specified.
+			if (Common.isEmpty(options.fileOutPath))
+				options.fileOutPath = "TAME.js";
+
+			File outJSFile = new File(options.fileOutPath);
 			try {
 				jsOptions.wrapperName = TAMEJSExporter.WRAPPER_NODEENGINE;
 				TAMEJSExporter.export(outJSFile, null, jsOptions);

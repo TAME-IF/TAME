@@ -23,8 +23,8 @@ function println(text)
 		print(text + '\n');
 }
 
-var handler = new TAMEBrowserHandler(TAME,
-{
+var handler = TAME.newBrowserHandler({
+	
 	"print": print,
 	
 	"onStart": function()
