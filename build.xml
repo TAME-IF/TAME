@@ -465,6 +465,7 @@
 			<zipfileset dir="${src.dir}" prefix="src"/>
 			<zipfileset dir="${resource.dir}" prefix="resources"/>
 			<fileset refid="fileset.documents" />
+			<fileset refid="fileset.buildfiles" />
 		</zip>
 	</target>
 

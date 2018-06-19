@@ -47,9 +47,19 @@
 		<include name="READ.ME" />
 		<include name="docs/*.*" />
 	</patternset>
-	
+
+	<patternset id="pattern.buildfiles">
+		<include name="build*.xml" />
+		<include name="build*.def" />
+		<include name="build-readme.txt" />
+	</patternset>
+
 	<fileset id="fileset.documents" dir=".">
 		<patternset refid="pattern.documents" />
+	</fileset>
+
+	<fileset id="fileset.buildfiles" dir=".">
+		<patternset refid="pattern.buildfiles" />
 	</fileset>
 	
 	<!-- Targets -->
@@ -197,6 +207,7 @@
 		<zip basedir="${src.dir}" destfile="${zip.dir}/${zip.sources.filename}" compress="true"></zip>
 		<zip destfile="${zip.dir}/${zip.sources.filename}" update="true">
 			<fileset refid="fileset.documents" />
+			<fileset refid="fileset.buildfiles" />
 		</zip>
 	</target>
 	
