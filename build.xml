@@ -222,19 +222,19 @@
 
 	<target name="jar.scripts.windows">
 		<!-- Windows Commands -->
-		<echo message="@java -cp &quot;%~dp0\${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${scripts.dir}/tame.cmd" />
-		<echo message="@java -cp &quot;%~dp0\${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${scripts.dir}/tamec.cmd" />
+		<echo message="@java -cp &quot;%~dp0\..\jar\${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${scripts.dir}/tame.cmd" />
+		<echo message="@java -cp &quot;%~dp0\..\jar\${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${scripts.dir}/tamec.cmd" />
 	</target>
 
 	<target name="jar.scripts.bash">
 		<!-- Bash Shell Commands -->
 		<echo message="#!/bin/bash&#10;" file="${scripts.dir}/tame" />
 		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="${scripts.dir}/tame" append="true" />
-		<echo message="java -cp &quot;$SCRIPTDIR/${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${scripts.dir}/tame" append="true" />
+		<echo message="java -cp &quot;$SCRIPTDIR/../jar/${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${scripts.dir}/tame" append="true" />
 
 		<echo message="#!/bin/bash&#10;" file="${scripts.dir}/tamec" />
 		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="${scripts.dir}/tamec" append="true" />
-		<echo message="java -cp &quot;$SCRIPTDIR/${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${scripts.dir}/tamec" append="true" />
+		<echo message="java -cp &quot;$SCRIPTDIR/../jar/${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${scripts.dir}/tamec" append="true" />
 		<!-- Set permissions -->
 		<chmod file="${scripts.dir}/tame" perm="ugo+rx"/>
 		<chmod file="${scripts.dir}/tamec" perm="ugo+rx"/>
@@ -329,19 +329,19 @@
 
 	<target name="jre.scripts.windows">
 		<!-- Windows Commands -->
-		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${jre.scripts.dir}/windows/tame.cmd" />
-		<echo message="@&quot;%~dp0\jre\bin\java.exe&quot; -cp &quot;%~dp0\${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${jre.scripts.dir}/windows/tamec.cmd" />
+		<echo message="@&quot;%~dp0\..\jre\bin\java.exe&quot; -cp &quot;%~dp0\..\jar\${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain %*&#10;" file="${jre.scripts.dir}/windows/tame.cmd" />
+		<echo message="@&quot;%~dp0\..\jre\bin\java.exe&quot; -cp &quot;%~dp0\..\jar\${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${jre.scripts.dir}/windows/tamec.cmd" />
 	</target>
 
 	<target name="jre.scripts.bash">
 		<!-- Bash Shell Commands -->
 		<echo message="#!/bin/bash&#10;" file="${jre.scripts.dir}/bash/tame" />
 		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="${jre.scripts.dir}/bash/tame" append="true" />
-		<echo message="&quot;$SCRIPTDIR/jre/bin/java&quot; -cp &quot;$SCRIPTDIR/${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${jre.scripts.dir}/bash/tame" append="true" />
+		<echo message="&quot;$SCRIPTDIR/../jre/bin/java&quot; -cp &quot;$SCRIPTDIR/../jar/${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleClientMain $@&#10;" file="${jre.scripts.dir}/bash/tame" append="true" />
 
 		<echo message="#!/bin/bash&#10;" file="${jre.scripts.dir}/bash/tamec" />
 		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="${jre.scripts.dir}/bash/tamec" append="true" />
-		<echo message="&quot;$SCRIPTDIR/jre/bin/java&quot; -cp &quot;$SCRIPTDIR/${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${jre.scripts.dir}/bash/tamec" append="true" />
+		<echo message="&quot;$SCRIPTDIR/../jre/bin/java&quot; -cp &quot;$SCRIPTDIR/../jar/${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${jre.scripts.dir}/bash/tamec" append="true" />
 		<!-- Set permissions -->
 		<chmod file="${jre.scripts.dir}/bash/tame" perm="ugo+rx"/>
 		<chmod file="${jre.scripts.dir}/bash/tamec" perm="ugo+rx"/>
@@ -374,7 +374,7 @@
 	<target name="zip.jar.tame" depends="init.zip, jar" description="Makes and zips the core TAME JAR.">
 		<delete file="${zip.dir}/${zip.jar.filename}" />
 		<zip destfile="${zip.dir}/${zip.jar.filename}" compress="true" level="9">
-			<fileset file="${jar.dir}/${jar.tame.filename}" />
+			<zipfileset file="${jar.dir}/${jar.tame.filename}" prefix="jar/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -382,8 +382,8 @@
 	<target name="zip.jar.tame.one" depends="init.zip, jar, jar.scripts" description="Makes and zips the standalone TAME JAR plus scripts to execute.">
 		<delete file="${zip.dir}/${zip.jar.one.filename}" />
 		<zip destfile="${zip.dir}/${zip.jar.one.filename}" compress="true" level="9">
-			<zipfileset dir="${scripts.dir}" filemode="755" />
-			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
+			<zipfileset dir="${scripts.dir}" filemode="755" prefix="bin/" />
+			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -392,9 +392,9 @@
 		<delete file="${zip.dir}/${zip.jre.win32.filename}" />
 		<zip destfile="${zip.dir}/${zip.jre.win32.filename}" compress="true" level="9">
 			<zipfileset dir="${jre.win32.dir}" prefix="jre/"/>
-			<fileset dir="${jre.scripts.dir}/windows" />
+			<zipfileset dir="${jre.scripts.dir}/windows" prefix="bin/" />
+			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
 			<fileset refid="fileset.documents" />
-			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 		</zip>
 	</target>
 
@@ -402,9 +402,9 @@
 		<delete file="${zip.dir}/${zip.jre.win64.filename}" />
 		<zip destfile="${zip.dir}/${zip.jre.win64.filename}" compress="true" level="9">
 			<zipfileset dir="${jre.win64.dir}" prefix="jre/"/>
-			<fileset dir="${jre.scripts.dir}/windows" />
+			<zipfileset dir="${jre.scripts.dir}/windows" prefix="bin/" />
+			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
 			<fileset refid="fileset.documents" />
-			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 		</zip>
 	</target>
 
@@ -417,9 +417,9 @@
 			<tarfileset dir="${jre.macos.dir}" prefix="jre/">
 				<exclude name="bin/**" />
 			</tarfileset>
-			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" />
+			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
+			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/"/>
 			<fileset refid="fileset.documents" />
-			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 		</tar>
 	</target>
 
@@ -432,9 +432,9 @@
 			<tarfileset dir="${jre.linux32.dir}" prefix="jre/">
 				<exclude name="bin/**" />
 			</tarfileset>
-			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" />
+			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/" />
+			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
 			<fileset refid="fileset.documents" />
-			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 		</tar>
 	</target>
 
@@ -447,9 +447,9 @@
 			<tarfileset dir="${jre.linux64.dir}" prefix="jre/">
 				<exclude name="bin/**" />
 			</tarfileset>
-			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" />
+			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/" />
+			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
 			<fileset refid="fileset.documents" />
-			<fileset file="${jar.dir}/${jar.tame.one.filename}" />
 		</tar>
 	</target>
 
