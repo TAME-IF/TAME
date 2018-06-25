@@ -309,6 +309,10 @@ TValue.subtract = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		return TValue.createNaN();
+	if (TValue.isList(value1) || TValue.isList(value2))
+		return TValue.createNaN();
+	if (TValue.isString(value1) || TValue.isString(value2))
+		return TValue.createNaN();
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
@@ -339,6 +343,10 @@ TValue.subtract = function(value1, value2)
 TValue.multiply = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+		return TValue.createNaN();
+	if (TValue.isList(value1) || TValue.isList(value2))
+		return TValue.createNaN();
+	if (TValue.isString(value1) || TValue.isString(value2))
 		return TValue.createNaN();
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
@@ -372,6 +380,10 @@ TValue.divide = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw TAMEError.Arithmetic("These values can't be divided: " + value1 + ", " + value2);
+	if (TValue.isList(value1) || TValue.isList(value2))
+		return TValue.createNaN();
+	if (TValue.isString(value1) || TValue.isString(value2))
+		return TValue.createNaN();
 
 	if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
@@ -414,6 +426,10 @@ TValue.modulo = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw TAMEError.Arithmetic("These values can't be modulo divided: " + value1 + ", " + value2);
+	if (TValue.isList(value1) || TValue.isList(value2))
+		return TValue.createNaN();
+	if (TValue.isString(value1) || TValue.isString(value2))
+		return TValue.createNaN();
 
 	if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
@@ -446,6 +462,10 @@ TValue.power = function(value1, value2)
 {
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		throw TAMEError.Arithmetic("These values can't be raised to a power: " + value1 + ", " + value2);
+	if (TValue.isList(value1) || TValue.isList(value2))
+		return TValue.createNaN();
+	if (TValue.isString(value1) || TValue.isString(value2))
+		return TValue.createNaN();
 
 	var v1 = TValue.asDouble(value1);
 	var v2 = TValue.asDouble(value2);

@@ -106,6 +106,7 @@
 		<copy todir="${bin.dir}">
 			<fileset dir="${resource.dir}" />
 		</copy>
+		<echo message="${build.version}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
 	</target>
 
 	<target name="compile.tests.only" description="Compiles test classes.">
@@ -169,12 +170,7 @@
     </target>
 
 	<!-- Generates the version resource. -->
-	<target name="write.version">
-		<delete file="${bin.dir}/TAMEVersion.txt" />
-		<echo message="${build.version}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
-	</target>
-
-	<target name="jar.tame" depends="compile, write.version, init.jar" description="Jars up TAME classes. Nothing executable.">
+	<target name="jar.tame" depends="compile, init.jar" description="Jars up TAME classes. Nothing executable.">
 		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.tame.filename}">
 			<fileset dir="${bin.dir}" >
@@ -185,7 +181,7 @@
 		</jar>
 	</target>
 
-	<target name="jar.tame.one" depends="compile, write.version, init.jar" description="Jars up all classes needed to run the compiler and console in one standalone JAR.">
+	<target name="jar.tame.one" depends="compile, init.jar" description="Jars up all classes needed to run the compiler and console in one standalone JAR.">
 		<delete file="${jar.dir}/tame-temp-standalone.jar" casesensitive="false" />
 		<jar destfile="${jar.dir}/tame-temp-standalone.jar">
 			<fileset dir="${bin.dir}" >

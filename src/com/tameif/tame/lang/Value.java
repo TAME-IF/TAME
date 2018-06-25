@@ -1199,7 +1199,11 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			return create(Double.NaN);
-
+		if (value1.isList() || value2.isList())
+			return create(Double.NaN);
+		if (value1.isString() || value2.isString())
+			return create(Double.NaN);
+		
 		if (value1.isBoolean() && value2.isBoolean())
 		{
 			boolean v1 = value1.asBoolean();
@@ -1230,6 +1234,10 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	public static Value multiply(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
+			return create(Double.NaN);
+		if (value1.isList() || value2.isList())
+			return create(Double.NaN);
+		if (value1.isString() || value2.isString())
 			return create(Double.NaN);
 
 		if (value1.isBoolean() && value2.isBoolean())
@@ -1263,6 +1271,10 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	public static Value divide(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
+			return create(Double.NaN);
+		if (value1.isList() || value2.isList())
+			return create(Double.NaN);
+		if (value1.isString() || value2.isString())
 			return create(Double.NaN);
 
 		if (value1.isInteger() && value2.isInteger())
@@ -1307,6 +1319,10 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
 			return create(Double.NaN);
+		if (value1.isList() || value2.isList())
+			return create(Double.NaN);
+		if (value1.isString() || value2.isString())
+			return create(Double.NaN);
 
 		if (value1.isInteger() && value2.isInteger())
 		{
@@ -1339,6 +1355,10 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	public static Value power(Value value1, Value value2)
 	{
 		if (!(value1.isLiteral() || value2.isLiteral()))
+			return create(Double.NaN);
+		if (value1.isList() || value2.isList())
+			return create(Double.NaN);
+		if (value1.isString() || value2.isString())
 			return create(Double.NaN);
 
 		double v1 = value1.asDouble();
