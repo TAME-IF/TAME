@@ -1,0 +1,16 @@
+module
+{
+	title = "Function Variable Test Thing";
+}
+
+world
+{
+	init()
+	{
+		e = e();
+		textln(e);
+		quit;
+	}
+}
+
+

@@ -1,0 +1,43 @@
+action general a_test;
+
+module
+{
+	title = "local variable test";
+}
+
+object o_junk
+{
+}
+
+world
+{
+	init()
+	{
+		queueAction(a_test);
+	}
+
+	onAction(a_test)
+	{
+		y = 4;
+		local y = 5;
+		textln("butt " + y);
+		clear Y;
+		textln("butt " + y);
+		clear Y;
+		textln("butt " + y);
+		
+		x = 6;
+		textln(x);
+		textln("butt " + x);
+		clear X;
+		textln("butt " + x);
+		
+		o_junk.Z = 5;		
+		textln("butt " + o_junk.z);
+		clear o_junk.z;
+		textln("butt " + o_junk.z);
+		
+		quit;
+	}
+	
+}

@@ -1,0 +1,49 @@
+module
+{
+	title = "name test";
+}
+
+object o_test named "apple", "green apple" uses determiners "the    " tagged "food", "fruit";
+object o_test2;
+
+world
+{
+	start()
+	{
+		removeObjectName(o_test2, "butt");
+		addObjectName(o_test2, "butt");
+		removeObjectName(o_test2, "butt");
+		
+		removeObjectTag(o_test2, "butt");
+		addObjectTag(o_test2, "butt");
+		removeObjectTag(o_test2, "butt");
+
+		textln(objectHasName(o_test, "apple"));
+		textln(objectHasName(o_test, "the apple"));
+		textln(objectHasName(o_test, "apple"));
+		textln(objectHasName(o_test, "the green apple"));
+		textln(objectHasName(o_test, "APPLE"));
+		textln(objectHasName(o_test, "butt"));
+		addObjectName(o_test, "butt");
+		textln(objectHasName(o_test, "butt"));
+		removeObjectName(o_test, "butt");
+		textln(objectHasName(o_test, "butt"));
+
+		textln(objectHasTag(o_test, "food"));
+		textln(objectHasTag(o_test, "fruit"));
+		textln(objectHasTag(o_test, "FRUIT"));
+		textln(objectHasTag(o_test, "moldy"));
+		addObjectTag(o_test, "moldy");
+		textln(objectHasTag(o_test, "moldy"));
+		removeObjectTag(o_test, "moldy");
+		textln(objectHasTag(o_test, "moldy"));
+
+		textln(objectHasName(o_test, "food"));
+		textln(objectHasName(o_test, "fruit"));
+		textln(objectHasTag(o_test, "apple"));
+		textln(objectHasTag(o_test, "green apple"));
+
+		quit;
+	}
+	
+}

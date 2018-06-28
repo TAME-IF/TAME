@@ -1,0 +1,236 @@
+module
+{
+	title = "Test Everything";
+}
+
+action general a_quit named "quit";
+
+object o_object1
+{
+	init()
+	{
+		
+	}
+	
+	onPlayerBrowse()
+	{
+		textln("Player browse.");
+	}
+	
+	onRoomBrowse()
+	{
+		textln("Room browse.");
+	}
+	
+	onContainerBrowse()
+	{
+		textln("Container browse.");
+	}
+	
+}
+
+room r_room1;
+room r_room2;
+room r_room3;
+
+player p_main;
+
+container c_container1;
+
+world
+{
+	onAction(a_quit)
+	{
+		quit;
+	}
+
+	init()
+	{
+		x = 5 + 4 - 7 * 9 / 3 % 7.6;
+		
+		x = 0;
+		
+		if (true)
+		{
+			x = 5;
+		}
+		
+		if (false)
+		{
+		}
+		else
+		{
+			x = 9;
+		}
+		
+		while (x > 0)
+		{
+			text(x);
+			x = x - 1;
+		}
+		
+		textln("\nbutt");
+		wait(500);
+		for (x = 0; x < 10; x = x + 1)
+		{
+			wait(500);
+			text(x);
+			if (x < 3)
+				continue;
+			if (x == 6)
+				break;
+		}
+		
+		textln("");
+		textln("PAUSE!");
+		pause();
+		
+		textln(asBoolean(6));
+		textln(asInt(6.0));
+		textln(asFloat(6));
+		textln(asString(6));
+		
+		s = "Apples and Pears";
+		
+		textln(length(s));
+		textln(strconcat("to", "gether")); 
+
+		textln(strreplace(s, "Apples", "Oranges"));
+		textln(strreplacepattern(s, "s", "_"));
+		textln(strreplacepatternall(s, "s", "_"));
+		textln(strstartswith(s, "Apples")); 
+		textln(strendswith(s, "Pears")); 
+		 
+		textln(strindex(s, "Pears")); 
+		textln(strlastindex(s, "s")); 
+		textln(strcontains(s, "and") + ":" + strcontains(s, "or")); 
+		textln(strcontainspattern(s, "\\s+")); 
+		textln(strsplit(s, "\\s+")); 
+		textln(strjoin(["This", "is", "a", "kebab", true, 5, 7.8], "-")); 
+		textln(substring(s, 0, length(s) - 8)); 
+		textln(strlower(s)); 
+		textln(strupper(s)); 
+		textln(strchar(s, 4)); 
+		textln(substring(s, 0, length(s) - 8)); 
+		
+		textln(floor(3.5) + ":" + floor(-3.5)); 
+		textln(ceiling(3.5) + ":" + ceiling(-3.5)); 
+		textln(round(3.5) + ":" + round(-3.5)); 
+		textln(fix(3.58988655, 3)); 
+
+		textln(sqrt(4)); 
+		textln(pi()); 
+		textln(e()); 
+		textln(sin(pi()/2)); 
+		textln(cos(pi()/2)); 
+		textln(tan(1)); 
+		textln(min(4, 8)); 
+		textln(max(4, 8)); 
+		textln(clamp(9, 0, 5)); 
+
+		textln(irandom(10)); 
+		textln(frandom()); 
+		textln(grandom(0, 1)); 
+		
+		t = time();
+		t2 = t + (1000 * 60 * 60 * 24); 
+		textln(formattime(t, "yyyy-MM-dd hh:mm:ss.SSS z"));
+		
+		textln(seconds(t, t2));
+		textln(minutes(t, t2));
+		textln(hours(t, t2));
+		textln(days(t, t2));
+
+		addObjectName(o_object1, "butt");
+		textln(objecthasnoowner(o_object1));
+
+		giveobject(world, o_object1);
+		textln(objecthasnoowner(o_object1));
+		textln(hasobject(world, o_object1));
+		textln(objectcount(world));
+
+		giveobject(r_room1, o_object1);
+		textln(hasobject(world, o_object1));
+		textln(hasobject(r_room1, o_object1));
+		textln(objectcount(r_room1));
+		browse(r_room1);
+
+		giveobject(p_main, o_object1);
+		textln(hasobject(r_room1, o_object1));
+		textln(hasobject(p_main, o_object1));
+		textln(objectcount(p_main));
+		browse(p_main);
+
+		giveobject(c_container1, o_object1);
+		textln(hasobject(p_main, o_object1));
+		textln(hasobject(c_container1, o_object1));
+		textln(objectcount(c_container1));
+		browse(c_container1);
+
+		removeobject(o_object1);
+		textln(objecthasnoowner(o_object1));
+
+		textln(playerisinroom(p_main, r_room1));
+		textln(playercanaccessobject(p_main, o_object1));
+
+		textln(identity(world));
+		textln(identity(r_room1));
+		textln(identity(p_main));
+		textln(identity(c_container1));
+
+		textln(nocurrentplayer());
+
+		textln(currentplayeris(p_main));
+		setplayer(p_main);
+		textln(currentplayeris(p_main));
+		textln(currentplayeris(player));
+
+		textln(nocurrentplayer());
+		textln(nocurrentroom(player));
+
+		textln(currentroomis(p_main, r_room1));
+		textln(currentroomis(player, r_room1));
+		setroom(player, r_room1);
+		textln(currentroomis(p_main, r_room1));
+		textln(currentroomis(p_main, room));
+
+		textln(nocurrentplayer());
+		textln(nocurrentroom(player));
+
+		pushroom(player, r_room2);
+		textln(identity(room));
+		poproom(player);
+		textln(identity(room));
+		
+		pushroom(player, r_room2);
+		textln(identity(room));
+		pushroom(player, r_room3);
+		textln(identity(room));
+		pushroom(player, r_room2);
+		textln(identity(room));
+		swaproom(player, r_room1);
+		textln(identity(room));
+		poproom(player);
+		textln(identity(room));
+		poproom(player);
+		textln(identity(room));
+		poproom(player);
+		textln(identity(room));
+
+		textln(4 < 5);
+		textln(4 > 5);
+		textln(4 <= 5);
+		textln(4 >= 5);
+		textln(4 != 5);
+		textln(4 == 5);
+
+		textln(4 == 4);
+		textln(4 == "4");
+		textln(4 == 4.0);
+		textln(4 === 4);
+		textln(4 === "4");
+		textln(4 === 4.0);
+		
+		queueAction(a_quit);
+	}
+}

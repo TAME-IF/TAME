@@ -1,0 +1,69 @@
+
+
+object archetype o_ball
+{
+	function dribble() {}
+}
+
+object o_basketball : o_ball
+{
+	override function dribble() 
+	{
+		textln("bounce, bounce, bounce!");
+	}
+}
+
+object o_bowlingball : o_ball
+{
+	override function dribble() 
+	{
+		textln("CLUNK, CLUNK, CLUNK!");
+	}
+}
+
+container c_test
+{
+	function square(x)
+	{
+		called = true; 
+		return x * x;
+	}
+}
+
+world
+{
+	function double(x) 
+		return x * 2;
+
+	function factorial(x)
+	{
+		if (x <= 1)
+			return 1; 
+		return x * factorial(x - 1);
+	}
+
+	function rollDie(die, rolls) 
+	{
+		local out = 0;
+		while (rolls > 1)
+		{
+			out = out + irandom(die) + 1;
+			rolls = rolls - 1;
+		}
+		return out;
+	}
+	
+	start()
+	{
+		o_bowlingball.dribble();
+		o_basketball.dribble();
+		textln(double(2));
+		textln(factorial(5));
+		textln(rollDie(6, 5));
+		textln(c_test.called);
+		textln(c_test.square(6));
+		textln(c_test.called);
+		quit;
+	}
+	
+}

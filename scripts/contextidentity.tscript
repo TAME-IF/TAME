@@ -1,0 +1,40 @@
+module
+{
+	title = "ContextIdentity Test";
+}
+
+action general a_quit named "quit";
+action transitive a_drive named "drive";
+
+object archetype o_vehicle
+{
+	onaction(a_drive)
+	{
+		textln(identity(this) +": VROOM!");
+	}
+}
+
+object o_boat : o_vehicle named "boat" uses determiners "the"
+{
+	override onaction(a_drive)
+	{
+		textln(identity(this) +": BLUBLUBLUB");
+	}
+}
+
+object o_car : o_vehicle named "car" uses determiners "the";
+
+world
+{
+	onAction(a_quit)
+	{
+		quit;
+	}
+	
+	start()
+	{
+		giveobject(world, o_car);
+		giveobject(world, o_boat);
+		textln("You can drive the boat or the car.");
+	}
+}

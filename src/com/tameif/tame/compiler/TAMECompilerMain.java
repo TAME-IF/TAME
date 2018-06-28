@@ -34,7 +34,7 @@ public final class TAMECompilerMain
 	/** Default out file name. */
 	private static final String DEFAULT_OUTFILENAME = "module";
 	/** Default out file. */
-	private static final String DEFAULT_OUTFILE = DEFAULT_OUTFILENAME + ".out";
+	private static final String DEFAULT_OUTFILE = DEFAULT_OUTFILENAME + ".tame";
 	/** Default out for HTML. */
 	private static final String DEFAULT_OUTFILE_HTML = DEFAULT_OUTFILENAME + ".html";
 	/** Default out for JS. */

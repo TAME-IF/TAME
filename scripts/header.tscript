@@ -1,0 +1,13 @@
+module
+{
+	title = "Test Everything";
+}
+
+world
+{
+	start()
+	{
+		textln(header("title"));
+		quit;
+	}
+}

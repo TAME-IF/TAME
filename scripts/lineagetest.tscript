@@ -1,0 +1,19 @@
+module
+{
+	title = "Lineage test";
+}
+
+object o_door;
+object archetype o_key;
+object o_wooden_key : o_key;
+
+world
+{
+	start()
+	{
+		textln(elementHasAncestor(o_door, o_key));
+		textln(elementHasAncestor(o_key, o_key));
+		textln(elementHasAncestor(o_wooden_key, o_key));
+		quit;
+	}
+}
