@@ -40,14 +40,22 @@ import com.tameif.tame.lang.FormatParser;
 public class TAMEConsoleClientMain implements TAMEConstants 
 {
 	
+	private static void printVersion(PrintStream out)
+	{
+		out.println("TAME Console Client v" + TAMELogic.getVersion() + " by Matt Tropiano");
+		out.println("Running on: " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + ", " + System.getProperty("java.vm.name") + ", v" +System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")");
+	}
+	
 	private static void printHelp(PrintStream out)
 	{
-		out.println("TAME Console Client v"+TAMELogic.getVersion()+" by Matt Tropiano");
+		printVersion(out);
 		out.println("Usage: tame [help | module] <switches> <gameload> <other>");
 		out.println("[help]:");
 		out.println("    -h                       Display help.");
 		out.println("    --help");
 		out.println("    /?");
+		out.println();
+		out.println("    --version                Display version.");
 		out.println("[module]:");
 		out.println("    [binaryfile]             The compiled module to run.");
 		out.println();
@@ -74,6 +82,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		TAMEModuleContext moduleContext = null;
 		
 		boolean help = false;
+		boolean version = false;
 		boolean script = false;
 		boolean debug = false;
 		boolean inspector = false;
@@ -91,6 +100,8 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		{
 			if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help") || arg.equalsIgnoreCase("/?"))
 				help = true;
+			else if (arg.equalsIgnoreCase("--version"))
+				version = true;
 			else if (arg.equalsIgnoreCase("-s"))
 				script = true;
 			else if (arg.equalsIgnoreCase("--script"))
@@ -142,6 +153,12 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			System.exit(0);
 		}
 		
+		if (version)
+		{
+			printVersion(System.out);
+			System.exit(0);
+		}
+
 		if (script)
 		{
 			System.out.println("ERROR: No module script file specified!");

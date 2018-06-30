@@ -106,7 +106,7 @@
 		<copy todir="${bin.dir}">
 			<fileset dir="${resource.dir}" />
 		</copy>
-		<echo message="${build.version}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
+		<echo message="${build.version.number}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
 	</target>
 
 	<target name="compile.tests.only" description="Compiles test classes.">

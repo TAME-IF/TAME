@@ -57,9 +57,11 @@ public final class TAMECompilerMain
 	private static final String SWITCH_JSWRAPPER1 = "-js"; 
 
 	/** Special options. */
+	private static final String SWITCH_VERSION = "--version"; 
 	private static final String SWITCH_JSENGINE = "--js-engine"; 
 	private static final String SWITCH_JSNODEENGINE = "--js-engine-node"; 
 
+	private static boolean printVersion = false;
 	private static boolean exportJSEngine = false;
 	private static boolean exportJSEngineNode = false;
 	
@@ -74,6 +76,59 @@ public final class TAMECompilerMain
 		put(TAMEJSExporter.WRAPPER_HTML_DEBUG);
 	}};
 	
+	private static void printVersion(PrintStream out)
+	{
+		out.println("TAME Compiler v" + TAMELogic.getVersion() + " by Matt Tropiano");
+		out.println("Running on: " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + ", " + System.getProperty("java.vm.name") + ", v" +System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")");
+	}
+	
+	private static void printHelp(PrintStream out)
+	{
+		printVersion(out);
+		out.println("Usages:");
+		out.println("tamec [infile] [switches]");
+		out.println("tamec --version");
+		out.println("tamec --js-engine");
+		out.println("tamec --js-engine-node");
+		out.println("[infile]: The input file.");
+		out.println();
+		out.println("[switches]:");
+		out.println("    --version            Print version and quit.");
+		out.println();
+		out.println("    -o [outfile]         Sets the output file.");
+		out.println("    --outfile [outfile]");
+		out.println();
+		out.println("    -d [defines]         Adds define tokens to the parser.");
+		out.println("    --defines [defines]");
+		out.println();
+		out.println("    -v                   Adds verbose output.");
+		out.println("    --verbose");
+		out.println();
+		out.println("    -n                   Does not optimize blocks. DEBUG ONLY");
+		out.println("    --no-optimize");
+		out.println();
+		out.println("    -js [name]           Export to JS, and optionally declare a wrapper to");
+		out.println("    --js-wrapper [name]  use for the JavaScript exporter.");
+		out.println();
+		out.println("                         browser    - Exports an embedded version suitable for");
+		out.println("                                      ECMAScript 6 capable browsers (default,");
+		out.println("                                      if no name declared).");
+		out.println("                         html       - Exports an embedded version suitable for");
+		out.println("                                      ECMAScript 6 capable browsers with");
+		out.println("                                      interface.");
+		out.println("                         html-debug - Exports an embedded version suitable for");
+		out.println("                                      ECMAScript 6 capable browsers with");
+		out.println("                                      interface, in debug mode.");
+		out.println("                         node       - Exports an embedded NodeJS program.");
+		out.println("                         module     - Exports just module data to feed into a");
+		out.println("                                      JS TAME engine.");
+		out.println();
+		out.println("    --js-engine          Export just TAME's engine to JS.");
+		out.println();
+		out.println("    --js-engine-node     Export just TAME's engine as a NodeJS library");
+		out.println("                         (for 'require').");
+	}
+	
 	// Scan options.
 	private static boolean scanOptions(Options options, JSOptions jsOptions, String[] args)
 	{
@@ -84,7 +139,7 @@ public final class TAMECompilerMain
 		final int STATE_JSWRAPPERNAME = 4;
 		
 		final PrintStream out = System.out;
-
+	
 		int state = STATE_INPATH;
 		
 		for (int i = 0; i < args.length; i++)
@@ -96,7 +151,11 @@ public final class TAMECompilerMain
 				default:
 				case STATE_INPATH:
 				{
-					if (arg.equals(SWITCH_JSENGINE))
+					if (arg.equals(SWITCH_VERSION))
+					{
+						printVersion = true;
+					}
+					else if (arg.equals(SWITCH_JSENGINE))
 					{
 						exportJSEngine = true;
 					}
@@ -203,52 +262,6 @@ public final class TAMECompilerMain
 		return true;
 	}
 
-	public static void printHelp()
-	{
-		PrintStream out = System.out;
-		
-		out.println("TAME Compiler v"+TAMELogic.getVersion()+" by Matt Tropiano");
-		out.println("Usages:");
-		out.println("tamec [infile] [switches]");
-		out.println("tamec --js-engine");
-		out.println("tamec --js-engine-node");
-		out.println("[infile]: The input file.");
-		out.println();
-		out.println("[switches]:");
-		out.println("    -o [outfile]         Sets the output file.");
-		out.println("    --outfile [outfile]");
-		out.println();
-		out.println("    -d [defines]         Adds define tokens to the parser.");
-		out.println("    --defines [defines]");
-		out.println();
-		out.println("    -v                   Adds verbose output.");
-		out.println("    --verbose");
-		out.println();
-		out.println("    -n                   Does not optimize blocks. DEBUG ONLY");
-		out.println("    --no-optimize");
-		out.println();
-		out.println("    -js [name]           Export to JS, and optionally declare a wrapper to");
-		out.println("    --js-wrapper [name]  use for the JavaScript exporter.");
-		out.println();
-		out.println("                         browser    - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 6 capable browsers (default,");
-		out.println("                                      if no name declared).");
-		out.println("                         html       - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 6 capable browsers with");
-		out.println("                                      interface.");
-		out.println("                         html-debug - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 6 capable browsers with");
-		out.println("                                      interface, in debug mode.");
-		out.println("                         node       - Exports an embedded NodeJS program.");
-		out.println("                         module     - Exports just module data to feed into a");
-		out.println("                                      JS TAME engine.");
-		out.println();
-		out.println("    --js-engine          Export just TAME's engine to JS.");
-		out.println();
-		out.println("    --js-engine-node     Export just TAME's engine as a NodeJS library");
-		out.println("                         (for 'require').");
-	}
-	
 	// Main entry.
 	public static void main(String[] args) 
 	{
@@ -256,7 +269,7 @@ public final class TAMECompilerMain
 		
 		if (args.length == 0)
 		{
-			printHelp();
+			printHelp(out);
 			System.exit(0);
 		}
 		
@@ -265,6 +278,12 @@ public final class TAMECompilerMain
 		
 		if (!scanOptions(options, jsOptions, args))
 			return;
+		
+		if (printVersion)
+		{
+			printVersion(out);
+			System.exit(0);
+		}
 		
 		if (exportJSEngine)
 		{
