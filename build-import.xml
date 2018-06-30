@@ -44,6 +44,7 @@
 	
 	<patternset id="pattern.documents">
 		<include name="README.*" />
+		<include name="LICENSE.*" />
 		<include name="READ.ME" />
 		<include name="docs/*.*" />
 	</patternset>
