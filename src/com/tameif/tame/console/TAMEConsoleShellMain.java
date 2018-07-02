@@ -37,12 +37,12 @@ import com.tameif.tame.lang.FormatParser;
  * A console client implementation.
  * @author Matthew Tropiano
  */
-public class TAMEConsoleClientMain implements TAMEConstants 
+public class TAMEConsoleShellMain implements TAMEConstants 
 {
 	
 	private static void printVersion(PrintStream out)
 	{
-		out.println("TAME Console Client v" + TAMELogic.getVersion() + " by Matt Tropiano");
+		out.println("TAME Console Shell v" + TAMELogic.getVersion() + " by Matt Tropiano");
 		out.println("Running on: " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + ", " + System.getProperty("java.vm.name") + ", v" +System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")");
 	}
 	
