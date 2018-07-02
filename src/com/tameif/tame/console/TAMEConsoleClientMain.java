@@ -46,6 +46,12 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		out.println("Running on: " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + ", " + System.getProperty("java.vm.name") + ", v" +System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")");
 	}
 	
+	private static void printSplash(PrintStream out)
+	{
+		printVersion(out);
+		out.println("Type `tame --help` for help.");
+	}
+
 	private static void printHelp(PrintStream out)
 	{
 		printVersion(out);
@@ -53,22 +59,25 @@ public class TAMEConsoleClientMain implements TAMEConstants
 		out.println("[help]:");
 		out.println("    -h                       Display help.");
 		out.println("    --help");
-		out.println("    /?");
 		out.println();
 		out.println("    --version                Display version.");
+		out.println();
 		out.println("[module]:");
 		out.println("    [binaryfile]             The compiled module to run.");
 		out.println();
 		out.println("    -s [scriptfile]          The uncompiled starting script to read.");
 		out.println("    --script [scriptfile]");
+		out.println();
 		out.println("<switches>:");
 		out.println("    -v                       Verbose script compiler output.");
 		out.println("    --verbose");
 		out.println("    -d  [tokens ...]         Defines predefined preprocessor tokens.");
 		out.println("    --defines [tokens ...]");
+		out.println();
 		out.println("<gameload>:");
 		out.println("    -l [statefile]           Loads a save state.");
 		out.println("    --load-game [statefile]");
+		out.println();
 		out.println("<other>:");
 		out.println("    --debug                  Show received cues.");
 		out.println("    --inspect                Enable inspector.");
@@ -98,7 +107,7 @@ public class TAMEConsoleClientMain implements TAMEConstants
 
 		for (String arg : args)
 		{
-			if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help") || arg.equalsIgnoreCase("/?"))
+			if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help"))
 				help = true;
 			else if (arg.equalsIgnoreCase("--version"))
 				version = true;
@@ -147,7 +156,13 @@ public class TAMEConsoleClientMain implements TAMEConstants
 			}
 		}
 		
-		if (args.length == 0 || help)
+		if (args.length == 0)
+		{
+			printSplash(System.out);
+			System.exit(0);
+		}
+		
+		if (help)
 		{
 			printHelp(System.out);
 			System.exit(0);

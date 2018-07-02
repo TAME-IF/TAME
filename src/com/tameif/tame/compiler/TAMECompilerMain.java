@@ -57,10 +57,13 @@ public final class TAMECompilerMain
 	private static final String SWITCH_JSWRAPPER1 = "-js"; 
 
 	/** Special options. */
+	private static final String SWITCH_HELP = "--help"; 
+	private static final String SWITCH_HELP2 = "-h"; 
 	private static final String SWITCH_VERSION = "--version"; 
 	private static final String SWITCH_JSENGINE = "--js-engine"; 
 	private static final String SWITCH_JSNODEENGINE = "--js-engine-node"; 
 
+	private static boolean printHelp = false;
 	private static boolean printVersion = false;
 	private static boolean exportJSEngine = false;
 	private static boolean exportJSEngineNode = false;
@@ -82,17 +85,28 @@ public final class TAMECompilerMain
 		out.println("Running on: " + System.getProperty("os.name") + " " + System.getProperty("os.arch") + ", " + System.getProperty("java.vm.name") + ", v" +System.getProperty("java.version") + " (" + System.getProperty("java.vendor") + ")");
 	}
 	
+	private static void printSplash(PrintStream out)
+	{
+		printVersion(out);
+		out.println("Type `tame --help` for help.");
+	}
+
 	private static void printHelp(PrintStream out)
 	{
 		printVersion(out);
 		out.println("Usages:");
 		out.println("tamec [infile] [switches]");
+		out.println("tamec --help");
 		out.println("tamec --version");
 		out.println("tamec --js-engine");
 		out.println("tamec --js-engine-node");
+		out.println();
 		out.println("[infile]: The input file.");
 		out.println();
 		out.println("[switches]:");
+		out.println("    -h                   Print help and quit.");
+		out.println("    --help");
+		out.println();
 		out.println("    --version            Print version and quit.");
 		out.println();
 		out.println("    -o [outfile]         Sets the output file.");
@@ -151,7 +165,15 @@ public final class TAMECompilerMain
 				default:
 				case STATE_INPATH:
 				{
-					if (arg.equals(SWITCH_VERSION))
+					if (arg.equals(SWITCH_HELP))
+					{
+						printHelp = true;
+					}
+					else if (arg.equals(SWITCH_HELP2))
+					{
+						printHelp = true;
+					}
+					else if (arg.equals(SWITCH_VERSION))
 					{
 						printVersion = true;
 					}
@@ -269,7 +291,7 @@ public final class TAMECompilerMain
 		
 		if (args.length == 0)
 		{
-			printHelp(out);
+			printSplash(out);
 			System.exit(0);
 		}
 		
@@ -278,6 +300,12 @@ public final class TAMECompilerMain
 		
 		if (!scanOptions(options, jsOptions, args))
 			return;
+		
+		if (printHelp)
+		{
+			printHelp(out);
+			System.exit(0);
+		}
 		
 		if (printVersion)
 		{
