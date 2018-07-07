@@ -353,7 +353,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		{
 			context.out.println("Interpret time: "+(response.getInterpretNanos()/1000000.0)+" ms");
 			context.out.println("Request time: "+(response.getRequestNanos()/1000000.0)+" ms");
-			context.out.println("Commands: "+response.getCommandsExecuted());
+			context.out.println("Operations: "+response.getOperationsExecuted());
 			context.out.println("Cues: "+response.getCues().size());
 			context.out.println();
 			for (Cue cue : response.getCues())

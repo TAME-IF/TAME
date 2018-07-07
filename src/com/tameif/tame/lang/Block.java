@@ -24,35 +24,35 @@ import com.tameif.tame.TAMERequest;
 import com.tameif.tame.TAMEResponse;
 
 /**
- * A set of commands in one block.
+ * A set of operations in one block.
  * @author Matthew Tropiano
  */
-public class Block implements CallableType, Iterable<Command>, Saveable
+public class Block implements CallableType, Iterable<Operation>, Saveable
 {
-	/** List of statements. */
-	private Queue<Command> statementQueue; 
+	/** List of operations. */
+	private Queue<Operation> operationQueue; 
 
 	/**
 	 * Creates a new empty block.
 	 */
 	public Block()
 	{
-		this.statementQueue = new Queue<Command>();
+		this.operationQueue = new Queue<Operation>();
 	}
 
 	/**
 	 * Adds a statement to the block.
 	 * @param statement the statement to add.
 	 */
-	public void add(Command statement)
+	public void add(Operation statement)
 	{
-		statementQueue.add(statement);
+		operationQueue.add(statement);
 	}
 
 	@Override
-	public Iterator<Command> iterator()
+	public Iterator<Operation> iterator()
 	{
-		return statementQueue.iterator();
+		return operationQueue.iterator();
 	}
 
 	/**
@@ -60,17 +60,17 @@ public class Block implements CallableType, Iterable<Command>, Saveable
 	 */
 	public int getCount()
 	{
-		return statementQueue.size();
+		return operationQueue.size();
 	}
 
 	@Override
 	public void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal) throws TAMEInterrupt
 	{
 		response.trace(request, "Start block.");
-		for (Command command : this)
+		for (Operation operation : this)
 		{
-			response.trace(request, "CALL %s", command);
-			command.execute(request, response, blockLocal);
+			response.trace(request, "CALL %s", operation);
+			operation.execute(request, response, blockLocal);
 		}
 		response.trace(request, "End block.");
 	}
@@ -78,7 +78,7 @@ public class Block implements CallableType, Iterable<Command>, Saveable
 	@Override
 	public String toString()
 	{
-		return statementQueue.toString();
+		return operationQueue.toString();
 	}
 	
 	/**
@@ -98,20 +98,20 @@ public class Block implements CallableType, Iterable<Command>, Saveable
 	public void writeBytes(OutputStream out) throws IOException
 	{
 		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeInt(statementQueue.size());
-		for (Command command : this)
-			command.writeBytes(out);
+		sw.writeInt(operationQueue.size());
+		for (Operation operation : this)
+			operation.writeBytes(out);
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		statementQueue.clear();
+		operationQueue.clear();
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
 		int size = sr.readInt();
 		
 		while (size-- > 0)
-			add(Command.create(in));
+			add(Operation.create(in));
 		
 	}
 

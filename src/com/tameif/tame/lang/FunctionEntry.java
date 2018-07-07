@@ -28,7 +28,7 @@ public class FunctionEntry implements Saveable
 	
 	/** Block-local variables, popped in reverse off stack. */
 	private String[] arguments;
-	/** The command block to execute. */
+	/** The operation block to execute. */
 	private Block block;
 
 	private FunctionEntry()

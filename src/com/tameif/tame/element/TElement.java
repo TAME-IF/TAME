@@ -221,7 +221,7 @@ public abstract class TElement implements Saveable
 	/**
 	 * Checks if this element is an Archetype.
 	 * Archetypes do not hold state nor have contexts - they only define code.
-	 * Archetypes can be inherited from, but can never be owned, nor own things, nor be in expressions nor commands.
+	 * Archetypes can be inherited from, but can never be owned, nor own things, nor be in expressions nor operations.
 	 * @return true if so, false if not.
 	 */
 	public boolean isArchetype() 
@@ -232,7 +232,7 @@ public abstract class TElement implements Saveable
 	/**
 	 * Sets if this element is an Archetype.
 	 * Archetypes do not hold state nor have contexts - they only define code.
-	 * Archetypes can be inherited from, but can never be owned, nor own things, nor be in expressions nor commands.
+	 * Archetypes can be inherited from, but can never be owned, nor own things, nor be in expressions nor operations.
 	 * @param archetype true if so, false if not.
 	 * @throws ModuleException if this element cannot be an archetype and <code>archetype</code> is <code>true</code>, or 
 	 * if you attempt to set this to <code>false</code> on an object that has this already set to <code>true</code>.

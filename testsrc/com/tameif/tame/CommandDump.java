@@ -12,7 +12,7 @@ package com.tameif.tame;
 import java.io.PrintStream;
 import java.util.Arrays;
 
-import com.tameif.tame.TAMECommand;
+import com.tameif.tame.TAMEOperation;
 import com.tameif.tame.lang.BlockEntryType;
 
 /**
@@ -26,7 +26,7 @@ public final class CommandDump
 	{
 		PrintStream out = System.out;
 		
-		for (TAMECommand command : TAMECommand.VALUES)
+		for (TAMEOperation command : TAMEOperation.VALUES)
 		{
 			if (command.isInternal())
 				continue;
@@ -36,7 +36,7 @@ public final class CommandDump
 
 		out.println("---------------------------");
 		
-		for (TAMECommand command : TAMECommand.VALUES)
+		for (TAMEOperation command : TAMEOperation.VALUES)
 		{
 			if (command.isInternal())
 				continue;
@@ -55,7 +55,7 @@ public final class CommandDump
 		
 		out.println("var TCommandFunctions =");
 		out.println("[");
-		for (TAMECommand command : TAMECommand.VALUES)
+		for (TAMEOperation command : TAMEOperation.VALUES)
 		{
 			out.println("\t/* " +command.name() + " */");
 			out.println("\t{");

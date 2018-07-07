@@ -73,8 +73,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	/** Ownership map for players. */
 	private TOwnershipMap ownershipMap;
 
-	/** Command runaway max from the Header. */
-	private long commandRunawayMax;
+	/** Operation runaway max from the Header. */
+	private long operationRunawayMax;
 	/** Function call depth max from the Header. */
 	private long functionDepthMax;
 	
@@ -123,7 +123,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		long cr = Common.parseLong(module.getHeader().getAttribute(HEADER_TAME_RUNAWAY_MAX));
 		long fd = Common.parseLong(module.getHeader().getAttribute(HEADER_TAME_FUNCDEPTH_MAX));
 		
-		this.commandRunawayMax = cr <= 0 ? DEFAULT_RUNAWAY_THRESHOLD: cr;
+		this.operationRunawayMax = cr <= 0 ? DEFAULT_RUNAWAY_THRESHOLD: cr;
 		this.functionDepthMax = fd <= 0 ? DEFAULT_FUNCTION_DEPTH: fd;
 	}
 
@@ -146,11 +146,11 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 	
 	/**
-	 * @return the command runaway detection limit.
+	 * @return the operation runaway detection limit.
 	 */
-	public long getCommandRunawayMax() 
+	public long getOperationRunawayMax() 
 	{
-		return commandRunawayMax;
+		return operationRunawayMax;
 	}
 	
 	/**

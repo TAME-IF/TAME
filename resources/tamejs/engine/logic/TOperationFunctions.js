@@ -21,14 +21,14 @@ var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : n
 //##[[EXPORTJS-START
 
 /*****************************************************************************
-Command entry points.
+Operation entry points.
 *****************************************************************************/
-var TCommandFunctions =
+var TOperationFunctions =
 [
 	/* NOOP */
 	{
 		"name": 'NOOP', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			// Do nothing.
 		}
@@ -37,7 +37,7 @@ var TCommandFunctions =
 	/* POP */
 	{
 		"name": 'POP', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			request.popValue();
 		}
@@ -46,9 +46,9 @@ var TCommandFunctions =
 	/* POPVALUE */
 	{
 		"name": 'POPVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varvalue = command.operand0;
+			var varvalue = operation.operand0;
 			var value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
@@ -68,9 +68,9 @@ var TCommandFunctions =
 	/* POPLOCALVALUE */
 	{
 		"name": 'POPLOCALVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varvalue = command.operand0;
+			var varvalue = operation.operand0;
 			var value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
@@ -85,10 +85,10 @@ var TCommandFunctions =
 	/* POPELEMENTVALUE */
 	{
 		"name": 'POPELEMENTVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject = command.operand0;
-			var variable = command.operand1;
+			var varObject = operation.operand0;
+			var variable = operation.operand1;
 			var value = request.popValue();
 
 			if (!TValue.isLiteral(value))
@@ -107,7 +107,7 @@ var TCommandFunctions =
 	/* POPLISTVALUE */
 	{
 		"name": 'POPLISTVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			var index = request.popValue();
@@ -130,9 +130,9 @@ var TCommandFunctions =
 	/* PUSHVALUE */
 	{
 		"name": 'PUSHVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = command.operand0;
+			var value = operation.operand0;
 			
 			if (TValue.isVariable(value))
 			{
@@ -152,10 +152,10 @@ var TCommandFunctions =
 	/* PUSHELEMENTVALUE */
 	{
 		"name": 'PUSHELEMENTVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varElement = command.operand0;
-			var variable = command.operand1;
+			var varElement = operation.operand0;
+			var variable = operation.operand1;
 
 			if (!TValue.isVariable(variable))
 				throw TAMEError.UnexpectedValueType("Expected variable type in PUSHELEMENTVALUE call.");
@@ -171,7 +171,7 @@ var TCommandFunctions =
 	/* PUSHLISTVALUE */
 	{
 		"name": 'PUSHLISTVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var index = request.popValue();
 			var listValue = request.popValue();
@@ -191,7 +191,7 @@ var TCommandFunctions =
 	/* PUSHNEWLIST */
 	{
 		"name": 'PUSHNEWLIST', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			request.pushValue(TValue.createList([]));
 		}
@@ -201,7 +201,7 @@ var TCommandFunctions =
 	/* PUSHINITLIST */
 	{
 		"name": 'PUSHINITLIST', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var length = request.popValue();
 
@@ -225,9 +225,9 @@ var TCommandFunctions =
 	/* CLEARVALUE */
 	{
 		"name": 'CLEARVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = command.operand0;
+			var value = operation.operand0;
 
 			if (!TValue.isVariable(value))
 				throw TAMEError.UnexpectedValueType("Expected variable type in CLEARVALUE call.");
@@ -243,10 +243,10 @@ var TCommandFunctions =
 	/* CLEARELEMENTVALUE */
 	{
 		"name": 'CLEARELEMENTVALUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varElement = command.operand0;
-			var variable = command.operand1;
+			var varElement = operation.operand0;
+			var variable = operation.operand1;
 
 			if (!TValue.isVariable(variable))
 				throw TAMEError.UnexpectedValueType("Expected variable type in CLEARELEMENTVALUE call.");
@@ -267,7 +267,7 @@ var TCommandFunctions =
 	/* PUSHTHIS */
 	{
 		"name": 'PUSHTHIS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var element = request.moduleContext.resolveElement(request.peekContext().identity);
 			if (element.tameType === 'TObject')
@@ -288,9 +288,9 @@ var TCommandFunctions =
 	/* ARITHMETICFUNC */
 	{
 		"name": 'ARITHMETICFUNC', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var functionValue = command.operand0;
+			var functionValue = operation.operand0;
 
 			if (!TValue.isInteger(functionValue))
 				throw TAMEError.UnexpectedValueType("Expected integer type in ARITHMETICFUNC call.");
@@ -302,21 +302,21 @@ var TCommandFunctions =
 	/* IF */
 	{
 		"name": 'IF', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var result = TLogic.callConditional('IF', request, response, blockLocal, command);
+			var result = TLogic.callConditional('IF', request, response, blockLocal, operation);
 			
 			if (result)
 			{
 				response.trace(request, "Calling IF success block...");
-				var success = command.successBlock;
+				var success = operation.successBlock;
 				if (!success)
 					throw TAMEError.ModuleExecution("Success block for IF does NOT EXIST!");
 				TLogic.executeBlock(success, request, response, blockLocal);
 			}
 			else
 			{
-				var failure = command.failureBlock;
+				var failure = operation.failureBlock;
 				if (failure)
 				{
 					response.trace(request, "Calling IF failure block...");
@@ -333,13 +333,13 @@ var TCommandFunctions =
 	/* WHILE */
 	{
 		"name": 'WHILE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			while (TLogic.callConditional('WHILE', request, response, blockLocal, command))
+			while (TLogic.callConditional('WHILE', request, response, blockLocal, operation))
 			{
 				try {
 					response.trace(request, "Calling WHILE success block...");
-					var success = command.successBlock;
+					var success = operation.successBlock;
 					if (!success)
 						throw TAMEError.ModuleExecution("Success block for WHILE does NOT EXIST!");
 					TLogic.executeBlock(success, request, response, blockLocal);
@@ -363,15 +363,15 @@ var TCommandFunctions =
 	/* FOR */
 	{
 		"name": 'FOR', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var init = command.initBlock;
+			var init = operation.initBlock;
 			if (!init)
 				throw TAMEError.ModuleExecution("Init block for FOR does NOT EXIST!");
-			var success = command.successBlock;
+			var success = operation.successBlock;
 			if (!success)
 				throw TAMEError.ModuleExecution("Success block for FOR does NOT EXIST!");
-			var step = command.stepBlock;
+			var step = operation.stepBlock;
 			if (!step)
 				throw TAMEError.ModuleExecution("Step block for FOR does NOT EXIST!");
 
@@ -379,7 +379,7 @@ var TCommandFunctions =
 
 			for (
 				TLogic.executeBlock(init, request, response, blockLocal);
-				TLogic.callConditional('FOR', request, response, blockLocal, command);
+				TLogic.callConditional('FOR', request, response, blockLocal, operation);
 				response.trace(request, "Calling FOR stepping block..."),
 				TLogic.executeBlock(step, request, response, blockLocal)
 			)
@@ -407,7 +407,7 @@ var TCommandFunctions =
 	/* BREAK */
 	{
 		"name": 'BREAK', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, "Throwing break interrupt...");
 			throw TAMEInterrupt.Break();
@@ -417,7 +417,7 @@ var TCommandFunctions =
 	/* CONTINUE */
 	{
 		"name": 'CONTINUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, "Throwing continue interrupt...");
 			throw TAMEInterrupt.Continue();
@@ -427,7 +427,7 @@ var TCommandFunctions =
 	/* QUIT */
 	{
 		"name": 'QUIT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, "Throwing quit interrupt...");
 			response.addCue(TAMEConstants.Cue.QUIT);
@@ -438,7 +438,7 @@ var TCommandFunctions =
 	/* FINISH */
 	{
 		"name": 'FINISH', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, "Throwing finish interrupt...");
 			throw TAMEInterrupt.Finish();
@@ -448,7 +448,7 @@ var TCommandFunctions =
 	/* END */
 	{
 		"name": 'END', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, "Throwing end interrupt...");
 			throw TAMEInterrupt.End();
@@ -458,7 +458,7 @@ var TCommandFunctions =
 	/* FUNCTIONRETURN */
 	{
 		"name": 'FUNCTIONRETURN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var retVal = request.popValue();
 			response.trace(request, "Returning "+TValue.toString(retVal));
@@ -471,9 +471,9 @@ var TCommandFunctions =
 	/* CALLFUNCTION */
 	{
 		"name": 'CALLFUNCTION', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varFunctionName = command.operand0;
+			var varFunctionName = operation.operand0;
 
 			if (!TValue.isLiteral(varFunctionName))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CALLFUNCTION call.");
@@ -485,10 +485,10 @@ var TCommandFunctions =
 	/* CALLELEMENTFUNCTION */
 	{
 		"name": 'CALLELEMENTFUNCTION', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varElement = command.operand0;
-			var varFunctionName = command.operand1;
+			var varElement = operation.operand0;
+			var varFunctionName = operation.operand1;
 
 			if (!TValue.isElement(varElement))
 				throw TAMEError.UnexpectedValueType("Expected element type in CALLELEMENTFUNCTION call.");
@@ -503,7 +503,7 @@ var TCommandFunctions =
 	/* QUEUEACTION */
 	{
 		"name": 'QUEUEACTION', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varAction = request.popValue();
 
@@ -524,7 +524,7 @@ var TCommandFunctions =
 	/* QUEUEACTIONSTRING */
 	{
 		"name": 'QUEUEACTIONSTRING', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varTarget = request.popValue();
 			var varAction = request.popValue();
@@ -548,7 +548,7 @@ var TCommandFunctions =
 	/* QUEUEACTIONOBJECT */
 	{
 		"name": 'QUEUEACTIONOBJECT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObject = request.popValue();
 			var varAction = request.popValue();
@@ -573,7 +573,7 @@ var TCommandFunctions =
 	/* QUEUEACTIONFOROBJECTSIN */
 	{
 		"name": 'QUEUEACTIONFOROBJECTSIN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObjectContainer = request.popValue();
 			var varAction = request.popValue();
@@ -603,7 +603,7 @@ var TCommandFunctions =
 	/* QUEUEACTIONFORTAGGEDOBJECTSIN */
 	{
 		"name": 'QUEUEACTIONFORTAGGEDOBJECTSIN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varTag = request.popValue();
 			var varObjectContainer = request.popValue();
@@ -640,7 +640,7 @@ var TCommandFunctions =
 	/* QUEUEACTIONOBJECT2 */
 	{
 		"name": 'QUEUEACTIONOBJECT2', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObject2 = request.popValue();
 			var varObject = request.popValue();
@@ -670,7 +670,7 @@ var TCommandFunctions =
 	/* ADDCUE */
 	{
 		"name": 'ADDCUE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			var cue = request.popValue();
@@ -687,7 +687,7 @@ var TCommandFunctions =
 	/* TEXT */
 	{
 		"name": 'TEXT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -701,7 +701,7 @@ var TCommandFunctions =
 	/* TEXTLN */
 	{
 		"name": 'TEXTLN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -715,7 +715,7 @@ var TCommandFunctions =
 	/* TEXTF */
 	{
 		"name": 'TEXTF', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -729,7 +729,7 @@ var TCommandFunctions =
 	/* TEXTFLN */
 	{
 		"name": 'TEXTFLN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -743,7 +743,7 @@ var TCommandFunctions =
 	/* PAUSE */
 	{
 		"name": 'PAUSE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.addCue(TAMEConstants.Cue.PAUSE);
 		}
@@ -752,7 +752,7 @@ var TCommandFunctions =
 	/* WAIT */
 	{
 		"name": 'WAIT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -766,7 +766,7 @@ var TCommandFunctions =
 	/* ASBOOLEAN */
 	{
 		"name": 'ASBOOLEAN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -780,7 +780,7 @@ var TCommandFunctions =
 	/* ASINT */
 	{
 		"name": 'ASINT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -794,7 +794,7 @@ var TCommandFunctions =
 	/* ASFLOAT */
 	{
 		"name": 'ASFLOAT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -808,7 +808,7 @@ var TCommandFunctions =
 	/* ASSTRING */
 	{
 		"name": 'ASSTRING', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -822,7 +822,7 @@ var TCommandFunctions =
 	/* ASLIST */
 	{
 		"name": 'ASLIST', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -838,7 +838,7 @@ var TCommandFunctions =
 	/* LENGTH */
 	{
 		"name": 'LENGTH', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -852,7 +852,7 @@ var TCommandFunctions =
 	/* EMPTY */
 	{
 		"name": 'EMPTY', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			
@@ -866,7 +866,7 @@ var TCommandFunctions =
 	/* STRCONCAT */
 	{
 		"name": 'STRCONCAT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -883,7 +883,7 @@ var TCommandFunctions =
 	/* STRREPLACE */
 	{
 		"name": 'STRREPLACE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value3 = request.popValue();
 			var value2 = request.popValue();
@@ -907,7 +907,7 @@ var TCommandFunctions =
 	/* STRREPLACEPATTERN */
 	{
 		"name": 'STRREPLACEPATTERN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value3 = request.popValue();
 			var value2 = request.popValue();
@@ -935,7 +935,7 @@ var TCommandFunctions =
 	/* STRREPLACEPATTERNALL */
 	{
 		"name": 'STRREPLACEPATTERNALL', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value3 = request.popValue();
 			var value2 = request.popValue();
@@ -963,7 +963,7 @@ var TCommandFunctions =
 	/* STRINDEX */
 	{
 		"name": 'STRINDEX', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -983,7 +983,7 @@ var TCommandFunctions =
 	/* STRLASTINDEX */
 	{
 		"name": 'STRLASTINDEX', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1003,7 +1003,7 @@ var TCommandFunctions =
 	/* STRCONTAINS */
 	{
 		"name": 'STRCONTAINS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1023,7 +1023,7 @@ var TCommandFunctions =
 	/* STRCONTAINSPATTERN */
 	{
 		"name": 'STRCONTAINSPATTERN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1048,7 +1048,7 @@ var TCommandFunctions =
 	/* STRSPLIT */
 	{
 		"name": 'STRSPLIT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1077,7 +1077,7 @@ var TCommandFunctions =
 	/* STRJOIN */
 	{
 		"name": 'STRJOIN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var joiner = request.popValue();
 			var list = request.popValue();
@@ -1109,7 +1109,7 @@ var TCommandFunctions =
 	/* STRSTARTSWITH */
 	{
 		"name": 'STRSTARTSWITH', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1129,7 +1129,7 @@ var TCommandFunctions =
 	/* STRENDSWITH */
 	{
 		"name": 'STRENDSWITH', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1149,7 +1149,7 @@ var TCommandFunctions =
 	/* SUBSTRING */
 	{
 		"name": 'SUBSTRING', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value3 = request.popValue();
 			var value2 = request.popValue();
@@ -1173,7 +1173,7 @@ var TCommandFunctions =
 	/* STRLOWER */
 	{
 		"name": 'STRLOWER', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1187,7 +1187,7 @@ var TCommandFunctions =
 	/* STRUPPER */
 	{
 		"name": 'STRUPPER', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1201,7 +1201,7 @@ var TCommandFunctions =
 	/* STRCHAR */
 	{
 		"name": 'STRCHAR', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1224,7 +1224,7 @@ var TCommandFunctions =
 	/* STRTRIM */
 	{
 		"name": 'STRTRIM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1238,7 +1238,7 @@ var TCommandFunctions =
 	/* LISTADD */
 	{
 		"name": 'LISTADD', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			var list = request.popValue();
@@ -1255,7 +1255,7 @@ var TCommandFunctions =
 	/* LISTADDAT */
 	{
 		"name": 'LISTADDAT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var index = request.popValue();
 			var value = request.popValue();
@@ -1275,7 +1275,7 @@ var TCommandFunctions =
 	/* LISTREMOVE */
 	{
 		"name": 'LISTREMOVE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			var list = request.popValue();
@@ -1293,7 +1293,7 @@ var TCommandFunctions =
 	/* LISTREMOVEAT */
 	{
 		"name": 'LISTREMOVEAT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var index = request.popValue();
 			var list = request.popValue();
@@ -1310,7 +1310,7 @@ var TCommandFunctions =
 	/* LISTCONCAT */
 	{
 		"name": 'LISTCONCAT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var appendix = request.popValue();
 			var list = request.popValue();
@@ -1347,7 +1347,7 @@ var TCommandFunctions =
 	/* LISTINDEX */
 	{
 		"name": 'LISTINDEX', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			var list = request.popValue();
@@ -1364,7 +1364,7 @@ var TCommandFunctions =
 	/* LISTCONTAINS */
 	{
 		"name": 'LISTCONTAINS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
 			var list = request.popValue();
@@ -1381,7 +1381,7 @@ var TCommandFunctions =
 	/* FLOOR */
 	{
 		"name": 'FLOOR', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1395,7 +1395,7 @@ var TCommandFunctions =
 	/* CEILING */
 	{
 		"name": 'CEILING', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1409,7 +1409,7 @@ var TCommandFunctions =
 	/* ROUND */
 	{
 		"name": 'ROUND', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1423,7 +1423,7 @@ var TCommandFunctions =
 	/* FIX */
 	{
 		"name": 'FIX', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1444,7 +1444,7 @@ var TCommandFunctions =
 	/* SQRT */
 	{
 		"name": 'SQRT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1458,7 +1458,7 @@ var TCommandFunctions =
 	/* PI */
 	{
 		"name": 'PI', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			request.pushValue(TValue.createFloat(Math.PI));
 		}
@@ -1467,7 +1467,7 @@ var TCommandFunctions =
 	/* E */
 	{
 		"name": 'E', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			request.pushValue(TValue.createFloat(Math.E));
 		}
@@ -1476,7 +1476,7 @@ var TCommandFunctions =
 	/* SIN */
 	{
 		"name": 'SIN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1490,7 +1490,7 @@ var TCommandFunctions =
 	/* COS */
 	{
 		"name": 'COS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1504,7 +1504,7 @@ var TCommandFunctions =
 	/* TAN */
 	{
 		"name": 'TAN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1518,7 +1518,7 @@ var TCommandFunctions =
 	/* MIN */
 	{
 		"name": 'MIN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1535,7 +1535,7 @@ var TCommandFunctions =
 	/* MAX */
 	{
 		"name": 'MAX', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1552,7 +1552,7 @@ var TCommandFunctions =
 	/* CLAMP */
 	{
 		"name": 'CLAMP', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value3 = request.popValue();
 			var value2 = request.popValue();
@@ -1576,7 +1576,7 @@ var TCommandFunctions =
 	/* IRANDOM */
 	{
 		"name": 'IRANDOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value1 = request.popValue();
 
@@ -1597,7 +1597,7 @@ var TCommandFunctions =
 	/* FRANDOM */
 	{
 		"name": 'FRANDOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			request.pushValue(TValue.createFloat(Math.random()));
 		}
@@ -1606,7 +1606,7 @@ var TCommandFunctions =
 	/* GRANDOM */
 	{
 		"name": 'GRANDOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1633,7 +1633,7 @@ var TCommandFunctions =
 	/* TIME */
 	{
 		"name": 'TIME', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			request.pushValue(TValue.createInteger(Date.now()));
 		}
@@ -1642,7 +1642,7 @@ var TCommandFunctions =
 	/* SECONDS */
 	{
 		"name": 'SECONDS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1662,7 +1662,7 @@ var TCommandFunctions =
 	/* MINUTES */
 	{
 		"name": 'MINUTES', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1682,7 +1682,7 @@ var TCommandFunctions =
 	/* HOURS */
 	{
 		"name": 'HOURS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1702,7 +1702,7 @@ var TCommandFunctions =
 	/* DAYS */
 	{
 		"name": 'DAYS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1722,7 +1722,7 @@ var TCommandFunctions =
 	/* FORMATTIME */
 	{
 		"name": 'FORMATTIME', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value2 = request.popValue();
 			var value1 = request.popValue();
@@ -1742,7 +1742,7 @@ var TCommandFunctions =
 	/* OBJECTHASNAME */
 	{
 		"name": 'OBJECTHASNAME', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var nameValue = request.popValue();
 			var varObject = request.popValue();
@@ -1759,7 +1759,7 @@ var TCommandFunctions =
 	/* OBJECTHASTAG */
 	{
 		"name": 'OBJECTHASTAG', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var tagValue = request.popValue();
 			var varObject = request.popValue();
@@ -1776,7 +1776,7 @@ var TCommandFunctions =
 	/* ADDOBJECTNAME */
 	{
 		"name": 'ADDOBJECTNAME', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var nameValue = request.popValue();
 			var varObject = request.popValue();
@@ -1793,7 +1793,7 @@ var TCommandFunctions =
 	/* ADDOBJECTTAG */
 	{
 		"name": 'ADDOBJECTTAG', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var tagValue = request.popValue();
 			var varObject = request.popValue();
@@ -1810,7 +1810,7 @@ var TCommandFunctions =
 	/* ADDOBJECTTAGTOALLIN */
 	{
 		"name": 'ADDOBJECTTAGTOALLIN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var tagValue = request.popValue();
 			var elementValue = request.popValue();
@@ -1833,7 +1833,7 @@ var TCommandFunctions =
 	/* REMOVEOBJECTNAME */
 	{
 		"name": 'REMOVEOBJECTNAME', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var nameValue = request.popValue();
 			var varObject = request.popValue();
@@ -1850,7 +1850,7 @@ var TCommandFunctions =
 	/* REMOVEOBJECTTAG */
 	{
 		"name": 'REMOVEOBJECTTAG', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var tagValue = request.popValue();
 			var varObject = request.popValue();
@@ -1867,7 +1867,7 @@ var TCommandFunctions =
 	/* REMOVEOBJECTTAGFROMALLIN */
 	{
 		"name": 'REMOVEOBJECTTAGFROMALLIN', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var tagValue = request.popValue();
 			var elementValue = request.popValue();
@@ -1890,7 +1890,7 @@ var TCommandFunctions =
 	/* GIVEOBJECT */
 	{
 		"name": 'GIVEOBJECT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObject = request.popValue();
 			var varObjectContainer = request.popValue();
@@ -1909,7 +1909,7 @@ var TCommandFunctions =
 	/* REMOVEOBJECT */
 	{
 		"name": 'REMOVEOBJECT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObject = request.popValue();
 
@@ -1923,7 +1923,7 @@ var TCommandFunctions =
 	/* MOVEOBJECTSWITHTAG */
 	{
 		"name": 'MOVEOBJECTSWITHTAG', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var tagValue = request.popValue();
 			var varObjectContainerDest = request.popValue();
@@ -1951,7 +1951,7 @@ var TCommandFunctions =
 	/* OBJECTCOUNT */
 	{
 		"name": 'OBJECTCOUNT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var elementValue = request.popValue();
 
@@ -1967,7 +1967,7 @@ var TCommandFunctions =
 	/* HASOBJECT */
 	{
 		"name": 'HASOBJECT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObject = request.popValue();
 			var varObjectContainer = request.popValue();
@@ -1986,7 +1986,7 @@ var TCommandFunctions =
 	/* OBJECTHASNOOWNER */
 	{
 		"name": 'OBJECTHASNOOWNER', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObject = request.popValue();
 
@@ -2000,7 +2000,7 @@ var TCommandFunctions =
 	/* PLAYERISINROOM */
 	{
 		"name": 'PLAYERISINROOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varRoom = request.popValue();
 			var varPlayer = request.popValue();
@@ -2021,7 +2021,7 @@ var TCommandFunctions =
 	/* PLAYERCANACCESSOBJECT */
 	{
 		"name": 'PLAYERCANACCESSOBJECT', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObject = request.popValue();
 			var varPlayer = request.popValue();
@@ -2040,7 +2040,7 @@ var TCommandFunctions =
 	/* BROWSE */
 	{
 		"name": 'BROWSE', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varObjectContainer = request.popValue();
 
@@ -2056,7 +2056,7 @@ var TCommandFunctions =
 	/* BROWSETAGGED */
 	{
 		"name": 'BROWSETAGGED', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varTag = request.popValue();
 			var varObjectContainer = request.popValue();
@@ -2076,7 +2076,7 @@ var TCommandFunctions =
 	/* ELEMENTHASANCESTOR */
 	{
 		"name": 'ELEMENTHASANCESTOR', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varParent = request.popValue();
 			var varElement = request.popValue();
@@ -2109,7 +2109,7 @@ var TCommandFunctions =
 	/* SETPLAYER */
 	{
 		"name": 'SETPLAYER', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varPlayer = request.popValue();
 
@@ -2125,7 +2125,7 @@ var TCommandFunctions =
 	/* SETROOM */
 	{
 		"name": 'SETROOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varRoom = request.popValue();
 			var varPlayer = request.popValue();
@@ -2146,7 +2146,7 @@ var TCommandFunctions =
 	/* PUSHROOM */
 	{
 		"name": 'PUSHROOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varRoom = request.popValue();
 			var varPlayer = request.popValue();
@@ -2167,7 +2167,7 @@ var TCommandFunctions =
 	/* POPROOM */
 	{
 		"name": 'POPROOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varPlayer = request.popValue();
 
@@ -2189,7 +2189,7 @@ var TCommandFunctions =
 	/* SWAPROOM */
 	{
 		"name": 'SWAPROOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varRoom = request.popValue();
 			var varPlayer = request.popValue();
@@ -2219,7 +2219,7 @@ var TCommandFunctions =
 	/* CURRENTPLAYERIS */
 	{
 		"name": 'CURRENTPLAYERIS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varPlayer = request.popValue();
 
@@ -2237,7 +2237,7 @@ var TCommandFunctions =
 	/* NOCURRENTPLAYER */
 	{
 		"name": 'NOCURRENTPLAYER', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var currentPlayer = request.moduleContext.getCurrentPlayer();
 			request.pushValue(TValue.createBoolean(currentPlayer == null));
@@ -2247,7 +2247,7 @@ var TCommandFunctions =
 	/* CURRENTROOMIS */
 	{
 		"name": 'CURRENTROOMIS', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varRoom = request.popValue();
 			var varPlayer = request.popValue();
@@ -2270,7 +2270,7 @@ var TCommandFunctions =
 	/* NOCURRENTROOM */
 	{
 		"name": 'NOCURRENTROOM', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varPlayer = request.popValue();
 
@@ -2288,7 +2288,7 @@ var TCommandFunctions =
 	/* IDENTITY */
 	{
 		"name": 'IDENTITY', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var elementValue = request.popValue();
 			
@@ -2303,7 +2303,7 @@ var TCommandFunctions =
 	/* HEADER */
 	{
 		"name": 'HEADER', 
-		"doCommand": function(request, response, blockLocal, command)
+		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var headerName = request.popValue();
 			
@@ -2319,5 +2319,5 @@ var TCommandFunctions =
 //##[[EXPORTJS-END
 
 // If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TCommandFunctions;
+if ((typeof module.exports) !== 'undefined') module.exports = TOperationFunctions;
 // =========================================================================

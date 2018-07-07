@@ -15,7 +15,7 @@ var TValue = TValue || ((typeof require) !== 'undefined' ? require('./objects/TV
 var TRequest = TRequest || ((typeof require) !== 'undefined' ? require('./objects/TRequest.js') : null);
 var TResponse = TResponse || ((typeof require) !== 'undefined' ? require('./objects/TResponse.js') : null);
 var TArithmeticFunctions = TArithmeticFunctions || ((typeof require) !== 'undefined' ? require('./logic/TArithmeticFunctions.js') : null);
-var TCommandFunctions = TCommandFunctions || ((typeof require) !== 'undefined' ? require('./logic/TCommandFunctions.js') : null);
+var TOperationFunctions = TOperationFunctions || ((typeof require) !== 'undefined' ? require('./logic/TOperationFunctions.js') : null);
 var TStringBuilder = TStringBuilder || ((typeof require) !== 'undefined' ? require('./TStringBuilder.js') : null);
 // ======================================================================================================
 
@@ -24,7 +24,7 @@ var TStringBuilder = TStringBuilder || ((typeof require) !== 'undefined' ? requi
 var TLogic = {};
 
 //##[[EXPORTJS-INCLUDE logic/TArithmeticFunctions.js
-//##[[EXPORTJS-INCLUDE logic/TCommandFunctions.js
+//##[[EXPORTJS-INCLUDE logic/TOperationFunctions.js
 
 /****************************************************************************
  * Main logic junk.
@@ -81,34 +81,34 @@ TLogic.clearValue = function(valueHash, variableName)
 };
 
 /**
- * Turns a command into a readable string.
- * @param cmdObject (Object) the command object.
+ * Turns a operation into a readable string.
+ * @param cmdObject (Object) the operation object.
  * @return a string.
  */
-TLogic.commandToString = function(cmdObject)
+TLogic.operationToString = function(operationObject)
 {
 	var sb = new TStringBuilder();
-	sb.append(TCommandFunctions[cmdObject.opcode].name);
-	if (cmdObject.operand0 != null)
-		sb.append(' ').append(TValue.toString(cmdObject.operand0));
-	if (cmdObject.operand1 != null)
-		sb.append(' ').append(TValue.toString(cmdObject.operand1));
-	if (cmdObject.initBlock != null)
+	sb.append(TOperationFunctions[operationObject.opcode].name);
+	if (operationObject.operand0 != null)
+		sb.append(' ').append(TValue.toString(operationObject.operand0));
+	if (operationObject.operand1 != null)
+		sb.append(' ').append(TValue.toString(operationObject.operand1));
+	if (operationObject.initBlock != null)
 		sb.append(" [INIT]");
-	if (cmdObject.conditionalBlock != null)
+	if (operationObject.conditionalBlock != null)
 		sb.append(" [CONDITIONAL]");
-	if (cmdObject.stepBlock != null)
+	if (operationObject.stepBlock != null)
 		sb.append(" [STEP]");
-	if (cmdObject.successBlock != null)
+	if (operationObject.successBlock != null)
 		sb.append(" [SUCCESS]");
-	if (cmdObject.failureBlock != null)
+	if (operationObject.failureBlock != null)
 		sb.append(" [FAILURE]");
 	return sb.toString();
 };
 
 /**
  * Turns an element into a readable string.
- * @param elemObject (Object) the command object.
+ * @param elemObject (Object) the element object.
  * @return a string.
  */
 TLogic.elementToString = function(elemObject)
@@ -117,8 +117,8 @@ TLogic.elementToString = function(elemObject)
 };
 
 /**
- * Executes a block of commands.
- * @param block (Array) the block of commands.
+ * Executes a block of operations.
+ * @param block (Array) the block of operations.
  * @param request (TRequest) the request object.
  * @param response (TResponse) the response object.
  * @param blockLocal (Object) the local variables on the block call.
@@ -127,52 +127,51 @@ TLogic.elementToString = function(elemObject)
 TLogic.executeBlock = function(block, request, response, blockLocal)
 {
 	response.trace(request, "Start block.");
-	Util.each(block, function(command){
-		response.trace(request, "CALL "+TLogic.commandToString(command));
-		TLogic.executeCommand(request, response, blockLocal, command);
+	Util.each(block, function(operation){
+		response.trace(request, "CALL "+TLogic.operationToString(operation));
+		TLogic.executeOperation(request, response, blockLocal, operation);
 	});
 	response.trace(request, "End block.");
 };
 
 /**
- * Increments the runaway command counter and calls the command.  
- * Command index.
+ * Increments the runaway operation counter and calls the operation.  
  * @param request (TRequest) the request object.
  * @param response (TResponse) the response object.
  * @param blockLocal (Object) the local variables on the block call.
- * @param command (Object) the command object.
+ * @param operation (Object) the operation object.
  * @throws TAMEInterrupt if an interrupt occurs. 
  */
-TLogic.executeCommand = function(request, response, blockLocal, command)
+TLogic.executeOperation = function(request, response, blockLocal, operation)
 {
-	TCommandFunctions[command.opcode].doCommand(request, response, blockLocal, command);
-	response.incrementAndCheckCommandsExecuted(request.moduleContext.commandRunawayMax);
+	TOperationFunctions[operation.opcode].doOperation(request, response, blockLocal, operation);
+	response.incrementAndCheckOperationsExecuted(request.moduleContext.operationRunawayMax);
 }
 
 /**
- * Calls the conditional block on a command, returning the result as a .
+ * Calls the conditional block on a operation, returning the result as a .
  * @param request (TRequest) the request object.
  * @param response (TResponse) the response object.
  * @param blockLocal (Object) the local variables on the block call.
- * @param command (Object) the command object.
+ * @param operation (Object) the operation object.
  * @return true if result is equivalent to true, false if not.
  * @throws TAMEInterrupt if an interrupt occurs. 
  */
-TLogic.callConditional = function(commandName, request, response, blockLocal, command)
+TLogic.callConditional = function(operationName, request, response, blockLocal, operation)
 {
-	// block should contain arithmetic commands and a last push.
-	var conditional = command.conditionalBlock;
+	// block should contain arithmetic operations and a last push.
+	var conditional = operation.conditionalBlock;
 	if (!conditional)
-		throw TAMEError.ModuleExecution("Conditional block for "+commandName+" does NOT EXIST!");
+		throw TAMEError.ModuleExecution("Conditional block for "+operationName+" does NOT EXIST!");
 	
-	response.trace(request, "Calling "+commandName+" conditional...");
+	response.trace(request, "Calling "+operationName+" conditional...");
 	TLogic.executeBlock(conditional, request, response, blockLocal);
 
 	// get remaining expression value.
 	var value = request.popValue();
 	
 	if (!TValue.isLiteral(value))
-		throw TAMEError.UnexpectedValueType("Expected literal type after "+commandName+" conditional block execution.");
+		throw TAMEError.UnexpectedValueType("Expected literal type after "+operationName+" conditional block execution.");
 
 	var result = TValue.asBoolean(value);
 	response.trace(request, "Result "+TValue.toString(value)+" evaluates "+result+".");

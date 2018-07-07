@@ -12,7 +12,7 @@ package com.tameif.tame.exception;
 import com.tameif.tame.TAMEFatalException;
 
 /**
- * This type of interrupt is thrown too many commands are executed on
+ * This type of interrupt is thrown too many operations are executed on
  * one request (in order to catch possible infinite loops), or when the 
  * function call stack gets too deep (to prevent stack overflows).
  * @author Matthew Tropiano
@@ -23,7 +23,7 @@ public class RunawayRequestException extends TAMEFatalException
 
 	public RunawayRequestException()
 	{
-		super("A runaway request interrupt was thrown. Too many commands processed for one request: possible infinite loop.");
+		super("A runaway request interrupt was thrown. Too many operations processed for one request: possible infinite loop.");
 	}
 	
 	public RunawayRequestException(String message)

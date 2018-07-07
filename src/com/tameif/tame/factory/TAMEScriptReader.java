@@ -28,7 +28,7 @@ import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
 import com.blackrook.lang.Parser;
 import com.blackrook.lang.ParserException;
-import com.tameif.tame.TAMECommand;
+import com.tameif.tame.TAMEOperation;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.element.ObjectContainer;
@@ -44,7 +44,7 @@ import com.tameif.tame.lang.ArithmeticOperator;
 import com.tameif.tame.lang.Block;
 import com.tameif.tame.lang.BlockEntry;
 import com.tameif.tame.lang.BlockEntryType;
-import com.tameif.tame.lang.Command;
+import com.tameif.tame.lang.Operation;
 import com.tameif.tame.lang.FunctionEntry;
 import com.tameif.tame.lang.Value;
 
@@ -1126,11 +1126,11 @@ public final class TAMEScriptReader implements TAMEConstants
 			
 			String functionName = currentToken().getLexeme();
 
-			// cannot be the name of a visible command.
-			TAMECommand command = getCommand(functionName);
-			if (command != null && !command.isInternal())
+			// cannot be the name of a visible operation.
+			TAMEOperation operation = getOperation(functionName);
+			if (operation != null && !operation.isInternal())
 			{
-				addErrorMessage("Function name cannot be a command.");
+				addErrorMessage("Function name cannot be a built-in function.");
 				return false;
 			}
 
@@ -1963,7 +1963,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		/**
-		 * Parses a block that consists of the commands that evaluate an expression.
+		 * Parses a block that consists of the operations that evaluate an expression.
 		 * Pushes a block onto the block stack.
 		 * [BlockExpression] :=
 		 * 		[Expression]
@@ -1979,13 +1979,13 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
-		 * Parses a statement. Emits commands to the provided block.
+		 * Parses a statement. Emits operations to the provided block.
 		 * [Statement] := 
 		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		[IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		"local" [IDENTIFIER] [ [ASSIGNMENTOPERATOR] [EXPRESSION] ]
 		 * 		"clear" [IDENTIFIER];
-		 * 		[COMMANDEXPRESSION]
+		 * 		[STATEMENTEXPRESSION]
 		 *		[e]
 		 */
 		private boolean parseStatement(TElement currentElement, Block block)
@@ -2033,8 +2033,8 @@ public final class TAMEScriptReader implements TAMEConstants
 								return false;
 							}
 
-							block.add(Command.create(TAMECommand.CALLELEMENTFUNCTION, identToken, Value.create(identName)));
-							block.add(Command.create(TAMECommand.POP));
+							block.add(Operation.create(TAMEOperation.CALLELEMENTFUNCTION, identToken, Value.create(identName)));
+							block.add(Operation.create(TAMEOperation.POP));
 							return true;
 						}
 						else
@@ -2046,7 +2046,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					// list index assignment.
 					else if (currentType(TSKernel.TYPE_LBRACK))
 					{
-						block.add(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, variable));
+						block.add(Operation.create(TAMEOperation.PUSHELEMENTVALUE, identToken, variable));
 						
 						while (currentType(TSKernel.TYPE_LBRACK))
 						{
@@ -2063,7 +2063,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							// another dimension incoming?
 							if (currentType(TSKernel.TYPE_LBRACK))
 							{
-								block.add(Command.create(TAMECommand.PUSHLISTVALUE));
+								block.add(Operation.create(TAMEOperation.PUSHLISTVALUE));
 							}
 						}
 						
@@ -2078,7 +2078,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						if (!parseExpression(currentElement, block))
 							return false;
 						
-						block.add(Command.create(TAMECommand.POPLISTVALUE));
+						block.add(Operation.create(TAMEOperation.POPLISTVALUE));
 						return true;
 					}
 					// else, not function nor list.
@@ -2087,7 +2087,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						if (!parseExpression(currentElement, block))
 							return false;
 						
-						block.add(Command.create(TAMECommand.POPELEMENTVALUE, identToken, variable));
+						block.add(Operation.create(TAMEOperation.POPELEMENTVALUE, identToken, variable));
 						return true;
 					}
 					// else, not function nor list.
@@ -2102,16 +2102,16 @@ public final class TAMEScriptReader implements TAMEConstants
 					String identName = currentToken().getLexeme();
 					nextToken();
 					
-					// if there's a left parenthesis, check for command.
+					// if there's a left parenthesis, check for built-in function/operation.
 					if (currentType(TSKernel.TYPE_LPAREN))
 					{
 						nextToken();
 						
-						TAMECommand command;
+						TAMEOperation operation;
 						FunctionEntry functionEntry;
-						if ((command = getCommand(identName)) != null && !command.isInternal())
+						if ((operation = getOperation(identName)) != null && !operation.isInternal())
 						{
-							if (!parseCommandArguments(currentElement, block, command))
+							if (!parseOperationArguments(currentElement, block, operation))
 								return false;
 
 							if (!matchType(TSKernel.TYPE_RPAREN))
@@ -2120,9 +2120,9 @@ public final class TAMEScriptReader implements TAMEConstants
 								return false;
 							}
 							
-							block.add(Command.create(command));
-							if(command.getReturnType() != null)
-								block.add(Command.create(TAMECommand.POP));
+							block.add(Operation.create(operation));
+							if(operation.getReturnType() != null)
+								block.add(Operation.create(TAMEOperation.POP));
 							
 							return true;
 						}
@@ -2137,19 +2137,19 @@ public final class TAMEScriptReader implements TAMEConstants
 								return false;
 							}
 
-							block.add(Command.create(TAMECommand.CALLFUNCTION, Value.create(identName)));
-							block.add(Command.create(TAMECommand.POP));
+							block.add(Operation.create(TAMEOperation.CALLFUNCTION, Value.create(identName)));
+							block.add(Operation.create(TAMEOperation.POP));
 						}
 						else
 						{
-							addErrorMessage("Expression error - \""+identName+"\" is not a command or the name of as function in this element's lineage.");
+							addErrorMessage("Expression error - \""+identName+"\" is not a built-in function nor the name of as function in this element's lineage.");
 							return false;
 						}
 					}
 					// list index assignment.
 					else if (currentType(TSKernel.TYPE_LBRACK))
 					{
-						block.add(Command.create(TAMECommand.PUSHVALUE, Value.createVariable(identName)));
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, Value.createVariable(identName)));
 						
 						while (currentType(TSKernel.TYPE_LBRACK))
 						{
@@ -2166,7 +2166,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							// another dimension incoming?
 							if (currentType(TSKernel.TYPE_LBRACK))
 							{
-								block.add(Command.create(TAMECommand.PUSHLISTVALUE));
+								block.add(Operation.create(TAMEOperation.PUSHLISTVALUE));
 							}
 							
 						}
@@ -2182,7 +2182,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						if (!parseExpression(currentElement, block))
 							return false;
 						
-						block.add(Command.create(TAMECommand.POPLISTVALUE));
+						block.add(Operation.create(TAMEOperation.POPLISTVALUE));
 						return true;
 					}
 					// assignment operator
@@ -2191,7 +2191,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						if (!parseExpression(currentElement, block))
 							return false;
 						
-						block.add(Command.create(TAMECommand.POPVALUE, identToken));
+						block.add(Operation.create(TAMEOperation.POPVALUE, identToken));
 						return true;
 					}
 					else
@@ -2229,14 +2229,14 @@ public final class TAMEScriptReader implements TAMEConstants
 					if (!parseExpression(currentElement, block))
 						return false;
 					
-					block.add(Command.create(TAMECommand.POPLOCALVALUE, identToken));
+					block.add(Operation.create(TAMEOperation.POPLOCALVALUE, identToken));
 					return true;
 				}
 				// if no assignment, then initialize as false.
 				else
 				{
-					block.add(Command.create(TAMECommand.PUSHVALUE, Value.create(false)));
-					block.add(Command.create(TAMECommand.POPLOCALVALUE, identToken));
+					block.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create(false)));
+					block.add(Operation.create(TAMEOperation.POPLOCALVALUE, identToken));
 					return true;
 				}
 
@@ -2271,12 +2271,12 @@ public final class TAMEScriptReader implements TAMEConstants
 					Value variable = tokenToValue();
 					nextToken();
 					
-					block.add(Command.create(TAMECommand.CLEARELEMENTVALUE, identToken, variable));
+					block.add(Operation.create(TAMEOperation.CLEARELEMENTVALUE, identToken, variable));
 					return true;
 				}
 				else
 				{
-					block.add(Command.create(TAMECommand.CLEARVALUE, identToken));
+					block.add(Operation.create(TAMEOperation.CLEARVALUE, identToken));
 					return true;
 				}
 				
@@ -2286,7 +2286,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
-		 * Parses a statement. block.adds commands to the current block.
+		 * Parses a statement. Adds operations to the current block.
 		 * [StatementList] := 
 		 *		[Statement] [StatementList]
 		 * 		[e]
@@ -2365,7 +2365,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 				}
 		
-				block.add(Command.create(TAMECommand.IF, conditionalBlock, successBlock, failureBlock));
+				block.add(Operation.create(TAMEOperation.IF, conditionalBlock, successBlock, failureBlock));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_WHILE))
@@ -2394,7 +2394,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				if ((successBlock = parseBlock(currentElement)) == null)
 					return false;
 		
-				block.add(Command.create(TAMECommand.WHILE, conditionalBlock, successBlock));
+				block.add(Operation.create(TAMEOperation.WHILE, conditionalBlock, successBlock));
 				controlDepth--;
 				return true;
 			}
@@ -2444,7 +2444,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				if ((successBlock = parseBlock(currentElement)) == null)
 					return false;
 		
-				block.add(Command.create(TAMECommand.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
+				block.add(Operation.create(TAMEOperation.FOR, initBlock, conditionalBlock, stepBlock, successBlock));
 				controlDepth--;
 				return true;
 			}
@@ -2457,7 +2457,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 		/**
 		 * Parses an executable statement.
-		 * [ControlCommand] :=
+		 * [ExecutableStatement] :=
 		 * 		[QUIT]
 		 * 		[BREAK]
 		 * 		[CONTINUE]
@@ -2470,25 +2470,25 @@ public final class TAMEScriptReader implements TAMEConstants
 			if (currentType(TSKernel.TYPE_QUIT))
 			{
 				nextToken();
-				block.add(Command.create(TAMECommand.QUIT));
+				block.add(Operation.create(TAMEOperation.QUIT));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_FINISH))
 			{
 				nextToken();
-				block.add(Command.create(TAMECommand.FINISH));
+				block.add(Operation.create(TAMEOperation.FINISH));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_END))
 			{
 				if (functionDepth != 0)
 				{
-					addErrorMessage("Command \"end\" used inside of a function.");
+					addErrorMessage("Keyword \"end\" used inside of a function.");
 					return false;
 				}
 				
 				nextToken();
-				block.add(Command.create(TAMECommand.END));
+				block.add(Operation.create(TAMEOperation.END));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_RETURN))
@@ -2496,7 +2496,7 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				if (functionDepth == 0)
 				{
-					addErrorMessage("Command \"return\" used outside of a function.");
+					addErrorMessage("Keyword \"return\" used outside of a function.");
 					return false;
 				}
 				
@@ -2504,7 +2504,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				if (!parseExpression(currentElement, block))
 					return false;
 				
-				block.add(Command.create(TAMECommand.FUNCTIONRETURN));
+				block.add(Operation.create(TAMEOperation.FUNCTIONRETURN));
 				
 				return true;
 			}
@@ -2512,24 +2512,24 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				if (controlDepth == 0)
 				{
-					addErrorMessage("Command \"continue\" used without \"for\" or \"while\".");
+					addErrorMessage("Keyword \"continue\" used without \"for\" or \"while\".");
 					return false;
 				}
 				
 				nextToken();
-				block.add(Command.create(TAMECommand.CONTINUE));
+				block.add(Operation.create(TAMEOperation.CONTINUE));
 				return true;
 			}
 			else if (currentType(TSKernel.TYPE_BREAK))
 			{
 				if (controlDepth == 0)
 				{
-					addErrorMessage("Command \"break\" used without \"for\" or \"while\".");
+					addErrorMessage("Keyword \"break\" used without \"for\" or \"while\".");
 					return false;
 				}
 				
 				nextToken();
-				block.add(Command.create(TAMECommand.BREAK));
+				block.add(Operation.create(TAMEOperation.BREAK));
 				return true;
 			}
 			else if (!parseStatement(currentElement, block))
@@ -2539,11 +2539,11 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		/**
-		 * Parses command arguments.
+		 * Parses operation arguments.
 		 */
-		private boolean parseCommandArguments(TElement currentElement, Block block, TAMECommand commandType) 
+		private boolean parseOperationArguments(TElement currentElement, Block block, TAMEOperation operationType) 
 		{
-			ArgumentType[] argTypes = commandType.getArgumentTypes();
+			ArgumentType[] argTypes = operationType.getArgumentTypes();
 			for (int n = 0; n < argTypes.length; n++) 
 			{
 				int i = n + 1;
@@ -2561,11 +2561,11 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isAction())
 						{
-							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							addErrorMessage("Function "+operationType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
 							return false;
 						}
 						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2573,18 +2573,18 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isAction())
 						{
-							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							addErrorMessage("Function "+operationType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
 							return false;
 						}
 						
 						TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
 						if (action.getType() != TAction.Type.GENERAL)
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a GENERAL ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a general action type.");
+							addErrorMessage("Function "+operationType.name()+" requires a GENERAL ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a general action type.");
 							return false;
 						}
 						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2592,18 +2592,18 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isAction())
 						{
-							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							addErrorMessage("Function "+operationType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
 							return false;
 						}
 						
 						TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
 						if (!(action.getType() == TAction.Type.MODAL || action.getType() == TAction.Type.OPEN))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a MODAL or OPEN ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a modal or open action type.");
+							addErrorMessage("Function "+operationType.name()+" requires a MODAL or OPEN ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a modal or open action type.");
 							return false;
 						}
 						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2611,18 +2611,18 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isAction())
 						{
-							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							addErrorMessage("Function "+operationType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
 							return false;
 						}
 						
 						TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
 						if (!(action.getType() == TAction.Type.TRANSITIVE || action.getType() == TAction.Type.DITRANSITIVE))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a TRANSITIVE or DITRANSITIVE ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a transitive or ditransitive action type.");
+							addErrorMessage("Function "+operationType.name()+" requires a TRANSITIVE or DITRANSITIVE ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a transitive or ditransitive action type.");
 							return false;
 						}
 						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2630,18 +2630,18 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isAction())
 						{
-							addErrorMessage("Command "+commandType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
+							addErrorMessage("Function "+operationType.name()+" requires an ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an action type.");
 							return false;
 						}
 						
 						TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
 						if (action.getType() != TAction.Type.DITRANSITIVE)
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a DITRANSITIVE ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a ditransitive action type.");
+							addErrorMessage("Function "+operationType.name()+" requires a DITRANSITIVE ACTION for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a ditransitive action type.");
 							return false;
 						}
 						
-						block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 						nextToken();
 						break;
 					}
@@ -2651,23 +2651,23 @@ public final class TAMEScriptReader implements TAMEConstants
 						{
 							if (TObject.class.isAssignableFrom(currentElement.getClass()))
 							{
-								block.add(Command.create(TAMECommand.PUSHTHIS));
+								block.add(Operation.create(TAMEOperation.PUSHTHIS));
 								nextToken();
 							}
 							else
 							{
-								addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
+								addErrorMessage("Function "+operationType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
 								return false;
 							}
 						}
 						else if (!isObject(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
+							addErrorMessage("Function "+operationType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
 							return false;
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 							nextToken();
 						}
 						break;
@@ -2678,23 +2678,23 @@ public final class TAMEScriptReader implements TAMEConstants
 						{
 							if (TPlayer.class.isAssignableFrom(currentElement.getClass()))
 							{
-								block.add(Command.create(TAMECommand.PUSHTHIS));
+								block.add(Operation.create(TAMEOperation.PUSHTHIS));
 								nextToken();
 							}
 							else
 							{
-								addErrorMessage("Command "+commandType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type, or \"player\".");
+								addErrorMessage("Function "+operationType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type, or \"player\".");
 								return false;
 							}
 						}
 						else if (!isPlayer(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type, or \"player\".");
+							addErrorMessage("Function "+operationType.name()+" requires a non-archetype PLAYER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable player type, or \"player\".");
 							return false;
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 							nextToken();
 						}
 						break;
@@ -2705,23 +2705,23 @@ public final class TAMEScriptReader implements TAMEConstants
 						{
 							if (TRoom.class.isAssignableFrom(currentElement.getClass()))
 							{
-								block.add(Command.create(TAMECommand.PUSHTHIS));
+								block.add(Operation.create(TAMEOperation.PUSHTHIS));
 								nextToken();
 							}
 							else
 							{
-								addErrorMessage("Command "+commandType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type, or \"room\".");
+								addErrorMessage("Function "+operationType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type, or \"room\".");
 								return false;
 							}
 						}
 						else if (!isRoom(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type, or \"room\".");
+							addErrorMessage("Function "+operationType.name()+" requires a non-archetype ROOM for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable room type, or \"room\".");
 							return false;
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 							nextToken();
 						}
 						break;
@@ -2732,23 +2732,23 @@ public final class TAMEScriptReader implements TAMEConstants
 						{
 							if (TContainer.class.isAssignableFrom(currentElement.getClass()))
 							{
-								block.add(Command.create(TAMECommand.PUSHTHIS));
+								block.add(Operation.create(TAMEOperation.PUSHTHIS));
 								nextToken();
 							}
 							else
 							{
-								addErrorMessage("Command "+commandType.name()+" requires a non-archetype CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable container type.");
+								addErrorMessage("Function "+operationType.name()+" requires a non-archetype CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable container type.");
 								return false;
 							}
 						}
 						else if (!isContainer(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable container type.");
+							addErrorMessage("Function "+operationType.name()+" requires a non-archetype CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable container type.");
 							return false;
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 							nextToken();
 						}
 						break;
@@ -2759,23 +2759,23 @@ public final class TAMEScriptReader implements TAMEConstants
 						{
 							if (ObjectContainer.class.isAssignableFrom(currentElement.getClass()))
 							{
-								block.add(Command.create(TAMECommand.PUSHTHIS));
+								block.add(Operation.create(TAMEOperation.PUSHTHIS));
 								nextToken();
 							}
 							else
 							{
-								addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
+								addErrorMessage("Function "+operationType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
 								return false;
 							}
 						}
 						else if (!isObjectContainer(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
+							addErrorMessage("Function "+operationType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
 							return false;
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 							nextToken();
 						}
 						break;
@@ -2784,17 +2784,17 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (currentType(TSKernel.TYPE_THIS))
 						{
-							block.add(Command.create(TAMECommand.PUSHTHIS));
+							block.add(Operation.create(TAMEOperation.PUSHTHIS));
 							nextToken();
 						}
 						else if (!isElement(false))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires a non-archetype ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type (world, player, room, container, object).");
+							addErrorMessage("Function "+operationType.name()+" requires a non-archetype ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type (world, player, room, container, object).");
 							return false;
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 							nextToken();
 						}
 						break;
@@ -2803,17 +2803,17 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (currentType(TSKernel.TYPE_THIS))
 						{
-							block.add(Command.create(TAMECommand.PUSHTHIS));
+							block.add(Operation.create(TAMEOperation.PUSHTHIS));
 							nextToken();
 						}
 						else if (!isElement(true))
 						{
-							addErrorMessage("Command "+commandType.name()+" requires an ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type (world, player, room, container, object).");
+							addErrorMessage("Function "+operationType.name()+" requires an ELEMENT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an element type (world, player, room, container, object).");
 							return false;
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, tokenToValue()));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 							nextToken();
 						}
 						break;
@@ -2825,7 +2825,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				{
 					if (!matchType(TSKernel.TYPE_COMMA))
 					{
-						addErrorMessage("Expected ',' after command argument. More arguments remain.");
+						addErrorMessage("Expected ',' after function argument. More arguments remain.");
 						return false;
 					}
 				}
@@ -2861,7 +2861,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		
 		/**
 		 * Parses an infix expression.
-		 * @param the block to block.add commands to.
+		 * @param the block to add operations to.
 		 */
 		private boolean parseExpression(TElement currentElement, Block block)
 		{
@@ -2931,7 +2931,7 @@ public final class TAMEScriptReader implements TAMEConstants
 									return false;
 								}
 								
-								block.add(Command.create(TAMECommand.CALLELEMENTFUNCTION, identToken, Value.create(identName)));
+								block.add(Operation.create(TAMEOperation.CALLELEMENTFUNCTION, identToken, Value.create(identName)));
 								expressionValueCounter[0] += 1; // push after call.
 								lastWasValue = true;
 							}
@@ -2943,35 +2943,35 @@ public final class TAMEScriptReader implements TAMEConstants
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHELEMENTVALUE, identToken, Value.createVariable(identName)));
+							block.add(Operation.create(TAMEOperation.PUSHELEMENTVALUE, identToken, Value.createVariable(identName)));
 							expressionValueCounter[0] += 1; // the "push"
 							lastWasValue = true;
 						}
 						
 					}
-					else if (identToken.isVariable()) // or command...
+					else if (identToken.isVariable()) // or operation...
 					{
 						String identName = currentToken().getLexeme();
 						nextToken();
 						
-						// if there's a left parenthesis, check for command.
+						// if there's a left parenthesis, check for operation.
 						if (currentType(TSKernel.TYPE_LPAREN))
 						{
-							TAMECommand command;
+							TAMEOperation operation;
 							FunctionEntry functionEntry;
 							
-							if ((command = getCommand(identName)) != null && !command.isInternal())
+							if ((operation = getOperation(identName)) != null && !operation.isInternal())
 							{
-								if (command.getReturnType() == null)
+								if (operation.getReturnType() == null)
 								{
-									addErrorMessage("Expression error - command \""+identName+"\" has no return type.");
+									addErrorMessage("Expression error - function \""+identName+"\" has no return type.");
 									return false;
 								}
 								
 								// saw LPAREN
 								nextToken();
 
-								if (!parseCommandArguments(currentElement, block, command))
+								if (!parseOperationArguments(currentElement, block, operation))
 									return false;
 
 								if (!matchType(TSKernel.TYPE_RPAREN))
@@ -2980,7 +2980,7 @@ public final class TAMEScriptReader implements TAMEConstants
 									return false;
 								}
 								
-								block.add(Command.create(command));
+								block.add(Operation.create(operation));
 								expressionValueCounter[0] += 1;
 								lastWasValue = true;
 							}
@@ -2998,20 +2998,20 @@ public final class TAMEScriptReader implements TAMEConstants
 									return false;
 								}
 
-								block.add(Command.create(TAMECommand.CALLFUNCTION, Value.create(identName)));
+								block.add(Operation.create(TAMEOperation.CALLFUNCTION, Value.create(identName)));
 								expressionValueCounter[0] += 1;
 								lastWasValue = true;
 							}
 							else
 							{
-								addErrorMessage("Expression error - \""+identName+"\" is not a command nor function name.");
+								addErrorMessage("Expression error - \""+identName+"\" is not a function name.");
 								return false;
 							}
 						}
 						// list index assignment.
 						else if (currentType(TSKernel.TYPE_LBRACK))
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, identToken));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, identToken));
 							
 							while (currentType(TSKernel.TYPE_LBRACK))
 							{
@@ -3028,17 +3028,17 @@ public final class TAMEScriptReader implements TAMEConstants
 								// another dimension incoming?
 								if (currentType(TSKernel.TYPE_LBRACK))
 								{
-									block.add(Command.create(TAMECommand.PUSHLISTVALUE));
+									block.add(Operation.create(TAMEOperation.PUSHLISTVALUE));
 								}
 							}
 							
-							block.add(Command.create(TAMECommand.PUSHLISTVALUE));
+							block.add(Operation.create(TAMEOperation.PUSHLISTVALUE));
 							expressionValueCounter[0] += 1;
 							lastWasValue = true;
 						}
 						else
 						{
-							block.add(Command.create(TAMECommand.PUSHVALUE, identToken));
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, identToken));
 							expressionValueCounter[0] += 1;
 							lastWasValue = true;
 						}
@@ -3078,7 +3078,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					// empty list?
 					if (matchType(TSKernel.TYPE_RBRACK))
 					{
-						block.add(Command.create(TAMECommand.PUSHNEWLIST));
+						block.add(Operation.create(TAMEOperation.PUSHNEWLIST));
 						expressionValueCounter[0] += 1;
 						lastWasValue = true;
 					}
@@ -3101,8 +3101,8 @@ public final class TAMEScriptReader implements TAMEConstants
 							return false;
 						}
 						
-						block.add(Command.create(TAMECommand.PUSHVALUE, Value.create(length)));
-						block.add(Command.create(TAMECommand.PUSHINITLIST));
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create(length)));
+						block.add(Operation.create(TAMEOperation.PUSHINITLIST));
 						expressionValueCounter[0] += 1;
 						lastWasValue = true;
 					}
@@ -3116,7 +3116,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					
 					Value value = tokenToValue();
-					block.add(Command.create(TAMECommand.PUSHVALUE, value));
+					block.add(Operation.create(TAMEOperation.PUSHVALUE, value));
 					expressionValueCounter[0] += 1;
 					nextToken();
 					lastWasValue = true;
@@ -3195,54 +3195,54 @@ public final class TAMEScriptReader implements TAMEConstants
 					// short-circuit and
 					else if (matchType(TSKernel.TYPE_DOUBLEAMPERSAND))
 					{
-						// low priority - emit all commands.
+						// low priority - emit all operations.
 						reduceRest(block, expressionOperators, expressionValueCounter);
 						
 						// no-op conditional - "if" pops and evaluates.
 						Block conditional = new Block();
-						conditional.add(Command.create(TAMECommand.NOOP));
+						conditional.add(Operation.create(TAMEOperation.NOOP));
 
 						Block successBlock;
 						if ((successBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 						
 						Block failureBlock = new Block();
-						failureBlock.add(Command.create(TAMECommand.PUSHVALUE, Value.create(false)));
+						failureBlock.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create(false)));
 
-						block.add(Command.create(TAMECommand.IF, conditional, successBlock, failureBlock));
+						block.add(Operation.create(TAMEOperation.IF, conditional, successBlock, failureBlock));
 
 						lastWasValue = true;
 					}
 					// short-circuit or
 					else if (matchType(TSKernel.TYPE_DOUBLEPIPE))
 					{
-						// low priority - emit all commands.
+						// low priority - emit all operations.
 						reduceRest(block, expressionOperators, expressionValueCounter);
 
 						// negate conditional - "if" pops and evaluates.
 						Block conditional = new Block();
-						conditional.add(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(ArithmeticOperator.LOGICAL_NOT.ordinal())));
+						conditional.add(Operation.create(TAMEOperation.ARITHMETICFUNC, Value.create(ArithmeticOperator.LOGICAL_NOT.ordinal())));
 
 						Block successBlock;
 						if ((successBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 						
 						Block failureBlock = new Block();
-						failureBlock.add(Command.create(TAMECommand.PUSHVALUE, Value.create(true)));
+						failureBlock.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create(true)));
 
-						block.add(Command.create(TAMECommand.IF, conditional, successBlock, failureBlock));
+						block.add(Operation.create(TAMEOperation.IF, conditional, successBlock, failureBlock));
 
 						lastWasValue = true;
 					}
 					// ternary operator
 					else if (matchType(TSKernel.TYPE_QUESTIONMARK))
 					{
-						// low priority - emit all commands.
+						// low priority - emit all operations.
 						reduceRest(block, expressionOperators, expressionValueCounter);
 
 						// no-op conditional - "if" pops and evaluates.
 						Block conditional = new Block();
-						conditional.add(Command.create(TAMECommand.NOOP));
+						conditional.add(Operation.create(TAMEOperation.NOOP));
 
 						Block successBlock;
 						if ((successBlock = parseBlockExpression(currentElement)) == null)
@@ -3258,7 +3258,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						if ((failureBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 
-						block.add(Command.create(TAMECommand.IF, conditional, successBlock, failureBlock));
+						block.add(Operation.create(TAMEOperation.IF, conditional, successBlock, failureBlock));
 
 						lastWasValue = true;
 					}
@@ -3350,7 +3350,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				throw new TAMEScriptParseException("Internal error - value counter did not have enough counter.");
 			
 			expressionValueCounter[0] += 1; // the "push"
-			block.add(Command.create(TAMECommand.ARITHMETICFUNC, Value.create(operator.ordinal())));
+			block.add(Operation.create(TAMEOperation.ARITHMETICFUNC, Value.create(operator.ordinal())));
 			return true;
 		}
 
@@ -3507,10 +3507,10 @@ public final class TAMEScriptReader implements TAMEConstants
 			return (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && currentModule.getActionByIdentity(currentToken().getLexeme()) != null);
 		}
 		
-		// Returns the command associated with a name, if any.
-		private TAMECommand getCommand(String name)
+		// Returns the operation associated with a name, if any.
+		private TAMEOperation getOperation(String name)
 		{
-			return Reflect.getEnumInstance(name.toUpperCase(), TAMECommand.class);
+			return Reflect.getEnumInstance(name.toUpperCase(), TAMEOperation.class);
 		}
 		
 		// Return true if token type starts a statement.
@@ -3619,21 +3619,21 @@ public final class TAMEScriptReader implements TAMEConstants
 				return block;
 			
 			boolean optimizeDone = false;
-			Stack<Command> optimizeStack = new Stack<>();
+			Stack<Operation> optimizeStack = new Stack<>();
 			
-			for (Command command : block)
+			for (Operation operation : block)
 			{
-				if (command.getOperation() == TAMECommand.ARITHMETICFUNC)
+				if (operation.getOperation() == TAMEOperation.ARITHMETICFUNC)
 				{
-					ArithmeticOperator operator =  ArithmeticOperator.VALUES[(int)command.getOperand0().asLong()];
+					ArithmeticOperator operator =  ArithmeticOperator.VALUES[(int)operation.getOperand0().asLong()];
 					
 					// binary operator
 					if (operator.isBinary())
 					{
-						Command c2 = optimizeStack.pop();
-						Command c1 = optimizeStack.pop();
+						Operation c2 = optimizeStack.pop();
+						Operation c1 = optimizeStack.pop();
 
-						if (c1.getOperation() == TAMECommand.PUSHVALUE && c2.getOperation() == TAMECommand.PUSHVALUE)
+						if (c1.getOperation() == TAMEOperation.PUSHVALUE && c2.getOperation() == TAMEOperation.PUSHVALUE)
 						{
 							Value v2 = c2.getOperand0();
 							Value v1 = c1.getOperand0();
@@ -3643,13 +3643,13 @@ public final class TAMEScriptReader implements TAMEConstants
 							{
 								optimizeStack.push(c1);
 								optimizeStack.push(c2);
-								optimizeStack.push(command);
+								optimizeStack.push(operation);
 							}
 							// else reduce and push reduced value.
 							else
 							{
 								Value result = operator.doOperation(v1, v2);
-								optimizeStack.push(Command.create(TAMECommand.PUSHVALUE, result));
+								optimizeStack.push(Operation.create(TAMEOperation.PUSHVALUE, result));
 								optimizeDone = true;
 							}
 							
@@ -3658,16 +3658,16 @@ public final class TAMEScriptReader implements TAMEConstants
 						{
 							optimizeStack.push(c1);
 							optimizeStack.push(c2);
-							optimizeStack.push(command);
+							optimizeStack.push(operation);
 						}
 						
 					}
 					// unary operator
 					else
 					{
-						Command c1 = optimizeStack.pop();
+						Operation c1 = optimizeStack.pop();
 						
-						if (c1.getOperation() == TAMECommand.PUSHVALUE)
+						if (c1.getOperation() == TAMEOperation.PUSHVALUE)
 						{
 							Value v1 = c1.getOperand0();
 
@@ -3675,13 +3675,13 @@ public final class TAMEScriptReader implements TAMEConstants
 							if (!v1.isLiteral())
 							{
 								optimizeStack.push(c1);
-								optimizeStack.push(command);
+								optimizeStack.push(operation);
 							}
 							// else reduce and push reduced value.
 							else
 							{
 								Value result = operator.doOperation(v1);
-								optimizeStack.push(Command.create(TAMECommand.PUSHVALUE, result));
+								optimizeStack.push(Operation.create(TAMEOperation.PUSHVALUE, result));
 								optimizeDone = true;
 							}
 							
@@ -3689,14 +3689,14 @@ public final class TAMEScriptReader implements TAMEConstants
 						else
 						{
 							optimizeStack.push(c1);
-							optimizeStack.push(command);
+							optimizeStack.push(operation);
 						}
 						
 					}
 				}
 				else
 				{
-					optimizeStack.push(command);
+					optimizeStack.push(operation);
 				}
 				
 			}
@@ -3705,7 +3705,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return block;
 			
 			Block outBlock = new Block();
-			Stack<Command> reverseStack = new Stack<>();
+			Stack<Operation> reverseStack = new Stack<>();
 			while (!optimizeStack.isEmpty())
 				reverseStack.push(optimizeStack.pop());
 			while (!reverseStack.isEmpty())

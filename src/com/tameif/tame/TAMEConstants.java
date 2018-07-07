@@ -49,7 +49,7 @@ public interface TAMEConstants
 
 	/* ========= Standard headers that affect things. ========= */
 	
-	/** Header - TAME Option - Max Runaway Commands. */
+	/** Header - TAME Option - Max Runaway Operations. */
 	public static final String HEADER_TAME_RUNAWAY_MAX = "tame_runaway_max";
 	/** Header - TAME Option - Max Function Depth. */
 	public static final String HEADER_TAME_FUNCDEPTH_MAX = "tame_funcdepth_max";

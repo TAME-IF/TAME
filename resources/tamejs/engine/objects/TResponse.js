@@ -21,7 +21,7 @@ var TAMEConstants = TAMEConstants || (typeof require) !== 'undefined' ? require(
 var TResponse = function()
 {
     this.responseCues = [];
-    this.commandsExecuted = 0;
+    this.operationsExecuted = 0;
     this.functionDepth = 0;
     this.requestNanos = 0;
     this.interpretNanos = 0;
@@ -53,14 +53,14 @@ TResponse.prototype.trace = function(request, content)
 };
 
 /**
- * Increments and checks if command amount breaches the threshold.
+ * Increments and checks if operation amount breaches the threshold.
  * @throw TAMEError if a breach is detected.
  */
-TResponse.prototype.incrementAndCheckCommandsExecuted = function(maxCommands)
+TResponse.prototype.incrementAndCheckOperationsExecuted = function(maxOperations)
 {
-	this.commandsExecuted++;
-	if (this.commandsExecuted >= maxCommands)
-		throw TAMEError.RunawayRequest("Too many commands executed - possible infinite loop.");
+	this.operationsExecuted++;
+	if (this.operationsExecuted >= maxOperations)
+		throw TAMEError.RunawayRequest("Too many operations executed - possible infinite loop.");
 };
 
 /**

@@ -17,7 +17,7 @@ import java.io.OutputStream;
 
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
-import com.tameif.tame.TAMECommand;
+import com.tameif.tame.TAMEOperation;
 import com.tameif.tame.TAMEInterrupt;
 import com.tameif.tame.TAMERequest;
 import com.tameif.tame.TAMEResponse;
@@ -26,13 +26,13 @@ import com.tameif.tame.TAMEResponse;
  * A single low-level machine operation.
  * @author Matthew Tropiano
  */
-public class Command implements CallableType, Saveable
+public class Operation implements CallableType, Saveable
 {
-	/** Command opcode. */
-	private TAMECommand operation;
-	/** Command operand 0. */
+	/** Operation opcode. */
+	private TAMEOperation operation;
+	/** Operation operand 0. */
 	private Value operand0;
-	/** Command operand 1. */
+	/** Operation operand 1. */
 	private Value operand1;
 	/** Init block for loops. */
 	private Block initBlock;
@@ -46,13 +46,13 @@ public class Command implements CallableType, Saveable
 	private Block failureBlock;
 
 	// Private blank constructor for state reader.
-	private Command()
+	private Operation()
 	{
 		// Nothing.
 	}
 	
 	// Hidden constructor.
-	private Command(TAMECommand opcode, Value operand0, Value operand1, Block initBlock, Block conditionalBlock, Block stepBlock, Block successBlock, Block failureBlock) 
+	private Operation(TAMEOperation opcode, Value operand0, Value operand1, Block initBlock, Block conditionalBlock, Block stepBlock, Block successBlock, Block failureBlock) 
 	{
 		this.operation = opcode;
 		this.operand0 = operand0;
@@ -65,75 +65,75 @@ public class Command implements CallableType, Saveable
 	}
 
 	/**
-	 * Creates a command.
-	 * @param command the command.
-	 * @return the new command.
+	 * Creates an operation.
+	 * @param operation the operation.
+	 * @return the new operation.
 	 */
-	public static Command create(TAMECommand command)
+	public static Operation create(TAMEOperation operation)
 	{
-		return new Command(command, null, null, null, null, null, null, null);
+		return new Operation(operation, null, null, null, null, null, null, null);
 	}
 
 	/**
-	 * Creates a command with an operand.
-	 * @param command the command.
+	 * Creates an operation with an operand.
+	 * @param operation the operation.
 	 * @param operand0 the first operand.
-	 * @return the new command.
+	 * @return the new operation.
 	 */
-	public static Command create(TAMECommand command, Value operand0)
+	public static Operation create(TAMEOperation operation, Value operand0)
 	{
-		return new Command(command, operand0, null, null, null, null, null, null);
+		return new Operation(operation, operand0, null, null, null, null, null, null);
 	}
 
 	/**
-	 * Creates a command with operands.
-	 * @param command the command.
+	 * Creates an operation with operands.
+	 * @param operation the operation.
 	 * @param operand0 the first operand.
 	 * @param operand1 the second operand.
-	 * @return the new command.
+	 * @return the new operation.
 	 */
-	public static Command create(TAMECommand command, Value operand0, Value operand1)
+	public static Operation create(TAMEOperation operation, Value operand0, Value operand1)
 	{
-		return new Command(command, operand0, operand1, null, null, null, null, null);
+		return new Operation(operation, operand0, operand1, null, null, null, null, null);
 	}
 
 	/**
-	 * Creates a command with a conditional and success block.
-	 * @param command the command.
+	 * Creates an operation with a conditional and success block.
+	 * @param operation the operation.
 	 * @param conditionalBlock the conditional block.
 	 * @param successBlock the success block.
-	 * @return the new command.
+	 * @return the new operation.
 	 */
-	public static Command create(TAMECommand command, Block conditionalBlock, Block successBlock)
+	public static Operation create(TAMEOperation operation, Block conditionalBlock, Block successBlock)
 	{
-		return new Command(command, null, null, null, conditionalBlock, null, successBlock, null);
+		return new Operation(operation, null, null, null, conditionalBlock, null, successBlock, null);
 	}
 
 	/**
-	 * Creates a command with a conditional, success, and failure block.
-	 * @param command the command.
+	 * Creates an operation with a conditional, success, and failure block.
+	 * @param operation the operation.
 	 * @param conditionalBlock the conditional block.
 	 * @param successBlock the success block.
 	 * @param failureBlock the failure block.
-	 * @return the new command.
+	 * @return the new operation.
 	 */
-	public static Command create(TAMECommand command, Block conditionalBlock, Block successBlock, Block failureBlock)
+	public static Operation create(TAMEOperation operation, Block conditionalBlock, Block successBlock, Block failureBlock)
 	{
-		return new Command(command, null, null, null, conditionalBlock, null, successBlock, failureBlock);
+		return new Operation(operation, null, null, null, conditionalBlock, null, successBlock, failureBlock);
 	}
 
 	/**
-	 * Creates a command with an initializer, conditional, step, success, and failure block.
-	 * @param command the command.
+	 * Creates a operation with an initializer, conditional, step, success, and failure block.
+	 * @param operation the operation.
 	 * @param initializationBlock the init block.
 	 * @param conditionalBlock the conditional block.
 	 * @param stepBlock the step block.
 	 * @param successBlock the success block.
-	 * @return the new command.
+	 * @return the new operation.
 	 */
-	public static Command create(TAMECommand command, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock)
+	public static Operation create(TAMEOperation operation, Block initializationBlock, Block conditionalBlock, Block stepBlock, Block successBlock)
 	{
-		return new Command(command, null, null, initializationBlock, conditionalBlock, stepBlock, successBlock, null);
+		return new Operation(operation, null, null, initializationBlock, conditionalBlock, stepBlock, successBlock, null);
 	}
 
 	@Override
@@ -143,10 +143,10 @@ public class Command implements CallableType, Saveable
 	}
 
 	/**
-	 * Gets the operation on this command.
-	 * @return the command's operation.
+	 * Gets the operation on this operation.
+	 * @return the operation's encapsulated operation.
 	 */
-	public TAMECommand getOperation()
+	public TAMEOperation getOperation()
 	{
 		return operation;
 	}
@@ -242,9 +242,9 @@ public class Command implements CallableType, Saveable
 	 * @return the read object.
 	 * @throws IOException if a read error occurs.
 	 */
-	public static Command create(InputStream in) throws IOException
+	public static Operation create(InputStream in) throws IOException
 	{
-		Command out = new Command();
+		Operation out = new Operation();
 		out.readBytes(in);
 		return out;
 	}
@@ -285,7 +285,7 @@ public class Command implements CallableType, Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		this.operation = TAMECommand.VALUES[sr.readVariableLengthInt()];
+		this.operation = TAMEOperation.VALUES[sr.readVariableLengthInt()];
 		
 		byte objectbits = sr.readByte();
 		

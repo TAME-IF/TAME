@@ -38,7 +38,7 @@ import com.tameif.tame.element.TWorld;
 import com.tameif.tame.exception.JSExportException;
 import com.tameif.tame.lang.Block;
 import com.tameif.tame.lang.BlockEntry;
-import com.tameif.tame.lang.Command;
+import com.tameif.tame.lang.Operation;
 import com.tameif.tame.lang.FunctionEntry;
 import com.tameif.tame.lang.Value;
 
@@ -350,13 +350,13 @@ public final class TAMEJSExporter
 	private static JSONObject convertBlock(Block block) throws IOException
 	{
 		JSONObject out = JSONObject.createEmptyArray();
-		for (Command command : block)
-			out.append(convertCommand(command));
+		for (Operation operation : block)
+			out.append(convertOperation(operation));
 		return out;
 	}
 
 	/**
-	 * Generates a command object in JS.
+	 * Generates a value object in JS.
 	 * @param writer the writer to write to.
 	 * @param block the block.
 	 */
@@ -381,29 +381,29 @@ public final class TAMEJSExporter
 	}
 
 	/**
-	 * Generates a command object in JS.
+	 * Generates an operation object in JS.
 	 * @param writer the writer to write to.
 	 * @param block the block.
 	 */
-	private static JSONObject convertCommand(Command command) throws IOException
+	private static JSONObject convertOperation(Operation operation) throws IOException
 	{
 		JSONObject out = JSONObject.createEmptyObject();
 		
-		out.addMember("opcode", command.getOperation().ordinal());
-		if (command.getOperand0() != null)
-			out.addMember("operand0", convertValue(command.getOperand0()));
-		if (command.getOperand1() != null)
-			out.addMember("operand1", convertValue(command.getOperand1()));
-		if (command.getInitBlock() != null)
-			out.addMember("initBlock", convertBlock(command.getInitBlock()));
-		if (command.getConditionalBlock() != null)
-			out.addMember("conditionalBlock", convertBlock(command.getConditionalBlock()));
-		if (command.getStepBlock() != null)
-			out.addMember("stepBlock", convertBlock(command.getStepBlock()));
-		if (command.getSuccessBlock() != null)
-			out.addMember("successBlock", convertBlock(command.getSuccessBlock()));
-		if (command.getFailureBlock() != null)
-			out.addMember("failureBlock", convertBlock(command.getFailureBlock()));
+		out.addMember("opcode", operation.getOperation().ordinal());
+		if (operation.getOperand0() != null)
+			out.addMember("operand0", convertValue(operation.getOperand0()));
+		if (operation.getOperand1() != null)
+			out.addMember("operand1", convertValue(operation.getOperand1()));
+		if (operation.getInitBlock() != null)
+			out.addMember("initBlock", convertBlock(operation.getInitBlock()));
+		if (operation.getConditionalBlock() != null)
+			out.addMember("conditionalBlock", convertBlock(operation.getConditionalBlock()));
+		if (operation.getStepBlock() != null)
+			out.addMember("stepBlock", convertBlock(operation.getStepBlock()));
+		if (operation.getSuccessBlock() != null)
+			out.addMember("successBlock", convertBlock(operation.getSuccessBlock()));
+		if (operation.getFailureBlock() != null)
+			out.addMember("failureBlock", convertBlock(operation.getFailureBlock()));
 		
 		return out;
 	}

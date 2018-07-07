@@ -37,19 +37,19 @@ import com.tameif.tame.interrupt.FinishInterrupt;
 import com.tameif.tame.interrupt.QuitInterrupt;
 import com.tameif.tame.lang.ArgumentType;
 import com.tameif.tame.lang.Block;
-import com.tameif.tame.lang.Command;
-import com.tameif.tame.lang.CommandType;
+import com.tameif.tame.lang.Operation;
+import com.tameif.tame.lang.OperationType;
 import com.tameif.tame.lang.Value;
 import com.tameif.tame.lang.ValueHash;
 import com.tameif.tame.lang.ValueType;
 
 /**
- * The set of commands.
+ * The set of operations.
  * Values in arguments are popped in reverse order on call, if arguments are taken. 
  * NOTE: THESE MUST BE DECLARED IN FULL CAPS TO ENSURE PARSING INTEGRITY!
  * @author Matthew Tropiano
  */
-public enum TAMECommand implements CommandType, TAMEConstants
+public enum TAMEOperation implements OperationType, TAMEConstants
 {
 	
 	/**
@@ -59,7 +59,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	NOOP (/*Return: */ null)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
 		{
 			// Do nothing.
 		}
@@ -79,7 +79,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POP (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command)
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation)
 		{
 			request.popValue();
 		}
@@ -94,9 +94,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
 		{
-			Value varvalue = command.getOperand0();
+			Value varvalue = operation.getOperand0();
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
@@ -122,9 +122,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPLOCALVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
 		{
-			Value varvalue = command.getOperand0();
+			Value varvalue = operation.getOperand0();
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
@@ -147,10 +147,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPELEMENTVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
 		{
-			Value varElement = command.getOperand0();
-			Value variable = command.getOperand1();
+			Value varElement = operation.getOperand0();
+			Value variable = operation.getOperand1();
 			Value value = request.popValue();
 			
 			if (!value.isLiteral())
@@ -176,7 +176,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPLISTVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			Value value = request.popValue();
 			Value index = request.popValue();
@@ -205,9 +205,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
 		{
-			Value value = command.getOperand0();
+			Value value = operation.getOperand0();
 			
 			if (value.isVariable())
 			{
@@ -236,10 +236,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHELEMENTVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
 		{
-			Value varElement = command.getOperand0();
-			Value variable = command.getOperand1();
+			Value varElement = operation.getOperand0();
+			Value variable = operation.getOperand1();
 
 			if (!variable.isVariable())
 				throw new UnexpectedValueTypeException("Expected variable type in PUSHELEMENTVALUE call.");
@@ -263,7 +263,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHLISTVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
 		{
 			Value index = request.popValue();
 			Value listValue = request.popValue();
@@ -289,7 +289,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHNEWLIST (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			request.pushValue(Value.createEmptyList());
 		}
@@ -304,7 +304,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHINITLIST (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			Value length = request.popValue();
 
@@ -334,9 +334,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CLEARVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
 		{
-			Value variable = command.getOperand0();
+			Value variable = operation.getOperand0();
 
 			if (!variable.isVariable())
 				throw new UnexpectedValueTypeException("Expected variable type in CLEARVALUE call.");
@@ -359,10 +359,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CLEARELEMENTVALUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
 		{
-			Value varElement = command.getOperand0();
-			Value variable = command.getOperand1();
+			Value varElement = operation.getOperand0();
+			Value variable = operation.getOperand1();
 
 			if (!variable.isVariable())
 				throw new UnexpectedValueTypeException("Expected variable type in CLEARELEMENTVALUE call.");
@@ -389,7 +389,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHTHIS (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			TElement element = request.peekContext().getElement();
 			Class<?> elementClass = element.getClass();
@@ -418,9 +418,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ARITHMETICFUNC (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command)
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation)
 		{
-			Value functionValue = command.getOperand0();
+			Value functionValue = operation.getOperand0();
 			
 			if (!functionValue.isInteger())
 				throw new UnexpectedValueTypeException("Expected integer type in ARITHMETICFUNC call.");
@@ -439,10 +439,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	IF (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			// block should contain arithmetic commands and a last push.
-			Block conditional = command.getConditionalBlock();
+			// block should contain arithmetic operations and a last push.
+			Block conditional = operation.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for IF does NOT EXIST!");
 			
@@ -459,7 +459,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			{
 				response.trace(request, "Result %s evaluates true.", value);
 				response.trace(request, "Calling IF success block...");
-				Block success = command.getSuccessBlock();
+				Block success = operation.getSuccessBlock();
 				if (success == null)
 					throw new ModuleExecutionException("Success block for IF does NOT EXIST!");
 				success.execute(request, response, blockLocal);
@@ -467,7 +467,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			else
 			{
 				response.trace(request, "Result %s evaluates false.", value);
-				Block failure = command.getFailureBlock();
+				Block failure = operation.getFailureBlock();
 				if (failure != null)
 				{
 					response.trace(request, "Calling IF failure block...");
@@ -491,13 +491,13 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	WHILE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			while (callConditional(request, response, blockLocal, command))
+			while (callConditional(request, response, blockLocal, operation))
 			{
 				try {
 					response.trace(request, "Calling WHILE success block...");
-					Block success = command.getSuccessBlock();
+					Block success = operation.getSuccessBlock();
 					if (success == null)
 						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
 					success.execute(request, response, blockLocal);
@@ -509,12 +509,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			}
 		}
 		
-		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, "Calling WHILE conditional...");
 
-			// block should contain arithmetic commands and a last push.
-			Block conditional = command.getConditionalBlock();
+			// block should contain arithmetic operations and a last push.
+			Block conditional = operation.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for WHILE does NOT EXIST!");
 			conditional.execute(request, response, blockLocal);
@@ -541,22 +541,22 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FOR (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			Block init = command.getInitBlock();
+			Block init = operation.getInitBlock();
 			if (init == null)
 				throw new ModuleExecutionException("Init block for FOR does NOT EXIST!");
-			Block success = command.getSuccessBlock();
+			Block success = operation.getSuccessBlock();
 			if (success == null)
 				throw new ModuleExecutionException("Success block for FOR does NOT EXIST!");
-			Block step = command.getStepBlock();
+			Block step = operation.getStepBlock();
 			if (step == null)
 				throw new ModuleExecutionException("Step block for FOR does NOT EXIST!");
 
 			response.trace(request, "Calling FOR init block...");
 			for (
 				init.execute(request, response, blockLocal); 
-				callConditional(request, response, blockLocal, command); 
+				callConditional(request, response, blockLocal, operation); 
 				response.trace(request, "Calling FOR stepping block..."), 
 				step.execute(request, response, blockLocal)
 			)
@@ -572,12 +572,12 @@ public enum TAMECommand implements CommandType, TAMEConstants
 			}
 		}
 
-		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, "Calling FOR conditional...");
 			
-			// block should contain arithmetic commands and a last push.
-			Block conditional = command.getConditionalBlock();
+			// block should contain arithmetic operations and a last push.
+			Block conditional = operation.getConditionalBlock();
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for FOR does NOT EXIST!");
 			conditional.execute(request, response, blockLocal);
@@ -602,7 +602,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	BREAK (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing break interrupt...");
 			throw new BreakInterrupt();
@@ -617,7 +617,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CONTINUE (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing continue interrupt...");
 			throw new ContinueInterrupt();
@@ -632,7 +632,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	QUIT (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing quit interrupt...");
 			response.addCue(CUE_QUIT);
@@ -648,7 +648,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FINISH (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing finish interrupt...");
 			throw new FinishInterrupt();
@@ -663,7 +663,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	END (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, "Throwing end interrupt...");
 			throw new EndInterrupt();
@@ -678,7 +678,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FUNCTIONRETURN (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value retVal = request.popValue();
 			response.trace(request, "Returning "+retVal.toString());
@@ -699,9 +699,9 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CALLFUNCTION (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			Value varFunctionName = command.getOperand0();
+			Value varFunctionName = operation.getOperand0();
 
 			if (!varFunctionName.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in CALLFUNCTION call.");
@@ -722,10 +722,10 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CALLELEMENTFUNCTION (true)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			Value varElement = command.getOperand0();
-			Value varFunctionName = command.getOperand1();
+			Value varElement = operation.getOperand0();
+			Value varFunctionName = operation.getOperand1();
 
 			if (!varElement.isElement())
 				throw new UnexpectedValueTypeException("Expected element type in CALLELEMENTFUNCTION call.");
@@ -745,7 +745,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	QUEUEACTION (/*Return: */ null, /*Args: */ ArgumentType.ACTION_GENERAL)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varAction = request.popValue();
 			
@@ -781,7 +781,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	QUEUEACTIONSTRING (/*Return: */ null, /*Args: */ ArgumentType.ACTION_MODAL_OPEN, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varTarget = request.popValue();
 			Value varAction = request.popValue();
@@ -821,7 +821,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	QUEUEACTIONOBJECT (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varAction = request.popValue();
@@ -862,7 +862,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	QUEUEACTIONFOROBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT_CONTAINER)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObjectContainer = request.popValue();
 			Value varAction = request.popValue();
@@ -909,7 +909,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	QUEUEACTIONFORTAGGEDOBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varTag = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -962,7 +962,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	QUEUEACTIONOBJECT2 (/*Return: */ null, /*Args: */ ArgumentType.ACTION_DITRANSITIVE, ArgumentType.OBJECT, ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject2 = request.popValue();
 			Value varObject = request.popValue();
@@ -1008,7 +1008,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ADDCUE (/*Return: */ null, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value cue = request.popValue();
@@ -1037,7 +1037,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	TEXT (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1063,7 +1063,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	TEXTLN (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1089,7 +1089,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	TEXTF (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1115,7 +1115,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	TEXTFLN (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1141,7 +1141,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PAUSE (/*Return: */ null)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.addCue(CUE_PAUSE);
 		}
@@ -1162,7 +1162,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	WAIT (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1188,7 +1188,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASBOOLEAN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1214,7 +1214,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASINT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1240,7 +1240,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASFLOAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1266,7 +1266,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASSTRING (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1292,7 +1292,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ASLIST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1320,7 +1320,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LENGTH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1346,7 +1346,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	EMPTY (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1373,7 +1373,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRCONCAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1404,7 +1404,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRREPLACE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1442,7 +1442,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRREPLACEPATTERN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1484,7 +1484,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRREPLACEPATTERNALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1525,7 +1525,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1558,7 +1558,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRLASTINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1591,7 +1591,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1625,7 +1625,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRCONTAINSPATTERN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1665,7 +1665,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1706,7 +1706,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRJOIN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value joiner = request.popValue();
 			Value list = request.popValue();
@@ -1752,7 +1752,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRSTARTSWITH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1785,7 +1785,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRENDSWITH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1819,7 +1819,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SUBSTRING (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1855,7 +1855,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRLOWER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1881,7 +1881,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRUPPER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1908,7 +1908,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRCHAR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1943,7 +1943,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	STRTRIM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1970,7 +1970,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LISTADD (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value list = request.popValue();
@@ -2001,7 +2001,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LISTADDAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value index = request.popValue();
 			Value value = request.popValue();
@@ -2034,7 +2034,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LISTREMOVE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value list = request.popValue();
@@ -2064,7 +2064,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LISTREMOVEAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value index = request.popValue();
 			Value list = request.popValue();
@@ -2094,7 +2094,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LISTCONCAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value appendix = request.popValue();
 			Value list = request.popValue();
@@ -2144,7 +2144,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LISTINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value list = request.popValue();
@@ -2174,7 +2174,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	LISTCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value list = request.popValue();
@@ -2203,7 +2203,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FLOOR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -2229,7 +2229,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CEILING (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -2255,7 +2255,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ROUND (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -2281,7 +2281,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FIX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value place = request.popValue();
 			Value number = request.popValue();
@@ -2314,7 +2314,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SQRT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -2340,7 +2340,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PI (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(Math.PI));
 		}
@@ -2361,7 +2361,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	E (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(Math.E));
 		}
@@ -2382,7 +2382,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SIN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -2408,7 +2408,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	COS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -2434,7 +2434,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	TAN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -2461,7 +2461,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	MIN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value second = request.popValue();
 			Value first = request.popValue();
@@ -2491,7 +2491,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	MAX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value second = request.popValue();
 			Value first = request.popValue();
@@ -2522,7 +2522,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CLAMP (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueEnd = request.popValue();
 			Value valueStart = request.popValue();
@@ -2558,7 +2558,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	IRANDOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueInput = request.popValue();
 			
@@ -2591,7 +2591,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FRANDOM (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Random random = request.getModuleContext().getRandom();
 			request.pushValue(Value.create(random.nextDouble()));
@@ -2614,7 +2614,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	GRANDOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueStdDev = request.popValue();
 			Value valueMean = request.popValue();
@@ -2655,7 +2655,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	TIME (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(System.currentTimeMillis()));
 		}
@@ -2678,7 +2678,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SECONDS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -2712,7 +2712,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	MINUTES (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -2746,7 +2746,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	HOURS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -2780,7 +2780,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	DAYS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -2814,7 +2814,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	FORMATTIME (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -2847,7 +2847,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	OBJECTHASNAME (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
@@ -2879,7 +2879,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	OBJECTHASTAG (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
@@ -2911,7 +2911,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ADDOBJECTNAME (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
@@ -2943,7 +2943,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ADDOBJECTTAG (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
@@ -2975,7 +2975,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ADDOBJECTTAGTOALLIN (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3014,7 +3014,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	REMOVEOBJECTNAME (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
@@ -3046,7 +3046,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	REMOVEOBJECTTAG (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
@@ -3078,7 +3078,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	REMOVEOBJECTTAGFROMALLIN (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3117,7 +3117,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	GIVEOBJECT (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3150,7 +3150,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	REMOVEOBJECT (/*Return: */ null, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			
@@ -3180,7 +3180,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	MOVEOBJECTSWITHTAG (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObjectContainerDest = request.popValue();
@@ -3223,7 +3223,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	OBJECTCOUNT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT_CONTAINER)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObjectContainer = request.popValue();
 
@@ -3252,7 +3252,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	HASOBJECT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3284,7 +3284,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	OBJECTHASNOOWNER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			
@@ -3313,7 +3313,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PLAYERISINROOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3346,7 +3346,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PLAYERCANACCESSOBJECT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3380,7 +3380,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	BROWSE (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObjectContainer = request.popValue();
 			
@@ -3409,7 +3409,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	BROWSETAGGED (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varTag = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3442,7 +3442,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	ELEMENTHASANCESTOR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT_ANY, ArgumentType.ELEMENT_ANY)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varParent = request.popValue();
 			Value varElement = request.popValue();
@@ -3486,7 +3486,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SETPLAYER (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -3513,7 +3513,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SETROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3546,7 +3546,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	PUSHROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3580,7 +3580,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	POPROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 
@@ -3614,7 +3614,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	SWAPROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3657,7 +3657,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CURRENTPLAYERIS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -3687,7 +3687,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	NOCURRENTPLAYER (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TPlayer player = moduleContext.getOwnershipMap().getCurrentPlayer();
@@ -3710,7 +3710,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	CURRENTROOMIS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3744,7 +3744,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	NOCURRENTROOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -3773,7 +3773,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	IDENTITY (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varElement = request.popValue();
 
@@ -3800,7 +3800,7 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	HEADER (/*Return: */ ArgumentType.VALUE, /* Args */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value headerName = request.popValue();
 
@@ -3821,23 +3821,23 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	;
 	
 	/** Array to get around multiple allocations. */
-	public static final TAMECommand[] VALUES = values();
+	public static final TAMEOperation[] VALUES = values();
 	
 	private boolean internal;
 	private ArgumentType returnType;
 	private ArgumentType[] argumentTypes;
 	
-	private TAMECommand(boolean internal)
+	private TAMEOperation(boolean internal)
 	{
 		this(internal, null, null);
 	}
 	
-	private TAMECommand(ArgumentType returnType, ArgumentType ... argumentTypes)
+	private TAMEOperation(ArgumentType returnType, ArgumentType ... argumentTypes)
 	{
 		this(false, returnType, argumentTypes);
 	}
 
-	private TAMECommand(boolean internal, ArgumentType returnType, ArgumentType[] argumentTypes)
+	private TAMEOperation(boolean internal, ArgumentType returnType, ArgumentType[] argumentTypes)
 	{
 		this.internal = internal;
 		this.returnType = returnType;
@@ -3863,20 +3863,20 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}
 
 	/**
-	 * Performs the command.
+	 * Performs the operation.
 	 * @param request the TAMERequest context.
 	 * @param response the TAMEResponse object.
 	 * @param blockLocal the local variables on the block call.
-	 * @param command the command origin.
+	 * @param operation the operation origin.
 	 * @throws TAMEInterrupt if an interrupt occurs. 
 	 */
-	protected void doCommand(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+	protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 	{
-		throw new RuntimeException("UNIMPLEMENTED COMMAND");
+		throw new RuntimeException("UNIMPLEMENTED OPERATION");
 	}
 	
 	/**
-	 * Gets the grouping name for this command (for documentation sorting).
+	 * Gets the grouping name for this operation (for documentation sorting).
 	 * @return the grouping name.
 	 */
 	public String getGrouping()
@@ -3885,17 +3885,17 @@ public enum TAMECommand implements CommandType, TAMEConstants
 	}
 	
 	/**
-	 * Increments the runaway command counter and calls the command.  
+	 * Increments the runaway operation counter and calls the operation.  
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @param blockLocal the local variables on the block call.
-	 * @param command the command object.
+	 * @param operation the operation object.
 	 * @throws TAMEInterrupt if an interrupt occurs. 
 	 */
-	public final void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Command command) throws TAMEInterrupt
+	public final void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 	{
-		doCommand(request, response, blockLocal, command);
-		response.incrementAndCheckCommandsExecuted(request.getModuleContext().getCommandRunawayMax());
+		doOperation(request, response, blockLocal, operation);
+		response.incrementAndCheckOperationsExecuted(request.getModuleContext().getOperationRunawayMax());
 	}
 	
 }

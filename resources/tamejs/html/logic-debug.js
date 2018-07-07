@@ -42,7 +42,7 @@ function readResponse(response)
 {
 	println('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
 	println('Request time: '+(response.requestNanos/1000000.0)+' ms');
-	println('Commands: '+response.commandsExecuted);
+	println('Operations: '+response.operationsExecuted);
 	println('Cues: '+response.responseCues.length);
 
 	for (i in response.responseCues) if (response.responseCues.hasOwnProperty(i))

@@ -25,8 +25,8 @@ public class TAMEResponse implements TAMEConstants
 {
 	/** The output message. */
 	private Queue<Cue> responseCues;
-	/** Command counter. */
-	private long commandsExecuted;
+	/** Operation counter. */
+	private long operationsExecuted;
 	/** Function depth. */
 	private long functionDepth;
 	/** Time in nanos to process a full request. */
@@ -40,7 +40,7 @@ public class TAMEResponse implements TAMEConstants
 	TAMEResponse()
 	{
 		this.responseCues = new Queue<Cue>();
-		this.commandsExecuted = 0;
+		this.operationsExecuted = 0;
 		this.functionDepth = 0;
 		this.requestNanos = 0L;
 		this.interpretNanos = 0L;
@@ -141,24 +141,24 @@ public class TAMEResponse implements TAMEConstants
 	}
 	
 	/**
-	 * Increments the commands executed counter by 1.
+	 * Increments the operations executed counter by 1.
 	 * Also checks against the runaway threshold.
 	 * After this object is received by the client, this means nothing.
-	 * @param maxCommands the command maximum.
+	 * @param maxOperations the operation maximum.
 	 */
-	void incrementAndCheckCommandsExecuted(long maxCommands) throws RunawayRequestException
+	void incrementAndCheckOperationsExecuted(long maxOperations) throws RunawayRequestException
 	{
-		commandsExecuted++;
-		if (commandsExecuted >= maxCommands)
-			throw new RunawayRequestException("Runaway request detected! Breached threshold of "+maxCommands+" requests.");
+		operationsExecuted++;
+		if (operationsExecuted >= maxOperations)
+			throw new RunawayRequestException("Runaway request detected! Breached threshold of "+maxOperations+" operations.");
 	}
 	
 	/**
-	 * @return the amount of commands executed because of the input.
+	 * @return the amount of operations executed because of the input.
 	 */
-	public long getCommandsExecuted()
+	public long getOperationsExecuted()
 	{
-		return commandsExecuted;
+		return operationsExecuted;
 	}
 	
 	/**

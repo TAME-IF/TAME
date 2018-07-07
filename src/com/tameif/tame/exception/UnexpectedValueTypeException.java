@@ -12,7 +12,7 @@ package com.tameif.tame.exception;
 import com.tameif.tame.TAMEFatalException;
 
 /**
- * Thrown when a command reads a value that has an unexpected type.
+ * Thrown when an operation reads a value that has an unexpected type.
  * @author Matthew Tropiano
  */
 public class UnexpectedValueTypeException extends TAMEFatalException
