@@ -1,0 +1,17 @@
+==============================================================================
+    TAME Changelog
+    (C) 2018 Matt Tropiano
+==============================================================================
+
+0.9BETA1
+........
+
+	- Initial release.
+
+
+0.9BETA2
+........
+
+	- Refactored TAMECommand, Command, and CommandType: "Command" to 
+	  "Operation", plus associated methods.
+
