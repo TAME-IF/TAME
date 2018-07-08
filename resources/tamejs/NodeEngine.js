@@ -64,7 +64,7 @@ module.exports = new (function()
 //##[[EXPORTJS-INCLUDE engine/objects/TValue.js
 //##[[EXPORTJS-INCLUDE engine/objects/TRequest.js
 //##[[EXPORTJS-INCLUDE engine/objects/TResponse.js
-//##[[EXPORTJS-INCLUDE engine/objects/TAction.js
+//##[[EXPORTJS-INCLUDE engine/objects/TCommand.js
 //##[[EXPORTJS-INCLUDE engine/objects/TModule.js
 //##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
 //##[[EXPORTJS-INCLUDE engine/TAMELogic.js

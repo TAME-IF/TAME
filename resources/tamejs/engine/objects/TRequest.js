@@ -24,7 +24,7 @@ var TRequest = function(context, inputMessage, tracing)
     this.tracing = tracing;
  
 	// Stacks and Queues
-    this.actionQueue = [];
+    this.commandQueue = [];
     this.valueStack = [];
     this.contextStack = [];
 };
@@ -49,30 +49,30 @@ TRequest.prototype.isTracing = function()
 };
 
 /**
- * Adds an action item to the queue to be processed later.
- * @param item the action item to add.
+ * Adds a command to the queue to be processed later.
+ * @param item the command to add.
  */
-TRequest.prototype.addActionItem = function(item)
+TRequest.prototype.addCommand = function(item)
 {
-	this.actionQueue.push(item);
+	this.commandQueue.push(item);
 };
 
 /**
- * Checks if this still has action items to process.
+ * Checks if this still has commands to process.
  * @return true if so, false if not.
  */
-TRequest.prototype.hasActionItems = function()
+TRequest.prototype.hasCommands = function()
 {
-	return this.actionQueue.length != 0;
+	return this.commandQueue.length != 0;
 };
 
 /**
- * Dequeues an action item from the queue to be processed later.
- * @return the next action item to process.
+ * Dequeues a command from the queue to be processed later.
+ * @return the next command to process.
  */
-TRequest.prototype.nextActionItem = function()
+TRequest.prototype.nextCommand = function()
 {
-	return this.actionQueue.shift();
+	return this.commandQueue.shift();
 };
 
 /**

@@ -758,9 +758,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("BAD TYPE: "+action.getIdentity() + " is not a general action.");
 			else
 			{
-				TAMEAction tameAction = TAMEAction.create(action);
-				request.addActionItem(tameAction);
-				response.trace(request, "Enqueued "+tameAction);
+				TAMECommand command = TAMECommand.create(action);
+				request.addCommand(command);
+				response.trace(request, "Enqueued "+command);
 			}
 		}
 
@@ -798,9 +798,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("BAD TYPE: " + action.getIdentity() + " is not a modal nor open action.");
 			else
 			{
-				TAMEAction tameAction = TAMEAction.create(action, target);
-				request.addActionItem(tameAction);
-				response.trace(request, "Enqueued "+tameAction);
+				TAMECommand command = TAMECommand.create(action, target);
+				request.addCommand(command);
+				response.trace(request, "Enqueued "+command);
 			}
 		}
 
@@ -839,9 +839,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("BAD TYPE: " + action.getIdentity() + " is not a transitive nor ditransitive action.");
 			else
 			{
-				TAMEAction tameAction = TAMEAction.create(action, object);
-				request.addActionItem(tameAction);
-				response.trace(request, "Enqueued "+tameAction);
+				TAMECommand command = TAMECommand.create(action, object);
+				request.addCommand(command);
+				response.trace(request, "Enqueued "+command);
 			}
 		}
 
@@ -885,9 +885,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			
 			for (TObject object : objectList)
 			{
-				TAMEAction tameAction = TAMEAction.create(action, object);
-				request.addActionItem(tameAction);
-				response.trace(request, "Enqueued "+tameAction);
+				TAMECommand command = TAMECommand.create(action, object);
+				request.addCommand(command);
+				response.trace(request, "Enqueued "+command);
 			}
 		}
 
@@ -937,9 +937,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
 			for (TObject object : objectList) if (ownershipMap.checkObjectHasTag(object, tagName))
 			{
-				TAMEAction tameAction = TAMEAction.create(action, object);
-				request.addActionItem(tameAction);
-				response.trace(request, "Enqueued "+tameAction);
+				TAMECommand command = TAMECommand.create(action, object);
+				request.addCommand(command);
+				response.trace(request, "Enqueued "+command);
 			}
 			
 		}
@@ -984,9 +984,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("BAD TYPE: " + action.getIdentity() + " is not a ditransitive action.");
 			else
 			{
-				TAMEAction tameAction = TAMEAction.create(action, object, object2);
-				request.addActionItem(tameAction);
-				response.trace(request, "Enqueued "+tameAction);
+				TAMECommand command = TAMECommand.create(action, object, object2);
+				request.addCommand(command);
+				response.trace(request, "Enqueued "+command);
 			}
 			
 		}

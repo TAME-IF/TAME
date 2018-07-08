@@ -9,7 +9,7 @@
  ******************************************************************************/
 
 // REQUIREMENTS =========================================================================================
-var TAction = TAction || ((typeof require) !== 'undefined' ? require('../objects/TAction.js') : null);
+var TCommand = TCommand || ((typeof require) !== 'undefined' ? require('../objects/TCommand.js') : null);
 var TValue = TValue || ((typeof require) !== 'undefined' ? require('../objects/TValue.js') : null);
 var TLogic = TLogic || ((typeof require) !== 'undefined' ? require('../TAMELogic.js') : null);
 var TAMEConstants = TAMEConstants || ((typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null);
@@ -515,9 +515,9 @@ var TOperationFunctions =
 			if (action.type != TAMEConstants.ActionType.GENERAL)
 				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a general action.");
 
-			var tameAction = TAction.create(action);
-			request.addActionItem(tameAction);
-			response.trace(request, "Enqueued "+tameAction.toString());
+			var command = TCommand.create(action);
+			request.addCommand(command);
+			response.trace(request, "Enqueued "+command.toString());
 		}
 	},
 
@@ -539,9 +539,9 @@ var TOperationFunctions =
 			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
 				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
 
-			var tameAction = TAction.createModal(action, TValue.asString(varTarget));
-			request.addActionItem(tameAction);
-			response.trace(request, "Enqueued "+tameAction.toString());
+			var command = TCommand.createModal(action, TValue.asString(varTarget));
+			request.addCommand(command);
+			response.trace(request, "Enqueued "+command.toString());
 		}
 	},
 
@@ -564,9 +564,9 @@ var TOperationFunctions =
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a transitive nor ditransitive action.");
 
-			var tameAction = TAction.createObject(action, object);
-			request.addActionItem(tameAction);
-			response.trace(request, "Enqueued "+tameAction.toString());
+			var command = TCommand.createObject(action, object);
+			request.addCommand(command);
+			response.trace(request, "Enqueued "+command.toString());
 		}
 	},
 
@@ -592,9 +592,9 @@ var TOperationFunctions =
 			var element = context.resolveElement(TValue.asString(varObjectContainer));
 			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
 				var object = context.resolveElement(objectIdentity);
-				var tameAction = TAction.createObject(action, object);
-				request.addActionItem(tameAction);
-				response.trace(request, "Enqueued "+tameAction.toString());
+				var command = TCommand.createObject(action, object);
+				request.addCommand(command);
+				response.trace(request, "Enqueued "+command.toString());
 			});
 		}
 
@@ -629,9 +629,9 @@ var TOperationFunctions =
 					return;
 				
 				var object = context.resolveElement(objectIdentity);
-				var tameAction = TAction.createObject(action, object);
-				request.addActionItem(tameAction);
-				response.trace(request, "Enqueued "+tameAction.toString());
+				var command = TCommand.createObject(action, object);
+				request.addCommand(command);
+				response.trace(request, "Enqueued "+command.toString());
 			});
 		}
 
@@ -661,9 +661,9 @@ var TOperationFunctions =
 			if (action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a ditransitive action.");
 			
-			var tameAction = TAction.createObject2(action, object, object2);
-			request.addActionItem(tameAction);
-			response.trace(request, "Enqueued "+tameAction.toString());
+			var command = TCommand.createObject2(action, object, object2);
+			request.addCommand(command);
+			response.trace(request, "Enqueued "+command.toString());
 		}
 	},
 

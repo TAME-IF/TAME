@@ -14,4 +14,4 @@
 
 	- Refactored TAMECommand, Command, and CommandType: "Command" to 
 	  "Operation", plus associated methods.
-
+	- Refactored TAMEAction to "TAMECommand", plus associated methods.

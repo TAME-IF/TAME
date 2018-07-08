@@ -28,7 +28,7 @@ public class TAMERequest
 	private boolean tracing;
 
 	/** Belayed action queue. */
-	private Queue<TAMEAction> actionQueue;
+	private Queue<TAMECommand> commandQueue;
 
 	/** Module. */
 	private TAMEModuleContext moduleContext;
@@ -45,7 +45,7 @@ public class TAMERequest
 		inputMessage = null;
 		tracing = false;
 		
-		actionQueue = new Queue<TAMEAction>();
+		commandQueue = new Queue<TAMECommand>();
 		
 		moduleContext = null;
 		valueStack = new Stack<Value>();
@@ -103,21 +103,21 @@ public class TAMERequest
 	}
 
 	/**
-	 * Adds an action item to the queue to be processed later.
-	 * @param item the action item to add.
+	 * Adds a command to the queue to be processed later.
+	 * @param item the command to add.
 	 */
-	public void addActionItem(TAMEAction item)
+	public void addCommand(TAMECommand item)
 	{
-		actionQueue.enqueue(item);
+		commandQueue.enqueue(item);
 	}
 
 	/**
-	 * Checks if this still has action items to process.
+	 * Checks if this still has commands to process.
 	 * @return true if so, false if not.
 	 */
-	public boolean hasActionItems()
+	public boolean hasCommands()
 	{
-		return !actionQueue.isEmpty();
+		return !commandQueue.isEmpty();
 	}
 
 	/**
@@ -130,12 +130,12 @@ public class TAMERequest
 	}
 	
 	/**
-	 * Dequeues an action item from the queue to be processed later.
-	 * @return the next action item to process.
+	 * Dequeues a command from the queue to be processed later.
+	 * @return the next command to process.
 	 */
-	TAMEAction nextActionItem()
+	TAMECommand nextCommand()
 	{
-		return actionQueue.dequeue();
+		return commandQueue.dequeue();
 	}
 
 	/**

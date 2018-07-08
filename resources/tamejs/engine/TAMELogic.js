@@ -214,7 +214,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addActionItem(TAction.create(action));
+					request.addCommand(TCommand.create(action));
 					return true;
 				}
 			}
@@ -230,7 +230,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addActionItem(TAction.createModal(action, interpreterContext.target));
+					request.addCommand(TCommand.createModal(action, interpreterContext.target));
 					return true;
 				}
 			}
@@ -260,7 +260,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addActionItem(TAction.createModal(action, interpreterContext.mode));
+					request.addCommand(TCommand.createModal(action, interpreterContext.mode));
 					return true;
 				}
 			}
@@ -297,7 +297,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addActionItem(TAction.createObject(action, interpreterContext.object1));
+					request.addCommand(TCommand.createObject(action, interpreterContext.object1));
 					return true;
 				}
 			}
@@ -328,7 +328,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				else if (!interpreterContext.conjugateLookedUp)
 				{
 					response.trace(request, "Performing ditransitive action "+action.identity+" as a transitive one...");
-					request.addActionItem(TAction.createObject(action, interpreterContext.object1));
+					request.addCommand(TCommand.createObject(action, interpreterContext.object1));
 					return true;
 				}
 				else if (!interpreterContext.conjugateFound)
@@ -361,7 +361,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addActionItem(TAction.createObject2(action, interpreterContext.object1, interpreterContext.object2));
+					request.addCommand(TCommand.createObject2(action, interpreterContext.object1, interpreterContext.object2));
 					return true;
 				}
 			}
@@ -374,7 +374,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
  * until there is nothing left to process.
  * @param request the request context.
  * @param response the response object.
- * @param tameAction (TAction) the action to process.
+ * @param tameAction (TCommand) the action to process.
  * @throws TAMEInterrupt if an uncaught interrupt occurs.
  * @throws TAMEError if something goes wrong during execution.
  */
@@ -422,14 +422,14 @@ TLogic.processAction = function(request, response, tameAction)
  * @throws TAMEInterrupt if an uncaught interrupt occurs.
  * @throws TAMEError if something goes wrong during execution.
  */
-TLogic.doAllActionItems = function(request, response) 
+TLogic.doAllCommands = function(request, response) 
 {
-	while (request.hasActionItems())
-		TLogic.processAction(request, response, request.nextActionItem());
+	while (request.hasCommands())
+		TLogic.processAction(request, response, request.nextCommand());
 };
 
 /**
- * Does an action loop: this keeps processing queued actions 
+ * Does a command loop: this keeps processing queued commands 
  * until there is nothing left to process.
  * @param request the request object.
  * @param response the response object.
@@ -439,23 +439,23 @@ TLogic.doAllActionItems = function(request, response)
  * @throws TAMEInterrupt if an uncaught interrupt occurs.
  * @throws TAMEError if something goes wrong during execution.
  */
-TLogic.processActionLoop = function(request, response, afterSuccessfulCommand, afterFailedCommand, afterEveryCommand) 
+TLogic.processCommandLoop = function(request, response, afterSuccessfulCommand, afterFailedCommand, afterEveryCommand) 
 {
-	TLogic.doAllActionItems(request, response);
+	TLogic.doAllCommands(request, response);
 	if (afterSuccessfulCommand)
 	{
 		TLogic.doAfterSuccessfulCommand(request, response);
-		TLogic.doAllActionItems(request, response);
+		TLogic.doAllCommands(request, response);
 	}
 	if (afterFailedCommand)
 	{
 		TLogic.doAfterFailedCommand(request, response);
-		TLogic.doAllActionItems(request, response);
+		TLogic.doAllCommands(request, response);
 	}
 	if (afterEveryCommand)
 	{
 		TLogic.doAfterEveryCommand(request, response);
-		TLogic.doAllActionItems(request, response);
+		TLogic.doAllCommands(request, response);
 	}		
 	
 };
@@ -477,7 +477,7 @@ TLogic.handleInit = function(context, tracing)
 	try 
 	{
 		TLogic.initializeContext(request, response);
-		TLogic.processActionLoop(request, response, false, false, false);
+		TLogic.processCommandLoop(request, response, false, false, false);
 	} 
 	catch (err) 
 	{
@@ -529,7 +529,7 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 	try 
 	{
 		var good = TLogic.enqueueInterpretedAction(request, response, interpreterContext);
-		TLogic.processActionLoop(request, response, good, !good, true);
+		TLogic.processCommandLoop(request, response, good, !good, true);
 	} 
 	catch (err) 
 	{

@@ -93,7 +93,7 @@ public final class TAMELogic implements TAMEConstants
 
 		try {
 			initializeContext(request, response);
-			processActionLoop(request, response, false, false, false);
+			processCommandLoop(request, response, false, false, false);
 		} catch (QuitInterrupt interrupt) {
 			/* Do nothing. */
 		} catch (TAMEFatalException exception) {
@@ -130,7 +130,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		try {
 			boolean good = enqueueInterpretedAction(request, response, interpreterContext);
-			processActionLoop(request, response, good, !good, true);
+			processCommandLoop(request, response, good, !good, true);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
 		} catch (QuitInterrupt end) {
@@ -147,19 +147,19 @@ public final class TAMELogic implements TAMEConstants
 	 * Handles a single action.
 	 * Counts as a "successful command."
 	 * @param moduleContext the module context.
-	 * @param action the action to enqueue.
+	 * @param command the command to enqueue.
 	 * @param tracing if true, this does tracing.
 	 * @return a TAMERequest a new request.
 	 */
-	public static TAMEResponse handleAction(TAMEModuleContext moduleContext, TAMEAction action, boolean tracing)
+	public static TAMEResponse handleAction(TAMEModuleContext moduleContext, TAMECommand command, boolean tracing)
 	{
 		TAMERequest request = TAMERequest.create(moduleContext, tracing);
 		TAMEResponse response = new TAMEResponse();
 		long nanos = System.nanoTime();
 		
 		try {
-			request.addActionItem(action);
-			processActionLoop(request, response, true, false, true);
+			request.addCommand(command);
+			processCommandLoop(request, response, true, false, true);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
 		} catch (QuitInterrupt end) {
@@ -176,15 +176,15 @@ public final class TAMELogic implements TAMEConstants
 	 * Processes a single action. 
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param tameAction the action to process.
+	 * @param command the action to process.
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
 	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	public static void processAction(TAMERequest request, TAMEResponse response, TAMEAction tameAction) throws TAMEInterrupt 
+	public static void processCommand(TAMERequest request, TAMEResponse response, TAMECommand command) throws TAMEInterrupt 
 	{
 		try {
 		
-			TAction action = tameAction.getAction();
+			TAction action = command.getAction();
 			switch (action.getType())
 			{
 				default:
@@ -192,19 +192,19 @@ public final class TAMELogic implements TAMEConstants
 					doActionGeneral(request, response, action);
 					break;
 				case OPEN:
-					doActionOpen(request, response, action, tameAction.getTarget());
+					doActionOpen(request, response, action, command.getTarget());
 					break;
 				case MODAL:
-					doActionModal(request, response, action, tameAction.getTarget());
+					doActionModal(request, response, action, command.getTarget());
 					break;
 				case TRANSITIVE:
-					doActionTransitive(request, response, action, tameAction.getObject1());
+					doActionTransitive(request, response, action, command.getObject1());
 					break;
 				case DITRANSITIVE:
-					if (tameAction.getObject2() == null)
-						doActionTransitive(request, response, action, tameAction.getObject1());
+					if (command.getObject2() == null)
+						doActionTransitive(request, response, action, command.getObject1());
 					else
-						doActionDitransitive(request, response, action, tameAction.getObject1(), tameAction.getObject2());
+						doActionDitransitive(request, response, action, command.getObject1(), command.getObject2());
 					break;
 			}
 			
@@ -300,7 +300,7 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else
 					{
-						request.addActionItem(TAMEAction.create(action));
+						request.addCommand(TAMECommand.create(action));
 						return true;
 					}
 				}
@@ -316,7 +316,7 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else
 					{
-						request.addActionItem(TAMEAction.create(action, interpreterContext.getTarget()));
+						request.addCommand(TAMECommand.create(action, interpreterContext.getTarget()));
 						return true;
 					}
 				}
@@ -346,7 +346,7 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else 
 					{
-						request.addActionItem(TAMEAction.create(action, interpreterContext.getMode()));
+						request.addCommand(TAMECommand.create(action, interpreterContext.getMode()));
 						return true;
 					}
 				}
@@ -383,7 +383,7 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else 
 					{
-						request.addActionItem(TAMEAction.create(action, interpreterContext.getObject1()));
+						request.addCommand(TAMECommand.create(action, interpreterContext.getObject1()));
 						return true;
 					}
 				}
@@ -414,7 +414,7 @@ public final class TAMELogic implements TAMEConstants
 					else if (!interpreterContext.isConjugateLookedUp())
 					{
 						response.trace(request, "Performing ditransitive action %s as a transitive one...", action);
-						request.addActionItem(TAMEAction.create(action, interpreterContext.getObject1()));
+						request.addCommand(TAMECommand.create(action, interpreterContext.getObject1()));
 						return true;
 					}
 					else if (!interpreterContext.isConjugateFound())
@@ -447,7 +447,7 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else 
 					{
-						request.addActionItem(TAMEAction.create(action, interpreterContext.getObject1(), interpreterContext.getObject2()));
+						request.addCommand(TAMECommand.create(action, interpreterContext.getObject1(), interpreterContext.getObject2()));
 						return true;
 					}
 				}
@@ -774,37 +774,37 @@ public final class TAMELogic implements TAMEConstants
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
 	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	private static void processActionLoop(TAMERequest request, TAMEResponse response, boolean afterSuccessfulCommand, boolean afterFailedCommand, boolean afterEveryCommand) throws TAMEInterrupt 
+	private static void processCommandLoop(TAMERequest request, TAMEResponse response, boolean afterSuccessfulCommand, boolean afterFailedCommand, boolean afterEveryCommand) throws TAMEInterrupt 
 	{
-		doAllActionItems(request, response);
+		doAllCommands(request, response);
 		if (afterSuccessfulCommand)
 		{
 			doAfterSuccessfulCommand(request, response);
-			doAllActionItems(request, response);
+			doAllCommands(request, response);
 		}
 		if (afterFailedCommand)
 		{
 			doAfterFailedCommand(request, response);
-			doAllActionItems(request, response);
+			doAllCommands(request, response);
 		}
 		if (afterEveryCommand)
 		{
 			doAfterEveryCommand(request, response);
-			doAllActionItems(request, response);
+			doAllCommands(request, response);
 		}		
 	}
 
 	/**
-	 * Does an action loop: this keeps processing queued actions until there is nothing left to process.
+	 * Does an action loop: this keeps processing queued commands until there is nothing left to process.
 	 * @param request the request object.
 	 * @param response the response object.
 	 * @throws TAMEInterrupt if an uncaught interrupt occurs.
 	 * @throws TAMEFatalException if something goes wrong during execution.
 	 */
-	private static void doAllActionItems(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
+	private static void doAllCommands(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		while (request.hasActionItems())
-			processAction(request, response, request.nextActionItem());
+		while (request.hasCommands())
+			processCommand(request, response, request.nextCommand());
 	}
 	
 	/**
