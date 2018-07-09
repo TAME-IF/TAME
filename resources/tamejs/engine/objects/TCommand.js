@@ -31,7 +31,7 @@ TCommand.createObject2 = function(action, object1, object2) { return new TComman
 TCommand.prototype.toString = function()
 {
 	var sb = new TStringBuilder();
-	sb.append("ActionItem ");
+	sb.append("Command ");
 	sb.append("[");
 	if (this.action)
 		sb.append(this.action.identity);

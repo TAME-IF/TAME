@@ -131,7 +131,7 @@ public class TAMECommand
 	@Override
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder("ActionItem ");
+		StringBuilder sb = new StringBuilder("Command ");
 
 		switch (action.getType())
 		{
