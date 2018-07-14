@@ -1860,13 +1860,13 @@ TLogic.doActionTransitive = function(request, response, action, object)
 		return;
 	}
 	
+	var objectValue = TValue.createObject(object.identity);
 	var currentPlayerContext = context.getCurrentPlayerContext();
 
 	// Call onActionWith(action, object) on current room, then player.
 	if (currentPlayerContext != null)
 	{
 		var currentPlayer = context.getCurrentPlayer();
-		var objectValue = TValue.createObject(object.identity);
 
 		// try current room.
 		var currentRoomContext = context.getCurrentRoomContext();
@@ -1930,7 +1930,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 	// get on action with other block on world.
 	else if ((blockToCall = context.resolveBlock(world.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
 	{
-		response.trace(request, "Found \"action with\" block on lineage of player "+world.identity+".");
+		response.trace(request, "Found \"action with\" block on the world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
 		return;
 	}
