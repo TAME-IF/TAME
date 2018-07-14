@@ -3,10 +3,10 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
-0.9BETA1
+0.9BETA3
 ........
 
-	- Initial release.
+	- Fixed OnActionWith*() fatal error on world in JS implementation.
 
 
 0.9BETA2
@@ -15,3 +15,9 @@
 	- Refactored TAMECommand, Command, and CommandType: "Command" to 
 	  "Operation", plus associated methods.
 	- Refactored TAMEAction to "TAMECommand", plus associated methods.
+
+
+0.9BETA1
+........
+
+	- Initial release.
