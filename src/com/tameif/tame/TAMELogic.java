@@ -413,9 +413,19 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else if (!interpreterContext.isConjugateLookedUp())
 					{
-						response.trace(request, "Performing ditransitive action %s as a transitive one...", action);
-						request.addCommand(TAMECommand.create(action, interpreterContext.getObject1()));
-						return true;
+						if (action.isStrict())
+						{
+							response.trace(request, "Strict - performing ditransitive action %s with no conjugate (incomplete)!", action);
+							if (!callIncompleteCommand(request, response, action))
+								response.addCue(CUE_ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
+							return false;
+						}
+						else
+						{
+							response.trace(request, "Performing ditransitive action %s as a transitive one...", action);
+							request.addCommand(TAMECommand.create(action, interpreterContext.getObject1()));
+							return true;
+						}
 					}
 					else if (!interpreterContext.isConjugateFound())
 					{

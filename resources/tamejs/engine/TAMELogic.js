@@ -327,9 +327,19 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else if (!interpreterContext.conjugateLookedUp)
 				{
-					response.trace(request, "Performing ditransitive action "+action.identity+" as a transitive one...");
-					request.addCommand(TCommand.createObject(action, interpreterContext.object1));
-					return true;
+					if (action.strict)
+					{
+						response.trace(request, "Strict - performing ditransitive action "+action.identity+" with no conjugate (incomplete)!");
+						if (!TLogic.callIncompleteCommand(request, response, action))
+							response.addCue(TAMEConstants.Cue.ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
+						return false;
+					}
+					else
+					{
+						response.trace(request, "Performing ditransitive action "+action.identity+" as a transitive one...");
+						request.addCommand(TCommand.createObject(action, interpreterContext.object1));
+						return true;
+					}
 				}
 				else if (!interpreterContext.conjugateFound)
 				{
