@@ -73,10 +73,11 @@ public class TObject extends TElement
 			case ONACTIONWITH:
 			case ONACTIONWITHANCESTOR:
 			case ONACTIONWITHOTHER:
+			case ONBROWSE:
+			case ONWORLDBROWSE:
 			case ONPLAYERBROWSE:
 			case ONROOMBROWSE:
 			case ONCONTAINERBROWSE:
-			case ONWORLDBROWSE:
 				return true;
 			default:
 				return false;

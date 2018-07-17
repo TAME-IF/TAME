@@ -39,6 +39,8 @@ public enum ArgumentType
 	CONTAINER,
 	/** Argument must accept an object container (player/room/container/world). */
 	OBJECT_CONTAINER,
+	/** Argument must accept an object container (player/room/container/world) - can be archetype. */
+	OBJECT_CONTAINER_ANY,
 	/** Argument must accept an element (object/player/room/container/world). */
 	ELEMENT,
 	/** Argument must accept an element (object/player/room/container/world) - can be archetype. */

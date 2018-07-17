@@ -71,5 +71,10 @@ public class TContainer extends TElement implements ObjectContainer
 		return out;
 	}
 
-	
+	@Override
+	public TContainer getParent()
+	{
+		return (TContainer)(super.getParent());
+	}
+
 }

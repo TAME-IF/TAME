@@ -32,6 +32,8 @@ public interface TAMEConstants
 	/** Fatal cue. */
 	public static final String CUE_FATAL = "FATAL";
 
+	/** Identity of archetype container. */
+	public static final String IDENTITY_ARCHETYPE_CONTAINER = "container";
 	/** Identity of current room. */
 	public static final String IDENTITY_CURRENT_ROOM = "room";
 	/** Identity of current player. */

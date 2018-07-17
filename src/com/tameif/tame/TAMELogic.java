@@ -711,19 +711,7 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		BlockEntry blockEntry = null; 
-				
-		if (element instanceof TContainer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
-		else if (element instanceof TRoom)
-			blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
-		else if (element instanceof TPlayer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
-		else if (element instanceof TWorld)
-			blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
-		else
-			return;
-	
+
 		response.trace(request, "Start browse %s.", element);
 		
 		for (TObject object : ownership.getObjectsOwnedByElement(element))
@@ -733,17 +721,85 @@ public final class TAMELogic implements TAMEConstants
 			if (tag != null && !moduleContext.getOwnershipMap().checkObjectHasTag(object, tag))
 				continue;
 	
-			// find via inheritance.
-			response.trace(request, "Check %s for browse block.", object);
-			Block block = object.resolveBlock(blockEntry);
-			if (block != null)
-			{
-				response.trace(request, "Found! Calling %s block.", blockEntry.getEntryType().name());
-				callBlock(request, response, objectContext, block);
-			}
-			
+			doBrowseBlockSearch(request, response, (TElement)element, objectContext);
 		}
 	
+	}
+	
+	/**
+	 * Searches for a valid OnBrowse block on an object and executes it.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param element the element being browsed.
+	 * @param objectContext the object context to call the block on (and search for a block on).
+	 * @return true if a block was found and called on this object, false if not.
+	 */
+	private static boolean doBrowseBlockSearch(TAMERequest request, TAMEResponse response, TElement element, TObjectContext objectContext) throws TAMEInterrupt
+	{
+		TObject object = objectContext.getElement();
+		TElement next = element;
+
+		BlockEntry blockEntry;
+		
+		while (next != null)
+		{
+			blockEntry = doBrowseBlockSearchGetEntry(next);
+			
+			if (doBrowseBlockSearchCall(request, response, element, objectContext, object, blockEntry))
+				return true;
+			
+			next = next.getParent();
+		}
+		
+		if (element instanceof TContainer)
+			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createContainer(TAMEConstants.IDENTITY_ARCHETYPE_CONTAINER));
+		else if (element instanceof TRoom)
+			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createRoom(TAMEConstants.IDENTITY_CURRENT_ROOM));
+		else if (element instanceof TPlayer)
+			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createPlayer(TAMEConstants.IDENTITY_CURRENT_PLAYER));
+		else if (element instanceof TWorld)
+			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createWorld());
+		else
+			throw new TAMEFatalException("Bad object container type in hierarchy.");
+
+		return doBrowseBlockSearchCall(request, response, element, objectContext, object, blockEntry);
+	}
+
+	private static boolean doBrowseBlockSearchCall(TAMERequest request, TAMEResponse response, TElement element, TObjectContext objectContext, TObject object, BlockEntry blockEntry) throws TAMEInterrupt
+	{
+		// find via inheritance.
+		response.trace(request, "Check %s for browse block: %s.", object, element.getIdentity());
+		Block block = object.resolveBlock(blockEntry);
+		if (block != null)
+		{
+			response.trace(request, "Found! Calling %s block.", blockEntry.getEntryType().name());
+			callBlock(request, response, objectContext, block);
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Gets a BlockEntry object based on the 
+	 * @param next the element to turn into a ONBROWSE entry.
+	 * @return the generated entry.
+	 */
+	private static BlockEntry doBrowseBlockSearchGetEntry(TElement next)
+	{
+		BlockEntry blockEntry;
+		if (next instanceof TContainer)
+			blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
+		else if (next instanceof TRoom)
+			blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
+		else if (next instanceof TPlayer)
+			blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
+		else if (next instanceof TWorld)
+			blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
+		else
+			throw new TAMEFatalException("Bad object container type in hierarchy.");
+		
+		return blockEntry;
 	}
 
 	/**

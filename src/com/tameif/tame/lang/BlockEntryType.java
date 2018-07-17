@@ -25,14 +25,10 @@ public enum BlockEntryType
 	
 	// Good interpret.
 	ONACTION(1, ArgumentType.ACTION),
+	ONMODALACTION(2, ArgumentType.ACTION, ArgumentType.VALUE),
 	ONACTIONWITH(2, ArgumentType.ACTION, ArgumentType.OBJECT),
 	ONACTIONWITHANCESTOR(2, ArgumentType.ACTION, ArgumentType.OBJECT_ANY),
 	ONACTIONWITHOTHER(1, ArgumentType.ACTION),
-	ONMODALACTION(2, ArgumentType.ACTION, ArgumentType.VALUE),
-	ONWORLDBROWSE(0),
-	ONROOMBROWSE(0),
-	ONPLAYERBROWSE(0),
-	ONCONTAINERBROWSE(0),
 	ONUNHANDLEDACTION(0, ArgumentType.ACTION),
 
 	// Bad interpret.
@@ -40,6 +36,13 @@ public enum BlockEntryType
 	ONAMBIGUOUSCOMMAND(0, ArgumentType.ACTION),
 	ONINCOMPLETECOMMAND(0, ArgumentType.ACTION),
 	ONMALFORMEDCOMMAND(0, ArgumentType.ACTION),
+	
+	// Function-specific.
+	ONBROWSE(1, ArgumentType.OBJECT_CONTAINER_ANY),
+	ONWORLDBROWSE(0),
+	ONROOMBROWSE(0),
+	ONPLAYERBROWSE(0),
+	ONCONTAINERBROWSE(0),
 	;
 	
 	/** Array to get around multiple allocations. */

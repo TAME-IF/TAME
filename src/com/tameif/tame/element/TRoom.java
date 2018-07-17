@@ -78,4 +78,10 @@ public class TRoom extends TElement implements ObjectContainer
 		return out;
 	}
 
+	@Override
+	public TRoom getParent()
+	{
+		return (TRoom)(super.getParent());
+	}
+
 }

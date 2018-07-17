@@ -1339,7 +1339,19 @@ public final class TAMEScriptReader implements TAMEConstants
 					{
 						if (!isObjectContainer(false))
 						{
-							addErrorMessage("Entry requires a non-archetype CONTAINER-TYPE. \""+currentToken().getLexeme()+"\" is not a viable object container type.");
+							addErrorMessage("Entry requires a non-archetype OBJECT-CONTAINER. \""+currentToken().getLexeme()+"\" is not a viable object container type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case OBJECT_CONTAINER_ANY:
+					{
+						if (!isObjectContainer(true))
+						{
+							addErrorMessage("Entry requires a OBJECT-CONTAINER. \""+currentToken().getLexeme()+"\" is not a viable object container type.");
 							return null;
 						}
 						
@@ -1352,6 +1364,18 @@ public final class TAMEScriptReader implements TAMEConstants
 						if (!isElement(false))
 						{
 							addErrorMessage("Entry requires a non-archetype ELEMENT-TYPE. \""+currentToken().getLexeme()+"\" is not a viable element type.");
+							return null;
+						}
+						
+						parsedValues.enqueue(tokenToValue());
+						nextToken();
+						break;
+					}
+					case ELEMENT_ANY:
+					{
+						if (!isElement(true))
+						{
+							addErrorMessage("Entry requires an ELEMENT-TYPE. \""+currentToken().getLexeme()+"\" is not a viable element type.");
 							return null;
 						}
 						
@@ -2780,6 +2804,33 @@ public final class TAMEScriptReader implements TAMEConstants
 						}
 						break;
 					}
+					case OBJECT_CONTAINER_ANY:
+					{
+						if (currentType(TSKernel.TYPE_THIS))
+						{
+							if (ObjectContainer.class.isAssignableFrom(currentElement.getClass()))
+							{
+								block.add(Operation.create(TAMEOperation.PUSHTHIS));
+								nextToken();
+							}
+							else
+							{
+								addErrorMessage("Function "+operationType.name()+" requires an OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
+								return false;
+							}
+						}
+						else if (!isObjectContainer(true))
+						{
+							addErrorMessage("Function "+operationType.name()+" requires an OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
+							return false;
+						}
+						else
+						{
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+							nextToken();
+						}
+						break;
+					}
 					case ELEMENT:
 					{
 						if (currentType(TSKernel.TYPE_THIS))
@@ -3489,6 +3540,9 @@ public final class TAMEScriptReader implements TAMEConstants
 		// If allowArchetype, it accepts an archetype reference.
 		private boolean isContainer(boolean allowArchetype)
 		{
+			if (allowArchetype && currentToken().getType() == TSKernel.TYPE_CONTAINER)
+				return true;
+
 			TContainer container;
 			if (currentToken().getType() == TSKernel.TYPE_IDENTIFIER && (container = currentModule.getContainerByIdentity(currentToken().getLexeme())) != null)
 			{

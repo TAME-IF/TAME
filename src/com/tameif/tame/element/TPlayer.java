@@ -81,4 +81,10 @@ public class TPlayer extends TElement implements ObjectContainer
 		return out;
 	}
 
+	@Override
+	public TPlayer getParent()
+	{
+		return (TPlayer)(super.getParent());
+	}
+
 }
