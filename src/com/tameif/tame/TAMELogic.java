@@ -795,7 +795,7 @@ public final class TAMELogic implements TAMEConstants
 		else if (next instanceof TPlayer)
 			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createPlayer(next.getIdentity()));
 		else if (next instanceof TWorld)
-			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createWorld());
+			blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
 		else
 			throw new RuntimeException("Bad object container type in hierarchy.");
 		return blockEntry;
