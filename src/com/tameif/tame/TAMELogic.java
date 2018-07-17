@@ -752,13 +752,13 @@ public final class TAMELogic implements TAMEConstants
 		}
 		
 		if (element instanceof TContainer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createContainer(TAMEConstants.IDENTITY_ARCHETYPE_CONTAINER));
+			blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
 		else if (element instanceof TRoom)
-			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createRoom(TAMEConstants.IDENTITY_CURRENT_ROOM));
+			blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
 		else if (element instanceof TPlayer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createPlayer(TAMEConstants.IDENTITY_CURRENT_PLAYER));
+			blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
 		else if (element instanceof TWorld)
-			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createWorld());
+			blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
 		else
 			throw new TAMEFatalException("Bad object container type in hierarchy.");
 
@@ -783,22 +783,21 @@ public final class TAMELogic implements TAMEConstants
 	/**
 	 * Gets a BlockEntry object based on the 
 	 * @param next the element to turn into a ONBROWSE entry.
-	 * @return the generated entry.
+	 * @return
 	 */
 	private static BlockEntry doBrowseBlockSearchGetEntry(TElement next)
 	{
 		BlockEntry blockEntry;
 		if (next instanceof TContainer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
+			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createContainer(next.getIdentity()));
 		else if (next instanceof TRoom)
-			blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
+			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createRoom(next.getIdentity()));
 		else if (next instanceof TPlayer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
+			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createPlayer(next.getIdentity()));
 		else if (next instanceof TWorld)
-			blockEntry = BlockEntry.create(BlockEntryType.ONWORLDBROWSE);
+			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSE, Value.createWorld());
 		else
-			throw new TAMEFatalException("Bad object container type in hierarchy.");
-		
+			throw new RuntimeException("Bad object container type in hierarchy.");
 		return blockEntry;
 	}
 
