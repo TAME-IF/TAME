@@ -38,7 +38,7 @@ public enum BlockEntryType
 	ONMALFORMEDCOMMAND(0, ArgumentType.ACTION),
 	
 	// Function-specific.
-	ONBROWSE(1, ArgumentType.OBJECT_CONTAINER_ANY),
+	ONBROWSEFROM(1, ArgumentType.OBJECT_CONTAINER_ANY),
 	ONWORLDBROWSE(0),
 	ONROOMBROWSE(0),
 	ONPLAYERBROWSE(0),
