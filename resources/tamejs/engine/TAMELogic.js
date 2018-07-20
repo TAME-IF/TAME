@@ -1037,7 +1037,91 @@ TLogic.doRoomSwitch = function(request, response, playerIdentity, roomIdentity)
 };
 
 /**
- * Attempts to perform a player browse.
+ * Attempts to perform a browse block call/search.
+ * @param request the request object.
+ * @param response the response object.
+ * @param objectIdentity the object identity to browse through.
+ * @param blockEntryTypeName the block entry type name.
+ * @param blockEntryValues the block entry values.
+ * @throws TAMEInterrupt if an interrupt occurs.
+ */
+TLogic.doBrowseBlockSearchCall = function(request, response, objectIdentity, blockEntryTypeName, blockEntryValues)
+{
+	var context = request.moduleContext;
+	var object = context.resolveElement(objectIdentity);
+	var objtostr = TLogic.elementToString(object);
+	
+	response.trace(request, "Check "+objtostr+" for browse block.");
+	var block = context.resolveBlock(objectIdentity, blockEntryTypeName, blockEntryValues);
+	if (block != null)
+	{
+		var objectContext = context.getElementContext(objectIdentity);
+		response.trace(request, "Found! Calling "+blockEntryTypeName+" block.");
+		TLogic.callBlock(request, response, objectContext, block);
+		return true;
+	}
+	
+	return false;
+};
+
+/**
+ * 
+ */
+TLogic.doBrowseBlockSearch = function(request, response, element, objectContext)
+{
+	var context = request.moduleContext;
+	var objectIdentity = objectContext.identity;
+	var object = context.resolveElement(objectIdentity);
+
+	// special case for world - no hierarchy.
+	if (element.tameType === 'TWorld')
+		return TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, "ONWORLDBROWSE"));
+
+	var next = element;
+	while (next != null)
+	{
+		let blockEntryName;
+		let blockEntryValues;
+		
+		// aspect search.
+		if (next.tameType === 'TContainer')
+		{
+			blockEntryName = "ONELEMENTBROWSE";
+			blockEntryValues = [TValue.createContainer(next.identity)];
+		}
+		else if (next.tameType === 'TRoom')
+		{
+			blockEntryName = "ONELEMENTBROWSE"; 
+			blockEntryValues = [TValue.createRoom(next.identity)];
+		}
+		else if (next.tameType === 'TPlayer')
+		{
+			blockEntryName = "ONELEMENTBROWSE";
+			blockEntryValues = [TValue.createPlayer(next.identity)];
+		}
+		else
+			throw TAMEError.UnexpectedValueType("Bad object container type in hierarchy.");
+
+		if (TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, blockEntryName, blockEntryValues))
+			return true;
+		
+		next = next.parent != null ? next.getElement(next.parent) : null;
+	}
+	
+	// base fallback.
+	if (element.tameType === 'TContainer')
+		return TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, "ONCONTAINERBROWSE");
+	else if (element.tameType === 'TRoom')
+		return TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, "ONROOMBROWSE");
+	else if (element.tameType === 'TPlayer')
+		return TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, "ONPLAYERBROWSE");
+	else
+		throw TAMEError.UnexpectedValueType("Bad object container type in hierarchy.");
+};
+
+
+/**
+ * Attempts to perform a browse.
  * @param request the request object.
  * @param response the response object.
  * @param blockEntryTypeName the block entry type name.
@@ -1048,8 +1132,21 @@ TLogic.doRoomSwitch = function(request, response, playerIdentity, roomIdentity)
 TLogic.doBrowse = function(request, response, elementIdentity, tag)
 {
 	var context = request.moduleContext;
-	
 	var element = context.resolveElement(elementIdentity);
+
+	response.trace(request, "Start browse "+TLogic.elementToString(element)+".");
+	Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity)
+	{
+		var objectContext = context.getElementContext(objectIdentity);
+		
+		if (tag != null && !context.checkObjectHasTag(objectIdentity, tag))
+			return;
+		
+		TLogic.doBrowseBlockSearch(request, response, element, objectContext);
+	});
+};
+
+/*
 	var blockEntryTypeName = null;
 	
 	if (element.tameType === 'TContainer')
@@ -1062,27 +1159,7 @@ TLogic.doBrowse = function(request, response, elementIdentity, tag)
 		blockEntryTypeName = 'ONWORLDBROWSE';
 	else
 		throw TAMEError.UnexpectedValueType("INTERNAL ERROR IN BROWSE.");
-
-	response.trace(request, "Start browse "+TLogic.elementToString(element)+".");
-
-	Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity)
-	{
-		var object = context.getElement(objectIdentity);
-		var objectContext = context.getElementContext(objectIdentity);
-		
-		if (tag != null && !context.checkObjectHasTag(objectIdentity, tag))
-			return;
-		
-		var objtostr = TLogic.elementToString(object);
-		response.trace(request, "Check "+objtostr+" for browse block.");
-		var block = context.resolveBlock(objectIdentity, blockEntryTypeName);
-		if (block != null)
-		{
-			response.trace(request, "Found! Calling "+blockEntryTypeName+" block.");
-			TLogic.callBlock(request, response, objectContext, block);
-		}
-	});
-};
+ */
 
 /**
  * Attempts to call the after successful command block on the world.

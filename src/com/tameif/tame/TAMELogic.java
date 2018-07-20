@@ -741,34 +741,38 @@ public final class TAMELogic implements TAMEConstants
 
 		// special case for world - no hierarchy.
 		if (element instanceof TWorld)
-			return doBrowseBlockSearchCall(request, response, element, objectContext, object, BlockEntry.create(BlockEntryType.ONWORLDBROWSE));
+			return doBrowseBlockSearchCall(request, response, objectContext, object, BlockEntry.create(BlockEntryType.ONWORLDBROWSE));
 		
 		TElement next = element;
-		BlockEntry blockEntry;
-		
 		while (next != null)
 		{
-			blockEntry = doBrowseBlockSearchGetEntry(next);
-			
-			if (doBrowseBlockSearchCall(request, response, element, objectContext, object, blockEntry))
+			BlockEntry blockEntry;
+			if (next instanceof TContainer)
+				blockEntry = BlockEntry.create(BlockEntryType.ONELEMENTBROWSE, Value.createContainer(next.getIdentity()));
+			else if (next instanceof TRoom)
+				blockEntry = BlockEntry.create(BlockEntryType.ONELEMENTBROWSE, Value.createRoom(next.getIdentity()));
+			else if (next instanceof TPlayer)
+				blockEntry = BlockEntry.create(BlockEntryType.ONELEMENTBROWSE, Value.createPlayer(next.getIdentity()));
+			else
+				throw new UnexpectedValueTypeException("Bad object container type in hierarchy.");
+
+			if (doBrowseBlockSearchCall(request, response, objectContext, object, blockEntry))
 				return true;
 			
 			next = next.getParent();
 		}
 		
 		if (element instanceof TContainer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE);
+			return doBrowseBlockSearchCall(request, response, objectContext, object, BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE));
 		else if (element instanceof TRoom)
-			blockEntry = BlockEntry.create(BlockEntryType.ONROOMBROWSE);
+			return doBrowseBlockSearchCall(request, response, objectContext, object, BlockEntry.create(BlockEntryType.ONROOMBROWSE));
 		else if (element instanceof TPlayer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONPLAYERBROWSE);
+			return doBrowseBlockSearchCall(request, response, objectContext, object, BlockEntry.create(BlockEntryType.ONPLAYERBROWSE));
 		else
 			throw new UnexpectedValueTypeException("Bad object container type in hierarchy.");
-
-		return doBrowseBlockSearchCall(request, response, element, objectContext, object, blockEntry);
 	}
 
-	private static boolean doBrowseBlockSearchCall(TAMERequest request, TAMEResponse response, TElement element, TObjectContext objectContext, TObject object, BlockEntry blockEntry) throws TAMEInterrupt
+	private static boolean doBrowseBlockSearchCall(TAMERequest request, TAMEResponse response, TObjectContext objectContext, TObject object, BlockEntry blockEntry) throws TAMEInterrupt
 	{
 		// find via inheritance.
 		response.trace(request, "Check %s for %s block.", object, blockEntry.toFriendlyString());
@@ -781,25 +785,6 @@ public final class TAMELogic implements TAMEConstants
 		}
 		
 		return false;
-	}
-
-	/**
-	 * Gets a BlockEntry object based on the input element.
-	 * @param next the element to turn into a ONBROWSEFROM entry.
-	 * @return the resultant block entry.
-	 */
-	private static BlockEntry doBrowseBlockSearchGetEntry(TElement next)
-	{
-		BlockEntry blockEntry;
-		if (next instanceof TContainer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSEFROM, Value.createContainer(next.getIdentity()));
-		else if (next instanceof TRoom)
-			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSEFROM, Value.createRoom(next.getIdentity()));
-		else if (next instanceof TPlayer)
-			blockEntry = BlockEntry.create(BlockEntryType.ONBROWSEFROM, Value.createPlayer(next.getIdentity()));
-		else
-			throw new UnexpectedValueTypeException("Bad object container type in hierarchy.");
-		return blockEntry;
 	}
 
 	/**
