@@ -3,6 +3,12 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
+0.9BETA4
+........
+
+	- Added OnElementBrowse(...) block support for the Browse() function.
+
+
 0.9BETA3
 ........
 
