@@ -847,6 +847,27 @@ TModuleContext.prototype.resolveElementContext = function(elementIdentity)
 	return contextState.elements[ident];
 };
 
+
+/**
+ * Gets the entry block name for a block type and values.
+ * This is used to resolve blocks.
+ * @param blockType the block entry type.
+ * @param blockValues the values for matching the block.
+ * @return the resultant name.
+ */
+TModuleContext.prototype.resolveBlockName = function(blockType, blockValues)
+{
+	var blockname =	blockType + "(";
+	if (blockValues) for (var i = 0; i < blockValues.length; i++)
+	{
+		blockname += TValue.toString(blockValues[i]);
+		if (i < blockValues.length - 1)
+			blockname += ",";
+	}
+	blockname += ")";
+	return blockname;
+}
+
 /**
  * Resolves a qualifying code block starting from an element.
  * The identities "player", "room", and "world" are special.
@@ -858,15 +879,7 @@ TModuleContext.prototype.resolveElementContext = function(elementIdentity)
  */
 TModuleContext.prototype.resolveBlock = function(elementIdentity, blockType, blockValues)
 {
-	var blockname =	blockType + "(";
-	if (blockValues) for (var i = 0; i < blockValues.length; i++)
-	{
-		blockname += TValue.toString(blockValues[i]);
-		if (i < blockValues.length - 1)
-			blockname += ",";
-	}
-	blockname += ")";
-
+	var blockname = this.resolveBlockName(blockType, blockValues);
 	var element = this.resolveElement(elementIdentity); 
 	
 	while (element)

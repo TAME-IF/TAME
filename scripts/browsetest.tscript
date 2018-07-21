@@ -1,0 +1,76 @@
+
+
+room archetype r_numbered;
+room r_room1 : r_numbered;
+room r_room2 : r_numbered;
+room r_weird;
+
+player p_main;
+player p_main2;
+
+container c_box;
+
+object o_ball named "ball"
+{
+	onElementBrowse(r_room1)
+	{
+		textln("A ball is here in room 1.");
+	}
+	
+	onElementBrowse(r_numbered)
+	{
+		textln("A ball is here in a numbered room.");
+	}
+	
+	onRoomBrowse()
+	{
+		textln("A ball is here.");
+	}
+
+	onElementBrowse(p_main)
+	{
+		textln("I have a ball.");
+	}
+
+	onElementBrowse(p_main2)
+	{
+		textln("Ich habe einen ball.");
+	}
+
+	onContainerBrowse()
+	{
+		textln("Ball in box.");
+	}
+
+	onPlayerBrowse()
+	{
+		textln("Have ball.");
+	}
+
+	onWorldBrowse()
+	{
+		textln("All have ball.");
+	}
+}
+
+world
+{
+	start()
+	{
+		giveobject(r_room1, o_ball);
+		browse(r_room1);
+		giveobject(r_room2, o_ball);
+		browse(r_room2);
+		giveobject(r_weird, o_ball);
+		browse(r_weird);
+		giveobject(p_main, o_ball);
+		browse(p_main);
+		giveobject(p_main2, o_ball);
+		browse(p_main2);
+		giveobject(c_box, o_ball);
+		browse(c_box);
+		giveobject(world, o_ball);
+		browse(world);
+		quit;
+	}
+}

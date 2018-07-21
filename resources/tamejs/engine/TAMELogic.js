@@ -1051,7 +1051,7 @@ TLogic.doBrowseBlockSearchCall = function(request, response, objectIdentity, blo
 	var object = context.resolveElement(objectIdentity);
 	var objtostr = TLogic.elementToString(object);
 	
-	response.trace(request, "Check "+objtostr+" for browse block.");
+	response.trace(request, "Check "+objtostr+" for "+context.resolveBlockName(blockEntryTypeName, blockEntryValues)+" block.");
 	var block = context.resolveBlock(objectIdentity, blockEntryTypeName, blockEntryValues);
 	if (block != null)
 	{
@@ -1075,7 +1075,7 @@ TLogic.doBrowseBlockSearch = function(request, response, element, objectContext)
 
 	// special case for world - no hierarchy.
 	if (element.tameType === 'TWorld')
-		return TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, "ONWORLDBROWSE"));
+		return TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, "ONWORLDBROWSE");
 
 	var next = element;
 	while (next != null)
@@ -1105,7 +1105,7 @@ TLogic.doBrowseBlockSearch = function(request, response, element, objectContext)
 		if (TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, blockEntryName, blockEntryValues))
 			return true;
 		
-		next = next.parent != null ? next.getElement(next.parent) : null;
+		next = next.parent != null ? context.getElement(next.parent) : null;
 	}
 	
 	// base fallback.
