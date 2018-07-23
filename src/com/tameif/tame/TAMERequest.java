@@ -9,10 +9,12 @@
  ******************************************************************************/
 package com.tameif.tame;
 
+import com.blackrook.commons.hash.Hash;
 import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.commons.linkedlist.Stack;
 import com.tameif.tame.element.context.TElementContext;
 import com.tameif.tame.exception.ArithmeticStackStateException;
+import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
 
 /**
@@ -22,10 +24,17 @@ import com.tameif.tame.lang.Value;
  */
 public class TAMERequest
 {
+	private static final Hash<TraceType> NO_TRACE_TYPES = new Hash<TraceType>();
+	private static final Hash<TraceType> ALL_TRACE_TYPES = new Hash<TraceType>()
+	{{
+		for (TraceType t : TraceType.values())
+			put(t);
+	}};
+	
 	/** The input message. */
 	private String inputMessage;
-	/** Is the trace enabled? */
-	private boolean tracing;
+	/** Is the trace enabled, and if so, for which types? */
+	private Hash<TraceType> traceTypes;
 
 	/** Belayed action queue. */
 	private Queue<TAMECommand> commandQueue;
@@ -43,7 +52,7 @@ public class TAMERequest
 	private TAMERequest()
 	{
 		inputMessage = null;
-		tracing = false;
+		traceTypes = null;
 		
 		commandQueue = new Queue<TAMECommand>();
 		
@@ -60,11 +69,7 @@ public class TAMERequest
 	 */
 	static TAMERequest create(TAMEModuleContext moduleContext, boolean tracing)
 	{
-		TAMERequest out = new TAMERequest();
-		out.moduleContext = moduleContext;
-		out.inputMessage = null;
-		out.tracing = tracing;
-		return out;
+		return create(moduleContext, null, tracing);
 	}
 	
 	/**
@@ -79,7 +84,30 @@ public class TAMERequest
 		TAMERequest out = new TAMERequest();
 		out.moduleContext = moduleContext;
 		out.inputMessage = input;
-		out.tracing = tracing;
+		out.traceTypes = tracing ? ALL_TRACE_TYPES : NO_TRACE_TYPES;
+		return out;
+	}
+	
+	/**
+	 * Creates the request object.
+	 * @param moduleContext the module context.
+	 * @param input the client input query.
+	 * @param types the types to trace.
+	 * @return a TAMERequest a new request.
+	 */
+	static TAMERequest create(TAMEModuleContext moduleContext, String input, TraceType ... types)
+	{
+		TAMERequest out = new TAMERequest();
+		out.moduleContext = moduleContext;
+		out.inputMessage = input;
+		if (types.length == 0)
+			out.traceTypes = NO_TRACE_TYPES;
+		else
+		{
+			out.traceTypes = new Hash<>();
+			for (TraceType t : types)
+				out.traceTypes.put(t);
+		}
 		return out;
 	}
 	
@@ -99,7 +127,17 @@ public class TAMERequest
 	 */
 	public boolean isTracing()
 	{
-		return tracing;
+		return !traceTypes.isEmpty();
+	}
+
+	/**
+	 * Checks if this request is performing a specific type of trace.
+	 * @param type the trace type to check.
+	 * @return true if so, false if not.
+	 */
+	public boolean traces(TraceType type)
+	{
+		return traceTypes.contains(type);
 	}
 
 	/**
