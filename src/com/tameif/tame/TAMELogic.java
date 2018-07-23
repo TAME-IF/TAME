@@ -39,6 +39,7 @@ import com.tameif.tame.lang.Block;
 import com.tameif.tame.lang.BlockEntry;
 import com.tameif.tame.lang.BlockEntryType;
 import com.tameif.tame.lang.FunctionEntry;
+import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
 import com.tameif.tame.lang.ValueHash;
 
@@ -1759,18 +1760,14 @@ public final class TAMELogic implements TAMEConstants
 	// Call init on a single context.
 	private static void callInitBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context) throws TAMEInterrupt 
 	{
-		response.trace(request, "Attempt init from %s.", context);
+		response.trace(request, TraceType.ENTRY, "RESOLVE %s.init()", context.getElement().getIdentity());
 		TElement element = context.getElement();
 
 		Block initBlock = element.resolveBlock(BlockEntry.create(BlockEntryType.INIT));
 		if (initBlock != null)
 		{
-			response.trace(request, "Calling init block from %s.", context);
+			response.trace(request, TraceType.ENTRY, "CALL %s.init()", context.getElement().getIdentity());
 			callBlock(request, response, context, initBlock);
-		}
-		else
-		{
-			response.trace(request, "No init block.");
 		}
 	}
 
@@ -1778,18 +1775,14 @@ public final class TAMELogic implements TAMEConstants
 	private static void callStartBlock(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
 	{
 		TWorldContext worldContext = request.getModuleContext().getWorldContext();
-		response.trace(request, "Attempt to call start block on world.");
+		response.trace(request, TraceType.ENTRY, "RESOLVE world.start()");
 		TWorld world = worldContext.getElement();
 
 		Block initBlock = world.resolveBlock(BlockEntry.create(BlockEntryType.START));
 		if (initBlock != null)
 		{
-			response.trace(request, "Calling start block from %s.", worldContext);
+			response.trace(request, TraceType.ENTRY, "CALL world.start()");
 			callBlock(request, response, worldContext, initBlock);
-		}
-		else
-		{
-			response.trace(request, "No start block on world.");
 		}
 	}
 

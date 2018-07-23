@@ -66,13 +66,11 @@ public class Block implements CallableType, Iterable<Operation>, Saveable
 	@Override
 	public void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal) throws TAMEInterrupt
 	{
-		response.trace(request, "Start block.");
 		for (Operation operation : this)
 		{
-			response.trace(request, "CALL %s", operation);
+			response.trace(request, TraceType.FUNCTION, "CALL %s", operation.getOperation().toString());
 			operation.execute(request, response, blockLocal);
 		}
-		response.trace(request, "End block.");
 	}
 	
 	@Override

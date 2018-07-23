@@ -39,6 +39,7 @@ import com.tameif.tame.lang.ArgumentType;
 import com.tameif.tame.lang.Block;
 import com.tameif.tame.lang.Operation;
 import com.tameif.tame.lang.OperationType;
+import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
 import com.tameif.tame.lang.ValueHash;
 import com.tameif.tame.lang.ValueType;
@@ -105,11 +106,16 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected variable type in POPVALUE call.");
 			
 			String variableName = varvalue.asString();
-			
 			if (blockLocal.containsKey(variableName))
+			{
+				response.trace(request, TraceType.VALUE, "SET LOCAL %s %s", variableName, value.toString());
 				blockLocal.put(variableName, value);
+			}
 			else
+			{
+				response.trace(request, TraceType.VALUE, "SET %s.%s %s", request.peekContext().getElement().getIdentity(), variableName, value.toString());
 				request.peekContext().setValue(variableName, value);
+			}
 		}
 		
 	},
@@ -133,6 +139,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected variable type in POPLOCALVALUE call.");
 			
 			String variableName = varvalue.asString();
+			response.trace(request, TraceType.VALUE, "SET LOCAL %s %s", variableName, value.toString());
 			blockLocal.put(variableName, value);
 		}
 		
@@ -162,6 +169,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			
 			String variableName = variable.asString();
 			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement); 
+			response.trace(request, TraceType.VALUE, "SET %s.%s %s", context.getElement().getIdentity(), variableName, value.toString());
 			context.setValue(variableName, value);
 		}
 		
@@ -192,6 +200,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			if (!listValue.isList())
 				return;
 			
+			response.trace(request, TraceType.VALUE, "SET LIST [%d] %s", (int)index.asLong(), value.toString());
 			listValue.listSet((int)index.asLong(), value);
 		}
 		
@@ -343,15 +352,21 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 
 			String variableName = variable.asString();
 			if (blockLocal.containsKey(variableName))
+			{
+				response.trace(request, TraceType.VALUE, "CLEAR LOCAL %s", variableName);
 				blockLocal.removeUsingKey(variableName);
+			}
 			else
+			{
+				response.trace(request, TraceType.VALUE, "CLEAR %s.%s", request.peekContext().getElement().getIdentity(), variableName);
 				request.peekContext().clearValue(variableName);
+			}
 		}
 		
 	},
 	
 	/**
-	 * [INTERNAL] Clears a variable from blocklocal or object member.
+	 * [INTERNAL] Clears a variable from object member.
 	 * Operand0 is the element. 
 	 * Operand1 is the variable. 
 	 * Returns nothing.
@@ -370,14 +385,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected element type in CLEARELEMENTVALUE call.");
 
 			String variableName = variable.asString();
-			if (blockLocal.containsKey(variableName))
-				blockLocal.removeUsingKey(variableName);
-			else
-			{
-				TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement);
-				context.clearValue(variableName);
-			}
-				
+			TElementContext<?> context = request.getModuleContext().resolveElementContext(varElement);
+			response.trace(request, TraceType.VALUE, "CLEAR %s.%s", context.getElement().getIdentity(), variableName);
+			context.clearValue(variableName);
 		}
 		
 	},
@@ -446,7 +456,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			if (conditional == null)
 				throw new ModuleExecutionException("Conditional block for IF does NOT EXIST!");
 			
-			response.trace(request, "Calling IF conditional...");
+			response.trace(request, TraceType.CONTROL, "IF Conditional");
 			conditional.execute(request, response, blockLocal);
 			
 			// get remaining expression value.
@@ -455,10 +465,10 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			if (!value.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type after IF conditional block execution.");
 	
-			if (value.asBoolean())
+			boolean result = value.asBoolean();
+			response.trace(request, TraceType.CONTROL, "IF Conditional %s is %b", value, result);
+			if (result)
 			{
-				response.trace(request, "Result %s evaluates true.", value);
-				response.trace(request, "Calling IF success block...");
 				Block success = operation.getSuccessBlock();
 				if (success == null)
 					throw new ModuleExecutionException("Success block for IF does NOT EXIST!");
@@ -466,17 +476,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			}
 			else
 			{
-				response.trace(request, "Result %s evaluates false.", value);
 				Block failure = operation.getFailureBlock();
 				if (failure != null)
-				{
-					response.trace(request, "Calling IF failure block...");
 					failure.execute(request, response, blockLocal);
-				}
-				else
-				{
-					response.trace(request, "No failure block...");
-				}
 			}
 			
 		}
@@ -496,7 +498,6 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			while (callConditional(request, response, blockLocal, operation))
 			{
 				try {
-					response.trace(request, "Calling WHILE success block...");
 					Block success = operation.getSuccessBlock();
 					if (success == null)
 						throw new ModuleExecutionException("Success block for WHILE does NOT EXIST!");
@@ -511,7 +512,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		
 		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, "Calling WHILE conditional...");
+			response.trace(request, TraceType.CONTROL, "WHILE Conditional");
 
 			// block should contain arithmetic operations and a last push.
 			Block conditional = operation.getConditionalBlock();
@@ -526,7 +527,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type after WHILE conditional block execution.");
 	
 			boolean out = value.asBoolean();
-			response.trace(request, "Result %s evaluates %b.", value, out);
+			response.trace(request, TraceType.CONTROL, "WHILE Conditional %s is %b", value, out);
 			return out; 
 		}
 		
@@ -553,16 +554,16 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			if (step == null)
 				throw new ModuleExecutionException("Step block for FOR does NOT EXIST!");
 
-			response.trace(request, "Calling FOR init block...");
+			response.trace(request, TraceType.CONTROL, "FOR Init");
 			for (
 				init.execute(request, response, blockLocal); 
 				callConditional(request, response, blockLocal, operation); 
-				response.trace(request, "Calling FOR stepping block..."), 
+				response.trace(request, TraceType.CONTROL, "FOR Step"),
 				step.execute(request, response, blockLocal)
 			)
 			{
 				try {
-					response.trace(request, "Calling FOR success block...");
+					response.trace(request, TraceType.CONTROL, "FOR Step");
 					success.execute(request, response, blockLocal);
 				} catch (BreakInterrupt interrupt) {
 					break;
@@ -574,7 +575,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 
 		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, "Calling FOR conditional...");
+			response.trace(request, TraceType.CONTROL, "FOR Contitional");
 			
 			// block should contain arithmetic operations and a last push.
 			Block conditional = operation.getConditionalBlock();
@@ -589,7 +590,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type after FOR conditional block execution.");
 	
 			boolean out = value.asBoolean();
-			response.trace(request, "Result %s evaluates %b.", value, out);
+			response.trace(request, TraceType.CONTROL, "FOR Conditional %s is %b", value, out);
 			return out; 
 		}
 		
@@ -604,7 +605,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, "Throwing break interrupt...");
+			response.trace(request, TraceType.CONTROL, "Throw BREAK");
 			throw new BreakInterrupt();
 		}
 		
@@ -619,7 +620,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, "Throwing continue interrupt...");
+			response.trace(request, TraceType.CONTROL, "Throw CONTINUE");
 			throw new ContinueInterrupt();
 		}
 		
@@ -634,8 +635,8 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, "Throwing quit interrupt...");
 			response.addCue(CUE_QUIT);
+			response.trace(request, TraceType.CONTROL, "Throw QUIT");
 			throw new QuitInterrupt();
 		}
 		
@@ -650,7 +651,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, "Throwing finish interrupt...");
+			response.trace(request, TraceType.CONTROL, "Throw FINISH");
 			throw new FinishInterrupt();
 		}
 		
@@ -665,7 +666,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, "Throwing end interrupt...");
+			response.trace(request, TraceType.CONTROL, "Throw END");
 			throw new EndInterrupt();
 		}
 		
@@ -681,9 +682,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value retVal = request.popValue();
-			response.trace(request, "Returning "+retVal.toString());
+			response.trace(request, TraceType.FUNCTION, "Return "+retVal.toString());
 			blockLocal.put(RETURN_VARIABLE, retVal);
-			response.trace(request, "Throwing end interrupt...");
+			response.trace(request, TraceType.CONTROL, "Throw END");
 			throw new EndInterrupt();
 		}
 		
@@ -760,7 +761,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			{
 				TAMECommand command = TAMECommand.create(action);
 				request.addCommand(command);
-				response.trace(request, "Enqueued "+command);
+				response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 			}
 		}
 
@@ -800,7 +801,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			{
 				TAMECommand command = TAMECommand.create(action, target);
 				request.addCommand(command);
-				response.trace(request, "Enqueued "+command);
+				response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 			}
 		}
 
@@ -841,7 +842,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			{
 				TAMECommand command = TAMECommand.create(action, object);
 				request.addCommand(command);
-				response.trace(request, "Enqueued "+command);
+				response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 			}
 		}
 
@@ -887,7 +888,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			{
 				TAMECommand command = TAMECommand.create(action, object);
 				request.addCommand(command);
-				response.trace(request, "Enqueued "+command);
+				response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 			}
 		}
 
@@ -939,7 +940,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			{
 				TAMECommand command = TAMECommand.create(action, object);
 				request.addCommand(command);
-				response.trace(request, "Enqueued "+command);
+				response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 			}
 			
 		}
@@ -986,7 +987,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			{
 				TAMECommand command = TAMECommand.create(action, object, object2);
 				request.addCommand(command);
-				response.trace(request, "Enqueued "+command);
+				response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 			}
 			
 		}

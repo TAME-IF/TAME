@@ -220,19 +220,9 @@ public class Operation implements CallableType, Saveable
 		StringBuilder sb = new StringBuilder();
 		sb.append(operation.name());
 		if (operand0 != null)
-			sb.append(' ').append(operand0);
+			sb.append(' ').append(operand0.toString());
 		if (operand1 != null)
-			sb.append(' ').append(operand1);
-		if (initBlock != null)
-			sb.append(" [INIT]");
-		if (conditionalBlock != null)
-			sb.append(" [CONDITIONAL]");
-		if (stepBlock != null)
-			sb.append(" [STEP]");
-		if (successBlock != null)
-			sb.append(" [SUCCESS]");
-		if (failureBlock != null)
-			sb.append(" [FAILURE]");
+			sb.append(' ').append(operand1.toString());
 		return sb.toString();
 	}
 
