@@ -281,7 +281,7 @@ public final class TAMELogic implements TAMEConstants
 		TAction action = interpreterContext.getAction();
 		if (action == null)
 		{
-			response.trace(request, "Performing unknown command.");
+			response.trace(request, TraceType.ENTRY, "UNKNOWN ACTION");
 			if (!callUnknownCommand(request, response))
 				response.addCue(CUE_ERROR, "UNKNOWN COMMAND (make a better in-universe handler!).");
 			return false;
@@ -295,7 +295,7 @@ public final class TAMELogic implements TAMEConstants
 				{
 					if (action.isStrict() && interpreterContext.tokenOffset < interpreterContext.tokens.length)
 					{
-						response.trace(request, "Performing general action %s, but has extra tokens!", action);
+						response.trace(request, TraceType.INTERPRETER, "STRICT GENERAL ACTION %s: Extra Tokens (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
@@ -311,7 +311,7 @@ public final class TAMELogic implements TAMEConstants
 				{
 					if (!interpreterContext.isTargetLookedUp())
 					{
-						response.trace(request, "Performing open action %s with no target (incomplete)!", action);
+						response.trace(request, TraceType.INTERPRETER, "OPEN ACTION %s: No Target (INCOMPLETE)", action.getIdentity());
 						if (!callIncompleteCommand(request, response, action))
 							response.addCue(CUE_ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 						return false;
@@ -327,21 +327,21 @@ public final class TAMELogic implements TAMEConstants
 				{
 					if (!interpreterContext.isModeLookedUp())
 					{
-						response.trace(request, "Performing modal action %s with no mode (incomplete)!", action);
+						response.trace(request, TraceType.INTERPRETER, "MODAL ACTION %s: No Mode (INCOMPLETE)", action.getIdentity());
 						if (!callIncompleteCommand(request, response, action))
 							response.addCue(CUE_ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (interpreterContext.getMode() == null)
 					{
-						response.trace(request, "Performing modal action %s with an unknown mode!", action);
+						response.trace(request, TraceType.INTERPRETER, "MODAL ACTION %s: Unknown Mode (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (action.isStrict() && interpreterContext.tokenOffset < interpreterContext.tokens.length)
 					{
-						response.trace(request, "Performing modal action %s, but has extra tokens!", action);
+						response.trace(request, TraceType.INTERPRETER, "STRICT MODAL ACTION %s: Extra Tokens (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
@@ -357,28 +357,28 @@ public final class TAMELogic implements TAMEConstants
 				{
 					if (interpreterContext.isObjectAmbiguous())
 					{
-						response.trace(request, "Ambiguous command for action %s.", action);
+						response.trace(request, TraceType.INTERPRETER, "TRANSITIVE ACTION %s (AMBIGUOUS)", action.getIdentity());
 						if (!callAmbiguousCommand(request, response, action))
 							response.addCue(CUE_ERROR, "AMBIGUOUS COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (!interpreterContext.isObject1LookedUp())
 					{
-						response.trace(request, "Performing transitive action %s with no object (incomplete)!", action);
+						response.trace(request, TraceType.INTERPRETER, "TRANSITIVE ACTION %s: No Object (INCOMPLETE)", action.getIdentity());
 						if (!callIncompleteCommand(request, response, action))
 							response.addCue(CUE_ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (interpreterContext.getObject1() == null)
 					{
-						response.trace(request, "Performing transitive action %s with an unknown object!", action);
+						response.trace(request, TraceType.INTERPRETER, "TRANSITIVE ACTION %s: Unknown Object (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (action.isStrict() && interpreterContext.tokenOffset < interpreterContext.tokens.length)
 					{
-						response.trace(request, "Performing transitive action %s, but has extra tokens!", action);
+						response.trace(request, TraceType.INTERPRETER, "STRICT TRANSITIVE ACTION %s: Extra Tokens (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
@@ -394,21 +394,21 @@ public final class TAMELogic implements TAMEConstants
 				{
 					if (interpreterContext.isObjectAmbiguous())
 					{
-						response.trace(request, "Ambiguous command for action %s.", action);
+						response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s (AMBIGUOUS)", action.getIdentity());
 						if (!callAmbiguousCommand(request, response, action))
 							response.addCue(CUE_ERROR, "AMBIGUOUS COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (!interpreterContext.isObject1LookedUp())
 					{
-						response.trace(request, "Performing ditransitive action %s with no first object (incomplete)!", action);
+						response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: No First Object (INCOMPLETE)", action.getIdentity());
 						if (!callIncompleteCommand(request, response, action))
 							response.addCue(CUE_ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (interpreterContext.getObject1() == null)
 					{
-						response.trace(request, "Performing ditransitive action %s with an unknown first object!", action);
+						response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: Unknown First Object (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
@@ -417,42 +417,42 @@ public final class TAMELogic implements TAMEConstants
 					{
 						if (action.isStrict())
 						{
-							response.trace(request, "Strict - performing ditransitive action %s with no conjugate (incomplete)!", action);
+							response.trace(request, TraceType.INTERPRETER, "STRICT DITRANSITIVE ACTION %s: No Conjugate (INCOMPLETE)", action.getIdentity());
 							if (!callIncompleteCommand(request, response, action))
 								response.addCue(CUE_ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 							return false;
 						}
 						else
 						{
-							response.trace(request, "Performing ditransitive action %s as a transitive one...", action);
+							response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: No Conjugate, Process TRANSITIVE", action.getIdentity());
 							request.addCommand(TAMECommand.create(action, interpreterContext.getObject1()));
 							return true;
 						}
 					}
 					else if (!interpreterContext.isConjugateFound())
 					{
-						response.trace(request, "Performing ditransitive action %s with an unknown conjugate!", action);
+						response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: Unknown Conjugate (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (!interpreterContext.isObject2LookedUp())
 					{
-						response.trace(request, "Performing ditransitive action %s with no second object (incomplete)!", action);
+						response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: No Second Object (INCOMPLETE)", action.getIdentity());
 						if (!callIncompleteCommand(request, response, action))
 							response.addCue(CUE_ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (interpreterContext.getObject2() == null)
 					{
-						response.trace(request, "Performing ditransitive action %s with an unknown second object!", action);
+						response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: Unknown Second Object (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else if (action.isStrict() && interpreterContext.tokenOffset < interpreterContext.tokens.length)
 					{
-						response.trace(request, "Performing ditransitive action %s, but has extra tokens!", action);
+						response.trace(request, TraceType.INTERPRETER, "STRICT DITRANSITIVE ACTION %s: Extra Tokens (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
@@ -495,7 +495,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, boolean functionBlock, ValueHash blockLocal) throws TAMEInterrupt
 	{
-		response.trace(request, "Pushing %s...", context);
+		response.trace(request, TraceType.CONTEXT, "PUSH %s", context);
 		request.pushContext(context);
 
 		try {
@@ -505,7 +505,7 @@ public final class TAMELogic implements TAMEConstants
 		} catch (Throwable t) {
 			throw t;
 		} finally {
-			response.trace(request, "Popping %s...", context);
+			response.trace(request, TraceType.CONTEXT, "POP %s", context);
 			request.popContext();
 		}
 		
@@ -533,13 +533,13 @@ public final class TAMELogic implements TAMEConstants
 		if (entry == null)
 			throw new ModuleException("No such function ("+functionName+") in lineage of element " + element);
 
-		response.trace(request, "Calling function \"%s\"...", functionName);
+		response.trace(request, TraceType.FUNCTION, "CALL %s", functionName);
 		ValueHash blockLocal = new ValueHash();
 		String[] args = entry.getArguments();
 		for (int i = args.length - 1; i >= 0; i--)
 		{
 			Value localValue = request.popValue();
-			response.trace(request, "Setting local variable \"%s\" to \"%s\"", args[i], localValue);
+			response.trace(request, TraceType.FUNCTION, "SET LOCAL %s %s", args[i], localValue.toString());
 			blockLocal.put(args[i], localValue);
 		}
 
@@ -566,33 +566,16 @@ public final class TAMELogic implements TAMEConstants
 		TWorld world = moduleContext.resolveWorld();
 		TOwnershipMap ownershipMap = moduleContext.getOwnershipMap();
 		
-		response.trace(request, "Check world for %s...", object);
 		if (ownershipMap.checkElementHasObject(world, object))
-		{
-			response.trace(request, "Found.");
 			return true;
-		}
 	
-		response.trace(request, "Check %s for %s...", player, object);
 		if (ownershipMap.checkElementHasObject(player, object))
-		{
-			response.trace(request, "Found.");
 			return true;
-		}
 		
 		TRoom currentRoom = ownershipMap.getCurrentRoom(player);
+		if (currentRoom != null && ownershipMap.checkElementHasObject(currentRoom, object))
+			return true;
 		
-		if (currentRoom != null)
-		{
-			response.trace(request, "Check %s for %s...", currentRoom, object);
-			if (currentRoom != null && ownershipMap.checkElementHasObject(currentRoom, object))
-			{
-				response.trace(request, "Found.");
-				return true;
-			}	
-		}
-		
-		response.trace(request, "Not found.");
 		return false;
 	}
 
@@ -609,7 +592,7 @@ public final class TAMELogic implements TAMEConstants
 			throw new ModuleExecutionException("Expected arithmetic function type, got illegal value "+functionType+".");
 	
 		ArithmeticOperator operator =  ArithmeticOperator.VALUES[functionType];
-		response.trace(request, "Function is %s", operator.name());
+		response.trace(request, TraceType.FUNCTION, "Operator is %s", operator.name());
 		
 		if (operator.isBinary())
 		{
@@ -634,7 +617,7 @@ public final class TAMELogic implements TAMEConstants
 	public static void doPlayerSwitch(TAMERequest request, TAMEResponse response, TPlayer nextPlayer) throws TAMEInterrupt 
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		response.trace(request, "Setting current player to %s.", nextPlayer);
+		response.trace(request, TraceType.CONTEXT, "CURRENT PLAYER: %s", nextPlayer);
 		moduleContext.getOwnershipMap().setCurrentPlayer(nextPlayer);
 	}
 
@@ -648,8 +631,9 @@ public final class TAMELogic implements TAMEConstants
 	public static void doRoomPop(TAMERequest request, TAMEResponse response, TPlayer player) throws TAMEInterrupt 
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		response.trace(request, "Popping top room from %s.", player);
-		moduleContext.getOwnershipMap().popRoomFromPlayer(player);
+		TRoom popped = moduleContext.getOwnershipMap().popRoomFromPlayer(player);
+		if (popped != null)
+			response.trace(request, TraceType.CONTEXT, "POP ROOM % ON PLAYER %s", popped.getIdentity(), player.getIdentity());
 	}
 
 	/**
@@ -663,7 +647,7 @@ public final class TAMELogic implements TAMEConstants
 	public static void doRoomPush(TAMERequest request, TAMEResponse response, TPlayer player, TRoom nextRoom) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		response.trace(request, "Pushing %s on %s.", nextRoom, player);
+		response.trace(request, TraceType.CONTEXT, "PUSH ROOM % ON PLAYER %s", nextRoom.getIdentity(), player.getIdentity());
 		moduleContext.getOwnershipMap().pushRoomOntoPlayer(player, nextRoom);
 	}
 
@@ -679,7 +663,6 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TOwnershipMap ownership = moduleContext.getOwnershipMap();
-		response.trace(request, "Leaving rooms for %s.", player);
 	
 		// pop all rooms on the stack.
 		while (ownership.getCurrentRoom(player) != null)
@@ -714,8 +697,6 @@ public final class TAMELogic implements TAMEConstants
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TOwnershipMap ownership = moduleContext.getOwnershipMap();
 
-		response.trace(request, "Start browse %s.", element);
-		
 		for (TObject object : ownership.getObjectsOwnedByElement(element))
 		{
 			TObjectContext objectContext = moduleContext.getObjectContext(object);
@@ -738,11 +719,9 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	private static boolean doBrowseBlockSearch(TAMERequest request, TAMEResponse response, TElement element, TObjectContext objectContext) throws TAMEInterrupt
 	{
-		TObject object = objectContext.getElement();
-
 		// special case for world - no hierarchy.
 		if (element instanceof TWorld)
-			return doBrowseBlockSearchCall(request, response, objectContext, object, BlockEntry.create(BlockEntryType.ONWORLDBROWSE));
+			return doBrowseBlockSearchCall(request, response, objectContext, BlockEntry.create(BlockEntryType.ONWORLDBROWSE));
 		
 		TElement next = element;
 		while (next != null)
@@ -757,30 +736,31 @@ public final class TAMELogic implements TAMEConstants
 			else
 				throw new UnexpectedValueTypeException("Bad object container type in hierarchy.");
 
-			if (doBrowseBlockSearchCall(request, response, objectContext, object, blockEntry))
+			if (doBrowseBlockSearchCall(request, response, objectContext, blockEntry))
 				return true;
 			
 			next = next.getParent();
 		}
 		
 		if (element instanceof TContainer)
-			return doBrowseBlockSearchCall(request, response, objectContext, object, BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE));
+			return doBrowseBlockSearchCall(request, response, objectContext, BlockEntry.create(BlockEntryType.ONCONTAINERBROWSE));
 		else if (element instanceof TRoom)
-			return doBrowseBlockSearchCall(request, response, objectContext, object, BlockEntry.create(BlockEntryType.ONROOMBROWSE));
+			return doBrowseBlockSearchCall(request, response, objectContext, BlockEntry.create(BlockEntryType.ONROOMBROWSE));
 		else if (element instanceof TPlayer)
-			return doBrowseBlockSearchCall(request, response, objectContext, object, BlockEntry.create(BlockEntryType.ONPLAYERBROWSE));
+			return doBrowseBlockSearchCall(request, response, objectContext, BlockEntry.create(BlockEntryType.ONPLAYERBROWSE));
 		else
 			throw new UnexpectedValueTypeException("Bad object container type in hierarchy.");
 	}
 
-	private static boolean doBrowseBlockSearchCall(TAMERequest request, TAMEResponse response, TObjectContext objectContext, TObject object, BlockEntry blockEntry) throws TAMEInterrupt
+	private static boolean doBrowseBlockSearchCall(TAMERequest request, TAMEResponse response, TObjectContext objectContext, BlockEntry blockEntry) throws TAMEInterrupt
 	{
 		// find via inheritance.
-		response.trace(request, "Check %s for %s block.", object, blockEntry.toFriendlyString());
+		TObject object = objectContext.getElement();
+		response.trace(request, TraceType.ENTRY, "RESOLVE %s.%s", object.getIdentity(), blockEntry.toFriendlyString());
 		Block block = object.resolveBlock(blockEntry);
 		if (block != null)
 		{
-			response.trace(request, "Found! Calling %s block.", blockEntry.toFriendlyString());
+			response.trace(request, TraceType.ENTRY, "CALL %s.%s", object.getIdentity(), blockEntry.toFriendlyString());
 			callBlock(request, response, objectContext, block);
 			return true;
 		}
@@ -799,9 +779,6 @@ public final class TAMELogic implements TAMEConstants
 	private static void initializeContext(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		
-		response.trace(request, "Starting init...");
-	
 		try {
 			callInitOnContexts(request, response, moduleContext.getContainerContextIterator());
 			callInitOnContexts(request, response, moduleContext.getObjectContextIterator());
@@ -868,7 +845,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	private static void doAfterSuccessfulCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		response.trace(request, "Finding \"after successful command\" request block...");
+		response.trace(request, TraceType.ENTRY, "RESOLVE world.afterSuccessfulCommand()");
 
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TWorldContext worldContext = moduleContext.getWorldContext();
@@ -877,11 +854,9 @@ public final class TAMELogic implements TAMEConstants
 		// get block on world.
 		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTERSUCCESSFULCOMMAND))) != null)
 		{
-			response.trace(request, "Found \"after successful command\" block on world.");
+			response.trace(request, TraceType.ENTRY, "CALL world.afterSuccessfulCommand()");
 			callBlock(request, response, worldContext, blockToCall);
 		}
-		else
-			response.trace(request, "No \"after successful command\" block to call.");
 	}
 	
 	/**
@@ -893,7 +868,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	private static void doAfterFailedCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		response.trace(request, "Finding \"after failed command\" request block...");
+		response.trace(request, TraceType.ENTRY, "RESOLVE world.afterFailedCommand()");
 
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TWorldContext worldContext = moduleContext.getWorldContext();
@@ -902,11 +877,9 @@ public final class TAMELogic implements TAMEConstants
 		// get block on world.
 		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTERFAILEDCOMMAND))) != null)
 		{
-			response.trace(request, "Found \"after failed command\" block on world.");
+			response.trace(request, TraceType.ENTRY, "CALL world.afterFailedCommand()");
 			callBlock(request, response, worldContext, blockToCall);
 		}
-		else
-			response.trace(request, "No \"after failed command\" block to call.");
 	}
 	
 	/**
@@ -918,7 +891,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	private static void doAfterEveryCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		response.trace(request, "Finding \"after every command\" request block...");
+		response.trace(request, TraceType.ENTRY, "RESOLVE world.afterEveryCommand()");
 
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TWorldContext worldContext = moduleContext.getWorldContext();
@@ -927,11 +900,9 @@ public final class TAMELogic implements TAMEConstants
 		// get block on world.
 		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTEREVERYCOMMAND))) != null)
 		{
-			response.trace(request, "Found \"after every command\" block on world.");
+			response.trace(request, TraceType.ENTRY, "CALL world.afterEveryCommand()");
 			callBlock(request, response, worldContext, blockToCall);
 		}
-		else
-			response.trace(request, "No \"after every command\" block to call.");
 	}
 	
 	/**

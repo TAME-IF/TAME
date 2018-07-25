@@ -605,7 +605,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, TraceType.CONTROL, "Throw BREAK");
+			response.trace(request, TraceType.CONTROL, "THROW BREAK");
 			throw new BreakInterrupt();
 		}
 		
@@ -620,7 +620,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, TraceType.CONTROL, "Throw CONTINUE");
+			response.trace(request, TraceType.CONTROL, "THROW CONTINUE");
 			throw new ContinueInterrupt();
 		}
 		
@@ -636,7 +636,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.addCue(CUE_QUIT);
-			response.trace(request, TraceType.CONTROL, "Throw QUIT");
+			response.trace(request, TraceType.CONTROL, "THROW QUIT");
 			throw new QuitInterrupt();
 		}
 		
@@ -651,7 +651,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, TraceType.CONTROL, "Throw FINISH");
+			response.trace(request, TraceType.CONTROL, "THROW FINISH");
 			throw new FinishInterrupt();
 		}
 		
@@ -666,7 +666,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			response.trace(request, TraceType.CONTROL, "Throw END");
+			response.trace(request, TraceType.CONTROL, "THROW END");
 			throw new EndInterrupt();
 		}
 		
@@ -682,9 +682,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value retVal = request.popValue();
-			response.trace(request, TraceType.FUNCTION, "Return "+retVal.toString());
+			response.trace(request, TraceType.FUNCTION, "RETURN "+retVal.toString());
 			blockLocal.put(RETURN_VARIABLE, retVal);
-			response.trace(request, TraceType.CONTROL, "Throw END");
+			response.trace(request, TraceType.CONTROL, "THROW END");
 			throw new EndInterrupt();
 		}
 		
