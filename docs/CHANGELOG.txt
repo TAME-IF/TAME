@@ -3,6 +3,13 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
+0.9BETA5
+........
+
+	- Better tracing.
+	- Fixed an issue in the JS implementation setting list values.
+
+
 0.9BETA4
 ........
 
