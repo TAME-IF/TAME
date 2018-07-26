@@ -60,7 +60,7 @@ function TModule(theader, tactions, telements)
 	if (!this.elements['world'])
 		throw TAMEError.Module('No world element!');
 	
-};
+}
 
 TModule.prototype.getActionByName = function(name)
 {
@@ -68,7 +68,7 @@ TModule.prototype.getActionByName = function(name)
 	if (!identity)
 		return null;
 	return this.actions[identity];
-}
+};
 
 //##[[EXPORTJS-END
 

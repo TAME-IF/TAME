@@ -45,7 +45,7 @@ function readResponse(response)
 	println('Operations: '+response.operationsExecuted);
 	println('Cues: '+response.responseCues.length);
 
-	for (i in response.responseCues) if (response.responseCues.hasOwnProperty(i))
+	for (let i in response.responseCues) if (response.responseCues.hasOwnProperty(i))
 		handleCue(response.responseCues[i]);
 	
 	if (stop)

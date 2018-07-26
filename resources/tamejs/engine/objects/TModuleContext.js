@@ -19,7 +19,7 @@ var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : n
  ****************************************************/
 var TModuleContext = function(module)
 {
-	this.module = module,			// module reference
+	this.module = module;			// module reference
 	this.state = {};				// savable state.
 	
 	this.state.player = null;		// current player
@@ -193,7 +193,7 @@ TModuleContext.prototype.stateRestore = function(stateData)
 		}
 	}
 		
-	delete state['refMap'];
+	delete state.refMap;
 	
 	console.log(JSON.stringify(state));
 };
@@ -323,7 +323,7 @@ TModuleContext.prototype.checkPlayerIsInRoom = function(playerIdentity, roomIden
 	if (!roomstack)
 		return false;
 	else
-		roomstack.indexOf(roomIdentity) >= 0;
+		return roomstack.indexOf(roomIdentity) >= 0;
 };
 
 /**
@@ -866,7 +866,7 @@ TModuleContext.prototype.resolveBlockName = function(blockType, blockValues)
 	}
 	blockname += ")";
 	return blockname;
-}
+};
 
 /**
  * Resolves a qualifying code block starting from an element.
@@ -940,10 +940,10 @@ TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray
 	var start = arrayOffset;
 	var arr = null;
 	
-	if (playerContext != null)
+	if (playerContext !== null)
 	{
 		arr = this.getObjectsOwnedByElement(playerContext.identity);
-		for (var x in arr) if (arr.hasOwnProperty(x))
+		for (let x in arr) if (arr.hasOwnProperty(x))
 		{
 			var objectIdentity = arr[x];
 			if (this.checkObjectHasName(objectIdentity, name))
@@ -954,10 +954,10 @@ TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray
 			}
 		}
 	}
-	if (roomContext != null) 
+	if (roomContext !== null) 
 	{
 		arr = this.getObjectsOwnedByElement(roomContext.identity);
-		for (var x in arr) if (arr.hasOwnProperty(x))
+		for (let x in arr) if (arr.hasOwnProperty(x))
 		{
 			var objectIdentity = arr[x];
 			if (this.checkObjectHasName(objectIdentity, name))

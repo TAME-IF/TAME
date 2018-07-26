@@ -89,9 +89,9 @@ TLogic.operationToString = function(operationObject)
 {
 	var sb = new TStringBuilder();
 	sb.append(TOperationFunctions[operationObject.opcode].name);
-	if (operationObject.operand0 != null)
+	if (operationObject.operand0 !== null)
 		sb.append(' ').append(TValue.toString(operationObject.operand0));
-	if (operationObject.operand1 != null)
+	if (operationObject.operand1 !== null)
 		sb.append(' ').append(TValue.toString(operationObject.operand1));
 	return sb.toString();
 };
@@ -165,7 +165,7 @@ TLogic.callConditional = function(operationName, request, response, blockLocal, 
 	var result = TValue.asBoolean(value);
 	response.trace(request, TAMEConstants.TraceType.CONTROL, Util.format(operationName+" Conditional {0} is {1}", TValue.toString(value), result));
 	return result;
-}
+};
 
 
 /**
@@ -180,9 +180,9 @@ TLogic.callConditional = function(operationName, request, response, blockLocal, 
 TLogic.enqueueInterpretedAction = function(request, response, interpreterContext) 
 {
 	var action = interpreterContext.action;
-	if (action == null)
+	if (action === null)
 	{
-		response.trace(request, "Performing unknown command.");
+		response.trace(request, TAMEConstants.TraceType.INTERPRETER, "UNKNOWN ACTION");
 		if (!TLogic.callUnknownCommand(request, response))
 			response.addCue(TAMEConstants.Cue.ERROR, "UNKNOWN COMMAND (make a better in-universe handler!).");
 		return false;
@@ -196,7 +196,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 			{
 				if (action.strict && interpreterContext.tokenOffset < interpreterContext.tokens.length)
 				{
-					response.trace(request, "Performing general action "+action.identity+", but has extra tokens!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("STRICT GENERAL ACTION {0}: Extra Tokens (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
@@ -206,13 +206,14 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					request.addCommand(TCommand.create(action));
 					return true;
 				}
+				break;
 			}
 
 			case TAMEConstants.ActionType.OPEN:
 			{
 				if (!interpreterContext.targetLookedUp)
 				{
-					response.trace(request, "Performing open action "+action.identity+" with no target (incomplete)!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("OPEN ACTION {0}: No Target (INCOMPLETE)", action.identity));
 					if (!TLogic.callIncompleteCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 					return false;
@@ -222,27 +223,28 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					request.addCommand(TCommand.createModal(action, interpreterContext.target));
 					return true;
 				}
+				break;
 			}
 
 			case TAMEConstants.ActionType.MODAL:
 			{
 				if (!interpreterContext.modeLookedUp)
 				{
-					response.trace(request, "Performing modal action "+action.identity+" with no mode (incomplete)!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("MODAL ACTION {0}: No Mode (INCOMPLETE)", action.identity));
 					if (!TLogic.callIncompleteCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 					return false;
 				}
-				else if (interpreterContext.mode == null)
+				else if (interpreterContext.mode === null)
 				{
-					response.trace(request, "Performing modal action "+action.identity+" with an unknown mode!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("MODAL ACTION {0}: Unknown Mode (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
 				}
 				else if (action.strict && interpreterContext.tokenOffset < interpreterContext.tokens.length)
 				{
-					response.trace(request, "Performing modal action "+action.identity+", but has extra tokens!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("STRICT MODAL ACTION {0}: Extra Tokens (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
@@ -252,34 +254,35 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					request.addCommand(TCommand.createModal(action, interpreterContext.mode));
 					return true;
 				}
+				break;
 			}
 
 			case TAMEConstants.ActionType.TRANSITIVE:
 			{
 				if (interpreterContext.objectAmbiguous)
 				{
-					response.trace(request, "Ambiguous command for action "+action.identity+".");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("TRANSITIVE ACTION {0} (AMBIGUOUS)", action.identity));
 					if (!TLogic.callAmbiguousCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "AMBIGUOUS COMMAND (make a better in-universe handler!).");
 					return false;
 				}
 				else if (!interpreterContext.object1LookedUp)
 				{
-					response.trace(request, "Performing transitive action "+action.identity+" with no object (incomplete)!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("TRANSITIVE ACTION {0}: No Object (INCOMPLETE)", action.identity));
 					if (!TLogic.callIncompleteCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 					return false;
 				}
-				else if (interpreterContext.object1 == null)
+				else if (interpreterContext.object1 === null)
 				{
-					response.trace(request, "Performing transitive action "+action.identity+" with an unknown object!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("TRANSITIVE ACTION {0}: Unknown Object (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
 				}
 				else if (action.strict && interpreterContext.tokenOffset < interpreterContext.tokens.length)
 				{
-					response.trace(request, "Performing transitive action "+action.identity+", but has extra tokens!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("STRICT TRANSITIVE ACTION {0}: Extra Tokens (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
@@ -289,27 +292,28 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					request.addCommand(TCommand.createObject(action, interpreterContext.object1));
 					return true;
 				}
+				break;
 			}
 	
 			case TAMEConstants.ActionType.DITRANSITIVE:
 			{
 				if (interpreterContext.objectAmbiguous)
 				{
-					response.trace(request, "Ambiguous command for action "+action.identity+".");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0} (AMBIGUOUS)", action.identity));
 					if (!TLogic.callAmbiguousCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "AMBIGUOUS COMMAND (make a better in-universe handler!).");
 					return false;
 				}
 				else if (!interpreterContext.object1LookedUp)
 				{
-					response.trace(request, "Performing ditransitive action "+action.identity+" with no first object (incomplete)!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: No First Object (INCOMPLETE)", action.identity));
 					if (!TLogic.callIncompleteCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 					return false;
 				}
-				else if (interpreterContext.object1 == null)
+				else if (interpreterContext.object1 === null)
 				{
-					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown first object!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: Unknown First Object (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
@@ -318,42 +322,42 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				{
 					if (action.strict)
 					{
-						response.trace(request, "Strict - performing ditransitive action "+action.identity+" with no conjugate (incomplete)!");
+						response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("STRICT DITRANSITIVE ACTION {0}: No Conjunction (INCOMPLETE)", action.identity));
 						if (!TLogic.callIncompleteCommand(request, response, action))
 							response.addCue(TAMEConstants.Cue.ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 						return false;
 					}
 					else
 					{
-						response.trace(request, "Performing ditransitive action "+action.identity+" as a transitive one...");
+						response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: Unknown Conjunction (MALFORMED)", action.identity));
 						request.addCommand(TCommand.createObject(action, interpreterContext.object1));
 						return true;
 					}
 				}
 				else if (!interpreterContext.conjugateFound)
 				{
-					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown conjugate!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: Unknown Conjunction (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
 				}
 				else if (!interpreterContext.object2LookedUp)
 				{
-					response.trace(request, "Performing ditransitive action "+action.identity+" with no second object (incomplete)!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: No Second Object (INCOMPLETE)", action.identity));
 					if (!TLogic.callIncompleteCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 					return false;
 				}
-				else if (interpreterContext.object2 == null)
+				else if (interpreterContext.object2 === null)
 				{
-					response.trace(request, "Performing ditransitive action "+action.identity+" with an unknown second object!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: Unknown Second Object (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
 				}
 				else if (action.strict && interpreterContext.tokenOffset < interpreterContext.tokens.length)
 				{
-					response.trace(request, "Performing ditransitive action "+action.identity+", but has extra tokens!");
+					response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("STRICT DITRANSITIVE ACTION {0}: Extra Tokens (MALFORMED)", action.identity));
 					if (!TLogic.callMalformedCommand(request, response, action))
 						response.addCue(TAMEConstants.Cue.ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 					return false;
@@ -373,34 +377,34 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
  * until there is nothing left to process.
  * @param request the request context.
  * @param response the response object.
- * @param tameAction (TCommand) the action to process.
+ * @param tameCommand (TCommand) the action to process.
  * @throws TAMEInterrupt if an uncaught interrupt occurs.
  * @throws TAMEError if something goes wrong during execution.
  */
-TLogic.processAction = function(request, response, tameAction) 
+TLogic.processCommand = function(request, response, tameCommand) 
 {
 	try {
 		
-		switch (tameAction.action.type)
+		switch (tameCommand.action.type)
 		{
 			default:
 			case TAMEConstants.ActionType.GENERAL:
-				TLogic.doActionGeneral(request, response, tameAction.action);
+				TLogic.doActionGeneral(request, response, tameCommand.action);
 				break;
 			case TAMEConstants.ActionType.OPEN:
-				TLogic.doActionOpen(request, response, tameAction.action, tameAction.target);
+				TLogic.doActionOpen(request, response, tameCommand.action, tameCommand.target);
 				break;
 			case TAMEConstants.ActionType.MODAL:
-				TLogic.doActionModal(request, response, tameAction.action, tameAction.target);
+				TLogic.doActionModal(request, response, tameCommand.action, tameCommand.target);
 				break;
 			case TAMEConstants.ActionType.TRANSITIVE:
-				TLogic.doActionTransitive(request, response, tameAction.action, tameAction.object1);
+				TLogic.doActionTransitive(request, response, tameCommand.action, tameCommand.object1);
 				break;
 			case TAMEConstants.ActionType.DITRANSITIVE:
-				if (tameAction.object2 == null)
-					TLogic.doActionTransitive(request, response, tameAction.action, tameAction.object1);
+				if (tameCommand.object2 === null)
+					TLogic.doActionTransitive(request, response, tameCommand.action, tameCommand.object1);
 				else
-					TLogic.doActionDitransitive(request, response, tameAction.action, tameAction.object1, tameAction.object2);
+					TLogic.doActionDitransitive(request, response, tameCommand.action, tameCommand.object1, tameCommand.object2);
 				break;
 		}
 		
@@ -424,7 +428,7 @@ TLogic.processAction = function(request, response, tameAction)
 TLogic.doAllCommands = function(request, response) 
 {
 	while (request.hasCommands())
-		TLogic.processAction(request, response, request.nextCommand());
+		TLogic.processCommand(request, response, request.nextCommand());
 };
 
 /**
@@ -520,7 +524,7 @@ TLogic.handleRequest = function(context, inputMessage, tracing)
 	var response = new TResponse();
 
 	var time = Util.nanoTime();
-	var interpreterContext = TLogic.interpret(context, TLogic.tokenizeInput(context, inputMessage));
+	var interpreterContext = TLogic.interpret(request, response);
 	response.interpretNanos = Util.nanoTime() - time; 
 
 	time = Util.nanoTime();
@@ -556,7 +560,7 @@ TLogic.createBlockLocal = function(request, response, localValues)
 	var out = {};
 	// set locals
 	Util.each(localValues, function(value, key){
-		response.trace(request, "Setting local variable \""+key+"\" to \""+TValue.toString(value)+"\"");
+		response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET LOCAL {0} {1}", key, TValue.toString(value)));
 		TLogic.setValue(out, key, value);
 	});
 
@@ -576,7 +580,7 @@ TLogic.createBlockLocal = function(request, response, localValues)
  */
 TLogic.callBlock = function(request, response, elementContext, block, isFunctionBlock, blockLocal)
 {
-	response.trace(request, "Pushing Context:"+elementContext.identity+"...");
+	response.trace(request, TAMEConstants.TraceType.CONTEXT, Util.format("PUSH {0}", "Context:"+elementContext.identity));
 	request.pushContext(elementContext);
 	
 	if (!blockLocal)
@@ -589,7 +593,7 @@ TLogic.callBlock = function(request, response, elementContext, block, isFunction
 		if (!(err instanceof TAMEInterrupt) || err.type != TAMEInterrupt.Type.End)
 			throw err;
 	} finally {
-		response.trace(request, "Popping Context:"+elementContext.identity+"...");
+		response.trace(request, TAMEConstants.TraceType.CONTEXT, Util.format("POP {0}", "Context:"+elementContext.identity));
 		request.popContext();
 	}
 	
@@ -605,11 +609,21 @@ TLogic.callBlock = function(request, response, elementContext, block, isFunction
  * @param elementContext (Object) the element context to search from.
  * @param blockTypeName (string) the name of the block type.
  * @param blockTypeValues (Array) list of values.
+ * @return true if a block was called, false if not.
  * @throws TAMEInterrupt if an interrupt occurs. 
  */
 TLogic.callElementBlock = function(request, response, elementContext, blockTypeName, blockTypeValues)
 {
-	// TODO: Finish.
+	var context = request.moduleContext;
+	var block = context.resolveBlock(objectIdentity, blockTypeName, blockTypeValues);
+	if (block !== null)
+	{
+		response.trace(request, TAMEConstants.TraceType.ENTRY, Util.format("CALL {0}.{1}", elementContext.identity, context.resolveBlockName(blockTypeName, blockTypeValues)));
+		TLogic.callBlock(request, response, elementContext, block);
+		return true;
+	}
+	
+	return false;
 };
 
 /**
@@ -627,16 +641,16 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 	var element = context.resolveElement(originContext.identity);
 
 	var entry = context.resolveFunction(originContext.identity, functionName);
-	if (entry == null)
+	if (entry === null)
 		throw TAMEError.Module("No such function ("+functionName+") in lineage of element " + TLogic.elementToString(element));
 
-	response.trace(request, "Calling function \""+functionName+"\"...");
+	response.trace(request, TAMEConstants.TraceType.FUNCTION, "CALL "+functionName);
 	var blockLocal = {};
 	var args = entry.arguments;
 	for (var i = args.length - 1; i >= 0; i--)
 	{
 		var localValue = request.popValue();
-		response.trace(request, "Setting local variable \""+args[i]+"\" to \""+TValue.toString(localValue)+"\"");
+		response.trace(request, TAMEConstants.TraceType.FUNCTION, Util.format("SET LOCAL {0} {1}", args[i], TValue.toString(localValue)));
 		blockLocal[args[i]] = localValue;
 	}
 	
@@ -645,17 +659,20 @@ TLogic.callElementFunction = function(request, response, functionName, originCon
 	response.decrementFunctionDepth();
 
 	return TLogic.getValue(blockLocal, TAMEConstants.RETURN_VARIABLE);
-}
+};
 
 
 /**
  * Interprets the input on the request.
- * @param context (TModuleContext) the module context.
- * @param tokens (string) the input tokens.
+ * @param request (TRequest) the request object.
+ * @param response (TResponse) the response object.
  * @return a new interpreter context using the input.
  */
-TLogic.interpret = function(context, tokens)
+TLogic.interpret = function(request, response)
 {
+	let context = request.moduleContext;
+	let tokens = TLogic.tokenizeInput(context, request.inputMessage);
+	
 	var interpreterContext = 
 	{
 		"tokens": tokens,
@@ -675,10 +692,10 @@ TLogic.interpret = function(context, tokens)
 		"objectAmbiguous": false
 	};
 
-	TLogic.interpretAction(context, interpreterContext);
+	TLogic.interpretAction(request, response, interpreterContext);
 
-	var action = interpreterContext.action;
-	if (action == null)
+	let action = interpreterContext.action;
+	if (action === null)
 		return interpreterContext;
 
 	switch (action.type)
@@ -687,18 +704,18 @@ TLogic.interpret = function(context, tokens)
 		case TAMEConstants.ActionType.GENERAL:
 			return interpreterContext;
 		case TAMEConstants.ActionType.OPEN:
-			TLogic.interpretOpen(interpreterContext);
+			TLogic.interpretOpen(request, response, interpreterContext);
 			return interpreterContext;
 		case TAMEConstants.ActionType.MODAL:
-			TLogic.interpretMode(action, interpreterContext);
+			TLogic.interpretMode(request, response, action, interpreterContext);
 			return interpreterContext;
 		case TAMEConstants.ActionType.TRANSITIVE:
-			TLogic.interpretObject1(context, interpreterContext);
+			TLogic.interpretObject1(request, response, interpreterContext);
 			return interpreterContext;
 		case TAMEConstants.ActionType.DITRANSITIVE:
-			if (TLogic.interpretObject1(context, interpreterContext))
-				if (TLogic.interpretConjugate(action, interpreterContext))
-					TLogic.interpretObject2(context, interpreterContext);
+			if (TLogic.interpretObject1(request, response, interpreterContext))
+				if (TLogic.interpretConjugate(request, response, action, interpreterContext))
+					TLogic.interpretObject2(request, response, interpreterContext);
 			return interpreterContext;
 	}
 	
@@ -709,8 +726,9 @@ TLogic.interpret = function(context, tokens)
  * @param moduleContext (TModuleContext) the module context.
  * @param interpreterContext (Object) the interpreter context.
  */
-TLogic.interpretAction = function(moduleContext, interpreterContext)
+TLogic.interpretAction = function(request, response, interpreterContext)
 {
+	let moduleContext = request.moduleContext;
 	var module = moduleContext.module;
 	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
@@ -723,9 +741,12 @@ TLogic.interpretAction = function(moduleContext, interpreterContext)
 		sb.append(tokens[index]);
 		index++;
 
-		var next = module.getActionByName(sb.toString());
-		if (next != null)
+		let name = sb.toString();
+		response.trace(request, TAMEConstants.TraceType.INTERPRETER, "TEST ACTION "+name);
+		var next = module.getActionByName(name);
+		if (next !== null)
 		{
+			response.trace(request, TAMEConstants.TraceType.INTERPRETER, "MATCHED ACTION "+next.identity);
 			interpreterContext.action = next;
 			interpreterContext.tokenOffset = index;
 		}
@@ -739,7 +760,7 @@ TLogic.interpretAction = function(moduleContext, interpreterContext)
  * @param action (object:action) the action to use.
  * @param interpreterContext (Object) the interpreter context.
  */
-TLogic.interpretMode = function(action, interpreterContext)
+TLogic.interpretMode = function(request, response, action, interpreterContext)
 {
 	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
@@ -754,9 +775,10 @@ TLogic.interpretMode = function(action, interpreterContext)
 
 		interpreterContext.modeLookedUp = true;
 		var next = sb.toString();
-		
+		response.trace(request, TAMEConstants.TraceType.INTERPRETER, "TEST MODE "+name);
 		if (action.extraStrings.indexOf(next) >= 0)
 		{
+			response.trace(request, TAMEConstants.TraceType.INTERPRETER, "MATCHED MODE "+next);
 			interpreterContext.mode = next;
 			interpreterContext.tokenOffset = index;
 		}
@@ -769,7 +791,7 @@ TLogic.interpretMode = function(action, interpreterContext)
  * Interprets open target.
  * @param interpreterContext (Object) the interpreter context.
  */
-TLogic.interpretOpen = function(interpreterContext)
+TLogic.interpretOpen = function(request, response, interpreterContext)
 {
 	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
@@ -785,6 +807,7 @@ TLogic.interpretOpen = function(interpreterContext)
 	}
 	
 	var out = sb.toString();
+	response.trace(request, TAMEConstants.TraceType.INTERPRETER, "READ OPEN TARGET "+out);
 	interpreterContext.target = out.length > 0 ? out : null;
 	interpreterContext.tokenOffset = index;
 };
@@ -794,7 +817,7 @@ TLogic.interpretOpen = function(interpreterContext)
  * @param action the action to use.
  * @param interpreterContext (Object) the interpreter context.
  */
-TLogic.interpretConjugate = function(action, interpreterContext)
+TLogic.interpretConjugate = function(request, response, action, interpreterContext)
 {
 	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
@@ -809,8 +832,11 @@ TLogic.interpretConjugate = function(action, interpreterContext)
 		index++;
 		
 		interpreterContext.conjugateLookedUp = true;
-		if (action.extraStrings.indexOf(sb.toString()) >= 0)
+		let name = sb.toString();
+		response.trace(request, TAMEConstants.TraceType.INTERPRETER, "TEST CONJUNCTION "+name);
+		if (action.extraStrings.indexOf(name) >= 0)
 		{
+			response.trace(request, TAMEConstants.TraceType.INTERPRETER, "MATCHED CONJUNCTION "+name);
 			interpreterContext.tokenOffset = index;
 			out = true;
 		}
@@ -830,8 +856,9 @@ TLogic.interpretConjugate = function(action, interpreterContext)
  * @param moduleContext (TModuleContext) the module context.
  * @param interpreterContext (Object) the interpreter context.
  */
-TLogic.interpretObject1 = function(moduleContext, interpreterContext)
+TLogic.interpretObject1 = function(request, response, interpreterContext)
 {
+	let moduleContext = request.moduleContext;
 	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
 	var tokens = interpreterContext.tokens;
@@ -843,23 +870,27 @@ TLogic.interpretObject1 = function(moduleContext, interpreterContext)
 		sb.append(tokens[index]);
 		index++;
 		
+		let name = sb.toString();
 		interpreterContext.object1LookedUp = true;
-		var out = moduleContext.getAccessibleObjectsByName(sb.toString(), interpreterContext.objects, 0);
+		response.trace(request, TAMEConstants.TraceType.INTERPRETER, "TEST OBJECT 1 "+name);
+		let out = moduleContext.getAccessibleObjectsByName(name, interpreterContext.objects, 0);
 		if (out > 1)
 		{
+			response.trace(request, TAMEConstants.TraceType.INTERPRETER, "MATCHED MULTIPLE OBJECTS");
 			interpreterContext.objectAmbiguous = true;
 			interpreterContext.object1 = null;
 			interpreterContext.tokenOffset = index;
 		}
 		else if (out > 0)
 		{
+			response.trace(request, TAMEConstants.TraceType.INTERPRETER, "MATCHED OBJECT 1 "+interpreterContext.objects[0].identity);
 			interpreterContext.objectAmbiguous = false;
 			interpreterContext.object1 = interpreterContext.objects[0];
 			interpreterContext.tokenOffset = index;
 		}
 	}
 		
-	return interpreterContext.object1 != null;
+	return interpreterContext.object1 !== null;
 };
 
 /**
@@ -871,8 +902,9 @@ TLogic.interpretObject1 = function(moduleContext, interpreterContext)
  * @param moduleContext the module context.
  * @param interpreterContext the TAMEInterpreterContext.
  */
-TLogic.interpretObject2 = function(moduleContext, interpreterContext)
+TLogic.interpretObject2 = function(request, response, interpreterContext)
 {
+	let moduleContext = request.moduleContext;
 	var sb = new TStringBuilder();
 	var index = interpreterContext.tokenOffset;
 	var tokens = interpreterContext.tokens;
@@ -884,23 +916,27 @@ TLogic.interpretObject2 = function(moduleContext, interpreterContext)
 		sb.append(tokens[index]);
 		index++;
 		
+		let name = sb.toString();
 		interpreterContext.object2LookedUp = true;
-		var out = moduleContext.getAccessibleObjectsByName(sb.toString(), interpreterContext.objects, 0);
+		response.trace(request, TAMEConstants.TraceType.INTERPRETER, "TEST OBJECT 2 "+name);
+		let out = moduleContext.getAccessibleObjectsByName(name, interpreterContext.objects, 0);
 		if (out > 1)
 		{
+			response.trace(request, TAMEConstants.TraceType.INTERPRETER, "MATCHED MULTIPLE OBJECTS");
 			interpreterContext.objectAmbiguous = true;
 			interpreterContext.object2 = null;
 			interpreterContext.tokenOffset = index;
 		}
 		else if (out > 0)
 		{
+			response.trace(request, TAMEConstants.TraceType.INTERPRETER, "MATCHED OBJECT 2 "+interpreterContext.objects[0].identity);
 			interpreterContext.objectAmbiguous = false;
 			interpreterContext.object2 = interpreterContext.objects[0];
 			interpreterContext.tokenOffset = index;
 		}
 	}
 		
-	return interpreterContext.object2 != null;
+	return interpreterContext.object2 !== null;
 };
 
 /**
@@ -913,36 +949,19 @@ TLogic.interpretObject2 = function(moduleContext, interpreterContext)
  */
 TLogic.checkObjectAccessibility = function(request, response, playerIdentity, objectIdentity) 
 {
-	var context = request.moduleContext;
-	var world = context.getElement('world');
+	let context = request.moduleContext;
+	let world = context.getElement('world');
 
-	response.trace(request, "Check world for "+objectIdentity+"...");
 	if (context.checkElementHasObject(world.identity, objectIdentity))
-	{
-		response.trace(request, "Found.");
 		return true;
-	}
 
-	response.trace(request, "Check "+playerIdentity+" for "+objectIdentity+"...");
 	if (context.checkElementHasObject(playerIdentity, objectIdentity))
-	{
-		response.trace(request, "Found.");
 		return true;
-	}
 
-	var currentRoom = context.getCurrentRoom(playerIdentity);
+	let currentRoom = context.getCurrentRoom(playerIdentity);
+	if (currentRoom !== null && context.checkElementHasObject(currentRoom.identity, objectIdentity))
+		return true;
 	
-	if (currentRoom != null)
-	{
-		response.trace(request, "Check "+currentRoom.identity+" for "+objectIdentity+"...");
-		if (context.checkElementHasObject(currentRoom.identity, objectIdentity))
-		{
-			response.trace(request, "Found.");
-			return true;
-		}
-	}
-	
-	response.trace(request, "Not found.");
 	return false;
 };
 
@@ -964,13 +983,13 @@ TLogic.doArithmeticStackFunction = function(request, response, functionType)
 	
 	if (operator.binary)
 	{
-		var v2 = request.popValue();
-		var v1 = request.popValue();
+		let v2 = request.popValue();
+		let v1 = request.popValue();
 		request.pushValue(operator.doOperation(v1, v2));
 	}
 	else
 	{
-		var v1 = request.popValue();
+		let v1 = request.popValue();
 		request.pushValue(operator.doOperation(v1));
 	}
 };
@@ -1032,7 +1051,7 @@ TLogic.doRoomSwitch = function(request, response, playerIdentity, roomIdentity)
 	response.trace(request, "Leaving rooms for "+playerIdentity+".");
 
 	// pop all rooms on the stack.
-	while (context.getCurrentRoom(playerIdentity) != null)
+	while (context.getCurrentRoom(playerIdentity) !== null)
 		TLogic.doRoomPop(request, response, playerIdentity);
 
 	// push new room on the stack and call focus.
@@ -1056,7 +1075,7 @@ TLogic.doBrowseBlockSearchCall = function(request, response, objectIdentity, blo
 	
 	response.trace(request, "Check "+objtostr+" for "+context.resolveBlockName(blockEntryTypeName, blockEntryValues)+" block.");
 	var block = context.resolveBlock(objectIdentity, blockEntryTypeName, blockEntryValues);
-	if (block != null)
+	if (block !== null)
 	{
 		var objectContext = context.getElementContext(objectIdentity);
 		response.trace(request, "Found! Calling "+blockEntryTypeName+" block.");
@@ -1081,7 +1100,7 @@ TLogic.doBrowseBlockSearch = function(request, response, element, objectContext)
 		return TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, "ONWORLDBROWSE");
 
 	var next = element;
-	while (next != null)
+	while (next !== null)
 	{
 		let blockEntryName;
 		let blockEntryValues;
@@ -1108,7 +1127,7 @@ TLogic.doBrowseBlockSearch = function(request, response, element, objectContext)
 		if (TLogic.doBrowseBlockSearchCall(request, response, objectIdentity, blockEntryName, blockEntryValues))
 			return true;
 		
-		next = next.parent != null ? context.getElement(next.parent) : null;
+		next = next.parent !== null ? context.getElement(next.parent) : null;
 	}
 	
 	// base fallback.
@@ -1142,7 +1161,7 @@ TLogic.doBrowse = function(request, response, elementIdentity, tag)
 	{
 		var objectContext = context.getElementContext(objectIdentity);
 		
-		if (tag != null && !context.checkObjectHasTag(objectIdentity, tag))
+		if (tag !== null && !context.checkObjectHasTag(objectIdentity, tag))
 			return;
 		
 		TLogic.doBrowseBlockSearch(request, response, element, objectContext);
@@ -1180,7 +1199,7 @@ TLogic.doAfterSuccessfulCommand = function(request, response)
 	var blockToCall = null;
 
 	// get block on world.
-	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTERSUCCESSFULCOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTERSUCCESSFULCOMMAND")) !== null)
 	{
 		response.trace(request, "Found \"after successful command\" block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1205,7 +1224,7 @@ TLogic.doAfterFailedCommand = function(request, response)
 	var blockToCall = null;
 
 	// get block on world.
-	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTERFAILEDCOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTERFAILEDCOMMAND")) !== null)
 	{
 		response.trace(request, "Found \"after failed command\" block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1230,7 +1249,7 @@ TLogic.doAfterEveryCommand = function(request, response)
 	var blockToCall = null;
 
 	// get block on world.
-	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTEREVERYCOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "AFTEREVERYCOMMAND")) !== null)
 	{
 		response.trace(request, "Found \"after every command\" block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1248,7 +1267,7 @@ TLogic.callStartBlock = function(request, response)
 	response.trace(request, "Attempt to call start block on world.");
 	var worldContext = context.getElementContext('world');
 
-	if ((initBlock = context.resolveBlock('world', "START")) != null)
+	if ((initBlock = context.resolveBlock('world', "START")) !== null)
 	{
 		response.trace(request, "Calling start block from Context:"+worldContext.identity+".");
 		TLogic.callBlock(request, response, worldContext, initBlock);
@@ -1269,7 +1288,7 @@ TLogic.callInitBlock = function(request, response, context)
 	var element = request.moduleContext.resolveElement(elementIdentity);
 	
 	var initBlock = request.moduleContext.resolveBlock(elementIdentity, "INIT");
-	if (initBlock != null)
+	if (initBlock !== null)
 	{
 		response.trace(request, "Calling init block from Context:"+elementIdentity+".");
 		TLogic.callBlock(request, response, context, initBlock);
@@ -1352,7 +1371,7 @@ TLogic.callWorldAmbiguousCommandBlock = function(request, response, action, worl
 	var blockToCall = null;
 
 	// get specific block on world.
-	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONAMBIGUOUSCOMMAND", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONAMBIGUOUSCOMMAND", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found specific ambiguous command block on world for action "+action.identity+".");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1360,7 +1379,7 @@ TLogic.callWorldAmbiguousCommandBlock = function(request, response, action, worl
 	}
 
 	// get block on world.
-	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONAMBIGUOUSCOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONAMBIGUOUSCOMMAND")) !== null)
 	{
 		response.trace(request, "Found default ambiguous command block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1385,7 +1404,7 @@ TLogic.callPlayerAmbiguousCommandBlock = function(request, response, action, pla
 	var blockToCall = null;
 	
 	// get specific block on player.
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONAMBIGUOUSCOMMAND", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONAMBIGUOUSCOMMAND", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found specific ambiguous command block in player "+playerContext.identity+" lineage for action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
@@ -1393,7 +1412,7 @@ TLogic.callPlayerAmbiguousCommandBlock = function(request, response, action, pla
 	}
 
 	// get block on player.
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONAMBIGUOUSCOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONAMBIGUOUSCOMMAND")) !== null)
 	{
 		response.trace(request, "Found default ambiguous command block in player "+playerContext.identity+" lineage.");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
@@ -1416,7 +1435,7 @@ TLogic.callAmbiguousCommand = function(request, response, action)
 	var context = request.moduleContext;
 	var currentPlayerContext = context.getCurrentPlayerContext();
 
-	if (currentPlayerContext != null && TLogic.callPlayerAmbiguousCommandBlock(request, response, action, currentPlayerContext))
+	if (currentPlayerContext !== null && TLogic.callPlayerAmbiguousCommandBlock(request, response, action, currentPlayerContext))
 		return true;
 
 	var worldContext = context.getElementContext('world');
@@ -1441,14 +1460,14 @@ TLogic.callWorldMalformedCommandBlock = function(request, response, action, worl
 	
 	var blockToCall = null;
 
-	if ((blockToCall = context.resolveBlock('world', "ONMALFORMEDCOMMAND", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONMALFORMEDCOMMAND", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found specific malformed command block on world with action %s.", action.identity);
 		TLogic.callBlock(request, response, worldContext, blockToCall);
 		return true;
 	}
 
-	if ((blockToCall = context.resolveBlock('world', "ONMALFORMEDCOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONMALFORMEDCOMMAND")) !== null)
 	{
 		response.trace(request, "Found default malformed command block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1474,14 +1493,14 @@ TLogic.callPlayerMalformedCommandBlock = function(request, response, action, pla
 
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONMALFORMEDCOMMAND", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONMALFORMEDCOMMAND", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found specific malformed command block in player "+playerContext.identity+" lineage, action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
 
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONMALFORMEDCOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONMALFORMEDCOMMAND")) !== null)
 	{
 		response.trace(request, "Found default malformed command block in player "+playerContext.identity+" lineage.");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
@@ -1507,7 +1526,7 @@ TLogic.callMalformedCommand = function(request, response, action)
 	var currentPlayerContext = context.getCurrentPlayerContext();
 
 	// try malformed command on player.
-	if (currentPlayerContext != null && TLogic.callPlayerMalformedCommandBlock(request, response, action, currentPlayerContext))
+	if (currentPlayerContext !== null && TLogic.callPlayerMalformedCommandBlock(request, response, action, currentPlayerContext))
 		return true;
 
 	var worldContext = context.getElementContext('world');
@@ -1531,14 +1550,14 @@ TLogic.callWorldIncompleteCommandBlock = function(request, response, action, wor
 	
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock('world', "ONINCOMPLETECOMMAND", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONINCOMPLETECOMMAND", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found specific incomplete command block on world, action "+action.identity+".");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
 		return true;
 	}
 
-	if ((blockToCall = context.resolveBlock('world', "ONINCOMPLETECOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONINCOMPLETECOMMAND")) !== null)
 	{
 		response.trace(request, "Found default incomplete command block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1564,14 +1583,14 @@ TLogic.callPlayerIncompleteCommandBlock = function(request, response, action, pl
 	
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETECOMMAND", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETECOMMAND", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found specific incomplete command block in player "+playerContext.identity+" lineage, action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
 
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETECOMMAND")) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONINCOMPLETECOMMAND")) !== null)
 	{
 		response.trace(request, "Found default incomplete command block in player "+playerContext.identity+" lineage.");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
@@ -1596,7 +1615,7 @@ TLogic.callIncompleteCommand = function(request, response, action)
 	var currentPlayerContext = context.getCurrentPlayerContext();
 
 	// try incomplete on player.
-	if (currentPlayerContext != null && TLogic.callPlayerIncompleteCommandBlock(request, response, action, currentPlayerContext))
+	if (currentPlayerContext !== null && TLogic.callPlayerIncompleteCommandBlock(request, response, action, currentPlayerContext))
 		return true;
 
 	var worldContext = context.getElementContext('world');
@@ -1620,14 +1639,14 @@ TLogic.callWorldActionUnhandledBlock = function(request, response, action, world
 	
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock('world', "ONUNHANDLEDACTION", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONUNHANDLEDACTION", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found specific action unhandled block on world, action "+action.identity+".");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
 		return true;
 	}
 
-	if ((blockToCall = context.resolveBlock('world', "ONUNHANDLEDACTION")) != null)
+	if ((blockToCall = context.resolveBlock('world', "ONUNHANDLEDACTION")) !== null)
 	{
 		response.trace(request, "Found default action unhandled block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1653,14 +1672,14 @@ TLogic.callPlayerActionUnhandledBlock = function(request, response, action, play
 
 	var blockToCall = null;
 	
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONUNHANDLEDACTION", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONUNHANDLEDACTION", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found specific action unhandled block in player "+playerContext.identity+" lineage, action "+action.identity+".");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
 		return true;
 	}
 
-	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONUNHANDLEDACTION")) != null)
+	if ((blockToCall = context.resolveBlock(playerContext.identity, "ONUNHANDLEDACTION")) !== null)
 	{
 		response.trace(request, "Found default action unhandled block in player "+playerContext.identity+" lineage.");
 		TLogic.callBlock(request, response, playerContext, blockToCall);
@@ -1686,7 +1705,7 @@ TLogic.callActionUnhandled = function(request, response, action)
 	var currentPlayerContext = context.getCurrentPlayerContext();
 
 	// try fail on player.
-	if (currentPlayerContext != null && TLogic.callPlayerActionUnhandledBlock(request, response, action, currentPlayerContext))
+	if (currentPlayerContext !== null && TLogic.callPlayerActionUnhandledBlock(request, response, action, currentPlayerContext))
 		return true;
 
 	var worldContext = context.getElementContext('world');
@@ -1711,7 +1730,7 @@ TLogic.doAfterRequest = function(request, response)
 	// get block on world.
 	var blockToCall;
 
-	if ((blockToCall = context.resolveBlock('world', 'AFTERREQUEST')) != null)
+	if ((blockToCall = context.resolveBlock('world', 'AFTERREQUEST')) !== null)
 	{
 		var worldContext = context.getElementContext('world');
 		response.trace(request, "Found after request block on world.");
@@ -1735,14 +1754,14 @@ TLogic.callUnknownCommand = function(request, response)
 
 	var blockToCall = null;
 
-	if (currentPlayerContext != null)
+	if (currentPlayerContext !== null)
 	{
 		var currentPlayer = context.getCurrentPlayer();
 		response.trace(request, "For current player "+TLogic.elementToString(currentPlayer)+"...");
 
 		// get block on player.
 		// find via inheritance.
-		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONUNKNOWNCOMMAND"))  != null)
+		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONUNKNOWNCOMMAND"))  !== null)
 		{
 			response.trace(request, "Found unknown command block on player.");
 			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
@@ -1753,7 +1772,7 @@ TLogic.callUnknownCommand = function(request, response)
 	var worldContext = context.getElementContext('world');
 
 	// get block on world.
-	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONUNKNOWNCOMMAND"))  != null)
+	if ((blockToCall = context.resolveBlock(worldContext.identity, "ONUNKNOWNCOMMAND"))  !== null)
 	{
 		response.trace(request, "Found unknown command block on player.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1791,21 +1810,21 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 	var currentPlayerContext = context.getCurrentPlayerContext();
 	var blockToCall = null;
 
-	if (currentPlayerContext != null)
+	if (currentPlayerContext !== null)
 	{
-		var currentPlayer = context.getCurrentPlayer();
+		let currentPlayer = context.getCurrentPlayer();
 
 		// try current room.
 		var currentRoomContext = context.getCurrentRoomContext();
-		if (currentRoomContext != null)
+		if (currentRoomContext !== null)
 		{
-			var currentRoom = context.getCurrentRoom();
+			let currentRoom = context.getCurrentRoom();
 
 			// get general action on room.
-			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
+			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTION", [TValue.createAction(action.identity)])) !== null)
 			{
 				response.trace(request, "Found general action block on room.");
-				if (openTarget != null)
+				if (openTarget !== null)
 				{
 					// just get the first one.
 					var localmap = {};
@@ -1821,13 +1840,13 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 		}
 		
 		// get general action on player.
-		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
+		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTION", [TValue.createAction(action.identity)])) !== null)
 		{
 			response.trace(request, "Found general action block on player.");
-			if (openTarget != null)
+			if (openTarget !== null)
 			{
 				// just get the first one.
-				var localmap = {};
+				let localmap = {};
 				localmap[action.extraStrings[0]] = TValue.createString(openTarget);
 				TLogic.callBlock(request, response, currentPlayerContext, blockToCall, false, TLogic.createBlockLocal(request, response, localmap));
 			}
@@ -1839,17 +1858,17 @@ TLogic.doActionOpen = function(request, response, action, openTarget)
 		response.trace(request, "No general action block on player.");
 	}
 	
-	var worldContext = context.getElementContext('world');
-	var world = context.getElement('world');
+	let worldContext = context.getElementContext('world');
+	let world = context.getElement('world');
 
 	// get general action on world.
-	if ((blockToCall = context.resolveBlock(world.identity, "ONACTION", [TValue.createAction(action.identity)])) != null)
+	if ((blockToCall = context.resolveBlock(world.identity, "ONACTION", [TValue.createAction(action.identity)])) !== null)
 	{
 		response.trace(request, "Found general action block on world.");
-		if (openTarget != null)
+		if (openTarget !== null)
 		{
 			// just get the first one.
-			var localmap = {};
+			let localmap = {};
 			localmap[action.extraStrings[0]] = TValue.createString(openTarget);
 			TLogic.callBlock(request, response, worldContext, blockToCall, false, TLogic.createBlockLocal(request, response, localmap));
 		}
@@ -1878,18 +1897,18 @@ TLogic.doActionModal = function(request, response, action, mode)
 	var currentPlayerContext = context.getCurrentPlayerContext();
 	var blockToCall = null;
 
-	if (currentPlayerContext != null)
+	if (currentPlayerContext !== null)
 	{
 		var currentPlayer = context.getCurrentPlayer();
 
 		// try current room.
 		var currentRoomContext = context.getCurrentRoomContext();
-		if (currentRoomContext != null)
+		if (currentRoomContext !== null)
 		{
 			var currentRoom = context.getCurrentRoom();
 
 			// get modal action on room.
-			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONMODALACTION", [TValue.createAction(action.identity), TValue.createString(mode)])) != null)
+			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONMODALACTION", [TValue.createAction(action.identity), TValue.createString(mode)])) !== null)
 			{
 				response.trace(request, "Found modal action block on room.");
 				TLogic.callBlock(request, response, currentRoomContext, blockToCall);
@@ -1900,7 +1919,7 @@ TLogic.doActionModal = function(request, response, action, mode)
 		}
 		
 		// get modal action on player.
-		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONMODALACTION", [TValue.createAction(action.identity), TValue.createString(mode)])) != null)
+		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONMODALACTION", [TValue.createAction(action.identity), TValue.createString(mode)])) !== null)
 		{
 			response.trace(request, "Found modal action block on player.");
 			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
@@ -1914,7 +1933,7 @@ TLogic.doActionModal = function(request, response, action, mode)
 	var world = context.getElement('world');
 
 	// get modal action on world.
-	if ((blockToCall = context.resolveBlock(world.identity, "ONMODALACTION", [TValue.createAction(action.identity), TValue.createString(mode)])) != null)
+	if ((blockToCall = context.resolveBlock(world.identity, "ONMODALACTION", [TValue.createAction(action.identity), TValue.createString(mode)])) !== null)
 	{
 		response.trace(request, "Found modal action block on world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -1943,7 +1962,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 	var actionValue = TValue.createAction(action.identity);
 	
 	// call action on object.
-	if ((blockToCall = context.resolveBlock(object.identity, "ONACTION", [actionValue])) != null)
+	if ((blockToCall = context.resolveBlock(object.identity, "ONACTION", [actionValue])) !== null)
 	{
 		response.trace(request, "Found action block on object.");
 		TLogic.callBlock(request, response, currentObjectContext, blockToCall);
@@ -1954,18 +1973,18 @@ TLogic.doActionTransitive = function(request, response, action, object)
 	var currentPlayerContext = context.getCurrentPlayerContext();
 
 	// Call onActionWith(action, object) on current room, then player.
-	if (currentPlayerContext != null)
+	if (currentPlayerContext !== null)
 	{
 		var currentPlayer = context.getCurrentPlayer();
 
 		// try current room.
 		var currentRoomContext = context.getCurrentRoomContext();
-		if (currentRoomContext != null)
+		if (currentRoomContext !== null)
 		{
 			var currentRoom = context.getCurrentRoom();
 
 			// get on action with block on room.
-			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTIONWITH", [actionValue, objectValue])) != null)
+			if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTIONWITH", [actionValue, objectValue])) !== null)
 			{
 				response.trace(request, "Found \"action with\" block on lineage of room "+currentRoom.identity+".");
 				TLogic.callBlock(request, response, currentRoomContext, blockToCall);
@@ -1975,7 +1994,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 			else if (TLogic.doActionAncestorSearch(request, response, actionValue, currentRoom, object))
 				return;
 			// get on action with other block on room.
-			else if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+			else if ((blockToCall = context.resolveBlock(currentRoom.identity, "ONACTIONWITHOTHER", [actionValue])) !== null)
 			{
 				response.trace(request, "Found \"action with other\" block on lineage of room "+currentRoom.identity+".");
 				TLogic.callBlock(request, response, currentRoomContext, blockToCall);
@@ -1985,7 +2004,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 		}
 		
 		// get on action with block on player.
-		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTIONWITH", [actionValue, objectValue])) != null)
+		if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTIONWITH", [actionValue, objectValue])) !== null)
 		{
 			response.trace(request, "Found \"action with\" block on lineage of player "+currentPlayer.identity+".");
 			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
@@ -1995,7 +2014,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 		else if (TLogic.doActionAncestorSearch(request, response, actionValue, currentPlayer, object))
 			return;
 		// get on action with other block on player.
-		else if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+		else if ((blockToCall = context.resolveBlock(currentPlayer.identity, "ONACTIONWITHOTHER", [actionValue])) !== null)
 		{
 			response.trace(request, "Found \"action with\" block on lineage of player "+currentPlayer.identity+".");
 			TLogic.callBlock(request, response, currentPlayerContext, blockToCall);
@@ -2008,7 +2027,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 	var world = context.getElement('world');
 
 	// get on action with block on world.
-	if ((blockToCall = context.resolveBlock(world.identity, "ONACTIONWITH", [actionValue, objectValue])) != null)
+	if ((blockToCall = context.resolveBlock(world.identity, "ONACTIONWITH", [actionValue, objectValue])) !== null)
 	{
 		response.trace(request, "Found \"action with\" block on the world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -2018,7 +2037,7 @@ TLogic.doActionTransitive = function(request, response, action, object)
 	else if (TLogic.doActionAncestorSearch(request, response, actionValue, world, object))
 		return;
 	// get on action with other block on world.
-	else if ((blockToCall = context.resolveBlock(world.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+	else if ((blockToCall = context.resolveBlock(world.identity, "ONACTIONWITHOTHER", [actionValue])) !== null)
 	{
 		response.trace(request, "Found \"action with\" block on the world.");
 		TLogic.callBlock(request, response, worldContext, blockToCall);
@@ -2044,18 +2063,18 @@ TLogic.doActionAncestorSearch = function(request, response, actionValue, element
 {
 	var blockToCall = null;
 	var context = request.moduleContext;
-	var ancestor = start.parent != null ? context.getElement(start.parent) : null;
+	var ancestor = start.parent !== null ? context.getElement(start.parent) : null;
 	var elementContext = context.getElementContext(element.identity);
 
-	while (ancestor != null)
+	while (ancestor !== null)
 	{
-		if ((blockToCall = context.resolveBlock(element.identity, "ONACTIONWITHANCESTOR", [actionValue, TValue.createObject(ancestor.identity)])) != null)
+		if ((blockToCall = context.resolveBlock(element.identity, "ONACTIONWITHANCESTOR", [actionValue, TValue.createObject(ancestor.identity)])) !== null)
 		{
 			response.trace(request, "Found \"action with ancestor\" block in element "+TLogic.elementToString(element)+" lineage - ancestor is "+TLogic.elementToString(ancestor)+".");
 			TLogic.callBlock(request, response, elementContext, blockToCall);
 			return true;
 		}
-		ancestor = ancestor.parent != null ? context.getElement(ancestor.parent) : null;
+		ancestor = ancestor.parent !== null ? context.getElement(ancestor.parent) : null;
 	}
 	
 	response.trace(request, "No matching \"action with ancestor\" block in element "+TLogic.elementToString(element)+" lineage.");
@@ -2086,7 +2105,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	var call21 = !action.strict || action.reversed;
 
 	// call action on each object. one or both need to succeed for no failure.
-	if (call12 && (blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object2.identity)])) != null)
+	if (call12 && (blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object2.identity)])) !== null)
 	{
 		response.trace(request, "Found \"action with\" block in object "+TLogic.elementToString(object1)+" lineage with "+TLogic.elementToString(object2));
 		TLogic.callBlock(request, response, currentObject1Context, blockToCall);
@@ -2095,7 +2114,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	else
 		response.trace(request, "No matching \"action with\" block in object "+TLogic.elementToString(object1)+" lineage with "+TLogic.elementToString(object2));
 
-	if (call21 && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object1.identity)])) != null)
+	if (call21 && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITH", [actionValue, TValue.createObject(object1.identity)])) !== null)
 	{
 		response.trace(request, "Found \"action with\" block in object "+TLogic.elementToString(object2)+" lineage with "+TLogic.elementToString(object1));
 		TLogic.callBlock(request, response, currentObject2Context, blockToCall);
@@ -2111,7 +2130,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 		return;
 	
 	// attempt action with other on both objects.
-	if (call12 && (blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+	if (call12 && (blockToCall = context.resolveBlock(object1.identity, "ONACTIONWITHOTHER", [actionValue])) !== null)
 	{
 		response.trace(request, "Found \"action with other\" block in object "+TLogic.elementToString(object1)+" lineage.");
 		TLogic.callBlock(request, response, currentObject1Context, blockToCall);
@@ -2120,7 +2139,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 	else
 		response.trace(request, "No matching \"action with other\" block in object "+TLogic.elementToString(object1)+" lineage.");
 
-	if (call21 && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) != null)
+	if (call21 && (blockToCall = context.resolveBlock(object2.identity, "ONACTIONWITHOTHER", [actionValue])) !== null)
 	{
 		response.trace(request, "Found \"action with other\" block in object "+TLogic.elementToString(object2)+" lineage.");
 		TLogic.callBlock(request, response, currentObject2Context, blockToCall);

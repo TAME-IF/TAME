@@ -81,7 +81,7 @@ TValue.create = function(type, value)
 {
 	if (!type)
 		throw TAMEError.UnexpectedValueType("Invalid value type in TValue()");
-	if (typeof value === 'undefined' || value == null)
+	if (typeof value === 'undefined' || value === null)
 		throw TAMEError.UnexpectedValueType("Value cannot be undefined or null in TValue()");
 
 	var out = {};
@@ -91,22 +91,22 @@ TValue.create = function(type, value)
 };
 
 // Convenience constructors.
-TValue.createBoolean = function(value) {return TValue.create(TValue.Type.BOOLEAN, Boolean(value));}
-TValue.createInteger = function(value) {return TValue.create(TValue.Type.INTEGER, parseInt(value, 10));}
-TValue.createFloat = function(value) {return TValue.create(TValue.Type.FLOAT, parseFloat(value));}
-TValue.createString = function(value) {return TValue.create(TValue.Type.STRING, Util.toBase64(String(value)));}
-TValue.createList = function(value) {return TValue.create(TValue.Type.LIST, value);}
-TValue.createWorld = function() {return TValue.create(TValue.Type.WORLD, Util.toBase64("world"));}
-TValue.createObject = function(value) {return TValue.create(TValue.Type.OBJECT, Util.toBase64(String(value)));}
-TValue.createContainer = function(value) {return TValue.create(TValue.Type.CONTAINER, Util.toBase64(String(value)));}
-TValue.createPlayer = function(value) {return TValue.create(TValue.Type.PLAYER, Util.toBase64(String(value)));}
-TValue.createRoom = function(value) {return TValue.create(TValue.Type.ROOM, Util.toBase64(String(value)));}
-TValue.createAction = function(value) {return TValue.create(TValue.Type.ACTION, Util.toBase64(String(value)));}
-TValue.createVariable = function(value) {return TValue.create(TValue.Type.VARIABLE, Util.toBase64(String(value)));}
-TValue.createNaN = function() {return TValue.create(TValue.Type.FLOAT, NaN);}
-TValue.createInfinity = function() {return TValue.create(TValue.Type.FLOAT, Infinity);}
-TValue.createNegativeInfinity = function() {return TValue.create(TValue.Type.FLOAT, -Infinity);}
-TValue.createValue = function(value) {return TValue.create(value.type, value.value);}
+TValue.createBoolean = function(value) {return TValue.create(TValue.Type.BOOLEAN, Boolean(value));};
+TValue.createInteger = function(value) {return TValue.create(TValue.Type.INTEGER, parseInt(value, 10));};
+TValue.createFloat = function(value) {return TValue.create(TValue.Type.FLOAT, parseFloat(value));};
+TValue.createString = function(value) {return TValue.create(TValue.Type.STRING, Util.toBase64(String(value)));};
+TValue.createList = function(value) {return TValue.create(TValue.Type.LIST, value);};
+TValue.createWorld = function() {return TValue.create(TValue.Type.WORLD, Util.toBase64("world"));};
+TValue.createObject = function(value) {return TValue.create(TValue.Type.OBJECT, Util.toBase64(String(value)));};
+TValue.createContainer = function(value) {return TValue.create(TValue.Type.CONTAINER, Util.toBase64(String(value)));};
+TValue.createPlayer = function(value) {return TValue.create(TValue.Type.PLAYER, Util.toBase64(String(value)));};
+TValue.createRoom = function(value) {return TValue.create(TValue.Type.ROOM, Util.toBase64(String(value)));};
+TValue.createAction = function(value) {return TValue.create(TValue.Type.ACTION, Util.toBase64(String(value)));};
+TValue.createVariable = function(value) {return TValue.create(TValue.Type.VARIABLE, Util.toBase64(String(value)));};
+TValue.createNaN = function() {return TValue.create(TValue.Type.FLOAT, NaN);};
+TValue.createInfinity = function() {return TValue.create(TValue.Type.FLOAT, Infinity);};
+TValue.createNegativeInfinity = function() {return TValue.create(TValue.Type.FLOAT, -Infinity);};
+TValue.createValue = function(value) {return TValue.create(value.type, value.value);};
 
 /**
  * Returns if this value is equal to another, value-wise.
@@ -169,29 +169,29 @@ TValue.compare = function(v1, v2)
 	
 	if (TValue.isString(v1) || TValue.isString(v2))
 	{
-		var d1 = TValue.asString(v1);
-		var d2 = TValue.asString(v2);
+		let d1 = TValue.asString(v1);
+		let d2 = TValue.asString(v2);
 		return Util.strcmp(d1, d2);
 	}
 	
 	if (TValue.isFloatingPoint(v1) || TValue.isFloatingPoint(v2))
 	{
-		var d1 = TValue.asDouble(v1);
-		var d2 = TValue.asDouble(v2);
+		let d1 = TValue.asDouble(v1);
+		let d2 = TValue.asDouble(v2);
 		return d1 === d2 ? 0 : (d1 < d2 ? -1 : 1);
 	}
 	
 	if (TValue.isInteger(v1) || TValue.isInteger(v2))
 	{
-		var d1 = TValue.asLong(v1);
-		var d2 = TValue.asLong(v2);
+		let d1 = TValue.asLong(v1);
+		let d2 = TValue.asLong(v2);
 		return d1 === d2 ? 0 : (d1 < d2 ? -1 : 1);
 	}
 	
 	if (TValue.isBoolean(v1) || TValue.isBoolean(v2))
 	{
-		var d1 = TValue.asBoolean(v1);
-		var d2 = TValue.asBoolean(v2);
+		let d1 = TValue.asBoolean(v1);
+		let d2 = TValue.asBoolean(v2);
 		return d1 === d2 ? 0 : (!d1 ? -1 : 1);
 	}
 	
@@ -275,26 +275,26 @@ TValue.add = function(value1, value2)
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = TValue.asBoolean(value1);
-		var v2 = TValue.asBoolean(value2);
+		let v1 = TValue.asBoolean(value1);
+		let v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 || v2);
 	}
 	else if (TValue.isString(value1) || TValue.isString(value2))
 	{
-		var v1 = TValue.asString(value1);
-		var v2 = TValue.asString(value2);
+		let v1 = TValue.asString(value1);
+		let v2 = TValue.asString(value2);
 		return TValue.createString(v1 + v2);
 	}
 	else if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = TValue.asLong(value1);
-		var v2 = TValue.asLong(value2);
+		let v1 = TValue.asLong(value1);
+		let v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 + v2);
 	}
 	else
 	{
-		var v1 = TValue.asDouble(value1);
-		var v2 = TValue.asDouble(value2);
+		let v1 = TValue.asDouble(value1);
+		let v2 = TValue.asDouble(value2);
 		return TValue.createFloat(v1 + v2);
 	}
 };
@@ -316,20 +316,20 @@ TValue.subtract = function(value1, value2)
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = TValue.asBoolean(value1);
-		var v2 = TValue.asBoolean(value2);
+		let v1 = TValue.asBoolean(value1);
+		let v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 && !v2);
 	}
 	else if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = TValue.asLong(value1);
-		var v2 = TValue.asLong(value2);
+		let v1 = TValue.asLong(value1);
+		let v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 - v2);
 	}
 	else
 	{
-		var v1 = TValue.asDouble(value1);
-		var v2 = TValue.asDouble(value2);
+		let v1 = TValue.asDouble(value1);
+		let v2 = TValue.asDouble(value2);
 		return TValue.createFloat(v1 - v2);
 	}
 };
@@ -351,20 +351,20 @@ TValue.multiply = function(value1, value2)
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
 	{
-		var v1 = TValue.asBoolean(value1);
-		var v2 = TValue.asBoolean(value2);
+		let v1 = TValue.asBoolean(value1);
+		let v2 = TValue.asBoolean(value2);
 		return TValue.createBoolean(v1 && v2);
 	}
 	else if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = TValue.asLong(value1);
-		var v2 = TValue.asLong(value2);
+		let v1 = TValue.asLong(value1);
+		let v2 = TValue.asLong(value2);
 		return TValue.createInteger(v1 * v2);
 	}
 	else
 	{
-		var v1 = TValue.asDouble(value1);
-		var v2 = TValue.asDouble(value2);
+		let v1 = TValue.asDouble(value1);
+		let v2 = TValue.asDouble(value2);
 		return TValue.createFloat(v1 * v2);
 	}
 };
@@ -387,11 +387,11 @@ TValue.divide = function(value1, value2)
 
 	if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = TValue.asLong(value1);
-		var v2 = TValue.asLong(value2);
-		if (v2 == 0)
+		let v1 = TValue.asLong(value1);
+		let v2 = TValue.asLong(value2);
+		if (v2 === 0)
 		{
-			if (v1 != 0)
+			if (v1 !== 0)
 				return v1 < 0 ? TValue.createNegativeInfinity() : TValue.createInfinity();
 			else
 				return TValue.createNaN();
@@ -401,11 +401,11 @@ TValue.divide = function(value1, value2)
 	}
 	else
 	{
-		var v1 = TValue.asDouble(value1);
-		var v2 = TValue.asDouble(value2);
-		if (v2 == 0.0)
+		let v1 = TValue.asDouble(value1);
+		let v2 = TValue.asDouble(value2);
+		if (v2 === 0.0)
 		{
-			if (!Number.isNaN(v1) && v1 != 0.0)
+			if (!Number.isNaN(v1) && v1 !== 0.0)
 				return v1 < 0.0 ? TValue.createNegativeInfinity() : TValue.createInfinity();
 			else
 				return TValue.createNaN();
@@ -433,18 +433,18 @@ TValue.modulo = function(value1, value2)
 
 	if (TValue.isInteger(value1) && TValue.isInteger(value2))
 	{
-		var v1 = TValue.asLong(value1);
-		var v2 = TValue.asLong(value2);
-		if (v2 == 0)
+		let v1 = TValue.asLong(value1);
+		let v2 = TValue.asLong(value2);
+		if (v2 === 0)
 			return TValue.createNaN();
 		else
 			return TValue.createInteger(v1 % v2);
 	}
 	else
 	{
-		var v1 = TValue.asDouble(value1);
-		var v2 = TValue.asDouble(value2);
-		if (v2 == 0.0)
+		let v1 = TValue.asDouble(value1);
+		let v2 = TValue.asDouble(value2);
+		if (v2 === 0.0)
 			return TValue.createNaN();
 		else
 			return TValue.createFloat(v1 % v2);
@@ -467,9 +467,9 @@ TValue.power = function(value1, value2)
 	if (TValue.isString(value1) || TValue.isString(value2))
 		return TValue.createNaN();
 
-	var v1 = TValue.asDouble(value1);
-	var v2 = TValue.asDouble(value2);
-	var p = Math.pow(v1, v2);
+	let v1 = TValue.asDouble(value1);
+	let v2 = TValue.asDouble(value2);
+	let p = Math.pow(v1, v2);
 	return TValue.createFloat(p);
 };
 
@@ -484,8 +484,8 @@ TValue.logicalAnd = function(value1, value2)
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		return TValue.createBoolean(false);
 	
-	var v1 = TValue.asBoolean(value1);
-	var v2 = TValue.asBoolean(value2);
+	let v1 = TValue.asBoolean(value1);
+	let v2 = TValue.asBoolean(value2);
 	return TValue.createBoolean(v1 && v2);
 };
 
@@ -500,8 +500,8 @@ TValue.logicalOr = function(value1, value2)
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		return TValue.createBoolean(false);
 	
-	var v1 = TValue.asBoolean(value1);
-	var v2 = TValue.asBoolean(value2);
+	let v1 = TValue.asBoolean(value1);
+	let v2 = TValue.asBoolean(value2);
 	return TValue.createBoolean(v1 || v2);
 };
 
@@ -516,8 +516,8 @@ TValue.logicalXOr = function(value1, value2)
 	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
 		return TValue.createBoolean(false);
 	
-	var v1 = TValue.asBoolean(value1);
-	var v2 = TValue.asBoolean(value2);
+	let v1 = TValue.asBoolean(value1);
+	let v2 = TValue.asBoolean(value2);
 	return TValue.createBoolean(v1 ^ v2);
 };
 
@@ -666,8 +666,8 @@ TValue.isFloatingPoint = function(value)
  */
 TValue.isNumeric = function(value)
 {
-	return value.type === TValue.Type.INTEGER
-		|| value.type === TValue.Type.FLOAT;
+	return value.type === TValue.Type.INTEGER ||
+		value.type === TValue.Type.FLOAT;
 };
 
 /**
@@ -703,11 +703,11 @@ TValue.isReferenceCopied = function(value)
  */
 TValue.isLiteral = function(value)
 {
-	return value.type === TValue.Type.BOOLEAN
-		|| value.type === TValue.Type.INTEGER
-		|| value.type === TValue.Type.FLOAT
-		|| value.type === TValue.Type.STRING
-		|| value.type === TValue.Type.LIST;
+	return (value.type === TValue.Type.BOOLEAN ||
+		value.type === TValue.Type.INTEGER ||
+		value.type === TValue.Type.FLOAT ||
+		value.type === TValue.Type.STRING ||
+		value.type === TValue.Type.LIST);
 };
 
 /**
@@ -716,11 +716,11 @@ TValue.isLiteral = function(value)
  */
 TValue.isElement = function(value)
 {
-	return value.type === TValue.Type.OBJECT
-		|| value.type === TValue.Type.PLAYER
-		|| value.type === TValue.Type.ROOM
-		|| value.type === TValue.Type.CONTAINER
-		|| value.type === TValue.Type.WORLD;
+	return value.type === TValue.Type.OBJECT ||
+		value.type === TValue.Type.PLAYER ||
+		value.type === TValue.Type.ROOM ||
+		value.type === TValue.Type.CONTAINER ||
+		value.type === TValue.Type.WORLD;
 };
 
 /**
@@ -729,10 +729,10 @@ TValue.isElement = function(value)
  */
 TValue.isObjectContainer = function(value)
 {
-	return value.type === TValue.Type.PLAYER
-		|| value.type === TValue.Type.ROOM
-		|| value.type === TValue.Type.CONTAINER
-		|| value.type === TValue.Type.WORLD;
+	return value.type === TValue.Type.PLAYER ||
+		value.type === TValue.Type.ROOM ||
+		value.type === TValue.Type.CONTAINER ||
+		value.type === TValue.Type.WORLD;
 };
 
 /**
@@ -822,7 +822,7 @@ TValue.isStrictlyNaN = function(value)
  */
 TValue.isInfinite = function(value)
 {
-	var v = TValue.asDouble(value);
+	let v = TValue.asDouble(value);
 	return v === Infinity || v === -Infinity;
 };
 
@@ -860,7 +860,7 @@ TValue.asDouble = function(value)
 		return value.value;
 	else if (TValue.isString(value))
 	{
-		var str = Util.fromBase64(value.value).toLowerCase();
+		let str = Util.fromBase64(value.value).toLowerCase();
 		if (str === "nan")
 			return NaN;
 		else if (str === "infinity")
@@ -882,9 +882,9 @@ TValue.asString = function(value)
 {
 	if (TValue.isList(value))
 	{
-		var tsb = new TStringBuilder();
+		let tsb = new TStringBuilder();
 		tsb.append("[");
-		for (var i = 0; i < value.value.length; i++)
+		for (let i = 0; i < value.value.length; i++)
 		{
 			tsb.append(TValue.asString(value.value[i]));
 			if (i < value.value.length - 1)
@@ -900,21 +900,21 @@ TValue.asString = function(value)
 	else if (TValue.isFloatingPoint(value))
 	{
 		// make it equal to Java/C#
-		var d = TValue.asDouble(value);
-		if (Math.abs(d) == 0.0)
+		let d = TValue.asDouble(value);
+		if (Math.abs(d) === 0.0)
 			return "0.0";
 		else if (Math.abs(d) < 0.001 || Math.abs(d) >= 10000000)
 		{
-			var out = d.toExponential().toUpperCase().replace('+','');
+			let out = d.toExponential().toUpperCase().replace('+','');
 			if (out.indexOf('.') < 0)
 			{
-				var ie = out.indexOf('E');
+				let ie = out.indexOf('E');
 				return out.substring(0, ie) + ".0" + out.substring(ie);
 			}
 			else
 				return out;
 		}
-		else if (d % 1 == 0)		
+		else if (d % 1 === 0)		
 			return value.value+".0";
 		else
 			return ""+value.value;
@@ -938,10 +938,10 @@ TValue.asBoolean = function(value)
 		else if (Number.isNaN(value.value))
 			return false;
 		else
-			return TValue.asDouble(value) != 0;
+			return TValue.asDouble(value) !== 0;
 	}
 	else if (TValue.isInteger(value))
-		return TValue.asLong(value) != 0;
+		return TValue.asLong(value) !== 0;
 	else if (TValue.isString(value))
 		return Util.fromBase64(value.value).length !== 0;
 	else
@@ -962,13 +962,13 @@ TValue.isTrue = function(value)
  */
 TValue.toString = function(value)
 {
-	var sb = new TStringBuilder();
+	let sb = new TStringBuilder();
 	sb.append(value.type);
 	sb.append('[');
 	if (TValue.isList(value))
 	{
 		sb.append('[');
-		for (var i = 0; i < value.value.length; i++)
+		for (let i = 0; i < value.value.length; i++)
 		{
 			sb.append(TValue.toString(value.value[i]));
 			if (i < value.value.length - 1)
@@ -1103,7 +1103,7 @@ TValue.listIndexOf = function(listValue, v)
 	if (!TValue.isList(listValue))
 		return -1;
 	
-	for (var i = 0; i < listValue.value.length; i++)
+	for (let i = 0; i < listValue.value.length; i++)
 	{
 		if (TValue.areEqual(v, listValue.value[i]))
 			return i;
@@ -1136,7 +1136,7 @@ TValue.listRemove = function(listValue, v)
 	if (!TValue.isList(listValue))
 		return false;
 
-	var i = TValue.listIndexOf(listValue, v);
+	let i = TValue.listIndexOf(listValue, v);
 	if (i < 0)
 		return false;
 	

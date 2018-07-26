@@ -48,7 +48,7 @@ Util.format = function( /* str, args ... */ )
 	let str = arguments[0];
 	let args = Array.prototype.slice.call(arguments, 1);
 	
-    for (key in args) 
+    for (let key in args) 
         str = str.replace(new RegExp("\\{" + key + "\\}", "gi"), args[key]);
     
     return str;
@@ -203,7 +203,7 @@ Util.formatDate = function(date, formatstring, utc)
 			out = '0' + out;
 
 		return out;
-	}
+	};
 
 	// The regular expression for finding all pertinent tokens.
 	var _DATEFORMATREGEX = /G+|Y+|y+|M+|w+|W+|D+|d+|F+|E+|a+|H+|k+|K+|h+|m+|s+|S+|z+|Z+|'.*'/g;
@@ -382,16 +382,16 @@ Util.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 	
 	var emitText = function()
 	{
-		if (builder.length == 0)
+		if (builder.length === 0)
 			return;
 		
 		textFunc(builder);
 		builder = '';
-	}
+	};
 
 	var emitTag = function()
 	{
-		if (builder.length == 0)
+		if (builder.length === 0)
 			return;
 
 		var tag = builder;
@@ -399,7 +399,7 @@ Util.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 		
 		if (tag == '/')
 		{
-			if (tagStack.length == 0)
+			if (tagStack.length === 0)
 				return;
 			tagEndFunc(tagStack.pop());
 		}
@@ -408,7 +408,7 @@ Util.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 			tagStack.push(tag);
 			tagStartFunc(tag);
 		}
-	}
+	};
 	
 	var STATE_TEXT = 0;
 	var STATE_TAG_MAYBE = 1;

@@ -378,21 +378,21 @@ public final class TAMELogic implements TAMEConstants
 					{
 						if (action.isStrict())
 						{
-							response.trace(request, TraceType.INTERPRETER, "STRICT DITRANSITIVE ACTION %s: No Conjugate (INCOMPLETE)", action.getIdentity());
+							response.trace(request, TraceType.INTERPRETER, "STRICT DITRANSITIVE ACTION %s: No Conjunction (INCOMPLETE)", action.getIdentity());
 							if (!callIncompleteCommand(request, response, action))
 								response.addCue(CUE_ERROR, "INCOMPLETE COMMAND (make a better in-universe handler!).");
 							return false;
 						}
 						else
 						{
-							response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: No Conjugate, Process TRANSITIVE", action.getIdentity());
+							response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: No Conjunction, Process TRANSITIVE", action.getIdentity());
 							request.addCommand(TAMECommand.create(action, interpreterContext.getObject1()));
 							return true;
 						}
 					}
 					else if (!interpreterContext.isConjugateFound())
 					{
-						response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: Unknown Conjugate (MALFORMED)", action.getIdentity());
+						response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: Unknown Conjunction (MALFORMED)", action.getIdentity());
 						if (!callMalformedCommandBlock(request, response, action))
 							response.addCue(CUE_ERROR, "MALFORMED COMMAND (make a better in-universe handler!).");
 						return false;
@@ -561,7 +561,7 @@ public final class TAMELogic implements TAMEConstants
 		for (int i = args.length - 1; i >= 0; i--)
 		{
 			Value localValue = request.popValue();
-			response.trace(request, TraceType.FUNCTION, "SET LOCAL %s %s", args[i], localValue.toString());
+			response.trace(request, TraceType.VALUE, "SET LOCAL %s %s", args[i], localValue.toString());
 			blockLocal.put(args[i], localValue);
 		}
 
@@ -1288,8 +1288,6 @@ public final class TAMELogic implements TAMEConstants
 	 * Requires a context, as objects may need to be parsed.
 	 * @param request the request object.
 	 * @param response the response object.
-	 * @param moduleContext the module context to use (for object availability).
-	 * @param inputMessage the input message to interpret.
 	 * @return a new interpreter context using the input.
 	 */
 	private static InterpreterContext interpret(TAMERequest request, TAMEResponse response)
@@ -1436,10 +1434,11 @@ public final class TAMELogic implements TAMEConstants
 			index++;
 			
 			interpreterContext.setConjugateLookedUp(true);
-			response.trace(request, TraceType.INTERPRETER, "TEST CONJUGATE %s", sb.toString());
-			if (action.containsExtraString(sb.toString()))
+			String name = sb.toString();
+			response.trace(request, TraceType.INTERPRETER, "TEST CONJUNCTION %s", name);
+			if (action.containsExtraString(name))
 			{
-				response.trace(request, TraceType.INTERPRETER, "MATCHED CONJUGATE %s", sb.toString());
+				response.trace(request, TraceType.INTERPRETER, "MATCHED CONJUNCTION %s", name);
 				interpreterContext.setTokenOffset(index);
 				out = true;
 			}

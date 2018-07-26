@@ -65,7 +65,7 @@ TRequest.prototype.addCommand = function(item)
  */
 TRequest.prototype.hasCommands = function()
 {
-	return this.commandQueue.length != 0;
+	return this.commandQueue.length !== 0;
 };
 
 /**
@@ -120,7 +120,7 @@ TRequest.prototype.pushValue = function(value)
  */
 TRequest.prototype.popValue = function()
 {
-	if (this.valueStack.length == 0)
+	if (this.valueStack.length === 0)
 		throw TAMEError.ArithmeticStackState("Attempt to pop an empty arithmetic stack.");
 	return this.valueStack.pop();
 };
@@ -132,7 +132,7 @@ TRequest.prototype.popValue = function()
  */
 TRequest.prototype.checkStackClear = function()
 {
-	if (this.valueStack.length != 0)
+	if (this.valueStack.length !== 0)
 		throw TAMEError.ArithmeticStackState("Arithmetic stack is not empty.");
 };
 

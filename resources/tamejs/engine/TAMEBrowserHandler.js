@@ -60,8 +60,8 @@ var TBrowserHandler = function(TAMEENGINE, options)
 		}
 	};
 	
-	var combinedOptions = {};
-	for (x in this.defaultOptions) if (this.defaultOptions.hasOwnProperty(x)) 
+	let combinedOptions = {};
+	for (let x in this.defaultOptions) if (this.defaultOptions.hasOwnProperty(x)) 
 		combinedOptions[x] = options[x] || this.defaultOptions[x];
 	this.options = combinedOptions;
 
@@ -120,7 +120,7 @@ var TBrowserHandler = function(TAMEENGINE, options)
 		
 	};
 
-}
+};
 
 /**
  * Resets the cue read state.
@@ -153,7 +153,7 @@ TBrowserHandler.prototype.resume = function()
 	if (!this.response)
 		throw 'resume() before prepare()!';
 
-	if (this.nextCue == 0)
+	if (this.nextCue === 0)
 		this.options.onStart();
 	else
 		this.options.onResume();

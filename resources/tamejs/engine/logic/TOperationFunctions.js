@@ -273,7 +273,7 @@ var TOperationFunctions =
 			var variableName = TValue.asString(variable).toLowerCase();
 			var context = request.moduleContext.resolveElementContext(TValue.asString(varElement));
 			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("CLEAR {0}.{1}", context.identity, variableName));
-			TLogic.clearValue(context.variables, TValue.asString(variable))
+			TLogic.clearValue(context.variables, TValue.asString(variable));
 		}
 	},
 
@@ -384,7 +384,7 @@ var TOperationFunctions =
 			for (
 				TLogic.executeBlock(init, request, response, blockLocal);
 				TLogic.callConditional('FOR', request, response, blockLocal, operation);
-				response.trace(request, TAMEConstants.TraceType.CONTROL, "FOR Step");
+				response.trace(request, TAMEConstants.TraceType.CONTROL, "FOR Step"),
 				TLogic.executeBlock(step, request, response, blockLocal)
 			)
 			{
@@ -1316,8 +1316,8 @@ var TOperationFunctions =
 		"name": 'LISTCONCAT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var appendix = request.popValue();
-			var list = request.popValue();
+			let appendix = request.popValue();
+			let list = request.popValue();
 			
 			if (!TValue.isLiteral(appendix))
 				throw TAMEError.UnexpectedValueType("Expected literal type in LISTCONCAT call.");
@@ -1326,22 +1326,22 @@ var TOperationFunctions =
 
 			if (!TValue.isList(list))
 			{
-				var v = list;
+				let v = list;
 				list = TValue.createList([]);
 				TValue.listAdd(list, v);
 			}
 
 			if (!TValue.isList(appendix))
 			{
-				var v = appendix;
+				let v = appendix;
 				appendix = TValue.createList([]);
 				TValue.listAdd(appendix, v);
 			}
 			
-			var out = TValue.createList([]);
-			for (var i = 0; i < TValue.length(list); i++)
+			let out = TValue.createList([]);
+			for (let i = 0; i < TValue.length(list); i++)
 				TValue.listAdd(out, TValue.listGet(list, i));
-			for (var i = 0; i < TValue.length(appendix); i++)
+			for (let i = 0; i < TValue.length(appendix); i++)
 				TValue.listAdd(out, TValue.listGet(appendix, i));
 			
 			request.pushValue(out);
@@ -1589,7 +1589,7 @@ var TOperationFunctions =
 
 			var value = TValue.asLong(value1);
 
-			if (value == 0)
+			if (value === 0)
 				request.pushValue(TValue.createInteger(0));
 			else if (value < 0)
 				request.pushValue(TValue.createInteger(-(Math.floor(Math.random() * Math.abs(value)))));
@@ -2018,7 +2018,7 @@ var TOperationFunctions =
 			var room = context.resolveElement(TValue.asString(varRoom));
 			var player = context.resolveElement(TValue.asString(varPlayer));
 
-			request.pushValue(TValue.createBoolean(context.checkPlayerIsInRoom(player.identity, room.identity)))
+			request.pushValue(TValue.createBoolean(context.checkPlayerIsInRoom(player.identity, room.identity)));
 		}
 	},
 
@@ -2183,7 +2183,7 @@ var TOperationFunctions =
 
 			var currentRoom = context.getCurrentRoom(player.identity);
 			
-			if (currentRoom == null)
+			if (currentRoom === null)
 				throw TAMEInterrupt.Error("No rooms for player" + TLogic.elementToString(player));
 			
 			TLogic.doRoomPop(request, response, player.identity);
@@ -2206,13 +2206,13 @@ var TOperationFunctions =
 			var context = request.moduleContext;
 			var player = context.resolveElement(TValue.asString(varPlayer));
 
-			if (player == null)
+			if (player === null)
 				throw TAMEInterrupt.Error("No current player!");
 
 			var nextRoom = context.resolveElement(TValue.asString(varRoom)); 
 			var currentRoom = context.getCurrentRoom(player.identity);
 
-			if (currentRoom == null)
+			if (currentRoom === null)
 				throw new ErrorInterrupt("No rooms for current player!");
 			
 			TLogic.doRoomPop(request, response, player.identity);
@@ -2234,7 +2234,7 @@ var TOperationFunctions =
 			var player = context.resolveElement(TValue.asString(varPlayer));
 			var currentPlayer = context.getCurrentPlayer();
 			
-			request.pushValue(TValue.createBoolean(currentPlayer != null && player.identity == currentPlayer.identity));
+			request.pushValue(TValue.createBoolean(currentPlayer !== null && player.identity === currentPlayer.identity));
 		}
 	},
 
@@ -2244,7 +2244,7 @@ var TOperationFunctions =
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var currentPlayer = request.moduleContext.getCurrentPlayer();
-			request.pushValue(TValue.createBoolean(currentPlayer == null));
+			request.pushValue(TValue.createBoolean(currentPlayer === null));
 		}
 	},
 
@@ -2267,7 +2267,7 @@ var TOperationFunctions =
 			var room = context.resolveElement(TValue.asString(varRoom));
 			
 			var currentRoom = context.getCurrentRoom(player.identity);
-			request.pushValue(TValue.createBoolean(currentRoom != null && room.identity == currentRoom.identity));
+			request.pushValue(TValue.createBoolean(currentRoom !== null && room.identity === currentRoom.identity));
 		}
 	},
 
@@ -2285,7 +2285,7 @@ var TOperationFunctions =
 			var playerIdentity = TValue.asString(varPlayer);
 			var player = context.resolveElement(playerIdentity);
 			var currentRoom = context.getCurrentRoom(player.identity);
-			request.pushValue(TValue.createBoolean(currentRoom == null));
+			request.pushValue(TValue.createBoolean(currentRoom === null));
 		}
 	},
 

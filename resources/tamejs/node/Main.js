@@ -212,7 +212,7 @@ rl.on('line', function(line){
 	} else {
 		if (COMMAND_SAVE == line.substring(0, COMMAND_SAVE.length))
 		{
-			var name = line.substring(COMMAND_SAVE.length).trim();
+			let name = line.substring(COMMAND_SAVE.length).trim();
 			try {
 				fs.writeFileSync(name+'.json', tamectx.stateSave(), {"encoding": 'utf8'});
 				println("State saved: "+name+'.json');
@@ -223,7 +223,7 @@ rl.on('line', function(line){
 		}
 		else if (COMMAND_LOAD == line.substring(0, COMMAND_LOAD.length))
 		{
-			var name = line.substring(COMMAND_LOAD.length).trim();
+			let name = line.substring(COMMAND_LOAD.length).trim();
 			try {
 				var stateData = fs.readFileSync(name+'.json', {"encoding": 'utf8'});
 				tamectx.stateRestore(stateData);
