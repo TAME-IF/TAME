@@ -146,7 +146,8 @@ TLogic.executeOperation = function(request, response, blockLocal, operation)
 {
 	TOperationFunctions[operation.opcode].doOperation(request, response, blockLocal, operation);
 	response.incrementAndCheckOperationsExecuted(request.moduleContext.operationRunawayMax);
-}
+};
+
 
 /**
  * Calls the conditional block on a operation, returning the result as a .
@@ -607,6 +608,20 @@ TLogic.callBlock = function(request, response, elementContext, block, isFunction
 	if (!isFunctionBlock)
 		request.checkStackClear();
 	
+};
+
+/**
+ * Increments the runaway operation counter and calls the operation.  
+ * @param request (TRequest) the request object.
+ * @param response (TResponse) the response object.
+ * @param elementContext (Object) the element context to search from.
+ * @param blockTypeName (string) the name of the block type.
+ * @param blockTypeValues (Array) list of values.
+ * @throws TAMEInterrupt if an interrupt occurs. 
+ */
+TLogic.callElementBlock = function(request, response, elementContext, blockTypeName, blockTypeValues)
+{
+	// TODO: Finish.
 };
 
 /**

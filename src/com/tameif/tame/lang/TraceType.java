@@ -19,16 +19,4 @@ public enum TraceType
 	/** Value changes. */
 	VALUE;
 	
-	final String cueSuffix;
-	
-	private TraceType()
-	{
-		this.cueSuffix = name().toLowerCase();
-	}
-
-	public String getCueSuffix() 
-	{
-		return cueSuffix;
-	}
-	
 }

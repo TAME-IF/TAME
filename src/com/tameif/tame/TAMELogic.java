@@ -125,7 +125,7 @@ public final class TAMELogic implements TAMEConstants
 		long nanos;
 		
 		nanos = System.nanoTime();
-		InterpreterContext interpreterContext = interpret(request.getModuleContext(), request.getInputMessage());
+		InterpreterContext interpreterContext = interpret(request, response);
 		response.setInterpretNanos(System.nanoTime() - nanos);
 	
 		nanos = System.nanoTime();
@@ -226,45 +226,6 @@ public final class TAMELogic implements TAMEConstants
 	public static String[] tokenizeInput(TAMEModuleContext moduleContext, String inputMessage)
 	{
 		return inputMessage.trim().split("\\s+");
-	}
-
-	/**
-	 * Interprets the input on the request.
-	 * Requires a context, as objects may need to be parsed.
-	 * @param moduleContext the module context to use (for object availability).
-	 * @param inputMessage the input message to interpret.
-	 * @return a new interpreter context using the input.
-	 */
-	public static InterpreterContext interpret(TAMEModuleContext moduleContext, String inputMessage)
-	{
-		InterpreterContext interpreterContext = new InterpreterContext(TAMELogic.tokenizeInput(moduleContext, inputMessage));
-		
-		interpretAction(moduleContext, interpreterContext);
-		
-		TAction action = interpreterContext.getAction();
-		if (action == null)
-			return interpreterContext;
-		
-		switch (action.getType())
-		{
-			default:
-			case GENERAL:
-				return interpreterContext;
-			case OPEN:
-				interpretOpen(interpreterContext);
-				return interpreterContext;
-			case MODAL:
-				interpretMode(action, interpreterContext);
-				return interpreterContext;
-			case TRANSITIVE:
-				interpretObject1(moduleContext, interpreterContext);
-				return interpreterContext;
-			case DITRANSITIVE:
-				if (interpretObject1(moduleContext, interpreterContext))
-					if (interpretConjugate(action, interpreterContext))
-						interpretObject2(moduleContext, interpreterContext);
-				return interpreterContext;
-		}
 	}
 
 	/**
@@ -517,6 +478,67 @@ public final class TAMELogic implements TAMEConstants
 	}
 	
 	/**
+	 * Attempts to resolve and call an element block.
+	 * @param request the request.
+	 * @param response the response.
+	 * @param context the element context.
+	 * @param blockEntry the block entry to resolve.
+	 * @return true if called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static boolean callElementBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, BlockEntry blockEntry) throws TAMEInterrupt 
+	{
+		Block blockToCall;
+		TElement element = context.getElement();
+		response.trace(request, TraceType.ENTRY, "RESOLVE %s.%s", element.getIdentity(), blockEntry.toFriendlyString());
+		if ((blockToCall = element.resolveBlock(blockEntry)) != null)
+		{
+			response.trace(request, TraceType.ENTRY, "CALL %s.%s", element.getIdentity(), blockEntry.toFriendlyString());
+			callBlock(request, response, context, blockToCall);
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * Attempts to resolve and call an element block.
+	 * @param request the request.
+	 * @param response the response.
+	 * @param context the element context.
+	 * @param blockEntry the block entry to resolve.
+	 * @return true if called, false if not.
+	 * @throws TAMEInterrupt if an interrupt occurs.
+	 */
+	public static boolean callElementBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, BlockEntry blockEntry, String openTarget, Iterable<String> locals) throws TAMEInterrupt 
+	{
+		Block blockToCall;
+		TElement element = context.getElement();
+		response.trace(request, TraceType.ENTRY, "RESOLVE %s.%s", element.getIdentity(), blockEntry.toFriendlyString());
+		if ((blockToCall = element.resolveBlock(blockEntry)) != null)
+		{
+			response.trace(request, TraceType.ENTRY, "CALL %s.%s", element.getIdentity(), blockEntry.toFriendlyString());
+			
+			// just get the first local.
+			for (String variableName : locals)
+			{
+				Value target = Value.create(openTarget);
+				// set locals
+				ValueHash blockLocal = new ValueHash();
+				response.trace(request, TraceType.VALUE, "SET LOCAL %s %s", variableName, target);
+				blockLocal.put(variableName, target);
+				callBlock(request, response, context, blockToCall, false, blockLocal);
+				break;
+			}
+			
+			callBlock(request, response, context, blockToCall);
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
 	 * Calls a function from an arbitrary context, using the bound element as a lineage search point.
 	 * @param request the request object.
 	 * @param response the response object.
@@ -633,7 +655,7 @@ public final class TAMELogic implements TAMEConstants
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TRoom popped = moduleContext.getOwnershipMap().popRoomFromPlayer(player);
 		if (popped != null)
-			response.trace(request, TraceType.CONTEXT, "POP ROOM % ON PLAYER %s", popped.getIdentity(), player.getIdentity());
+			response.trace(request, TraceType.CONTEXT, "POP ROOM %s ON PLAYER %s", popped.getIdentity(), player.getIdentity());
 	}
 
 	/**
@@ -647,7 +669,7 @@ public final class TAMELogic implements TAMEConstants
 	public static void doRoomPush(TAMERequest request, TAMEResponse response, TPlayer player, TRoom nextRoom) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		response.trace(request, TraceType.CONTEXT, "PUSH ROOM % ON PLAYER %s", nextRoom.getIdentity(), player.getIdentity());
+		response.trace(request, TraceType.CONTEXT, "PUSH ROOM %s ON PLAYER %s", nextRoom.getIdentity(), player.getIdentity());
 		moduleContext.getOwnershipMap().pushRoomOntoPlayer(player, nextRoom);
 	}
 
@@ -784,8 +806,8 @@ public final class TAMELogic implements TAMEConstants
 			callInitOnContexts(request, response, moduleContext.getObjectContextIterator());
 			callInitOnContexts(request, response, moduleContext.getRoomContextIterator());
 			callInitOnContexts(request, response, moduleContext.getPlayerContextIterator());
-			callInitBlock(request, response, moduleContext.getWorldContext());
-			callStartBlock(request, response);
+			callElementBlock(request, response, moduleContext.getWorldContext(), BlockEntry.create(BlockEntryType.INIT));
+			callElementBlock(request, response, moduleContext.getWorldContext(), BlockEntry.create(BlockEntryType.START));
 		} catch (FinishInterrupt interrupt) {
 			// Eat finish.
 		} catch (Throwable t) {
@@ -808,17 +830,17 @@ public final class TAMELogic implements TAMEConstants
 		doAllCommands(request, response);
 		if (afterSuccessfulCommand)
 		{
-			doAfterSuccessfulCommand(request, response);
+			callElementBlock(request, response, request.getModuleContext().getWorldContext(), BlockEntry.create(BlockEntryType.AFTERSUCCESSFULCOMMAND));
 			doAllCommands(request, response);
 		}
 		if (afterFailedCommand)
 		{
-			doAfterFailedCommand(request, response);
+			callElementBlock(request, response, request.getModuleContext().getWorldContext(), BlockEntry.create(BlockEntryType.AFTERFAILEDCOMMAND));
 			doAllCommands(request, response);
 		}
 		if (afterEveryCommand)
 		{
-			doAfterEveryCommand(request, response);
+			callElementBlock(request, response, request.getModuleContext().getWorldContext(), BlockEntry.create(BlockEntryType.AFTEREVERYCOMMAND));
 			doAllCommands(request, response);
 		}		
 	}
@@ -834,75 +856,6 @@ public final class TAMELogic implements TAMEConstants
 	{
 		while (request.hasCommands())
 			processCommand(request, response, request.nextCommand());
-	}
-	
-	/**
-	 * Attempts to call the after successful command block on the world.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 * @throws TAMEFatalException if something goes wrong during execution.
-	 */
-	private static void doAfterSuccessfulCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
-	{
-		response.trace(request, TraceType.ENTRY, "RESOLVE world.afterSuccessfulCommand()");
-
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		Block blockToCall = null;
-		
-		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTERSUCCESSFULCOMMAND))) != null)
-		{
-			response.trace(request, TraceType.ENTRY, "CALL world.afterSuccessfulCommand()");
-			callBlock(request, response, worldContext, blockToCall);
-		}
-	}
-	
-	/**
-	 * Attempts to call the after failed command block on the world.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 * @throws TAMEFatalException if something goes wrong during execution.
-	 */
-	private static void doAfterFailedCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
-	{
-		response.trace(request, TraceType.ENTRY, "RESOLVE world.afterFailedCommand()");
-
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		Block blockToCall = null;
-		
-		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTERFAILEDCOMMAND))) != null)
-		{
-			response.trace(request, TraceType.ENTRY, "CALL world.afterFailedCommand()");
-			callBlock(request, response, worldContext, blockToCall);
-		}
-	}
-	
-	/**
-	 * Attempts to call the after every command block on the world.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 * @throws TAMEFatalException if something goes wrong during execution.
-	 */
-	private static void doAfterEveryCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
-	{
-		response.trace(request, TraceType.ENTRY, "RESOLVE world.afterEveryCommand()");
-
-		TAMEModuleContext moduleContext = request.getModuleContext();
-		TWorldContext worldContext = moduleContext.getWorldContext();
-		Block blockToCall = null;
-		
-		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.AFTEREVERYCOMMAND))) != null)
-		{
-			response.trace(request, TraceType.ENTRY, "CALL world.afterEveryCommand()");
-			callBlock(request, response, worldContext, blockToCall);
-		}
 	}
 	
 	/**
@@ -928,100 +881,45 @@ public final class TAMELogic implements TAMEConstants
 	private static void doActionOpen(TAMERequest request, TAMEResponse response, TAction action, String openTarget) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		response.trace(request, "Performing general/open action %s", action);
-
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		Block blockToCall = null;
-		
 		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONACTION, Value.createAction(action.getIdentity()));
 		
 		if (currentPlayerContext != null)
 		{
-			TPlayer currentPlayer = currentPlayerContext.getElement();
-
 			// try current room.
 			TRoomContext currentRoomContext = moduleContext.getCurrentRoomContext();
 			if (currentRoomContext != null)
 			{
-				TRoom currentRoom = currentRoomContext.getElement();
-				
 				// get general action on room.
-				if ((blockToCall = currentRoom.resolveBlock(blockEntry)) != null)
-				{
-					response.trace(request, "Found general action block on room.");
-					if (openTarget != null)
-					{
-						// just get the first one.
-						for (String variableName : action.getExtraStrings())
-						{
-							Value target = Value.create(openTarget);
-							// set locals
-							ValueHash blockLocal = new ValueHash();
-							response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
-							blockLocal.put(variableName, target);
-							callBlock(request, response, currentRoomContext, blockToCall, false, blockLocal);
-							break;
-						}
-					}
-					else
-						callBlock(request, response, currentRoomContext, blockToCall);
+				if (callElementBlock(request, response, currentRoomContext, blockEntry))
 					return;
-				}
-				
-				response.trace(request, "No general action block on room.");
-			}
-			
-			// get general action on player.
-			if ((blockToCall = currentPlayer.resolveBlock(blockEntry)) != null)
-			{
-				response.trace(request, "Found general action block on player.");
+
 				if (openTarget != null)
 				{
-					// just get the first one.
-					for (String variableName : action.getExtraStrings())
-					{
-						Value target = Value.create(openTarget);
-						// set locals
-						ValueHash blockLocal = new ValueHash();
-						response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
-						blockLocal.put(variableName, target);
-						callBlock(request, response, currentPlayerContext, blockToCall, false, blockLocal);
-						break;
-					}
+					if (callElementBlock(request, response, currentRoomContext, blockEntry, openTarget, action.getExtraStrings()))
+						return;
 				}
-				else
-					callBlock(request, response, currentPlayerContext, blockToCall);
-				return;
+				else if (callElementBlock(request, response, currentRoomContext, blockEntry))
+					return;
 			}
 			
-			response.trace(request, "No general action block on player.");
+			if (openTarget != null)
+			{
+				if (callElementBlock(request, response, currentPlayerContext, blockEntry, openTarget, action.getExtraStrings()))
+					return;
+			}
+			else if (callElementBlock(request, response, currentPlayerContext, blockEntry))
+				return;
 		}
 		
 		TWorldContext worldContext = moduleContext.getWorldContext();
-		TWorld world = worldContext.getElement();
-		
-		// get general action on world.
-		if ((blockToCall = world.resolveBlock(blockEntry)) != null)
+		if (openTarget != null)
 		{
-			response.trace(request, "Found general action block on world.");
-			if (openTarget != null)
-			{
-				// just get the first one.
-				for (String variableName : action.getExtraStrings())
-				{
-					Value target = Value.create(openTarget);
-					// set locals
-					ValueHash blockLocal = new ValueHash();
-					response.trace(request, "Setting local variable \"%s\" to \"%s\"", variableName, target);
-					blockLocal.put(variableName, target);
-					callBlock(request, response, worldContext, blockToCall, false, blockLocal);
-					break;
-				}
-			}
-			else
-				callBlock(request, response, worldContext, blockToCall);
-			return;
+			if (callElementBlock(request, response, worldContext, blockEntry, openTarget, action.getExtraStrings()))
+				return;
 		}
+		else if (callElementBlock(request, response, worldContext, blockEntry))
+			return;
 		
 		if (!callActionUnhandled(request, response, action))
 			response.addCue(CUE_ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
@@ -1038,56 +936,30 @@ public final class TAMELogic implements TAMEConstants
 	private static void doActionModal(TAMERequest request, TAMEResponse response, TAction action, String mode) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		response.trace(request, "Performing modal action %s, \"%s\"", action, mode);
-
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		Block blockToCall = null;
 
 		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONMODALACTION, Value.createAction(action.getIdentity()), Value.create(mode));
 		
 		if (currentPlayerContext != null)
 		{
-			TPlayer currentPlayer = currentPlayerContext.getElement();
-
 			// try current room.
 			TRoomContext currentRoomContext = moduleContext.getCurrentRoomContext();
 			if (currentRoomContext != null)
 			{
-				TRoom currentRoom = currentRoomContext.getElement();
-
 				// get modal action on room.
-				if ((blockToCall = currentRoom.resolveBlock(blockEntry)) != null)
-				{
-					response.trace(request, "Found modal action block on room.");
-					callBlock(request, response, currentRoomContext, blockToCall);
+				if (callElementBlock(request, response, currentRoomContext, blockEntry))
 					return;
-				}
-				
-				response.trace(request, "No modal action block on room.");
 			}
 			
 			// get modal action on player.
-			if ((blockToCall = currentPlayer.resolveBlock(blockEntry)) != null)
-			{
-				response.trace(request, "Found modal action block on player.");
-				callBlock(request, response, currentPlayerContext, blockToCall);
+			if (callElementBlock(request, response, currentPlayerContext, blockEntry))
 				return;
-			}
-			
-			response.trace(request, "No modal action block on player.");
-			
 		}
 		
 		TWorldContext worldContext = moduleContext.getWorldContext();
-		TWorld world = worldContext.getElement();
-		
 		// get modal action on world.
-		if ((blockToCall = world.resolveBlock(blockEntry)) != null)
-		{
-			response.trace(request, "Found modal action block on world.");
-			callBlock(request, response, worldContext, blockToCall);
+		if (callElementBlock(request, response, worldContext, blockEntry))
 			return;
-		}
 
 		if (!callActionUnhandled(request, response, action))
 			response.addCue(CUE_ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
@@ -1104,22 +976,11 @@ public final class TAMELogic implements TAMEConstants
 	private static void doActionTransitive(TAMERequest request, TAMEResponse response, TAction action, TObject object) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		response.trace(request, "Performing transitive action %s on %s", action, object);
-
 		TObjectContext currentObjectContext = moduleContext.getObjectContext(object);
-		Block blockToCall = null;
 		
 		Value actionValue = Value.createAction(action.getIdentity());
-
-		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONACTION, actionValue);
-		
-		// call action on object.
-		if ((blockToCall = object.resolveBlock(blockEntry)) != null)
-		{
-			response.trace(request, "Found action block on object.");
-			callBlock(request, response, currentObjectContext, blockToCall);
+		if (callElementBlock(request, response, currentObjectContext, BlockEntry.create(BlockEntryType.ONACTION, actionValue)))
 			return;
-		}
 		
 		BlockEntry actionWithEntry = BlockEntry.create(BlockEntryType.ONACTIONWITH, actionValue, Value.createObject(object.getIdentity()));
 		BlockEntry actionWithOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
@@ -1131,73 +992,44 @@ public final class TAMELogic implements TAMEConstants
 		{
 			TPlayer currentPlayer = currentPlayerContext.getElement();
 
-
 			// try current room.
 			TRoomContext currentRoomContext = moduleContext.getCurrentRoomContext();
 			if (currentRoomContext != null)
 			{
-				TRoom currentRoom = currentRoomContext.getElement();
-				
 				// get on action with block on room.
-				if ((blockToCall = currentRoom.resolveBlock(actionWithEntry)) != null)
-				{
-					response.trace(request, "Found \"action with\" block on lineage of room %s.", currentRoom.getIdentity());
-					callBlock(request, response, currentRoomContext, blockToCall);
+				if (callElementBlock(request, response, currentRoomContext, actionWithEntry))
 					return;
-				}
 				// get on action with ancestor on room
-				else if (doActionAncestorSearch(request, response, actionValue, currentRoom, object))
+				else if (doActionAncestorSearch(request, response, actionValue, currentRoomContext.getElement(), object))
 					return;
 				// get on action with other block on room.
-				else if ((blockToCall = currentRoom.resolveBlock(actionWithOtherEntry)) != null)
-				{
-					response.trace(request, "Found \"action with other\" block on lineage of room %s.", currentRoom.getIdentity());
-					callBlock(request, response, currentRoomContext, blockToCall);
+				else if (callElementBlock(request, response, currentRoomContext, actionWithOtherEntry))
 					return;
-				}
-				
 			}
 			
 			// get on action with block on player.
-			if ((blockToCall = currentPlayer.resolveBlock(actionWithEntry)) != null)
-			{
-				response.trace(request, "Found \"action with\" block on lineage of player %s.", currentPlayer.getIdentity());
-				callBlock(request, response, currentPlayerContext, blockToCall);
+			if (callElementBlock(request, response, currentPlayerContext, actionWithEntry))
 				return;
-			}
 			// get on action with ancestor on player
 			else if (doActionAncestorSearch(request, response, actionValue, currentPlayer, object))
 				return;
 			// get on action with other block on player.
-			else if ((blockToCall = currentPlayer.resolveBlock(actionWithOtherEntry)) != null)
-			{
-				response.trace(request, "Found \"action with other\" block on lineage of player %s.", currentPlayer.getIdentity());
-				callBlock(request, response, currentPlayerContext, blockToCall);
+			else if (callElementBlock(request, response, currentPlayerContext, actionWithOtherEntry))
 				return;
-			}
-
 		}
 		
 		TWorldContext worldContext = request.getModuleContext().getWorldContext();
 		TWorld world = worldContext.getElement();
 		
 		// get on action with block on world.
-		if ((blockToCall = world.resolveBlock(actionWithEntry)) != null)
-		{
-			response.trace(request, "Found \"action with\" block on the world.");
-			callBlock(request, response, worldContext, blockToCall);
+		if (callElementBlock(request, response, worldContext, actionWithEntry))
 			return;
-		}
 		// get on action with ancestor on world
 		else if (doActionAncestorSearch(request, response, actionValue, world, object))
 			return;
 		// get on action with other block on world.
-		else if ((blockToCall = world.resolveBlock(actionWithOtherEntry)) != null)
-		{
-			response.trace(request, "Found \"action with other\" block on the world.");
-			callBlock(request, response, worldContext, blockToCall);
+		else if (callElementBlock(request, response, worldContext, actionWithOtherEntry))
 			return;
-		}
 
 		if (!callActionUnhandled(request, response, action))
 			response.addCue(CUE_ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
@@ -1215,11 +1047,8 @@ public final class TAMELogic implements TAMEConstants
 	private static void doActionDitransitive(TAMERequest request, TAMEResponse response, TAction action, TObject object1, TObject object2) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
-		response.trace(request, "Performing ditransitive action %s on %s with %s", action, object1, object2);
-
 		TObjectContext currentObject1Context = moduleContext.getObjectContext(object1);
 		TObjectContext currentObject2Context = moduleContext.getObjectContext(object2);
-		Block blockToCall = null;
 		
 		BlockEntry blockEntry1, blockEntry2;
 		Value actionValue = Value.createAction(action.getIdentity());
@@ -1231,23 +1060,10 @@ public final class TAMELogic implements TAMEConstants
 		boolean call12 = !action.isStrict() || !action.isReversed();
 		boolean call21 = !action.isStrict() || action.isReversed();
 		
-		if (call12 && (blockToCall = object1.resolveBlock(blockEntry2)) != null)
-		{
-			response.trace(request, "Found \"action with\" block in object %s lineage with %s.", object1, object2);
-			callBlock(request, response, currentObject1Context, blockToCall);
+		if (call12 && callElementBlock(request, response, currentObject1Context, blockEntry2))
 			return;
-		}
-		else
-			response.trace(request, "No matching \"action with\" block in object %s lineage with %s.", object1, object2);
-
-		if (call21 && (blockToCall = object2.resolveBlock(blockEntry1)) != null)
-		{
-			response.trace(request, "Found \"action with\" block in object %s lineage with %s.", object2, object1);
-			callBlock(request, response, currentObject2Context, blockToCall);
+		if (call21 && callElementBlock(request, response, currentObject2Context, blockEntry1))
 			return;
-		}
-		else
-			response.trace(request, "No matching \"action with\" block in object %s lineage with %s.", object2, object1);
 
 		// call action with ancestor on each object. one or both need to succeed for no failure.
 		if (call12 && doActionAncestorSearch(request, response, actionValue, object1, object2))
@@ -1257,26 +1073,12 @@ public final class TAMELogic implements TAMEConstants
 		
 		// attempt action with other on both objects.
 		BlockEntry actionOtherEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHOTHER, actionValue);
-		if (call12 && (blockToCall = object1.resolveBlock(actionOtherEntry)) != null)
-		{
-			response.trace(request, "Found \"action with other\" block in object %s lineage.", object1);
-			callBlock(request, response, currentObject1Context, blockToCall);
+		if (call12 && callElementBlock(request, response, currentObject1Context, actionOtherEntry))
 			return;
-		}
-		else
-			response.trace(request, "No matching \"action with other\" block in object %s lineage.", object1);
+		if (call21 && callElementBlock(request, response, currentObject2Context, actionOtherEntry))
+			return;
 
-		if (call21 && (blockToCall = object2.resolveBlock(actionOtherEntry)) != null)
-		{
-			response.trace(request, "Found \"action with other\" block in object %s lineage.", object2);
-			callBlock(request, response, currentObject2Context, blockToCall);
-			return;
-		}
-		else
-			response.trace(request, "No matching \"action with other\" block in object %s lineage.", object2);
-		
 		// if we STILL can't do it...
-		response.trace(request, "No blocks called in ditransitive action call.");
 		if (!callActionUnhandled(request, response, action))
 			response.addCue(CUE_ERROR, "ACTION UNHANDLED (make a better in-universe handler!).");
 	}
@@ -1293,25 +1095,17 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	private static boolean doActionAncestorSearch(TAMERequest request, TAMEResponse response, Value actionValue, TElement element, TObject start) throws TAMEInterrupt
 	{
-		Block blockToCall;
-		BlockEntry blockEntry;
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TObject ancestor = (TObject)start.getParent();
 		TElementContext<?> elementContext = moduleContext.getContextByIdentity(element.getIdentity());
 
 		while (ancestor != null)
 		{
-			blockEntry = BlockEntry.create(BlockEntryType.ONACTIONWITHANCESTOR, actionValue, Value.createObject(ancestor.getIdentity()));
-			if ((blockToCall = element.resolveBlock(blockEntry)) != null)
-			{
-				response.trace(request, "Found \"action with ancestor\" block in element %s lineage - ancestor is %s.", element, ancestor);
-				callBlock(request, response, elementContext, blockToCall);
+			if (callElementBlock(request, response, elementContext, BlockEntry.create(BlockEntryType.ONACTIONWITHANCESTOR, actionValue, Value.createObject(ancestor.getIdentity()))))
 				return true;
-			}
 			ancestor = (TObject)ancestor.getParent();
 		}
 		
-		response.trace(request, "No matching \"action with ancestor\" block in element %s lineage.", element);
 		return false;
 	}
 	
@@ -1323,40 +1117,19 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	private static boolean callUnknownCommand(TAMERequest request, TAMEResponse response) throws TAMEInterrupt
 	{
-		response.trace(request, "Finding unknown command blocks...");
-	
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
-		Block blockToCall = null;
-		
 		BlockEntry blockEntry = BlockEntry.create(BlockEntryType.ONUNKNOWNCOMMAND);
 		
 		if (currentPlayerContext != null)
 		{
-			TPlayer currentPlayer = currentPlayerContext.getElement();
-			response.trace(request, "For current player %s...", currentPlayer);
-	
-			// get block on player.
-			// find via inheritance.
-			blockToCall = currentPlayer.resolveBlock(blockEntry);
-			if (blockToCall != null)
-			{
-				response.trace(request, "Found unknown command block on player.");
-				callBlock(request, response, currentPlayerContext, blockToCall);
+			if (callElementBlock(request, response, currentPlayerContext, blockEntry))
 				return true;
-			}
-	
 		}
 	
 		TWorldContext worldContext = moduleContext.getWorldContext();
-		
-		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(blockEntry)) != null)
-		{
-			response.trace(request, "Found unknown command block on world.");
-			callBlock(request, response, worldContext, blockToCall);
+		if (callElementBlock(request, response, worldContext, blockEntry))
 			return true;
-		}
 	
 		return false;
 	}
@@ -1372,14 +1145,26 @@ public final class TAMELogic implements TAMEConstants
 	private static boolean callAmbiguousCommand(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
+
+		BlockEntry entry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSCOMMAND, Value.createAction(action.getIdentity()));
+		BlockEntry genericEntry = BlockEntry.create(BlockEntryType.ONAMBIGUOUSCOMMAND);
+
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
-	
-		if (currentPlayerContext != null && callPlayerAmbiguousCommandBlock(request, response, action, currentPlayerContext))
-			return true;
+		if (currentPlayerContext != null)
+		{
+			if (callElementBlock(request, response, currentPlayerContext, entry))
+				return true;
+			if (callElementBlock(request, response, currentPlayerContext, genericEntry))
+				return true;
+		}
 	
 		TWorldContext worldContext = moduleContext.getWorldContext();
+		if (callElementBlock(request, response, worldContext, entry))
+			return true;
+		if (callElementBlock(request, response, worldContext, genericEntry))
+			return true;
 		
-		return callWorldAmbiguousCommandBlock(request, response, action, worldContext);
+		return false;
 	}
 
 	/**
@@ -1396,13 +1181,25 @@ public final class TAMELogic implements TAMEConstants
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TWorldContext worldContext = moduleContext.getWorldContext();
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		BlockEntry entry = BlockEntry.create(BlockEntryType.ONMALFORMEDCOMMAND, Value.createAction(action.getIdentity()));
+		BlockEntry genericEntry = BlockEntry.create(BlockEntryType.ONMALFORMEDCOMMAND);
 		
 		// try bad action on player.
-		if (currentPlayerContext != null && callPlayerMalformedCommandBlock(request, response, action, currentPlayerContext))
-			return true;
+		if (currentPlayerContext != null)
+		{
+			if (callElementBlock(request, response, currentPlayerContext, entry))
+				return true;
+			if (callElementBlock(request, response, currentPlayerContext, genericEntry))
+				return true;
+		}
 	
 		// try bad action on world.
-		return callWorldMalformedCommandBlock(request, response, action, worldContext);
+		if (callElementBlock(request, response, worldContext, entry))
+			return true;
+		if (callElementBlock(request, response, worldContext, genericEntry))
+			return true;
+
+		return false;
 	}
 
 	/**
@@ -1417,15 +1214,27 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
+		BlockEntry entry = BlockEntry.create(BlockEntryType.ONINCOMPLETECOMMAND, Value.createAction(action.getIdentity()));
+		BlockEntry genericEntry = BlockEntry.create(BlockEntryType.ONINCOMPLETECOMMAND);
 		
 		// try incomplete on player.
-		if (currentPlayerContext != null && callPlayerIncompleteCommandBlock(request, response, action, currentPlayerContext))
-			return true;
+		if (currentPlayerContext != null)
+		{
+			if (callElementBlock(request, response, currentPlayerContext, entry))
+				return true;
+			if (callElementBlock(request, response, currentPlayerContext, genericEntry))
+				return true;
+		}
 	
 		TWorldContext worldContext = moduleContext.getWorldContext();
 
 		// try incomplete on world.
-		return callWorldIncompleteCommandBlock(request, response, action, worldContext);
+		if (callElementBlock(request, response, worldContext, entry))
+			return true;
+		if (callElementBlock(request, response, worldContext, genericEntry))
+			return true;
+
+		return false;
 	}
 
 	/**
@@ -1439,282 +1248,28 @@ public final class TAMELogic implements TAMEConstants
 	private static boolean callActionUnhandled(TAMERequest request, TAMEResponse response, TAction action) throws TAMEInterrupt
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
+
 		TPlayerContext currentPlayerContext = moduleContext.getCurrentPlayerContext();
 		
 		// try fail on player.
-		if (currentPlayerContext != null && callPlayerActionUnhandledBlock(request, response, action, currentPlayerContext))
-			return true;
+		BlockEntry entry = BlockEntry.create(BlockEntryType.ONUNHANDLEDACTION, Value.createAction(action.getIdentity()));
+		BlockEntry genericEntry = BlockEntry.create(BlockEntryType.ONUNHANDLEDACTION);
+		if (currentPlayerContext != null)
+		{
+			if (callElementBlock(request, response, currentPlayerContext, entry))
+				return true;
+			if (callElementBlock(request, response, currentPlayerContext, genericEntry))
+				return true;
+		}
 	
 		TWorldContext worldContext = moduleContext.getWorldContext();
 
 		// try fail on world.
-		return callWorldActionUnhandledBlock(request, response, action, worldContext);
-	}
+		if (callElementBlock(request, response, worldContext, entry))
+			return true;
+		if (callElementBlock(request, response, worldContext, genericEntry))
+			return true;
 
-	/**
-	 * Calls the appropriate ambiguous command blocks if they exist on the world.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @param worldContext the world context.
-	 * @return true if a block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callWorldAmbiguousCommandBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext worldContext) throws TAMEInterrupt
-	{
-		Block blockToCall = null;
-		
-		// get specific block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.ONAMBIGUOUSCOMMAND, Value.createAction(action.getIdentity())))) != null)
-		{
-			response.trace(request, "Found specific ambiguous command block on world for action %s.", action.getIdentity());
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-	
-		// get block on world.
-		if ((blockToCall = worldContext.getElement().resolveBlock(BlockEntry.create(BlockEntryType.ONAMBIGUOUSCOMMAND))) != null)
-		{
-			response.trace(request, "Found default ambiguous command block on world.");
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-	
-		return false;
-	}
-
-	/**
-	 * Calls the appropriate ambiguous command blocks if they exist on a player.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @param playerContext the player context.
-	 * @return true if a block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callPlayerAmbiguousCommandBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext playerContext) throws TAMEInterrupt 
-	{
-		TPlayer currentPlayer = playerContext.getElement();
-	
-		Block blockToCall = null;
-		
-		// get specific block on player.
-		if ((blockToCall = currentPlayer.resolveBlock(BlockEntry.create(BlockEntryType.ONAMBIGUOUSCOMMAND, Value.createAction(action.getIdentity())))) != null)
-		{
-			response.trace(request, "Found specific ambiguous command block in player %s lineage for action %s.", currentPlayer.getIdentity(), action.getIdentity());
-			callBlock(request, response, playerContext, blockToCall);
-			return true;
-		}
-	
-		// get block on player.
-		if ((blockToCall = currentPlayer.resolveBlock(BlockEntry.create(BlockEntryType.ONAMBIGUOUSCOMMAND))) != null)
-		{
-			response.trace(request, "Found default ambiguous command block in player %s lineage.", currentPlayer.getIdentity());
-			callBlock(request, response, playerContext, blockToCall);
-			return true;
-		}
-		
-		response.trace(request, "No ambiguous command block on player.");
-		return false;
-	}
-
-	/**
-	 * Calls the appropriate malformed command block on the world if it exists.
-	 * Malformed commands are commands with mismatched conjugates, unknown modal parts, or unknown object references. 
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @param worldContext the world context.
-	 * @return true if a block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callWorldMalformedCommandBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext worldContext) throws TAMEInterrupt 
-	{
-		TWorld world = worldContext.getElement();
-		
-		Block blockToCall;
-		
-		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONMALFORMEDCOMMAND, Value.createAction(action.getIdentity())))) != null)
-		{
-			response.trace(request, "Found specific malformed command block on world with action %s.", action.getIdentity());
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-	
-		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONMALFORMEDCOMMAND))) != null)
-		{
-			response.trace(request, "Found default malformed command block on world.");
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-	
-		response.trace(request, "No malformed command block on world.");
-		return false;
-	}
-
-	/**
-	 * Calls the appropriate malformed command block on a player if it exists.
-	 * Malformed commands are commands with mismatched conjugates, unknown modal parts, or unknown object references. 
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @param context the player context.
-	 * @return true if a block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callPlayerMalformedCommandBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext context) throws TAMEInterrupt 
-	{
-		TPlayer player = context.getElement();
-		
-		Block blockToCall;
-		
-		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONMALFORMEDCOMMAND, Value.createAction(action.getIdentity())))) != null)
-		{
-			response.trace(request, "Found specific malformed command block in player %s lineage, action %s.", player.getIdentity(), action.getIdentity());
-			callBlock(request, response, context, blockToCall);
-			return true;
-		}
-	
-		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONMALFORMEDCOMMAND))) != null)
-		{
-			response.trace(request, "Found default malformed command block on player %s.", player.getIdentity());
-			callBlock(request, response, context, blockToCall);
-			return true;
-		}
-	
-		response.trace(request, "No malformed command block on player.");
-		return false;
-	}
-
-	/**
-	 * Calls the appropriate incomplete command block on the world if it exists.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @param worldContext the world context.
-	 * @return true if a block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callWorldIncompleteCommandBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext worldContext) throws TAMEInterrupt 
-	{
-		TWorld world = worldContext.getElement();
-		
-		Block blockToCall;
-		
-		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONINCOMPLETECOMMAND, Value.createAction(action.getIdentity())))) != null)
-		{
-			response.trace(request, "Found specific incomplete command block on world, action %s.", action.getIdentity());
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-	
-		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONINCOMPLETECOMMAND))) != null)
-		{
-			response.trace(request, "Found default incomplete command block on world.");
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-	
-		response.trace(request, "No incomplete command block on world.");
-		return false;
-	}
-
-	/**
-	 * Calls the appropriate incomplete command block on a player if it exists.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @param context the player context.
-	 * @return true if a block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callPlayerIncompleteCommandBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext context) throws TAMEInterrupt 
-	{
-		TPlayer player = context.getElement();
-		
-		Block blockToCall;
-		
-		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONINCOMPLETECOMMAND, Value.createAction(action.getIdentity())))) != null)
-		{
-			response.trace(request, "Found specific incomplete command block in player %s lineage, action %s.", player.getIdentity(), action.getIdentity());
-			callBlock(request, response, context, blockToCall);
-			return true;
-		}
-	
-		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONINCOMPLETECOMMAND))) != null)
-		{
-			response.trace(request, "Found default incomplete command block in player %s lineage.", player.getIdentity());
-			callBlock(request, response, context, blockToCall);
-			return true;
-		}
-	
-		response.trace(request, "No incomplete command block on player.");
-		return false;
-	}
-
-	/**
-	 * Calls the appropriate action unhandled block on the world if it exists.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @param worldContext the world context.
-	 * @return true if a fail block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callWorldActionUnhandledBlock(TAMERequest request, TAMEResponse response, TAction action, TWorldContext worldContext) throws TAMEInterrupt 
-	{
-		TWorld world = worldContext.getElement();
-		
-		Block blockToCall;
-		
-		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONUNHANDLEDACTION, Value.createAction(action.getIdentity())))) != null)
-		{
-			response.trace(request, "Found specific action unhandled block on world, action %s.", action.getIdentity());
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-
-		if ((blockToCall = world.resolveBlock(BlockEntry.create(BlockEntryType.ONUNHANDLEDACTION))) != null)
-		{
-			response.trace(request, "Found default action unhandled block on world.");
-			callBlock(request, response, worldContext, blockToCall);
-			return true;
-		}
-
-		response.trace(request, "No action unhandled block on world.");
-		return false;
-	}
-
-	/**
-	 * Calls the appropriate action unhandled block on a player if it exists.
-	 * @param request the request object.
-	 * @param response the response object.
-	 * @param action the action attempted.
-	 * @param context the player context.
-	 * @return true if a fail block was called, false if not.
-	 * @throws TAMEInterrupt if an interrupt occurs.
-	 */
-	private static boolean callPlayerActionUnhandledBlock(TAMERequest request, TAMEResponse response, TAction action, TPlayerContext context) throws TAMEInterrupt 
-	{
-		TPlayer player = context.getElement();
-		
-		Block blockToCall;
-		
-		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONUNHANDLEDACTION, Value.createAction(action.getIdentity())))) != null)
-		{
-			response.trace(request, "Found specific action unhandled block in player %s lineage, action %s.", player.getIdentity(), action.getIdentity());
-			callBlock(request, response, context, blockToCall);
-			return true;
-		}
-
-		if ((blockToCall = player.resolveBlock(BlockEntry.create(BlockEntryType.ONUNHANDLEDACTION))) != null)
-		{
-			response.trace(request, "Found default action unhandled block in player %s lineage.", player.getIdentity());
-			callBlock(request, response, context, blockToCall);
-			return true;
-		}
-
-		response.trace(request, "No action unhandled block on player.");
 		return false;
 	}
 
@@ -1724,46 +1279,62 @@ public final class TAMELogic implements TAMEConstants
 		while (contexts.hasNext())
 		{
 			TElementContext<?> context = contexts.next();
-			callInitBlock(request, response, context);
+			callElementBlock(request, response, context, BlockEntry.create(BlockEntryType.INIT));
 		}
 	}
 
-	// Call init on a single context.
-	private static void callInitBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context) throws TAMEInterrupt 
+	/**
+	 * Interprets the input on the request.
+	 * Requires a context, as objects may need to be parsed.
+	 * @param request the request object.
+	 * @param response the response object.
+	 * @param moduleContext the module context to use (for object availability).
+	 * @param inputMessage the input message to interpret.
+	 * @return a new interpreter context using the input.
+	 */
+	private static InterpreterContext interpret(TAMERequest request, TAMEResponse response)
 	{
-		response.trace(request, TraceType.ENTRY, "RESOLVE %s.init()", context.getElement().getIdentity());
-		TElement element = context.getElement();
-
-		Block initBlock = element.resolveBlock(BlockEntry.create(BlockEntryType.INIT));
-		if (initBlock != null)
+		TAMEModuleContext moduleContext = request.getModuleContext();
+		String inputMessage = request.getInputMessage();
+		InterpreterContext interpreterContext = new InterpreterContext(TAMELogic.tokenizeInput(moduleContext, inputMessage));
+		
+		interpretAction(request, response, interpreterContext);
+		
+		TAction action = interpreterContext.getAction();
+		if (action == null)
+			return interpreterContext;
+		
+		switch (action.getType())
 		{
-			response.trace(request, TraceType.ENTRY, "CALL %s.init()", context.getElement().getIdentity());
-			callBlock(request, response, context, initBlock);
-		}
-	}
-
-	// Call after module init block on the world.
-	private static void callStartBlock(TAMERequest request, TAMEResponse response) throws TAMEInterrupt 
-	{
-		TWorldContext worldContext = request.getModuleContext().getWorldContext();
-		response.trace(request, TraceType.ENTRY, "RESOLVE world.start()");
-		TWorld world = worldContext.getElement();
-
-		Block initBlock = world.resolveBlock(BlockEntry.create(BlockEntryType.START));
-		if (initBlock != null)
-		{
-			response.trace(request, TraceType.ENTRY, "CALL world.start()");
-			callBlock(request, response, worldContext, initBlock);
+			default:
+			case GENERAL:
+				return interpreterContext;
+			case OPEN:
+				interpretOpen(request, response, interpreterContext);
+				return interpreterContext;
+			case MODAL:
+				interpretMode(request, response, action, interpreterContext);
+				return interpreterContext;
+			case TRANSITIVE:
+				interpretObject1(request, response, moduleContext, interpreterContext);
+				return interpreterContext;
+			case DITRANSITIVE:
+				if (interpretObject1(request, response, moduleContext, interpreterContext))
+					if (interpretConjugate(request, response, action, interpreterContext))
+						interpretObject2(request, response, moduleContext, interpreterContext);
+				return interpreterContext;
 		}
 	}
 
 	/**
 	 * Interprets an action from the input line.
-	 * @param moduleContext the module context.
+	 * @param request the request object.
+	 * @param response the response object.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static void interpretAction(TAMEModuleContext moduleContext, InterpreterContext interpreterContext)
+	private static void interpretAction(TAMERequest request, TAMEResponse response, InterpreterContext interpreterContext)
 	{
+		TAMEModuleContext moduleContext = request.getModuleContext();
 		TAMEModule module = moduleContext.getModule();
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1775,9 +1346,11 @@ public final class TAMELogic implements TAMEConstants
 				sb.append(' ');
 			sb.append(tokens[index]);
 			index++;
+			response.trace(request, TraceType.INTERPRETER, "TEST ACTION %s", sb.toString());
 			TAction next = module.getActionByName(sb.toString());
 			if (next != null)
 			{
+				response.trace(request, TraceType.INTERPRETER, "MATCHED ACTION %s", next.getIdentity());
 				interpreterContext.setAction(next);
 				interpreterContext.setTokenOffset(index);
 			}
@@ -1789,7 +1362,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param action the action to use.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static void interpretMode(TAction action, InterpreterContext interpreterContext)
+	private static void interpretMode(TAMERequest request, TAMEResponse response, TAction action, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1805,8 +1378,10 @@ public final class TAMELogic implements TAMEConstants
 			interpreterContext.setModeLookedUp(true);
 
 			String next = sb.toString();
+			response.trace(request, TraceType.INTERPRETER, "TEST MODE %s", next);
 			if (action.containsExtraString(next))
 			{
+				response.trace(request, TraceType.INTERPRETER, "MATCHED MODE %s", next);
 				interpreterContext.setMode(next);
 				interpreterContext.setTokenOffset(index);
 			}
@@ -1815,9 +1390,11 @@ public final class TAMELogic implements TAMEConstants
 
 	/**
 	 * Interprets open target.
+	 * @param request the request object.
+	 * @param response the response object.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static void interpretOpen(InterpreterContext interpreterContext)
+	private static void interpretOpen(TAMERequest request, TAMEResponse response, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1832,16 +1409,19 @@ public final class TAMELogic implements TAMEConstants
 			index++;
 		}
 		
+		response.trace(request, TraceType.INTERPRETER, "READ OPEN TARGET %s", sb.toString());
 		interpreterContext.setTarget(sb.length() > 0 ? sb.toString() : null);
 		interpreterContext.setTokenOffset(index);
 	}
 
 	/**
 	 * Interprets an action conjugate from the input line (like "with" or "on" or whatever).
+	 * @param request the request object.
+	 * @param response the response object.
 	 * @param action the action to use.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static boolean interpretConjugate(TAction action, InterpreterContext interpreterContext)
+	private static boolean interpretConjugate(TAMERequest request, TAMEResponse response, TAction action, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1856,8 +1436,10 @@ public final class TAMELogic implements TAMEConstants
 			index++;
 			
 			interpreterContext.setConjugateLookedUp(true);
+			response.trace(request, TraceType.INTERPRETER, "TEST CONJUGATE %s", sb.toString());
 			if (action.containsExtraString(sb.toString()))
 			{
+				response.trace(request, TraceType.INTERPRETER, "MATCHED CONJUGATE %s", sb.toString());
 				interpreterContext.setTokenOffset(index);
 				out = true;
 			}
@@ -1874,10 +1456,12 @@ public final class TAMELogic implements TAMEConstants
 	 * the player is null, or the current room is null.
 	 * <p>
 	 * The priority order is player inventory, then room contents.
+	 * @param request the request object.
+	 * @param response the response object.
 	 * @param moduleContext the module context.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static boolean interpretObject1(TAMEModuleContext moduleContext, InterpreterContext interpreterContext)
+	private static boolean interpretObject1(TAMERequest request, TAMEResponse response, TAMEModuleContext moduleContext, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1891,15 +1475,18 @@ public final class TAMELogic implements TAMEConstants
 			index++;
 
 			interpreterContext.setObject1LookedUp(true);
+			response.trace(request, TraceType.INTERPRETER, "TEST OBJECT 1 %s", sb.toString());
 			int out = moduleContext.getAccessibleObjectsByName(sb.toString(), interpreterContext.getObjects(), 0);
 			if (out > 1)
 			{
+				response.trace(request, TraceType.INTERPRETER, "MATCHED MULTIPLE OBJECTS");
 				interpreterContext.setObjectAmbiguous(true);
 				interpreterContext.setObject1(null);
 				interpreterContext.setTokenOffset(index);
 			}
 			else if (out > 0)
 			{
+				response.trace(request, TraceType.INTERPRETER, "MATCHED OBJECT 1 %s", interpreterContext.getObjects()[0].getIdentity());
 				interpreterContext.setObjectAmbiguous(false);
 				interpreterContext.setObject1(interpreterContext.getObjects()[0]);
 				interpreterContext.setTokenOffset(index);
@@ -1916,10 +1503,12 @@ public final class TAMELogic implements TAMEConstants
 	 * the player is null, or the current room is null.
 	 * <p>
 	 * The priority order is player inventory, then room contents.
+	 * @param request the request object.
+	 * @param response the response object.
 	 * @param moduleContext the module context.
 	 * @param interpreterContext the TAMEInterpreterContext.
 	 */
-	private static boolean interpretObject2(TAMEModuleContext moduleContext, InterpreterContext interpreterContext)
+	private static boolean interpretObject2(TAMERequest request, TAMEResponse response, TAMEModuleContext moduleContext, InterpreterContext interpreterContext)
 	{
 		StringBuilder sb = new StringBuilder();
 		int index = interpreterContext.getTokenOffset();
@@ -1933,15 +1522,18 @@ public final class TAMELogic implements TAMEConstants
 			index++;
 
 			interpreterContext.setObject2LookedUp(true);
+			response.trace(request, TraceType.INTERPRETER, "TEST OBJECT 2 %s", sb.toString());
 			int out = moduleContext.getAccessibleObjectsByName(sb.toString(), interpreterContext.getObjects(), 0);
 			if (out > 1)
 			{
+				response.trace(request, TraceType.INTERPRETER, "MATCHED MULTIPLE OBJECTS");
 				interpreterContext.setObjectAmbiguous(true);
 				interpreterContext.setObject2(null);
 				interpreterContext.setTokenOffset(index);
 			}
 			else if (out > 0)
 			{
+				response.trace(request, TraceType.INTERPRETER, "MATCHED OBJECT 2 %s", interpreterContext.getObjects()[0].getIdentity());
 				interpreterContext.setObjectAmbiguous(false);
 				interpreterContext.setObject2(interpreterContext.getObjects()[0]);
 				interpreterContext.setTokenOffset(index);
