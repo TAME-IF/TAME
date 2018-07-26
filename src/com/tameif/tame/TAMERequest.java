@@ -122,15 +122,6 @@ public class TAMERequest
 	}
 
 	/**
-	 * Is this a tracing request?
-	 * @return true if so, false if not.
-	 */
-	public boolean isTracing()
-	{
-		return !traceTypes.isEmpty();
-	}
-
-	/**
 	 * Checks if this request is performing a specific type of trace.
 	 * @param type the trace type to check.
 	 * @return true if so, false if not.

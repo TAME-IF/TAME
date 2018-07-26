@@ -93,16 +93,6 @@ TLogic.operationToString = function(operationObject)
 		sb.append(' ').append(TValue.toString(operationObject.operand0));
 	if (operationObject.operand1 != null)
 		sb.append(' ').append(TValue.toString(operationObject.operand1));
-	if (operationObject.initBlock != null)
-		sb.append(" [INIT]");
-	if (operationObject.conditionalBlock != null)
-		sb.append(" [CONDITIONAL]");
-	if (operationObject.stepBlock != null)
-		sb.append(" [STEP]");
-	if (operationObject.successBlock != null)
-		sb.append(" [SUCCESS]");
-	if (operationObject.failureBlock != null)
-		sb.append(" [FAILURE]");
 	return sb.toString();
 };
 
@@ -126,12 +116,10 @@ TLogic.elementToString = function(elemObject)
  */
 TLogic.executeBlock = function(block, request, response, blockLocal)
 {
-	response.trace(request, "Start block.");
-	Util.each(block, function(operation){
-		response.trace(request, "CALL "+TLogic.operationToString(operation));
+	Util.each(block, function(operation) {
+		response.trace(request, TAMEConstants.TraceType.FUNCTION, Util.format("CALL {0}", TLogic.operationToString(operation))); 
 		TLogic.executeOperation(request, response, blockLocal, operation);
 	});
-	response.trace(request, "End block.");
 };
 
 /**
@@ -165,7 +153,7 @@ TLogic.callConditional = function(operationName, request, response, blockLocal, 
 	if (!conditional)
 		throw TAMEError.ModuleExecution("Conditional block for "+operationName+" does NOT EXIST!");
 	
-	response.trace(request, "Calling "+operationName+" conditional...");
+	response.trace(request, TAMEConstants.TraceType.CONTROL, operationName+" Conditional");
 	TLogic.executeBlock(conditional, request, response, blockLocal);
 
 	// get remaining expression value.
@@ -175,7 +163,7 @@ TLogic.callConditional = function(operationName, request, response, blockLocal, 
 		throw TAMEError.UnexpectedValueType("Expected literal type after "+operationName+" conditional block execution.");
 
 	var result = TValue.asBoolean(value);
-	response.trace(request, "Result "+TValue.toString(value)+" evaluates "+result+".");
+	response.trace(request, TAMEConstants.TraceType.CONTROL, Util.format(operationName+" Conditional {0} is {1}", TValue.toString(value), result));
 	return result;
 }
 

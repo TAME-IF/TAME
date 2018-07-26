@@ -10,6 +10,7 @@
 
 // REQUIREMENTS =========================================================================================
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAMEError.js') : null);
+var TAMEConstants = TAMEConstants || ((typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null);
 // ======================================================================================================
 
 //##[[EXPORTJS-START
@@ -21,7 +22,7 @@ var TRequest = function(context, inputMessage, tracing)
 {
 	this.moduleContext = context;
     this.inputMessage = inputMessage;
-    this.tracing = tracing;
+    this.traceTypes = tracing ? TAMEConstants.TraceType : {};
  
 	// Stacks and Queues
     this.commandQueue = [];
@@ -40,12 +41,13 @@ TRequest.prototype.getInputMessage = function()
 };
 
 /**
- * Is this a tracing request?
+ * Does this trace a specific type?
+ * @param traceType the tracing type. 
  * @return true if so, false if not.
  */
-TRequest.prototype.isTracing = function()
+TRequest.prototype.traces = function(traceType)
 {
-	return this.tracing;
+	return 'undefined' !== (typeof this.traceTypes[traceType]);
 };
 
 /**

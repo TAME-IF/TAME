@@ -563,7 +563,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			)
 			{
 				try {
-					response.trace(request, TraceType.CONTROL, "FOR Step");
+					response.trace(request, TraceType.CONTROL, "FOR Success");
 					success.execute(request, response, blockLocal);
 				} catch (BreakInterrupt interrupt) {
 					break;

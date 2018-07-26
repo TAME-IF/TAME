@@ -59,9 +59,15 @@ var TOperationFunctions =
 			var variableName = TValue.asString(varvalue);
 			
 			if (TLogic.containsValue(blockLocal, variableName))
+			{
+				response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET LOCAL {0} {1}", variableName, TValue.toString(value)));
 				TLogic.setValue(blockLocal, variableName, value);
+			}
 			else
+			{
+				response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET {0}.{1} {2}", request.peekContext().identity, variableName, TValue.toString(value)));
 				TLogic.setValue(request.peekContext().variables, variableName, value);
+			}
 		}
 	},
 
@@ -78,7 +84,9 @@ var TOperationFunctions =
 			if (!TValue.isVariable(varvalue))
 				throw TAMEError.UnexpectedValueType("Expected variable type in POPLOCALVALUE call.");
 
-			TLogic.setValue(blockLocal, TValue.asString(varvalue), value);
+			var variableName = TValue.asString(varvalue);
+			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET LOCAL {0} {1}", variableName, TValue.toString(value)));
+			TLogic.setValue(blockLocal, variableName, value);
 		}
 	},
 
@@ -87,7 +95,7 @@ var TOperationFunctions =
 		"name": 'POPELEMENTVALUE', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject = operation.operand0;
+			var varElement = operation.operand0;
 			var variable = operation.operand1;
 			var value = request.popValue();
 
@@ -95,12 +103,14 @@ var TOperationFunctions =
 				throw TAMEError.UnexpectedValueType("Expected literal type in POPELEMENTVALUE call.");
 			if (!TValue.isVariable(variable))
 				throw TAMEError.UnexpectedValueType("Expected variable type in POPELEMENTVALUE call.");
-			if (!TValue.isElement(varObject))
+			if (!TValue.isElement(varElement))
 				throw TAMEError.UnexpectedValueType("Expected element type in POPELEMENTVALUE call.");
 
-			var objectName = TValue.asString(varObject);
-
-			TLogic.setValue(request.moduleContext.resolveElementContext(objectName).variables, TValue.asString(variable), value);
+			var elementName = TValue.asString(varElement);
+			var variableName = TValue.asString(variable);
+			var context = request.moduleContext.resolveElementContext(elementName);
+			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET {0}.{1} {2}", context.identity, variableName, TValue.toString(value)));
+			TLogic.setValue(context.variables, variableName, value);
 		}
 	},
 
@@ -123,7 +133,8 @@ var TOperationFunctions =
 			if (!TValue.isList(listValue))
 				return;
 			
-			TValue.listSet(TValue.asLong(index), value);
+			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET LIST [{0}] {1}", TValue.asLong(index), TValue.toString(value)));
+			TValue.listSet(listValue, TValue.asLong(index), value);
 		}
 	},
 	
@@ -234,9 +245,15 @@ var TOperationFunctions =
 			
 			var variableName = TValue.asString(value).toLowerCase();
 			if (blockLocal[variableName])
+			{
+				response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("CLEAR LOCAL {0}", variableName));
 				TLogic.clearValue(blockLocal, variableName);
+			}
 			else
+			{
+				response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("CLEAR {0}.{1}", request.peekContext().identity, variableName));
 				TLogic.clearValue(request.peekContext().variables, variableName);
+			}
 		}
 	},
 
@@ -254,13 +271,9 @@ var TOperationFunctions =
 				throw TAMEError.UnexpectedValueType("Expected element type in CLEARELEMENTVALUE call.");
 
 			var variableName = TValue.asString(variable).toLowerCase();
-			if (blockLocal[variableName])
-				TLogic.clearValue(blockLocal, TValue.asString(variable));
-			else
-			{
-				var element = request.moduleContext.resolveElementContext(TValue.asString(varElement));
-				TLogic.clearValue(element.variables, TValue.asString(variable))
-			}
+			var context = request.moduleContext.resolveElementContext(TValue.asString(varElement));
+			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("CLEAR {0}.{1}", context.identity, variableName));
+			TLogic.clearValue(context.variables, TValue.asString(variable))
 		}
 	},
 
@@ -308,7 +321,6 @@ var TOperationFunctions =
 			
 			if (result)
 			{
-				response.trace(request, "Calling IF success block...");
 				var success = operation.successBlock;
 				if (!success)
 					throw TAMEError.ModuleExecution("Success block for IF does NOT EXIST!");
@@ -318,14 +330,7 @@ var TOperationFunctions =
 			{
 				var failure = operation.failureBlock;
 				if (failure)
-				{
-					response.trace(request, "Calling IF failure block...");
 					TLogic.executeBlock(failure, request, response, blockLocal);
-				}
-				else
-				{
-					response.trace(request, "No failure block.");
-				}
 			}
 		}
 	},
@@ -338,7 +343,6 @@ var TOperationFunctions =
 			while (TLogic.callConditional('WHILE', request, response, blockLocal, operation))
 			{
 				try {
-					response.trace(request, "Calling WHILE success block...");
 					var success = operation.successBlock;
 					if (!success)
 						throw TAMEError.ModuleExecution("Success block for WHILE does NOT EXIST!");
@@ -375,17 +379,17 @@ var TOperationFunctions =
 			if (!step)
 				throw TAMEError.ModuleExecution("Step block for FOR does NOT EXIST!");
 
-			response.trace(request, "Calling FOR init block...");
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "FOR Init");
 
 			for (
 				TLogic.executeBlock(init, request, response, blockLocal);
 				TLogic.callConditional('FOR', request, response, blockLocal, operation);
-				response.trace(request, "Calling FOR stepping block..."),
+				response.trace(request, TAMEConstants.TraceType.CONTROL, "FOR Step");
 				TLogic.executeBlock(step, request, response, blockLocal)
 			)
 			{
 				try {
-					response.trace(request, "Calling FOR success block...");
+					response.trace(request, TAMEConstants.TraceType.CONTROL, "FOR Success");
 					TLogic.executeBlock(success, request, response, blockLocal);
 				} catch (err) {
 					if (err instanceof TAMEInterrupt)
@@ -409,7 +413,7 @@ var TOperationFunctions =
 		"name": 'BREAK', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			response.trace(request, "Throwing break interrupt...");
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW BREAK");
 			throw TAMEInterrupt.Break();
 		}
 	},
@@ -419,7 +423,7 @@ var TOperationFunctions =
 		"name": 'CONTINUE', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			response.trace(request, "Throwing continue interrupt...");
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW CONTINUE");
 			throw TAMEInterrupt.Continue();
 		}
 	},
@@ -429,7 +433,7 @@ var TOperationFunctions =
 		"name": 'QUIT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			response.trace(request, "Throwing quit interrupt...");
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW QUIT");
 			response.addCue(TAMEConstants.Cue.QUIT);
 			throw TAMEInterrupt.Quit();
 		}
@@ -440,7 +444,7 @@ var TOperationFunctions =
 		"name": 'FINISH', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			response.trace(request, "Throwing finish interrupt...");
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW FINISH");
 			throw TAMEInterrupt.Finish();
 		}
 	},
@@ -450,7 +454,7 @@ var TOperationFunctions =
 		"name": 'END', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			response.trace(request, "Throwing end interrupt...");
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW END");
 			throw TAMEInterrupt.End();
 		}
 	},
@@ -461,9 +465,9 @@ var TOperationFunctions =
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var retVal = request.popValue();
-			response.trace(request, "Returning "+TValue.toString(retVal));
+			response.trace(request, TAMEConstants.TraceType.FUNCTION, "RETURN "+TValue.toString(retVal));
 			TLogic.setValue(blockLocal, TAMEConstants.RETURN_VARIABLE, retVal);
-			response.trace(request, "Throwing end interrupt...");
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW END");
 			throw TAMEInterrupt.End();
 		}
 	},
@@ -517,7 +521,7 @@ var TOperationFunctions =
 
 			var command = TCommand.create(action);
 			request.addCommand(command);
-			response.trace(request, "Enqueued "+command.toString());
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 		}
 	},
 
@@ -541,7 +545,7 @@ var TOperationFunctions =
 
 			var command = TCommand.createModal(action, TValue.asString(varTarget));
 			request.addCommand(command);
-			response.trace(request, "Enqueued "+command.toString());
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 		}
 	},
 
@@ -566,7 +570,7 @@ var TOperationFunctions =
 
 			var command = TCommand.createObject(action, object);
 			request.addCommand(command);
-			response.trace(request, "Enqueued "+command.toString());
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 		}
 	},
 
@@ -594,7 +598,7 @@ var TOperationFunctions =
 				var object = context.resolveElement(objectIdentity);
 				var command = TCommand.createObject(action, object);
 				request.addCommand(command);
-				response.trace(request, "Enqueued "+command.toString());
+				response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 			});
 		}
 
@@ -631,7 +635,7 @@ var TOperationFunctions =
 				var object = context.resolveElement(objectIdentity);
 				var command = TCommand.createObject(action, object);
 				request.addCommand(command);
-				response.trace(request, "Enqueued "+command.toString());
+				response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 			});
 		}
 
@@ -663,7 +667,7 @@ var TOperationFunctions =
 			
 			var command = TCommand.createObject2(action, object, object2);
 			request.addCommand(command);
-			response.trace(request, "Enqueued "+command.toString());
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 		}
 	},
 

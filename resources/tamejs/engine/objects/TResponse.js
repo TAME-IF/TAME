@@ -44,12 +44,13 @@ TResponse.prototype.addCue = function(type, content)
 /**
  * Adds a TRACE cue to the response, if tracing is enabled.
  * @param request (TRequest) the request object.
+ * @param traceType (string) the trace type.
  * @param content the content to add.
  */
-TResponse.prototype.trace = function(request, content)
+TResponse.prototype.trace = function(request, traceType, content)
 {
-	if (request.tracing)
-		this.addCue("TRACE", content);
+	if (request.traces(traceType))
+		this.addCue("TRACE-"+traceType, content);
 };
 
 /**

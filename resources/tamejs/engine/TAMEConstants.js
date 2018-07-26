@@ -14,6 +14,7 @@ var TAMEConstants = {};
 TAMEConstants.ActionType = {};
 TAMEConstants.Cue = {};
 TAMEConstants.Identity = {};
+TAMEConstants.TraceType = {};
 
 TAMEConstants.ActionType.GENERAL = 0;
 TAMEConstants.ActionType.TRANSITIVE = 1;
@@ -35,6 +36,13 @@ TAMEConstants.Cue.FATAL = "FATAL";
 TAMEConstants.Identity.ROOM = "room";
 TAMEConstants.Identity.PLAYER = "player";
 TAMEConstants.Identity.WORLD = "world";
+
+TAMEConstants.TraceType.INTERPRETER = "INTERPRETER";
+TAMEConstants.TraceType.CONTEXT = "CONTEXT";
+TAMEConstants.TraceType.ENTRY = "ENTRY";
+TAMEConstants.TraceType.CONTROL = "CONTROL";
+TAMEConstants.TraceType.FUNCTION = "FUNCTION";
+TAMEConstants.TraceType.VALUE = "VALUE";
 
 TAMEConstants.DEFAULT_RUNAWAY_THRESHOLD = 100000;
 TAMEConstants.DEFAULT_FUNCTION_DEPTH = 256;

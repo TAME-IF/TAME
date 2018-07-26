@@ -39,6 +39,21 @@ Util.each = function(obj, func)
 			func(obj[x], x, obj.length);
 };
 
+// String format ({Number}) 
+Util.format = function( /* str, args ... */ )
+{
+	if (!arguments.length)
+		return null;
+	
+	let str = arguments[0];
+	let args = Array.prototype.slice.call(arguments, 1);
+	
+    for (key in args) 
+        str = str.replace(new RegExp("\\{" + key + "\\}", "gi"), args[key]);
+    
+    return str;
+};
+
 // String compare.
 // Adapted from Java - java.lang.String.compareTo(String).
 Util.strcmp = function(s1, s2)
