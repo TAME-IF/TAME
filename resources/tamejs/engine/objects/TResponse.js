@@ -16,7 +16,7 @@ var TAMEConstants = TAMEConstants || (typeof require) !== 'undefined' ? require(
 //##[[EXPORTJS-START
 
 /*****************************************************************************
- See net.mtrop.tame.TAMEResponse
+ See com.tameif.tame.TAMEResponse
  *****************************************************************************/
 var TResponse = function()
 {

@@ -6,8 +6,9 @@
 0.9BETA5
 ........
 
-	- Better tracing.
-	- Fixed an issue in the JS implementation setting list values.
+	- Better tracing in Java and JS.
+	- Fixed an issue in the JS impl. setting list values.
+	- Fixed Operation EMPTY in JS impl.: Returned integer value, not boolean.
 
 
 0.9BETA4

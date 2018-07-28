@@ -55,7 +55,7 @@ Util.fromBase64 = (function()
 //##[[EXPORTJS-START
 
 /*****************************************************************************
- See net.mtrop.tame.lang.Value
+ See com.tameif.tame.lang.Value
  *****************************************************************************/
 var TValue = {};
 

@@ -174,8 +174,9 @@ var TOperationFunctions =
 				throw TAMEError.UnexpectedValueType("Expected element type in PUSHELEMENTVALUE call.");
 
 			var elementName = TValue.asString(varElement);
-
-			request.pushValue(TLogic.getValue(request.moduleContext.resolveElementContext(elementName).variables, TValue.asString(variable)));
+			var variableName = TValue.asString(variable);
+			
+			request.pushValue(TLogic.getValue(request.moduleContext.resolveElementContext(elementName).variables, variableName));
 		}
 	},
 
@@ -863,7 +864,7 @@ var TOperationFunctions =
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in EMPTY call.");
 
-			request.pushValue(TValue.createInteger(TValue.isEmpty(value)));
+			request.pushValue(TValue.createBoolean(TValue.isEmpty(value)));
 		}
 	},
 

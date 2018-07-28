@@ -16,7 +16,7 @@ var TAMEConstants = TAMEConstants || ((typeof require) !== 'undefined' ? require
 //##[[EXPORTJS-START
 
 /*****************************************************************************
- See net.mtrop.tame.TAMERequest
+ See com.tameif.tame.TAMERequest
  *****************************************************************************/
 var TRequest = function(context, inputMessage, tracing)
 {

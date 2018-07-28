@@ -11,7 +11,7 @@
 //##[[EXPORTJS-START
 
 /****************************************************
- See net.mtrop.tame.TAMECommand
+ See com.tameif.tame.TAMECommand
  ****************************************************/
 var TCommand = function(action, target, object1, object2)
 {
