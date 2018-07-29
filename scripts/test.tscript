@@ -217,6 +217,18 @@ world
 		poproom(player);
 		textln(identity(room));
 
+		textln(empty([]));
+		textln(empty(true));
+		textln(empty(false));
+		textln(empty(0));
+		textln(empty(NaN));
+
+		textln(length([]));
+		textln(length(true));
+		textln(length(false));
+		textln(length(0));
+		textln(length(NaN));
+
 		textln(4 < 5);
 		textln(4 > 5);
 		textln(4 <= 5);
