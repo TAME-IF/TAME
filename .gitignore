@@ -4,6 +4,9 @@
 .classpath
 .project
 
+# Eclipse Tools
+.jshintrc
+
 # IntelliJ Idea
 /.idea
 *.ipr
