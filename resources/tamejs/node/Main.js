@@ -17,19 +17,32 @@ var fs = require('fs');
 
 var debug = false;
 var trace = false;
+var tracelist = null;
 
 // Read commandline.
 var args = process.argv;
 
-for (var x in args) if (args.hasOwnProperty(x))
+for (let x in args) if (args.hasOwnProperty(x))
 {
-	var arg = args[x];
+	let arg = args[x];
 	
-	if (arg == '--debug')
+	if (trace)
+		tracelist.push(arg.toUpperCase());
+	else if (arg == '--debug')
+	{
+		trace = false;
 		debug = true;
+	}
 	else if (arg == '--trace')
+	{
 		trace = true;
+		tracelist = [];
+	}
+
 }
+
+if (tracelist !== null && tracelist.length === 0)
+	tracelist = true;
 
 // Create context.
 var tamectx = TAME.newContext();
@@ -65,8 +78,8 @@ function formatText(text)
  */
 function debugCue(cue)
 {
-	var type = cue.type.toLowerCase();
-	println('['+type+'] '+withEscChars(cue.content));
+	println('['+cue.type+'] '+withEscChars(cue.content));
+	let type = cue.type.toLowerCase();
 	if (type === 'quit' || type === 'fatal')
 		stop = true;
 		
@@ -187,6 +200,7 @@ function startResponse(response)
 	currentResponse = response;
 	
 	var handler = debug ? debugCue : doCue;
+	println();
 	if (debug)
 	{
 		println('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
@@ -194,7 +208,6 @@ function startResponse(response)
 		println('Operations: '+response.operationsExecuted);
 		println('Cues: '+response.responseCues.length);
 	}
-	println();
 		
 	responseStop(responseRead());
 }
@@ -239,14 +252,14 @@ rl.on('line', function(line){
 			rl.close();
 		}
 		else
-			startResponse(TAME.interpret(tamectx, line.trim(), trace));
+			startResponse(TAME.interpret(tamectx, line.trim(), tracelist));
 	}
 }).on('close', function(){
 	process.exit(0);
 });
 
 //Initialize.
-startResponse(TAME.initialize(tamectx, trace));
+startResponse(TAME.initialize(tamectx, tracelist));
 
 // start loop.
 if (!stop)

@@ -66,8 +66,8 @@ var TModuleContext = function(module)
 		
 	});
 	
-	var cr = parseInt(module.header['tame_runaway_max'], 10);
-	var fd = parseInt(module.header['tame_funcdepth_max'], 10);
+	var cr = parseInt(module.header.tame_runaway_max, 10);
+	var fd = parseInt(module.header.tame_funcdepth_max, 10);
 	
 	this.operationRunawayMax = cr <= 0 || isNaN(cr) ? TAMEConstants.DEFAULT_RUNAWAY_THRESHOLD : cr;
 	this.functionDepthMax = fd <= 0 || isNaN(fd) ? TAMEConstants.DEFAULT_FUNCTION_DEPTH : fd;

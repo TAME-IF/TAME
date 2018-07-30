@@ -91,7 +91,10 @@ module.exports = new (function()
 	/**
 	 * Initializes a context. Must be called after a new context and game is started.
 	 * @param context the module context.
-	 * @param tracing if true, add trace cues.
+	 * @param traceTypes 
+	 * 		(boolean) if true, add all trace types, false for none.
+	 * 		(Array) list of tracing types (case-insensitive).
+	 * 		(Object) map of tracing types (case-insensitive).
 	 * @return (TResponse) the response from the initialize.
 	 */
 	this.initialize = function(context, tracing) 
@@ -101,9 +104,12 @@ module.exports = new (function()
 	
 	/**
 	 * Interprets and performs actions.
-	 * @param context the module context.
-	 * @param inputMessage the input message to interpret.
-	 * @param tracing if true, add trace cues.
+	 * @param context (Object) the module context.
+	 * @param inputMessage (string) the input message to interpret.
+	 * @param traceTypes 
+	 * 		(boolean) if true, add all trace types, false for none.
+	 * 		(Array) list of tracing types (case-insensitive).
+	 * 		(Object) map of tracing types (case-insensitive).
 	 * @return (TResponse) the response.
 	 */
 	this.interpret = function(context, inputMessage, tracing) 

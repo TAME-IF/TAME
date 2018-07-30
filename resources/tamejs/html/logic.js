@@ -1,5 +1,30 @@
 var $Q1 = function(x){return document.querySelector(x);};
 
+//text: text in node
+var $DOMText = function(text)
+{
+	return document.createTextNode(text);
+};
+
+// name: tagname
+// attribs: object {attrname: 'value'}
+// children: array of elements/nodes to append in order
+var $DOMNew = function(name, attribs, children)
+{
+	let out = document.createElement(name);
+	if (attribs) for (let a in attribs) if (attribs.hasOwnProperty(a))
+	{
+		let attrObj = document.createAttribute(a);
+		attrObj.value = attribs[a];
+		out.setAttributeNode(attrObj);
+	}
+	if (children) for (let i = 0; i < children.length; i++)
+		out.appendChild(children[i]);
+	
+	return out;
+};
+
+
 var InputBox = $Q1("#input-box");
 var InputDiv = $Q1("#input-div");
 var OutputBox = $Q1("#output-box");
@@ -11,7 +36,7 @@ function print(text)
 {
 	if (!text)
 		return;
-	OutputBox.innerHTML = OutputBox.innerHTML + text;
+	OutputBox.appendChild($DOMNew('span',{},[$DOMText(text)]));
 	BodyElement.scrollTop = BodyElement.scrollHeight;
 }
 
@@ -93,7 +118,7 @@ BodyElement.onload = function()
 			{
 				var val = InputBox.value;
 				InputBox.value = '';
-				println("\n> "+val);
+				println("\n] "+val);
 				handler.prepare(TAME.interpret(modulectx, val));
 				handler.resume();
 			}

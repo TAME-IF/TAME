@@ -978,7 +978,7 @@ TValue.toString = function(value)
 	}
 	else
 	{
-		sb.append(Util.withEscChars(TValue.asString(value)));
+		sb.append(TValue.asString(value));
 	}
 	sb.append(']');
 	return sb.toString();

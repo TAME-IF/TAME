@@ -80,12 +80,24 @@ public final class TAMELogic implements TAMEConstants
 	 * Handles context initialization, returning the response from it.
 	 * This method must be called for newly-created contexts NOT LOADED FROM A PERSISTED CONTEXT STATE.
 	 * @param moduleContext the module context.
-	 * @param tracing if true, this does tracing.
+	 * @param tracing if true, this does full tracing.
 	 * @return a TAMERequest a new request.
 	 */
 	public static TAMEResponse handleInit(TAMEModuleContext moduleContext, boolean tracing)
 	{
-		TAMERequest request = TAMERequest.create(moduleContext, tracing);
+		return handleInit(moduleContext, TraceType.VALUES);
+	}
+	
+	/**
+	 * Handles context initialization, returning the response from it.
+	 * This method must be called for newly-created contexts NOT LOADED FROM A PERSISTED CONTEXT STATE.
+	 * @param moduleContext the module context.
+	 * @param traceTypes output trace cues for each request.
+	 * @return a TAMERequest a new request.
+	 */
+	public static TAMEResponse handleInit(TAMEModuleContext moduleContext, TraceType ... traceTypes)
+	{
+		TAMERequest request = TAMERequest.create(moduleContext, traceTypes);
 		TAMEResponse response = new TAMEResponse();
 
 		response.setInterpretNanos(0L);
@@ -113,12 +125,24 @@ public final class TAMELogic implements TAMEConstants
 	 * Handles a full request.
 	 * @param moduleContext the module context.
 	 * @param input the client input query.
-	 * @param tracing if true, this does tracing.
+	 * @param tracing if true, this does full tracing.
 	 * @return a TAMERequest a new request.
 	 */
 	public static TAMEResponse handleRequest(TAMEModuleContext moduleContext, String input, boolean tracing)
 	{
-		TAMERequest request = TAMERequest.create(moduleContext, input, tracing);
+		return handleRequest(moduleContext, input, TraceType.VALUES);
+	}
+	
+	/**
+	 * Handles a full request.
+	 * @param moduleContext the module context.
+	 * @param input the client input query.
+	 * @param traceTypes output trace cues for each request.
+	 * @return a TAMERequest a new request.
+	 */
+	public static TAMEResponse handleRequest(TAMEModuleContext moduleContext, String input, TraceType ... traceTypes)
+	{
+		TAMERequest request = TAMERequest.create(moduleContext, input, traceTypes);
 		TAMEResponse response = new TAMEResponse();
 		
 		// time this stuff.

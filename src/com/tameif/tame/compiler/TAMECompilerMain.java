@@ -106,7 +106,6 @@ public final class TAMECompilerMain
 		out.println("[switches]:");
 		out.println("    -h                   Print help and quit.");
 		out.println("    --help");
-		out.println();
 		out.println("    --version            Print version and quit.");
 		out.println();
 		out.println("    -o [outfile]         Sets the output file.");

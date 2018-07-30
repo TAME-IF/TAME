@@ -45,14 +45,14 @@ function printWrapped(message, startColumn, width)
 	
 	if (width <= 1) return startColumn;
 	
-	var token = '';
-	var line = '';
-	var ln = startColumn;
-	var tok = 0;
+	let token = '';
+	let line = '';
+	let ln = startColumn;
+	let tok = 0;
 	
-	for (var i = 0; i < message.length; i++)
+	for (let i = 0; i < message.length; i++)
 	{
-		var c = message.charAt(i);
+		let c = message.charAt(i);
 		if (c == '\n') {
 			line += token;
 			ln += token.length;

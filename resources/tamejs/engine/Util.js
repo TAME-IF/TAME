@@ -120,6 +120,18 @@ Util.isArray = function(obj)
 	return Object.prototype.toString.call(obj) === '[object Array]';
 };
 
+//isObject - tests if an object is an object.
+Util.isObject = function(obj)
+{
+	return Object.prototype.toString.call(obj) === '[object Object]';
+};
+
+//isObject - tests if an object is an object.
+Util.isFunction = function(obj)
+{
+	return Object.prototype.toString.call(obj) === '[object Function]';
+};
+
 // Mapify - [object, ...] to {object.memberKey -> object, ...}
 Util.mapify = function(objlist, memberKey, multi) 
 {

@@ -57,7 +57,7 @@ function TModule(theader, tactions, telements)
 		});
 	});
 
-	if (!this.elements['world'])
+	if (!this.elements.world)
 		throw TAMEError.Module('No world element!');
 	
 }

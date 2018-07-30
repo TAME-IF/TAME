@@ -28,7 +28,7 @@
  * 			Should make a message appear on screen. Dismissable. 
  * 		onFatalCue: fn(message): called when a "fatal" cue is encountered.
  * 			Should make a message appear on screen, and halt input. 
- * 		onUnknownCue: fn(cueType, cueContent): called when a cue that is not handled by this handler needs processing. 
+ * 		onOtherCue: fn(cueType, cueContent): called when a cue that is not handled by this handler needs processing. 
  * 			Should return boolean. true = keep going, false = suspend.
  * 		onStartFormatTag: fn(tagname): called when a formatted string starts a tag.
  * 		onEndFormatTag: fn(tagname): called when a formatted string ends a tag.
@@ -56,7 +56,7 @@ var TBrowserHandler = function(TAMEENGINE, options)
 		"onEndFormatTag": BLANK_FUNCTION, 
 		"onFormatText": function(text) 
 		{
-			self.textBuffer += text;
+			self.textBuffer.push(text);
 		}
 	};
 	
@@ -77,7 +77,7 @@ var TBrowserHandler = function(TAMEENGINE, options)
 		
 		"text": function(content)
 		{
-			self.textBuffer += content;
+			self.textBuffer.push(content);
 			return true;
 		},
 		
@@ -129,7 +129,7 @@ TBrowserHandler.prototype.reset = function()
 {
 	this.stop = false;
 	this.pause = false;
-	this.textBuffer = '';	
+	this.textBuffer = [];	
 };
 
 /**
@@ -173,8 +173,8 @@ TBrowserHandler.prototype.resume = function()
 		
 		if (cueType !== 'text' && cueType !== 'textf') 
 		{
-			this.options.print(this.textBuffer);
-			this.textBuffer = '';
+			this.options.print(this.textBuffer.join(''));
+			this.textBuffer.length = 0;
 		}
 
 		if (this.cueHandlers[cueType])
@@ -185,8 +185,8 @@ TBrowserHandler.prototype.resume = function()
 
 	if (this.textBuffer.length > 0) 
 	{
-		this.options.print(this.textBuffer);
-		this.textBuffer = '';
+		this.options.print(this.textBuffer.join(''));
+		this.textBuffer.length = 0;
 	}
 	
 	if (this.pause)

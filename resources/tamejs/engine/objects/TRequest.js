@@ -18,11 +18,11 @@ var TAMEConstants = TAMEConstants || ((typeof require) !== 'undefined' ? require
 /*****************************************************************************
  See com.tameif.tame.TAMERequest
  *****************************************************************************/
-var TRequest = function(context, inputMessage, tracing)
+var TRequest = function(context, inputMessage, traceTypesMap)
 {
 	this.moduleContext = context;
     this.inputMessage = inputMessage;
-    this.traceTypes = tracing ? TAMEConstants.TraceType : {};
+    this.traceTypesMap = traceTypesMap;
  
 	// Stacks and Queues
     this.commandQueue = [];
@@ -42,12 +42,12 @@ TRequest.prototype.getInputMessage = function()
 
 /**
  * Does this trace a specific type?
- * @param traceType the tracing type. 
+ * @param traceType the tracing type name. 
  * @return true if so, false if not.
  */
 TRequest.prototype.traces = function(traceType)
 {
-	return 'undefined' !== (typeof this.traceTypes[traceType]);
+	return this.traceTypesMap[traceType];
 };
 
 /**

@@ -19,4 +19,6 @@ public enum TraceType
 	/** Value changes. */
 	VALUE;
 	
+	public static final TraceType[] VALUES = values();
+	
 }

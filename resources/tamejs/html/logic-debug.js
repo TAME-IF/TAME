@@ -1,6 +1,30 @@
 var $Q = function(x){return document.querySelectorAll(x);};
 var $Q1 = function(x){return document.querySelector(x);};
 
+//text: text in node
+var $DOMText = function(text)
+{
+	return document.createTextNode(text);
+};
+
+// name: tagname
+// attribs: object {attrname: 'value'}
+// children: array of elements/nodes to append in order
+var $DOMNew = function(name, attribs, children)
+{
+	let out = document.createElement(name);
+	if (attribs) for (let a in attribs) if (attribs.hasOwnProperty(a))
+	{
+		let attrObj = document.createAttribute(a);
+		attrObj.value = attribs[a];
+		out.setAttributeNode(attrObj);
+	}
+	if (children) for (let i = 0; i < children.length; i++)
+		out.appendChild(children[i]);
+	
+	return out;
+};
+
 var InputBox = $Q1("#input-box");
 var OutputBox = $Q1("#output-box");
 var BodyElement = $Q1("body");
@@ -9,7 +33,7 @@ function print(text)
 {
 	if (!text)
 		return;
-	OutputBox.innerHTML = OutputBox.innerHTML + text;
+	OutputBox.appendChild($DOMNew('span',{},[$DOMText(text)]));
 	BodyElement.scrollTop = BodyElement.scrollHeight;
 }
 
@@ -31,8 +55,8 @@ var stop = false;
 
 function handleCue(cue) 
 {
-	var type = cue.type.toLowerCase();
-	println('['+type+'] '+withEscChars(cue.content));
+	println('['+cue.type+'] '+withEscChars(cue.content));
+	let type = cue.type.toLowerCase();
 	if (type === 'quit' || type === 'fatal')
 		stop = true;
 	return true;
@@ -40,6 +64,7 @@ function handleCue(cue)
 
 function readResponse(response)
 {
+	println();
 	println('Interpret time: '+(response.interpretNanos/1000000.0)+' ms');
 	println('Request time: '+(response.requestNanos/1000000.0)+' ms');
 	println('Operations: '+response.operationsExecuted);
@@ -50,8 +75,6 @@ function readResponse(response)
 	
 	if (stop)
 		InputBox.disabled = true;
-
-	println();
 }
 
 BodyElement.onload = function() 
@@ -67,7 +90,7 @@ BodyElement.onload = function()
 			event.preventDefault();
 			var val = InputBox.value;
 			InputBox.value = '';
-			println("> "+val);
+			println("] "+val);
 			readResponse(TAME.interpret(modulectx, val, trace));
 		}
 	});

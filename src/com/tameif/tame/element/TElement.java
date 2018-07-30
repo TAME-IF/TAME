@@ -272,7 +272,7 @@ public abstract class TElement implements Saveable
 	@Override
 	public String toString()
 	{
-		return getClass().getSimpleName() + "[" + getIdentity() + "]";
+		return getIdentity();
 	}
 
 	@Override

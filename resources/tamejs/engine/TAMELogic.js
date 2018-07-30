@@ -27,7 +27,7 @@ var TLogic = {};
 //##[[EXPORTJS-INCLUDE logic/TOperationFunctions.js
 
 /****************************************************************************
- * Main logic junk.
+ * Main logic.
  ****************************************************************************/
 
 /**
@@ -464,19 +464,63 @@ TLogic.processCommandLoop = function(request, response, afterSuccessfulCommand, 
 	
 };
 
+TLogic.createTracingMap = function(traceTypes)
+{
+	let tracing = {};
+	
+	// check for boolean.
+	if (traceTypes === true)
+	{
+		tracing = TAMEConstants.TraceType;
+	}
+	// check for array.
+	else if (Util.isArray(traceTypes))
+	{
+		tracing = {};
+		for (let i = 0; i < traceTypes.length; i++)
+			tracing[traceTypes[i].toString().toUpperCase()] = true;
+	}
+	// check for array.
+	else if (Util.isObject(traceTypes))
+	{
+		tracing = {};
+		Util.each(traceTypes, function(value, key){
+			let uk = key.toUpperCase();
+			tracing[uk] = true;
+		});
+	}
+	
+	return tracing;
+};
+
+/**
+ * Tokenizes the input string into tokens based on module settings.
+ * @param context (object) the module context to use (for object availability).
+ * @param inputMessage (string) the input message to tokenize.
+ * @return (string[]) the tokens to parse.
+ */
+TLogic.tokenizeInput = function(context, input)
+{
+	return input.trim().toLowerCase().split(/\s+/);
+};
+
 /**
  * Handles initializing a context. Must be called after a new context and game is started.
  * @param context the module context.
- * @param tracing if true, add trace cues.
+ * @param traceTypes 
+ * 		(boolean) if true, add all trace types, false for none.
+ * 		(Array) list of tracing types (case-insensitive).
+ * 		(Object) map of tracing types (case-insensitive).
  * @return (TResponse) the response from the initialize.
  */
-TLogic.handleInit = function(context, tracing) 
+TLogic.handleInit = function(context, traceTypes) 
 {
-	var request = new TRequest(context, "[INITIALIZE]", tracing);
-	var response = new TResponse();
+	let tracing = TLogic.createTracingMap(traceTypes);
+	let request = new TRequest(context, "[INITIALIZE]", tracing);
+	let response = new TResponse();
 	
 	response.interpretNanos = 0;
-	var time = Util.nanoTime();
+	let time = Util.nanoTime();
 
 	try 
 	{
@@ -502,37 +546,30 @@ TLogic.handleInit = function(context, tracing)
 
 
 /**
- * Tokenizes the input string into tokens based on module settings.
- * @param context (object) the module context to use (for object availability).
- * @param inputMessage (string) the input message to tokenize.
- * @return (string[]) the tokens to parse.
- */
-TLogic.tokenizeInput = function(context, input)
-{
-	return input.trim().toLowerCase().split(/\s+/);
-};
-
-/**
  * Handles interpretation and performs actions.
  * @param context (object) the module context.
  * @param inputMessage (string) the input message to interpret.
- * @param tracing (boolean) if true, add trace cues.
+ * @param traceTypes 
+ * 		(boolean) if true, add all trace types, false for none.
+ * 		(Array) list of tracing types (case-insensitive).
+ * 		(Object) map of tracing types (case-insensitive).
  * @return (TResponse) the response.
  */
-TLogic.handleRequest = function(context, inputMessage, tracing)
+TLogic.handleRequest = function(context, inputMessage, traceTypes)
 {
-	var request = new TRequest(context, inputMessage, tracing);
-	var response = new TResponse();
+	let tracing = TLogic.createTracingMap(traceTypes);
+	let request = new TRequest(context, inputMessage, tracing);
+	let response = new TResponse();
 
-	var time = Util.nanoTime();
-	var interpreterContext = TLogic.interpret(request, response);
+	let time = Util.nanoTime();
+	let interpreterContext = TLogic.interpret(request, response);
 	response.interpretNanos = Util.nanoTime() - time; 
 
 	time = Util.nanoTime();
 	
 	try 
 	{
-		var good = TLogic.enqueueInterpretedAction(request, response, interpreterContext);
+		let good = TLogic.enqueueInterpretedAction(request, response, interpreterContext);
 		TLogic.processCommandLoop(request, response, good, !good, true);
 	} 
 	catch (err) 

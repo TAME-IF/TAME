@@ -17,6 +17,8 @@ import java.io.PrintStream;
 import java.util.Iterator;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.Reflect;
+import com.blackrook.commons.hash.Hash;
 import com.blackrook.commons.list.List;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.TAMELogic;
@@ -32,6 +34,7 @@ import com.tameif.tame.factory.TAMEScriptParseException;
 import com.tameif.tame.factory.TAMEScriptReader;
 import com.tameif.tame.lang.Cue;
 import com.tameif.tame.lang.FormatParser;
+import com.tameif.tame.lang.TraceType;
 
 /**
  * A console client implementation.
@@ -57,21 +60,19 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		printVersion(out);
 		out.println("Usage: tame [help | module] <switches> <gameload> <other>");
 		out.println("[help]:");
-		out.println("    -h                       Display help.");
+		out.println("    -h                       Print help and quit.");
 		out.println("    --help");
-		out.println();
-		out.println("    --version                Display version.");
+		out.println("    --version                Print version and quit.");
 		out.println();
 		out.println("[module]:");
 		out.println("    [binaryfile]             The compiled module to run.");
 		out.println();
-		out.println("    -s [scriptfile]          The uncompiled starting script to read.");
-		out.println("    --script [scriptfile]");
-		out.println();
 		out.println("<switches>:");
+		out.println("    -s                       The input file is an uncompiled script.");
+		out.println("    --script");
 		out.println("    -v                       Verbose script compiler output.");
 		out.println("    --verbose");
-		out.println("    -d  [tokens ...]         Defines predefined preprocessor tokens.");
+		out.println("    -d [tokens ...]          Defines predefined preprocessor tokens.");
 		out.println("    --defines [tokens ...]");
 		out.println();
 		out.println("<gameload>:");
@@ -81,7 +82,15 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		out.println("<other>:");
 		out.println("    --debug                  Show received cues.");
 		out.println("    --inspect                Enable inspector.");
-		out.println("    --trace                  If debug, also show trace cues.");
+		out.println("    --trace [type ...]       If debug, also show trace cues (no types = all).");
+		out.println();
+		out.println("                             interpreter - trace INTERPRETER scanning.");
+		out.println("                             context     - trace CONTEXT changes.");
+		out.println("                             entry       - trace ENTRY point calls.");
+		out.println("                             control     - trace CONTROL statement flow.");
+		out.println("                             function    - trace FUNCTION calls.");
+		out.println("                             value       - trace VALUE set/clear, local or");
+		out.println("                                           context.");
 	}
 
 	// Entry point.
@@ -92,59 +101,94 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		
 		boolean help = false;
 		boolean version = false;
-		boolean script = false;
 		boolean debug = false;
 		boolean inspector = false;
-		boolean trace = false;
 		boolean load = false;
-		boolean defines = false;
 		boolean nooptimize = false;
 		boolean verbose = false;
+
+		// scan state
+		boolean script = false;
+		boolean trace = false;
+		boolean defines = false;
+
 		String path = null;
 		String binpath = null;
 		String loadpath = null;
 		List<String> defineList = new List<>();
+		Hash<TraceType> traceTypes = null;
 
 		for (String arg : args)
 		{
 			if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help"))
-				help = true;
-			else if (arg.equalsIgnoreCase("--version"))
-				version = true;
-			else if (arg.equalsIgnoreCase("-s"))
-				script = true;
-			else if (arg.equalsIgnoreCase("--script"))
-				script = true;
-			else if (arg.equalsIgnoreCase("-n"))
-				nooptimize = true;
-			else if (arg.equalsIgnoreCase("--no-optimize"))
-				nooptimize = true;
-			else if (arg.equalsIgnoreCase("-v"))
-				verbose = true;
-			else if (arg.equalsIgnoreCase("--verbose"))
-				verbose = true;
-			else if (arg.equalsIgnoreCase("-l"))
-				load = true;
-			else if (arg.equalsIgnoreCase("--load-game"))
-				load = true;
-			else if (arg.equalsIgnoreCase("--debug"))
-				debug = true;
-			else if (arg.equalsIgnoreCase("--inspect"))
-				inspector = true;
-			else if (arg.equalsIgnoreCase("--trace"))
-				trace = true;
-			else if (script)
 			{
-				if (arg.equalsIgnoreCase("-d"))
-					defines = true;
-				else if (arg.equalsIgnoreCase("--defines"))
-					defines = true;
-				else
-					path = arg;
-				script = false;
+				help = true;
+				trace = false;
+				defines = false;
+			}
+			else if (arg.equalsIgnoreCase("--version"))
+			{
+				version = true;
+				trace = false;
+				defines = false;
+			}
+			else if (arg.equalsIgnoreCase("-s") || arg.equalsIgnoreCase("--script"))
+			{
+				script = true;
+				trace = false;
+				defines = false;
+			}
+			else if (arg.equalsIgnoreCase("-n") || arg.equalsIgnoreCase("--no-optimize"))
+			{
+				nooptimize = true;
+				trace = false;
+				defines = false;
+			}
+			else if (arg.equalsIgnoreCase("-v") || arg.equalsIgnoreCase("--verbose"))
+			{
+				verbose = true;
+				trace = false;
+				defines = false;
+			}
+			else if (arg.equalsIgnoreCase("-l") || arg.equalsIgnoreCase("--load-game"))
+			{
+				load = true;
+				trace = false;
+				defines = false;
+			}
+			else if (arg.equalsIgnoreCase("--debug"))
+			{
+				debug = true;
+				trace = false;
+				defines = false;
+			}
+			else if (arg.equalsIgnoreCase("--inspect"))
+			{
+				inspector = true;
+				trace = false;
+				defines = false;
+			}
+			else if (arg.equalsIgnoreCase("--trace"))
+			{
+				trace = true;
+				traceTypes = new Hash<>();
+				defines = false;
 			}
 			else if (defines)
+			{
 				defineList.add(arg);
+			}
+			else if (trace)
+			{
+				TraceType t;
+				if ((t = Reflect.getEnumInstance(arg.toUpperCase(), TraceType.class)) != null)
+					traceTypes.put(t);
+			}
+			else if (script)
+			{
+				path = arg;
+				script = false;
+			}
 			else if (load)
 			{
 				loadpath = arg;
@@ -207,7 +251,24 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		moduleContext = new TAMEModuleContext(module);
 		
 		Context context = new Context(moduleContext, System.out, debug, inspector, trace);
+		TraceType[] traceList;
 		
+		// no types specified = trace all.
+		if (traceTypes != null)
+		{
+			if (traceTypes.isEmpty())
+			{
+				traceList = TraceType.VALUES;
+			}
+			else
+			{
+				traceList = new TraceType[traceTypes.size()];
+				traceTypes.toArray(traceList);
+			}
+		}
+		else
+			traceList = new TraceType[0];
+
 		if (loadpath != null)
 		{
 			if (!loadGame(moduleContext, loadpath))
@@ -216,12 +277,12 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		else
 		{
 			context.out.println();
-			processResponse(TAMELogic.handleInit(moduleContext, trace), context);
+			processResponse(TAMELogic.handleInit(moduleContext, traceList), context);
 			context.out.println();
 		}
 		
 		if (!context.quit)
-			context.gameLoop();
+			context.gameLoop(traceList);
 	}
 	
 	static TAMEModule parseScript(String path, boolean verbose, boolean optimizing, List<String> defines)
@@ -446,7 +507,6 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		boolean quit;
 		boolean debug;
 		boolean inspector;
-		boolean trace;
 		
 		Context(TAMEModuleContext context, PrintStream out, boolean debug, boolean inspector, boolean trace)
 		{
@@ -454,13 +514,12 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			this.out = out;
 			this.debug = debug;
 			this.inspector = inspector;
-			this.trace = trace;
 
 			this.paused = false;
 			this.quit = false;
 		}
 		
-		void gameLoop()
+		void gameLoop(TraceType[] traceList)
 		{
 			final String COMMAND_SAVE = "!save ";
 			final String COMMAND_LOAD = "!load ";
@@ -471,7 +530,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			String line;
 			while (good && !quit)
 			{
-				out.print("> ");
+				out.print("] ");
 				if ((line = Common.getLine()) != null)
 				{
 					out.println();
@@ -486,7 +545,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 						good = false;
 					else
 					{
-						processResponse(TAMELogic.handleRequest(context, line, trace), this);
+						processResponse(TAMELogic.handleRequest(context, line, traceList), this);
 						out.println();
 					}
 				}

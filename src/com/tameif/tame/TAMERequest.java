@@ -75,6 +75,17 @@ public class TAMERequest
 	/**
 	 * Creates the request object.
 	 * @param moduleContext the module context.
+	 * @param types the types to trace.
+	 * @return a TAMERequest a new request.
+	 */
+	static TAMERequest create(TAMEModuleContext moduleContext, TraceType ... types)
+	{
+		return create(moduleContext, null, types);
+	}
+	
+	/**
+	 * Creates the request object.
+	 * @param moduleContext the module context.
 	 * @param input the client input query.
 	 * @param tracing if true, this does tracing.
 	 * @return a TAMERequest a new request.
