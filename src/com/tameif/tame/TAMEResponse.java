@@ -163,8 +163,9 @@ public class TAMEResponse implements TAMEConstants
 	}
 	
 	/**
-	 * Adds a trace cue, but only if trace is set on the request.
+	 * Adds a trace cue, but only if a specific trace type is set on the request.
 	 * @param request the request to examine for the trace flag.
+	 * @param type the trace type for this trace output.
 	 * @param format the formatter string.
 	 * @param args the formatter arguments.
 	 * @see Formatter

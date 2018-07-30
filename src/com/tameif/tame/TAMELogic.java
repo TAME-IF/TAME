@@ -531,6 +531,8 @@ public final class TAMELogic implements TAMEConstants
 	 * @param response the response.
 	 * @param context the element context.
 	 * @param blockEntry the block entry to resolve.
+	 * @param openTarget the value of the open action.
+	 * @param locals the extra strings for the open action (only the first one is used).
 	 * @return true if called, false if not.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
