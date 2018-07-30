@@ -9,6 +9,7 @@
 	- Better tracing in Java and JS.
 	- Fixed an issue in the JS impl. setting list values.
 	- Fixed Operation EMPTY in JS impl.: Returned integer value, not boolean.
+	- Fixed Operation CLEARELEMENTVALUE in JS impl.
 	- Some HTML-compiled improvements.
 
 
