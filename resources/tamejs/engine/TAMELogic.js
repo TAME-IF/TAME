@@ -811,7 +811,7 @@ TLogic.interpretMode = function(request, response, action, interpreterContext)
 
 		interpreterContext.modeLookedUp = true;
 		var next = sb.toString();
-		response.trace(request, TAMEConstants.TraceType.INTERPRETER, "TEST MODE "+name);
+		response.trace(request, TAMEConstants.TraceType.INTERPRETER, "TEST MODE "+next);
 		if (action.extraStrings.indexOf(next) >= 0)
 		{
 			response.trace(request, TAMEConstants.TraceType.INTERPRETER, "MATCHED MODE "+next);

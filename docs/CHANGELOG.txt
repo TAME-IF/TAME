@@ -3,6 +3,13 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
+0.9BETA6
+........
+
+	- Fixed an issue in the JS impl: tracing a modal action did not give 
+	  proper output.
+	  
+
 0.9BETA5
 ........
 
