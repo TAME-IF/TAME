@@ -89,6 +89,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		out.println("                             entry       - trace ENTRY point calls.");
 		out.println("                             control     - trace CONTROL statement flow.");
 		out.println("                             function    - trace FUNCTION calls.");
+		out.println("                             internal    - trace INTERNAL function calls.");
 		out.println("                             value       - trace VALUE set/clear, local or");
 		out.println("                                           context.");
 	}

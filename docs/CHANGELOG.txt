@@ -8,6 +8,8 @@
 
 	- Fixed an issue in the JS impl: tracing a modal action did not give 
 	  proper output.
+	- Added trace type INTERNAL for function calls that were compiler-
+	  generated, not user-called.
 	  
 
 0.9BETA5

@@ -117,7 +117,10 @@ TLogic.elementToString = function(elemObject)
 TLogic.executeBlock = function(block, request, response, blockLocal)
 {
 	Util.each(block, function(operation) {
-		response.trace(request, TAMEConstants.TraceType.FUNCTION, Util.format("CALL {0}", TLogic.operationToString(operation))); 
+		if (TOperationFunctions[operation.opcode].internal)
+			response.trace(request, TAMEConstants.TraceType.INTERNAL, Util.format("CALL {0}", TLogic.operationToString(operation))); 
+		else
+			response.trace(request, TAMEConstants.TraceType.FUNCTION, Util.format("CALL {0}", TLogic.operationToString(operation))); 
 		TLogic.executeOperation(request, response, blockLocal, operation);
 	});
 };
@@ -1015,7 +1018,7 @@ TLogic.doArithmeticStackFunction = function(request, response, functionType)
 		throw TAMEError.ModuleExecution("Expected arithmetic function type, got illegal value "+functionType+".");
 	
 	var operator = TArithmeticFunctions[functionType];
-	response.trace(request, TAMEConstants.TraceType.FUNCTION, "Operator is " + operator.name);
+	response.trace(request, TAMEConstants.TraceType.INTERNAL, "Operator is " + operator.name);
 	
 	if (operator.binary)
 	{

@@ -36,7 +36,8 @@ var TOperationFunctions =
 
 	/* POP */
 	{
-		"name": 'POP', 
+		"name": 'POP',
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			request.popValue();
@@ -46,6 +47,7 @@ var TOperationFunctions =
 	/* POPVALUE */
 	{
 		"name": 'POPVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varvalue = operation.operand0;
@@ -74,6 +76,7 @@ var TOperationFunctions =
 	/* POPLOCALVALUE */
 	{
 		"name": 'POPLOCALVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varvalue = operation.operand0;
@@ -93,6 +96,7 @@ var TOperationFunctions =
 	/* POPELEMENTVALUE */
 	{
 		"name": 'POPELEMENTVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varElement = operation.operand0;
@@ -117,6 +121,7 @@ var TOperationFunctions =
 	/* POPLISTVALUE */
 	{
 		"name": 'POPLISTVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = request.popValue();
@@ -141,6 +146,7 @@ var TOperationFunctions =
 	/* PUSHVALUE */
 	{
 		"name": 'PUSHVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = operation.operand0;
@@ -163,6 +169,7 @@ var TOperationFunctions =
 	/* PUSHELEMENTVALUE */
 	{
 		"name": 'PUSHELEMENTVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varElement = operation.operand0;
@@ -183,6 +190,7 @@ var TOperationFunctions =
 	/* PUSHLISTVALUE */
 	{
 		"name": 'PUSHLISTVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var index = request.popValue();
@@ -203,6 +211,7 @@ var TOperationFunctions =
 	/* PUSHNEWLIST */
 	{
 		"name": 'PUSHNEWLIST', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			request.pushValue(TValue.createList([]));
@@ -213,6 +222,7 @@ var TOperationFunctions =
 	/* PUSHINITLIST */
 	{
 		"name": 'PUSHINITLIST', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var length = request.popValue();
@@ -237,6 +247,7 @@ var TOperationFunctions =
 	/* CLEARVALUE */
 	{
 		"name": 'CLEARVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var value = operation.operand0;
@@ -261,6 +272,7 @@ var TOperationFunctions =
 	/* CLEARELEMENTVALUE */
 	{
 		"name": 'CLEARELEMENTVALUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varElement = operation.operand0;
@@ -281,6 +293,7 @@ var TOperationFunctions =
 	/* PUSHTHIS */
 	{
 		"name": 'PUSHTHIS', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var element = request.moduleContext.resolveElement(request.peekContext().identity);
@@ -302,6 +315,7 @@ var TOperationFunctions =
 	/* ARITHMETICFUNC */
 	{
 		"name": 'ARITHMETICFUNC', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var functionValue = operation.operand0;
@@ -316,6 +330,7 @@ var TOperationFunctions =
 	/* IF */
 	{
 		"name": 'IF', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var result = TLogic.callConditional('IF', request, response, blockLocal, operation);
@@ -339,6 +354,7 @@ var TOperationFunctions =
 	/* WHILE */
 	{
 		"name": 'WHILE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			while (TLogic.callConditional('WHILE', request, response, blockLocal, operation))
@@ -368,6 +384,7 @@ var TOperationFunctions =
 	/* FOR */
 	{
 		"name": 'FOR', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var init = operation.initBlock;
@@ -412,6 +429,7 @@ var TOperationFunctions =
 	/* BREAK */
 	{
 		"name": 'BREAK', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW BREAK");
@@ -422,6 +440,7 @@ var TOperationFunctions =
 	/* CONTINUE */
 	{
 		"name": 'CONTINUE', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW CONTINUE");
@@ -432,6 +451,7 @@ var TOperationFunctions =
 	/* QUIT */
 	{
 		"name": 'QUIT', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW QUIT");
@@ -443,6 +463,7 @@ var TOperationFunctions =
 	/* FINISH */
 	{
 		"name": 'FINISH', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW FINISH");
@@ -453,6 +474,7 @@ var TOperationFunctions =
 	/* END */
 	{
 		"name": 'END', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW END");
@@ -463,6 +485,7 @@ var TOperationFunctions =
 	/* FUNCTIONRETURN */
 	{
 		"name": 'FUNCTIONRETURN', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var retVal = request.popValue();
@@ -476,6 +499,7 @@ var TOperationFunctions =
 	/* CALLFUNCTION */
 	{
 		"name": 'CALLFUNCTION', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varFunctionName = operation.operand0;
@@ -490,6 +514,7 @@ var TOperationFunctions =
 	/* CALLELEMENTFUNCTION */
 	{
 		"name": 'CALLELEMENTFUNCTION', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			var varElement = operation.operand0;

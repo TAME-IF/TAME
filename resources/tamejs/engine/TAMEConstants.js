@@ -28,8 +28,6 @@ TAMEConstants.Cue.TEXTF = "TEXTF";
 TAMEConstants.Cue.WAIT = "WAIT";
 TAMEConstants.Cue.PAUSE = "PAUSE";
 TAMEConstants.Cue.TRACE = "TRACE";
-TAMEConstants.Cue.TIP = "TIP";
-TAMEConstants.Cue.INFO = "INFO";
 TAMEConstants.Cue.ERROR = "ERROR";
 TAMEConstants.Cue.FATAL = "FATAL";
 
@@ -42,6 +40,7 @@ TAMEConstants.TraceType.CONTEXT = "CONTEXT";
 TAMEConstants.TraceType.ENTRY = "ENTRY";
 TAMEConstants.TraceType.CONTROL = "CONTROL";
 TAMEConstants.TraceType.FUNCTION = "FUNCTION";
+TAMEConstants.TraceType.INTERNAL = "INTERNAL";
 TAMEConstants.TraceType.VALUE = "VALUE";
 
 TAMEConstants.DEFAULT_RUNAWAY_THRESHOLD = 100000;

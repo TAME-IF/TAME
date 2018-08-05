@@ -640,7 +640,7 @@ public final class TAMELogic implements TAMEConstants
 			throw new ModuleExecutionException("Expected arithmetic function type, got illegal value "+functionType+".");
 	
 		ArithmeticOperator operator =  ArithmeticOperator.VALUES[functionType];
-		response.trace(request, TraceType.FUNCTION, "Operator is %s", operator.name());
+		response.trace(request, TraceType.INTERNAL, "Operator is %s", operator.name());
 		
 		if (operator.isBinary())
 		{

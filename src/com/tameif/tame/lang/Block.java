@@ -68,11 +68,18 @@ public class Block implements CallableType, Iterable<Operation>, Saveable
 	{
 		for (Operation operation : this)
 		{
-			response.trace(request, TraceType.FUNCTION, "CALL %s %s %s", 
-				operation.getOperation().toString(), 
-				operation.getOperand0() != null ? operation.getOperand0().toString() : "",
-				operation.getOperand1() != null ? operation.getOperand1().toString() : ""
-			);
+			if (operation.getOperation().isInternal())
+				response.trace(request, TraceType.INTERNAL, "CALL %s %s %s", 
+					operation.getOperation().toString(), 
+					operation.getOperand0() != null ? operation.getOperand0().toString() : "",
+					operation.getOperand1() != null ? operation.getOperand1().toString() : ""
+				);
+			else
+				response.trace(request, TraceType.FUNCTION, "CALL %s %s %s", 
+					operation.getOperation().toString(), 
+					operation.getOperand0() != null ? operation.getOperand0().toString() : "",
+					operation.getOperand1() != null ? operation.getOperand1().toString() : ""
+				);
 			operation.execute(request, response, blockLocal);
 		}
 	}
