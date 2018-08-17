@@ -10,6 +10,8 @@
 	  proper output.
 	- Added trace type INTERNAL for function calls that were compiler-
 	  generated, not user-called.
+	- Fixed an issue: Header() built-in function did not handle a missing key
+	  properly.
 	  
 
 0.9BETA5
