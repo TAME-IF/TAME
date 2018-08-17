@@ -50,15 +50,15 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varvalue = operation.operand0;
-			var value = request.popValue();
+			let varvalue = operation.operand0;
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in POPVALUE call.");
 			if (!TValue.isVariable(varvalue))
 				throw TAMEError.UnexpectedValueType("Expected variable type in POPVALUE call.");
 
-			var variableName = TValue.asString(varvalue);
+			let variableName = TValue.asString(varvalue);
 			
 			if (TLogic.containsValue(blockLocal, variableName))
 			{
@@ -79,15 +79,15 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varvalue = operation.operand0;
-			var value = request.popValue();
+			let varvalue = operation.operand0;
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in POPLOCALVALUE call.");
 			if (!TValue.isVariable(varvalue))
 				throw TAMEError.UnexpectedValueType("Expected variable type in POPLOCALVALUE call.");
 
-			var variableName = TValue.asString(varvalue);
+			let variableName = TValue.asString(varvalue);
 			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET LOCAL {0} {1}", variableName, TValue.toString(value)));
 			TLogic.setValue(blockLocal, variableName, value);
 		}
@@ -99,9 +99,9 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varElement = operation.operand0;
-			var variable = operation.operand1;
-			var value = request.popValue();
+			let varElement = operation.operand0;
+			let variable = operation.operand1;
+			let value = request.popValue();
 
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in POPELEMENTVALUE call.");
@@ -110,9 +110,9 @@ var TOperationFunctions =
 			if (!TValue.isElement(varElement))
 				throw TAMEError.UnexpectedValueType("Expected element type in POPELEMENTVALUE call.");
 
-			var elementName = TValue.asString(varElement);
-			var variableName = TValue.asString(variable);
-			var context = request.moduleContext.resolveElementContext(elementName);
+			let elementName = TValue.asString(varElement);
+			let variableName = TValue.asString(variable);
+			let context = request.moduleContext.resolveElementContext(elementName);
 			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET {0}.{1} {2}", context.identity, variableName, TValue.toString(value)));
 			TLogic.setValue(context.variables, variableName, value);
 		}
@@ -124,9 +124,9 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
-			var index = request.popValue();
-			var listValue = request.popValue();
+			let value = request.popValue();
+			let index = request.popValue();
+			let listValue = request.popValue();
 			
 			if (!TValue.isLiteral(index))
 				throw TAMEError.UnexpectedValueType("Expected literal type in POPLISTVALUE call.");
@@ -149,11 +149,11 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = operation.operand0;
+			let value = operation.operand0;
 			
 			if (TValue.isVariable(value))
 			{
-				var variableName = TValue.asString(value);
+				let variableName = TValue.asString(value);
 				if (TLogic.containsValue(blockLocal, variableName))
 					request.pushValue(TLogic.getValue(blockLocal, variableName));
 				else
@@ -172,16 +172,16 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varElement = operation.operand0;
-			var variable = operation.operand1;
+			let varElement = operation.operand0;
+			let variable = operation.operand1;
 
 			if (!TValue.isVariable(variable))
 				throw TAMEError.UnexpectedValueType("Expected variable type in PUSHELEMENTVALUE call.");
 			if (!TValue.isElement(varElement))
 				throw TAMEError.UnexpectedValueType("Expected element type in PUSHELEMENTVALUE call.");
 
-			var elementName = TValue.asString(varElement);
-			var variableName = TValue.asString(variable);
+			let elementName = TValue.asString(varElement);
+			let variableName = TValue.asString(variable);
 			
 			request.pushValue(TLogic.getValue(request.moduleContext.resolveElementContext(elementName).variables, variableName));
 		}
@@ -193,8 +193,8 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var index = request.popValue();
-			var listValue = request.popValue();
+			let index = request.popValue();
+			let listValue = request.popValue();
 
 			if (!TValue.isLiteral(listValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in PUSHLISTVALUE call.");
@@ -225,16 +225,16 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var length = request.popValue();
+			let length = request.popValue();
 
 			if (!TValue.isLiteral(length))
 				throw TAMEError.UnexpectedValueType("Expected literal type in PUSHINITLIST call.");
 
-			var size = TValue.asLong(length);
-			var list = TValue.createList([]);
+			let size = TValue.asLong(length);
+			let list = TValue.createList([]);
 			while (size-- > 0)
 			{
-				var popped = request.popValue();
+				let popped = request.popValue();
 				if (!(TValue.isLiteral(popped) || TValue.isList(popped)))
 					throw TAMEError.UnexpectedValueType("Expected literal or list type in PUSHINITLIST call.");
 				TValue.listAddAt(list, 0, popped);
@@ -250,12 +250,12 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = operation.operand0;
+			let value = operation.operand0;
 
 			if (!TValue.isVariable(value))
 				throw TAMEError.UnexpectedValueType("Expected variable type in CLEARVALUE call.");
 			
-			var variableName = TValue.asString(value).toLowerCase();
+			let variableName = TValue.asString(value).toLowerCase();
 			if (blockLocal[variableName])
 			{
 				response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("CLEAR LOCAL {0}", variableName));
@@ -275,16 +275,16 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varElement = operation.operand0;
-			var variable = operation.operand1;
+			let varElement = operation.operand0;
+			let variable = operation.operand1;
 
 			if (!TValue.isVariable(variable))
 				throw TAMEError.UnexpectedValueType("Expected variable type in CLEARELEMENTVALUE call.");
 			if (!TValue.isElement(varElement))
 				throw TAMEError.UnexpectedValueType("Expected element type in CLEARELEMENTVALUE call.");
 
-			var variableName = TValue.asString(variable).toLowerCase();
-			var context = request.moduleContext.resolveElementContext(TValue.asString(varElement));
+			let variableName = TValue.asString(variable).toLowerCase();
+			let context = request.moduleContext.resolveElementContext(TValue.asString(varElement));
 			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("CLEAR {0}.{1}", context.identity, variableName));
 			TLogic.clearValue(context.variables, TValue.asString(variable));
 		}
@@ -296,7 +296,7 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var element = request.moduleContext.resolveElement(request.peekContext().identity);
+			let element = request.moduleContext.resolveElement(request.peekContext().identity);
 			if (element.tameType === 'TObject')
 				request.pushValue(TValue.createObject(element.identity));
 			else if (element.tameType === 'TRoom')
@@ -318,7 +318,7 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var functionValue = operation.operand0;
+			let functionValue = operation.operand0;
 
 			if (!TValue.isInteger(functionValue))
 				throw TAMEError.UnexpectedValueType("Expected integer type in ARITHMETICFUNC call.");
@@ -333,18 +333,18 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var result = TLogic.callConditional('IF', request, response, blockLocal, operation);
+			let result = TLogic.callConditional('IF', request, response, blockLocal, operation);
 			
 			if (result)
 			{
-				var success = operation.successBlock;
+				let success = operation.successBlock;
 				if (!success)
 					throw TAMEError.ModuleExecution("Success block for IF does NOT EXIST!");
 				TLogic.executeBlock(success, request, response, blockLocal);
 			}
 			else
 			{
-				var failure = operation.failureBlock;
+				let failure = operation.failureBlock;
 				if (failure)
 					TLogic.executeBlock(failure, request, response, blockLocal);
 			}
@@ -360,7 +360,7 @@ var TOperationFunctions =
 			while (TLogic.callConditional('WHILE', request, response, blockLocal, operation))
 			{
 				try {
-					var success = operation.successBlock;
+					let success = operation.successBlock;
 					if (!success)
 						throw TAMEError.ModuleExecution("Success block for WHILE does NOT EXIST!");
 					TLogic.executeBlock(success, request, response, blockLocal);
@@ -387,13 +387,13 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var init = operation.initBlock;
+			let init = operation.initBlock;
 			if (!init)
 				throw TAMEError.ModuleExecution("Init block for FOR does NOT EXIST!");
-			var success = operation.successBlock;
+			let success = operation.successBlock;
 			if (!success)
 				throw TAMEError.ModuleExecution("Success block for FOR does NOT EXIST!");
-			var step = operation.stepBlock;
+			let step = operation.stepBlock;
 			if (!step)
 				throw TAMEError.ModuleExecution("Step block for FOR does NOT EXIST!");
 
@@ -488,7 +488,7 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var retVal = request.popValue();
+			let retVal = request.popValue();
 			response.trace(request, TAMEConstants.TraceType.FUNCTION, "RETURN "+TValue.toString(retVal));
 			TLogic.setValue(blockLocal, TAMEConstants.RETURN_VARIABLE, retVal);
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "THROW END");
@@ -502,7 +502,7 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varFunctionName = operation.operand0;
+			let varFunctionName = operation.operand0;
 
 			if (!TValue.isLiteral(varFunctionName))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CALLFUNCTION call.");
@@ -517,15 +517,15 @@ var TOperationFunctions =
 		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varElement = operation.operand0;
-			var varFunctionName = operation.operand1;
+			let varElement = operation.operand0;
+			let varFunctionName = operation.operand1;
 
 			if (!TValue.isElement(varElement))
 				throw TAMEError.UnexpectedValueType("Expected element type in CALLELEMENTFUNCTION call.");
 			if (!TValue.isLiteral(varFunctionName))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CALLELEMENTFUNCTION call.");
 
-			var elementContext = request.moduleContext.resolveElementContext(TValue.asString(varElement));
+			let elementContext = request.moduleContext.resolveElementContext(TValue.asString(varElement));
 			request.pushValue(TLogic.callElementFunction(request, response, TValue.asString(varFunctionName), elementContext));
 		}
 	},
@@ -535,17 +535,17 @@ var TOperationFunctions =
 		"name": 'QUEUEACTION', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varAction = request.popValue();
+			let varAction = request.popValue();
 
 			if (!TValue.isAction(varAction))
 				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTION call.");
 
-			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
+			let action = request.moduleContext.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.GENERAL)
 				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a general action.");
 
-			var command = TCommand.create(action);
+			let command = TCommand.create(action);
 			request.addCommand(command);
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 		}
@@ -556,20 +556,20 @@ var TOperationFunctions =
 		"name": 'QUEUEACTIONSTRING', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varTarget = request.popValue();
-			var varAction = request.popValue();
+			let varTarget = request.popValue();
+			let varAction = request.popValue();
 
 			if (!TValue.isLiteral(varTarget))
 				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONSTRING call.");
 			if (!TValue.isAction(varAction))
 				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONSTRING call.");
 
-			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
+			let action = request.moduleContext.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.MODAL && action.type != TAMEConstants.ActionType.OPEN)
 				throw TAMEInterrupt.Error(action.identity + " is not a modal nor open action.");
 
-			var command = TCommand.createModal(action, TValue.asString(varTarget));
+			let command = TCommand.createModal(action, TValue.asString(varTarget));
 			request.addCommand(command);
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 		}
@@ -580,21 +580,21 @@ var TOperationFunctions =
 		"name": 'QUEUEACTIONOBJECT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject = request.popValue();
-			var varAction = request.popValue();
+			let varObject = request.popValue();
+			let varAction = request.popValue();
 
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT call.");
 			if (!TValue.isAction(varAction))
 				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONOBJECT call.");
 
-			var action = request.moduleContext.resolveAction(TValue.asString(varAction));
-			var object = request.moduleContext.resolveElement(TValue.asString(varObject));
+			let action = request.moduleContext.resolveAction(TValue.asString(varAction));
+			let object = request.moduleContext.resolveElement(TValue.asString(varObject));
 
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a transitive nor ditransitive action.");
 
-			var command = TCommand.createObject(action, object);
+			let command = TCommand.createObject(action, object);
 			request.addCommand(command);
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 		}
@@ -605,24 +605,24 @@ var TOperationFunctions =
 		"name": 'QUEUEACTIONFOROBJECTSIN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObjectContainer = request.popValue();
-			var varAction = request.popValue();
+			let varObjectContainer = request.popValue();
+			let varAction = request.popValue();
 
 			if (!TValue.isObjectContainer(varObjectContainer))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in QUEUEACTIONFOROBJECTSIN call.");
 			if (!TValue.isAction(varAction))
 				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONFOROBJECTSIN call.");
 
-			var context = request.moduleContext;
-			var action = context.resolveAction(TValue.asString(varAction));
+			let context = request.moduleContext;
+			let action = context.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a transitive nor ditransitive action.");
 
-			var element = context.resolveElement(TValue.asString(varObjectContainer));
+			let element = context.resolveElement(TValue.asString(varObjectContainer));
 			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
-				var object = context.resolveElement(objectIdentity);
-				var command = TCommand.createObject(action, object);
+				let object = context.resolveElement(objectIdentity);
+				let command = TCommand.createObject(action, object);
 				request.addCommand(command);
 				response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 			});
@@ -635,9 +635,9 @@ var TOperationFunctions =
 		"name": 'QUEUEACTIONFORTAGGEDOBJECTSIN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varTag = request.popValue();
-			var varObjectContainer = request.popValue();
-			var varAction = request.popValue();
+			let varTag = request.popValue();
+			let varObjectContainer = request.popValue();
+			let varAction = request.popValue();
 
 			if (!TValue.isLiteral(varTag))
 				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONFORTAGGEDOBJECTSIN call.");
@@ -646,20 +646,20 @@ var TOperationFunctions =
 			if (!TValue.isAction(varAction))
 				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONFORTAGGEDOBJECTSIN call.");
 
-			var context = request.moduleContext;
-			var action = context.resolveAction(TValue.asString(varAction));
+			let context = request.moduleContext;
+			let action = context.resolveAction(TValue.asString(varAction));
 
 			if (action.type != TAMEConstants.ActionType.TRANSITIVE && action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a transitive nor ditransitive action.");
 
-			var tagName = TValue.asString(varTag);
-			var element = context.resolveElement(TValue.asString(varObjectContainer));
+			let tagName = TValue.asString(varTag);
+			let element = context.resolveElement(TValue.asString(varObjectContainer));
 			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
 				if (!context.checkObjectHasTag(objectIdentity, tagName))
 					return;
 				
-				var object = context.resolveElement(objectIdentity);
-				var command = TCommand.createObject(action, object);
+				let object = context.resolveElement(objectIdentity);
+				let command = TCommand.createObject(action, object);
 				request.addCommand(command);
 				response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 			});
@@ -672,9 +672,9 @@ var TOperationFunctions =
 		"name": 'QUEUEACTIONOBJECT2', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject2 = request.popValue();
-			var varObject = request.popValue();
-			var varAction = request.popValue();
+			let varObject2 = request.popValue();
+			let varObject = request.popValue();
+			let varAction = request.popValue();
 
 			if (!TValue.isObject(varObject2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in QUEUEACTIONOBJECT2 call.");
@@ -683,15 +683,15 @@ var TOperationFunctions =
 			if (!TValue.isAction(varAction))
 				throw TAMEError.UnexpectedValueType("Expected action type in QUEUEACTIONOBJECT2 call.");
 
-			var context = request.moduleContext;
-			var action = context.resolveAction(TValue.asString(varAction));
-			var object = context.resolveElement(TValue.asString(varObject));
-			var object2 = context.resolveElement(TValue.asString(varObject2));
+			let context = request.moduleContext;
+			let action = context.resolveAction(TValue.asString(varAction));
+			let object = context.resolveElement(TValue.asString(varObject));
+			let object2 = context.resolveElement(TValue.asString(varObject2));
 
 			if (action.type != TAMEConstants.ActionType.DITRANSITIVE)
 				throw TAMEError.UnexpectedValueType("BAD TYPE: " + action.identity + " is not a ditransitive action.");
 			
-			var command = TCommand.createObject2(action, object, object2);
+			let command = TCommand.createObject2(action, object, object2);
 			request.addCommand(command);
 			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
 		}
@@ -702,8 +702,8 @@ var TOperationFunctions =
 		"name": 'ADDCUE', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
-			var cue = request.popValue();
+			let value = request.popValue();
+			let cue = request.popValue();
 
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ADDCUE call.");
@@ -719,7 +719,7 @@ var TOperationFunctions =
 		"name": 'TEXT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in TEXT call.");
@@ -733,7 +733,7 @@ var TOperationFunctions =
 		"name": 'TEXTLN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in TEXTLN call.");
@@ -747,7 +747,7 @@ var TOperationFunctions =
 		"name": 'TEXTF', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in TEXTF call.");
@@ -761,7 +761,7 @@ var TOperationFunctions =
 		"name": 'TEXTFLN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in TEXTFLN call.");
@@ -784,7 +784,7 @@ var TOperationFunctions =
 		"name": 'WAIT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in WAIT call.");
@@ -798,7 +798,7 @@ var TOperationFunctions =
 		"name": 'ASBOOLEAN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ASBOOLEAN call.");
@@ -812,7 +812,7 @@ var TOperationFunctions =
 		"name": 'ASINT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ASINT call.");
@@ -826,7 +826,7 @@ var TOperationFunctions =
 		"name": 'ASFLOAT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ASFLOAT call.");
@@ -840,7 +840,7 @@ var TOperationFunctions =
 		"name": 'ASSTRING', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ASSTRING call.");
@@ -854,12 +854,12 @@ var TOperationFunctions =
 		"name": 'ASLIST', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ASLIST call.");
 			
-			var out = TValue.createList([]);
+			let out = TValue.createList([]);
 			TValue.listAdd(out, value);
 			request.pushValue(out);
 		}
@@ -870,7 +870,7 @@ var TOperationFunctions =
 		"name": 'LENGTH', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in LENGTH call.");
@@ -884,7 +884,7 @@ var TOperationFunctions =
 		"name": 'EMPTY', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
+			let value = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in EMPTY call.");
@@ -898,8 +898,8 @@ var TOperationFunctions =
 		"name": 'STRCONCAT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 			
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONCAT call.");
@@ -915,9 +915,9 @@ var TOperationFunctions =
 		"name": 'STRREPLACE', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value3 = request.popValue();
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value3 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACE call.");
@@ -926,9 +926,9 @@ var TOperationFunctions =
 			if (!TValue.isLiteral(value3))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACE call.");
 
-			var replacement = TValue.asString(value3);
-			var pattern = TValue.asString(value2);
-			var source = TValue.asString(value1);
+			let replacement = TValue.asString(value3);
+			let pattern = TValue.asString(value2);
+			let source = TValue.asString(value1);
 
 			request.pushValue(TValue.createString(source.replace(pattern, replacement)));
 		}
@@ -939,9 +939,9 @@ var TOperationFunctions =
 		"name": 'STRREPLACEPATTERN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value3 = request.popValue();
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value3 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERN call.");
@@ -950,9 +950,9 @@ var TOperationFunctions =
 			if (!TValue.isLiteral(value3))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERN call.");
 
-			var replacement = TValue.asString(value3);
-			var pattern = TValue.asString(value2);
-			var source = TValue.asString(value1);
+			let replacement = TValue.asString(value3);
+			let pattern = TValue.asString(value2);
+			let source = TValue.asString(value1);
 			
 			try {
 				request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'm'), replacement)));
@@ -967,9 +967,9 @@ var TOperationFunctions =
 		"name": 'STRREPLACEPATTERNALL', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value3 = request.popValue();
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value3 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERNALL call.");
@@ -978,9 +978,9 @@ var TOperationFunctions =
 			if (!TValue.isLiteral(value3))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERNALL call.");
 
-			var replacement = TValue.asString(value3);
-			var pattern = TValue.asString(value2);
-			var source = TValue.asString(value1);
+			let replacement = TValue.asString(value3);
+			let pattern = TValue.asString(value2);
+			let source = TValue.asString(value1);
 			
 			try {
 				request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'gm'), replacement)));
@@ -995,16 +995,16 @@ var TOperationFunctions =
 		"name": 'STRINDEX', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRINDEX call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRINDEX call.");
 			
-			var sequence = TValue.asString(value2);
-			var str = TValue.asString(value1);
+			let sequence = TValue.asString(value2);
+			let str = TValue.asString(value1);
 
 			request.pushValue(TValue.createInteger(str.indexOf(sequence)));
 		}
@@ -1015,16 +1015,16 @@ var TOperationFunctions =
 		"name": 'STRLASTINDEX', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRLASTINDEX call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRLASTINDEX call.");
 			
-			var sequence = TValue.asString(value2);
-			var str = TValue.asString(value1);
+			let sequence = TValue.asString(value2);
+			let str = TValue.asString(value1);
 
 			request.pushValue(TValue.createInteger(str.lastIndexOf(sequence)));
 		}
@@ -1035,16 +1035,16 @@ var TOperationFunctions =
 		"name": 'STRCONTAINS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINS call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINS call.");
 			
-			var sequence = TValue.asString(value2);
-			var str = TValue.asString(value1);
+			let sequence = TValue.asString(value2);
+			let str = TValue.asString(value1);
 
 			request.pushValue(TValue.createBoolean(str.indexOf(sequence) >= 0));
 		}
@@ -1055,19 +1055,19 @@ var TOperationFunctions =
 		"name": 'STRCONTAINSPATTERN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSPATTERN call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSPATTERN call.");
 			
-			var pattern = TValue.asString(value2);
-			var str = TValue.asString(value1);
+			let pattern = TValue.asString(value2);
+			let str = TValue.asString(value1);
 			
 			try {
-				var regex = new RegExp(pattern, 'gm');
+				let regex = new RegExp(pattern, 'gm');
 				request.pushValue(TValue.createBoolean(regex.test(str)));
 			} catch (err) {
 				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRCONTAINSPATTERN call.");
@@ -1080,22 +1080,22 @@ var TOperationFunctions =
 		"name": 'STRSPLIT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRSPLIT call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRSPLIT call.");
 			
-			var pattern = TValue.asString(value2);
-			var str = TValue.asString(value1);
+			let pattern = TValue.asString(value2);
+			let str = TValue.asString(value1);
 
 			try {
-				var regex = new RegExp(pattern, 'gm');
-				var tokens = str.split(regex);
-				var out = TValue.createList([]);
-				for (var x in tokens)
+				let regex = new RegExp(pattern, 'gm');
+				let tokens = str.split(regex);
+				let out = TValue.createList([]);
+				for (let x in tokens)
 					TValue.listAdd(out, TValue.createString(tokens[x]));
 				request.pushValue(out);
 			} catch (err) {
@@ -1109,23 +1109,23 @@ var TOperationFunctions =
 		"name": 'STRJOIN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var joiner = request.popValue();
-			var list = request.popValue();
+			let joiner = request.popValue();
+			let list = request.popValue();
 
 			if (!TValue.isLiteral(joiner))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRJOIN call.");
 			if (!TValue.isLiteral(list))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRJOIN call.");
 			
-			var str = TValue.asString(joiner);
+			let str = TValue.asString(joiner);
 
 			if (!TValue.isList(list) || TValue.length(list) == 1)
 				request.pushValue(TValue.createString(TValue.asString(list)));
 			else
 			{
-				var sb = new TStringBuilder();
-				var len = TValue.length(list);
-				for (var i = 0; i < len; i++)
+				let sb = new TStringBuilder();
+				let len = TValue.length(list);
+				for (let i = 0; i < len; i++)
 				{
 					sb.append(TValue.asString(TValue.listGet(list, i)));
 					if (i < len - 1)
@@ -1141,16 +1141,16 @@ var TOperationFunctions =
 		"name": 'STRSTARTSWITH', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRSTARTSWITH call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRSTARTSWITH call.");
 			
-			var sequence = TValue.asString(value2);
-			var str = TValue.asString(value1);
+			let sequence = TValue.asString(value2);
+			let str = TValue.asString(value1);
 
 			request.pushValue(TValue.createBoolean(str.substring(0, sequence.length) === sequence));
 		}
@@ -1161,16 +1161,16 @@ var TOperationFunctions =
 		"name": 'STRENDSWITH', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRENDSWITH call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRENDSWITH call.");
 			
-			var sequence = TValue.asString(value2);
-			var str = TValue.asString(value1);
+			let sequence = TValue.asString(value2);
+			let str = TValue.asString(value1);
 
 			request.pushValue(TValue.createBoolean(str.substring(str.length - sequence.length) === sequence));
 		}
@@ -1181,9 +1181,9 @@ var TOperationFunctions =
 		"name": 'SUBSTRING', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value3 = request.popValue();
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value3 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTRING call.");
@@ -1192,9 +1192,9 @@ var TOperationFunctions =
 			if (!TValue.isLiteral(value3))
 				throw TAMEError.UnexpectedValueType("Expected literal type in SUBSTRING call.");
 
-			var end = TValue.asLong(value3);
-			var start = TValue.asLong(value2);
-			var source = TValue.asString(value1);
+			let end = TValue.asLong(value3);
+			let start = TValue.asLong(value2);
+			let source = TValue.asString(value1);
 			
 			request.pushValue(TValue.createString(source.substring(start, end)));
 		}
@@ -1205,7 +1205,7 @@ var TOperationFunctions =
 		"name": 'STRLOWER', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRLOWER call.");
@@ -1219,7 +1219,7 @@ var TOperationFunctions =
 		"name": 'STRUPPER', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRUPPER call.");
@@ -1233,16 +1233,16 @@ var TOperationFunctions =
 		"name": 'STRCHAR', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRCHAR call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRCHAR call.");
 			
-			var index = TValue.asLong(value2);
-			var str = TValue.asString(value1);
+			let index = TValue.asLong(value2);
+			let str = TValue.asString(value1);
 
 			if (index < 0 || index >= str.length)
 				request.pushValue(TValue.createString(''));
@@ -1256,7 +1256,7 @@ var TOperationFunctions =
 		"name": 'STRTRIM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRTRIM call.");
@@ -1270,8 +1270,8 @@ var TOperationFunctions =
 		"name": 'LISTADD', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
-			var list = request.popValue();
+			let value = request.popValue();
+			let list = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in LISTADD call.");
@@ -1287,9 +1287,9 @@ var TOperationFunctions =
 		"name": 'LISTADDAT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var index = request.popValue();
-			var value = request.popValue();
-			var list = request.popValue();
+			let index = request.popValue();
+			let value = request.popValue();
+			let list = request.popValue();
 			
 			if (!TValue.isLiteral(index))
 				throw TAMEError.UnexpectedValueType("Expected literal type in LISTADDAT call.");
@@ -1307,8 +1307,8 @@ var TOperationFunctions =
 		"name": 'LISTREMOVE', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
-			var list = request.popValue();
+			let value = request.popValue();
+			let list = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in LISTREMOVE call.");
@@ -1325,8 +1325,8 @@ var TOperationFunctions =
 		"name": 'LISTREMOVEAT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var index = request.popValue();
-			var list = request.popValue();
+			let index = request.popValue();
+			let list = request.popValue();
 			
 			if (!TValue.isLiteral(index))
 				throw TAMEError.UnexpectedValueType("Expected literal type in LISTREMOVEAT call.");
@@ -1379,8 +1379,8 @@ var TOperationFunctions =
 		"name": 'LISTINDEX', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
-			var list = request.popValue();
+			let value = request.popValue();
+			let list = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in LISTINDEX call.");
@@ -1396,8 +1396,8 @@ var TOperationFunctions =
 		"name": 'LISTCONTAINS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value = request.popValue();
-			var list = request.popValue();
+			let value = request.popValue();
+			let list = request.popValue();
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in LISTCONTAINS call.");
@@ -1413,7 +1413,7 @@ var TOperationFunctions =
 		"name": 'FLOOR', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in FLOOR call.");
@@ -1427,7 +1427,7 @@ var TOperationFunctions =
 		"name": 'CEILING', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CEILING call.");
@@ -1441,7 +1441,7 @@ var TOperationFunctions =
 		"name": 'ROUND', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ROUND call.");
@@ -1455,17 +1455,17 @@ var TOperationFunctions =
 		"name": 'FIX', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in FIX call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in FIX call.");
 			
-			var d = TValue.asDouble(value1);
-			var f = TValue.asDouble(value2);
-			var t = Math.pow(10, f);
+			let d = TValue.asDouble(value1);
+			let f = TValue.asDouble(value2);
+			let t = Math.pow(10, f);
 
 			request.pushValue(TValue.createFloat(Math.round(d * t) / t));
 		}
@@ -1476,7 +1476,7 @@ var TOperationFunctions =
 		"name": 'SQRT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in SQRT call.");
@@ -1508,7 +1508,7 @@ var TOperationFunctions =
 		"name": 'SIN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in SIN call.");
@@ -1522,7 +1522,7 @@ var TOperationFunctions =
 		"name": 'COS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in COS call.");
@@ -1536,7 +1536,7 @@ var TOperationFunctions =
 		"name": 'TAN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in TAN call.");
@@ -1550,8 +1550,8 @@ var TOperationFunctions =
 		"name": 'MIN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in MIN call.");
@@ -1567,8 +1567,8 @@ var TOperationFunctions =
 		"name": 'MAX', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in MAX call.");
@@ -1584,9 +1584,9 @@ var TOperationFunctions =
 		"name": 'CLAMP', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value3 = request.popValue();
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value3 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CLAMP call.");
@@ -1595,9 +1595,9 @@ var TOperationFunctions =
 			if (!TValue.isLiteral(value3))
 				throw TAMEError.UnexpectedValueType("Expected literal type in CLAMP call.");
 
-			var hi = TValue.asDouble(value3);
-			var lo = TValue.asDouble(value2);
-			var number = TValue.asDouble(value1);
+			let hi = TValue.asDouble(value3);
+			let lo = TValue.asDouble(value2);
+			let number = TValue.asDouble(value1);
 			
 			request.pushValue(TValue.createFloat(Math.min(Math.max(number, lo), hi)));
 		}
@@ -1608,12 +1608,12 @@ var TOperationFunctions =
 		"name": 'IRANDOM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value1 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in IRANDOM call.");
 
-			var value = TValue.asLong(value1);
+			let value = TValue.asLong(value1);
 
 			if (value === 0)
 				request.pushValue(TValue.createInteger(0));
@@ -1638,8 +1638,8 @@ var TOperationFunctions =
 		"name": 'GRANDOM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in GRANDOM call.");
@@ -1648,13 +1648,13 @@ var TOperationFunctions =
 			
 			// Box-Muller Approximate algorithm c/o Maxwell Collard on StackOverflow
 
-			var stdDev = TValue.asDouble(value2);
-			var mean = TValue.asDouble(value1);
+			let stdDev = TValue.asDouble(value2);
+			let mean = TValue.asDouble(value1);
 			
-		    var u = 1.0 - Math.random();
-		    var v = 1.0 - Math.random();
-		    var stdNormal = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-		    var out = mean + stdDev * stdNormal;
+		    let u = 1.0 - Math.random();
+		    let v = 1.0 - Math.random();
+		    let stdNormal = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+		    let out = mean + stdDev * stdNormal;
 
 		    request.pushValue(TValue.createFloat(out));
 		}
@@ -1674,16 +1674,16 @@ var TOperationFunctions =
 		"name": 'SECONDS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in SECONDS call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in SECONDS call.");
 
-			var first = TValue.asLong(value1);
-			var second = TValue.asLong(value2);
+			let first = TValue.asLong(value1);
+			let second = TValue.asLong(value2);
 
 			request.pushValue(TValue.createInteger((second - first) / 1000));
 		}
@@ -1694,16 +1694,16 @@ var TOperationFunctions =
 		"name": 'MINUTES', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in MINUTES call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in MINUTES call.");
 
-			var first = TValue.asLong(value1);
-			var second = TValue.asLong(value2);
+			let first = TValue.asLong(value1);
+			let second = TValue.asLong(value2);
 
 			request.pushValue(TValue.createInteger((second - first) / (1000 * 60)));
 		}
@@ -1714,16 +1714,16 @@ var TOperationFunctions =
 		"name": 'HOURS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in HOURS call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in HOURS call.");
 
-			var first = TValue.asLong(value1);
-			var second = TValue.asLong(value2);
+			let first = TValue.asLong(value1);
+			let second = TValue.asLong(value2);
 
 			request.pushValue(TValue.createInteger((second - first) / (1000 * 60 * 60)));
 		}
@@ -1734,16 +1734,16 @@ var TOperationFunctions =
 		"name": 'DAYS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in DAYS call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in DAYS call.");
 
-			var first = TValue.asLong(value1);
-			var second = TValue.asLong(value2);
+			let first = TValue.asLong(value1);
+			let second = TValue.asLong(value2);
 
 			request.pushValue(TValue.createInteger((second - first) / (1000 * 60 * 60 * 24)));
 		}
@@ -1754,16 +1754,16 @@ var TOperationFunctions =
 		"name": 'FORMATTIME', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var value2 = request.popValue();
-			var value1 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
 				throw TAMEError.UnexpectedValueType("Expected literal type in FORMATTIME call.");
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in FORMATTIME call.");
 
-			var date = TValue.asLong(value1);
-			var format = TValue.asString(value2);
+			let date = TValue.asLong(value1);
+			let format = TValue.asString(value2);
 
 			request.pushValue(TValue.createString(Util.formatDate(date, format, false)));
 		}
@@ -1774,8 +1774,8 @@ var TOperationFunctions =
 		"name": 'OBJECTHASNAME', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var nameValue = request.popValue();
-			var varObject = request.popValue();
+			let nameValue = request.popValue();
+			let varObject = request.popValue();
 
 			if (!TValue.isLiteral(nameValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in OBJECTHASNAME call.");
@@ -1791,8 +1791,8 @@ var TOperationFunctions =
 		"name": 'OBJECTHASTAG', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var tagValue = request.popValue();
-			var varObject = request.popValue();
+			let tagValue = request.popValue();
+			let varObject = request.popValue();
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in OBJECTHASTAG call.");
@@ -1808,8 +1808,8 @@ var TOperationFunctions =
 		"name": 'ADDOBJECTNAME', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var nameValue = request.popValue();
-			var varObject = request.popValue();
+			let nameValue = request.popValue();
+			let varObject = request.popValue();
 
 			if (!TValue.isLiteral(nameValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ADDOBJECTNAME call.");
@@ -1825,8 +1825,8 @@ var TOperationFunctions =
 		"name": 'ADDOBJECTTAG', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var tagValue = request.popValue();
-			var varObject = request.popValue();
+			let tagValue = request.popValue();
+			let varObject = request.popValue();
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ADDOBJECTTAG call.");
@@ -1842,18 +1842,18 @@ var TOperationFunctions =
 		"name": 'ADDOBJECTTAGTOALLIN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var tagValue = request.popValue();
-			var elementValue = request.popValue();
+			let tagValue = request.popValue();
+			let elementValue = request.popValue();
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ADDOBJECTTAGTOALLIN call.");
 			if (!TValue.isObjectContainer(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in ADDOBJECTTAGTOALLIN call.");
 
-			var context = request.moduleContext;
-			var element = context.resolveElement(TValue.asString(elementValue));
+			let context = request.moduleContext;
+			let element = context.resolveElement(TValue.asString(elementValue));
 			
-			var tag = TValue.asString(tagValue);
+			let tag = TValue.asString(tagValue);
 			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
 				context.addObjectTag(objectIdentity, tag);
 			});
@@ -1865,8 +1865,8 @@ var TOperationFunctions =
 		"name": 'REMOVEOBJECTNAME', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var nameValue = request.popValue();
-			var varObject = request.popValue();
+			let nameValue = request.popValue();
+			let varObject = request.popValue();
 
 			if (!TValue.isLiteral(nameValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in REMOVEOBJECTNAME call.");
@@ -1882,8 +1882,8 @@ var TOperationFunctions =
 		"name": 'REMOVEOBJECTTAG', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var tagValue = request.popValue();
-			var varObject = request.popValue();
+			let tagValue = request.popValue();
+			let varObject = request.popValue();
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in REMOVEOBJECTTAG call.");
@@ -1899,18 +1899,18 @@ var TOperationFunctions =
 		"name": 'REMOVEOBJECTTAGFROMALLIN', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var tagValue = request.popValue();
-			var elementValue = request.popValue();
+			let tagValue = request.popValue();
+			let elementValue = request.popValue();
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in REMOVEOBJECTTAGFROMALLIN call.");
 			if (!TValue.isObjectContainer(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in REMOVEOBJECTTAGFROMALLIN call.");
 
-			var context = request.moduleContext;
-			var element = context.resolveElement(TValue.asString(elementValue));
+			let context = request.moduleContext;
+			let element = context.resolveElement(TValue.asString(elementValue));
 			
-			var tag = TValue.asString(tagValue);
+			let tag = TValue.asString(tagValue);
 			Util.each(context.getObjectsOwnedByElement(element.identity), function(objectIdentity){
 				context.removeObjectTag(objectIdentity, tag);
 			});
@@ -1922,15 +1922,15 @@ var TOperationFunctions =
 		"name": 'GIVEOBJECT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject = request.popValue();
-			var varObjectContainer = request.popValue();
+			let varObject = request.popValue();
+			let varObjectContainer = request.popValue();
 
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in GIVEOBJECT call.");
 			if (!TValue.isObjectContainer(varObjectContainer))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in GIVEOBJECT call.");
 
-			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
+			let element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
 
 			request.moduleContext.addObjectToElement(element.identity, TValue.asString(varObject));
 		}
@@ -1941,7 +1941,7 @@ var TOperationFunctions =
 		"name": 'REMOVEOBJECT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject = request.popValue();
+			let varObject = request.popValue();
 
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in REMOVEOBJECT call.");
@@ -1955,9 +1955,9 @@ var TOperationFunctions =
 		"name": 'MOVEOBJECTSWITHTAG', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var tagValue = request.popValue();
-			var varObjectContainerDest = request.popValue();
-			var varObjectContainerSource = request.popValue();
+			let tagValue = request.popValue();
+			let varObjectContainerDest = request.popValue();
+			let varObjectContainerSource = request.popValue();
 
 			if (!TValue.isLiteral(tagValue))
 				throw TAMEError.UnexpectedValueType("Expected literal type in MOVEOBJECTSWITHTAG call.");
@@ -1966,10 +1966,10 @@ var TOperationFunctions =
 			if (!TValue.isObjectContainer(varObjectContainerSource))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in MOVEOBJECTSWITHTAG call.");
 
-			var context = request.moduleContext;
-			var destination = context.resolveElement(TValue.asString(varObjectContainerDest));
-			var source = context.resolveElement(TValue.asString(varObjectContainerSource));
-			var tag = TValue.asString(tagValue);
+			let context = request.moduleContext;
+			let destination = context.resolveElement(TValue.asString(varObjectContainerDest));
+			let source = context.resolveElement(TValue.asString(varObjectContainerSource));
+			let tag = TValue.asString(tagValue);
 			
 			Util.each(context.getObjectsOwnedByElement(source.identity), function(objectIdentity){
 				if (context.checkObjectHasTag(objectIdentity, tag))
@@ -1983,12 +1983,12 @@ var TOperationFunctions =
 		"name": 'OBJECTCOUNT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var elementValue = request.popValue();
+			let elementValue = request.popValue();
 
 			if (!TValue.isObjectContainer(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in OBJECTCOUNT call.");
 
-			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
+			let element = request.moduleContext.resolveElement(TValue.asString(elementValue));
 
 			request.pushValue(TValue.createInteger(request.moduleContext.getObjectsOwnedByElementCount(element.identity)));
 		}
@@ -1999,15 +1999,15 @@ var TOperationFunctions =
 		"name": 'HASOBJECT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject = request.popValue();
-			var varObjectContainer = request.popValue();
+			let varObject = request.popValue();
+			let varObjectContainer = request.popValue();
 
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in HASOBJECT call.");
 			if (!TValue.isObjectContainer(varObjectContainer))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in HASOBJECT call.");
 
-			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
+			let element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
 
 			request.pushValue(TValue.createBoolean(request.moduleContext.checkElementHasObject(element.identity, TValue.asString(varObject))));
 		}
@@ -2018,7 +2018,7 @@ var TOperationFunctions =
 		"name": 'OBJECTHASNOOWNER', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject = request.popValue();
+			let varObject = request.popValue();
 
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in OBJECTHASNOOWNER call.");
@@ -2032,17 +2032,17 @@ var TOperationFunctions =
 		"name": 'PLAYERISINROOM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varRoom = request.popValue();
-			var varPlayer = request.popValue();
+			let varRoom = request.popValue();
+			let varPlayer = request.popValue();
 			
 			if (!TValue.isRoom(varRoom))
 				throw TAMEError.UnexpectedValueType("Expected room type in PLAYERISINROOM call.");
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in PLAYERISINROOM call.");
 
-			var context = request.moduleContext;
-			var room = context.resolveElement(TValue.asString(varRoom));
-			var player = context.resolveElement(TValue.asString(varPlayer));
+			let context = request.moduleContext;
+			let room = context.resolveElement(TValue.asString(varRoom));
+			let player = context.resolveElement(TValue.asString(varPlayer));
 
 			request.pushValue(TValue.createBoolean(context.checkPlayerIsInRoom(player.identity, room.identity)));
 		}
@@ -2053,15 +2053,15 @@ var TOperationFunctions =
 		"name": 'PLAYERCANACCESSOBJECT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObject = request.popValue();
-			var varPlayer = request.popValue();
+			let varObject = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isObject(varObject))
 				throw TAMEError.UnexpectedValueType("Expected object type in PLAYERCANACCESSOBJECT call.");
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in PLAYERCANACCESSOBJECT call.");
 
-			var player = request.moduleContext.resolveElement(TValue.asString(varPlayer));
+			let player = request.moduleContext.resolveElement(TValue.asString(varPlayer));
 
 			request.pushValue(TValue.createBoolean(TLogic.checkObjectAccessibility(request, response, player.identity, TValue.asString(varObject))));
 		}
@@ -2072,12 +2072,12 @@ var TOperationFunctions =
 		"name": 'BROWSE', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varObjectContainer = request.popValue();
+			let varObjectContainer = request.popValue();
 
 			if (!TValue.isObjectContainer(varObjectContainer))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in BROWSE call.");
 
-			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
+			let element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
 
 			TLogic.doBrowse(request, response, element.identity);
 		}
@@ -2088,16 +2088,16 @@ var TOperationFunctions =
 		"name": 'BROWSETAGGED', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varTag = request.popValue();
-			var varObjectContainer = request.popValue();
+			let varTag = request.popValue();
+			let varObjectContainer = request.popValue();
 
 			if (!TValue.isLiteral(varTag))
 				throw TAMEError.UnexpectedValueType("Expected literal type in BROWSETAGGED call.");
 			if (!TValue.isObjectContainer(varObjectContainer))
 				throw TAMEError.UnexpectedValueType("Expected object-container type in BROWSETAGGED call.");
 
-			var tagName = TValue.asString(varTag);
-			var element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
+			let tagName = TValue.asString(varTag);
+			let element = request.moduleContext.resolveElement(TValue.asString(varObjectContainer));
 
 			TLogic.doBrowse(request, response, element.identity, tagName);
 		}
@@ -2108,19 +2108,19 @@ var TOperationFunctions =
 		"name": 'ELEMENTHASANCESTOR', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varParent = request.popValue();
-			var varElement = request.popValue();
+			let varParent = request.popValue();
+			let varElement = request.popValue();
 
 			if (!TValue.isElement(varElement))
 				throw TAMEError.UnexpectedValueType("Expected element type in ELEMENTHASANCESTOR call.");
 			if (!TValue.isElement(varParent))
 				throw TAMEError.UnexpectedValueType("Expected element type in ELEMENTHASANCESTOR call.");
 
-			var context = request.moduleContext;
-			var parentIdentity = context.resolveElement(TValue.asString(varParent)).identity;
-			var element = context.resolveElement(TValue.asString(varElement));
+			let context = request.moduleContext;
+			let parentIdentity = context.resolveElement(TValue.asString(varParent)).identity;
+			let element = context.resolveElement(TValue.asString(varElement));
 
-			var found = false;
+			let found = false;
 			while (element)
 			{
 				if (element.identity == parentIdentity)
@@ -2141,12 +2141,12 @@ var TOperationFunctions =
 		"name": 'SETPLAYER', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varPlayer = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in SETPLAYER call.");
 
-			var player = request.moduleContext.resolveElement(TValue.asString(varPlayer));
+			let player = request.moduleContext.resolveElement(TValue.asString(varPlayer));
 
 			TLogic.doPlayerSwitch(request, response, player.identity);
 		}
@@ -2157,17 +2157,17 @@ var TOperationFunctions =
 		"name": 'SETROOM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varRoom = request.popValue();
-			var varPlayer = request.popValue();
+			let varRoom = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isRoom(varRoom))
 				throw TAMEError.UnexpectedValueType("Expected room type in SETROOM call.");
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in SETROOM call.");
 
-			var context = request.moduleContext;
-			var room = context.resolveElement(TValue.asString(varRoom));
-			var player = context.resolveElement(TValue.asString(varPlayer));
+			let context = request.moduleContext;
+			let room = context.resolveElement(TValue.asString(varRoom));
+			let player = context.resolveElement(TValue.asString(varPlayer));
 			
 			TLogic.doRoomSwitch(request, response, player.identity, room.identity);
 		}
@@ -2178,17 +2178,17 @@ var TOperationFunctions =
 		"name": 'PUSHROOM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varRoom = request.popValue();
-			var varPlayer = request.popValue();
+			let varRoom = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isRoom(varRoom))
 				throw TAMEError.UnexpectedValueType("Expected room type in PUSHROOM call.");
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in PUSHROOM call.");
 
-			var context = request.moduleContext;
-			var room = context.resolveElement(TValue.asString(varRoom));
-			var player = context.resolveElement(TValue.asString(varPlayer));
+			let context = request.moduleContext;
+			let room = context.resolveElement(TValue.asString(varRoom));
+			let player = context.resolveElement(TValue.asString(varPlayer));
 
 			TLogic.doRoomPush(request, response, player.identity, room.identity);
 		}
@@ -2199,15 +2199,15 @@ var TOperationFunctions =
 		"name": 'POPROOM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varPlayer = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in POPROOM call.");
 
-			var context = request.moduleContext;
-			var player = context.resolveElement(TValue.asString(varPlayer));
+			let context = request.moduleContext;
+			let player = context.resolveElement(TValue.asString(varPlayer));
 
-			var currentRoom = context.getCurrentRoom(player.identity);
+			let currentRoom = context.getCurrentRoom(player.identity);
 			
 			if (currentRoom === null)
 				throw TAMEInterrupt.Error("No rooms for player" + TLogic.elementToString(player));
@@ -2221,22 +2221,22 @@ var TOperationFunctions =
 		"name": 'SWAPROOM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varRoom = request.popValue();
-			var varPlayer = request.popValue();
+			let varRoom = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isRoom(varRoom))
 				throw TAMEError.UnexpectedValueType("Expected room type in SWAPROOM call.");
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in SWAPROOM call.");
 
-			var context = request.moduleContext;
-			var player = context.resolveElement(TValue.asString(varPlayer));
+			let context = request.moduleContext;
+			let player = context.resolveElement(TValue.asString(varPlayer));
 
 			if (player === null)
 				throw TAMEInterrupt.Error("No current player!");
 
-			var nextRoom = context.resolveElement(TValue.asString(varRoom)); 
-			var currentRoom = context.getCurrentRoom(player.identity);
+			let nextRoom = context.resolveElement(TValue.asString(varRoom)); 
+			let currentRoom = context.getCurrentRoom(player.identity);
 
 			if (currentRoom === null)
 				throw new ErrorInterrupt("No rooms for current player!");
@@ -2251,14 +2251,14 @@ var TOperationFunctions =
 		"name": 'CURRENTPLAYERIS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varPlayer = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in CURRENTPLAYERIS call.");
 
-			var context = request.moduleContext;
-			var player = context.resolveElement(TValue.asString(varPlayer));
-			var currentPlayer = context.getCurrentPlayer();
+			let context = request.moduleContext;
+			let player = context.resolveElement(TValue.asString(varPlayer));
+			let currentPlayer = context.getCurrentPlayer();
 			
 			request.pushValue(TValue.createBoolean(currentPlayer !== null && player.identity === currentPlayer.identity));
 		}
@@ -2269,7 +2269,7 @@ var TOperationFunctions =
 		"name": 'NOCURRENTPLAYER', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var currentPlayer = request.moduleContext.getCurrentPlayer();
+			let currentPlayer = request.moduleContext.getCurrentPlayer();
 			request.pushValue(TValue.createBoolean(currentPlayer === null));
 		}
 	},
@@ -2279,20 +2279,20 @@ var TOperationFunctions =
 		"name": 'CURRENTROOMIS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varRoom = request.popValue();
-			var varPlayer = request.popValue();
+			let varRoom = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in CURRENTROOMIS call.");
 			if (!TValue.isRoom(varRoom))
 				throw TAMEError.UnexpectedValueType("Expected room type in CURRENTROOMIS call.");
 
-			var context = request.moduleContext;
-			var playerIdentity = TValue.asString(varPlayer);
-			var player = context.resolveElement(playerIdentity);
-			var room = context.resolveElement(TValue.asString(varRoom));
+			let context = request.moduleContext;
+			let playerIdentity = TValue.asString(varPlayer);
+			let player = context.resolveElement(playerIdentity);
+			let room = context.resolveElement(TValue.asString(varRoom));
 			
-			var currentRoom = context.getCurrentRoom(player.identity);
+			let currentRoom = context.getCurrentRoom(player.identity);
 			request.pushValue(TValue.createBoolean(currentRoom !== null && room.identity === currentRoom.identity));
 		}
 	},
@@ -2302,15 +2302,15 @@ var TOperationFunctions =
 		"name": 'NOCURRENTROOM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var varPlayer = request.popValue();
+			let varPlayer = request.popValue();
 
 			if (!TValue.isPlayer(varPlayer))
 				throw TAMEError.UnexpectedValueType("Expected player type in NOCURRENTROOM call.");
 			
-			var context = request.moduleContext;
-			var playerIdentity = TValue.asString(varPlayer);
-			var player = context.resolveElement(playerIdentity);
-			var currentRoom = context.getCurrentRoom(player.identity);
+			let context = request.moduleContext;
+			let playerIdentity = TValue.asString(varPlayer);
+			let player = context.resolveElement(playerIdentity);
+			let currentRoom = context.getCurrentRoom(player.identity);
 			request.pushValue(TValue.createBoolean(currentRoom === null));
 		}
 	},
@@ -2320,12 +2320,12 @@ var TOperationFunctions =
 		"name": 'IDENTITY', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var elementValue = request.popValue();
+			let elementValue = request.popValue();
 			
 			if (!TValue.isElement(elementValue))
 				throw TAMEError.UnexpectedValueType("Expected element type in IDENTITY call.");
 			
-			var element = request.moduleContext.resolveElement(TValue.asString(elementValue));
+			let element = request.moduleContext.resolveElement(TValue.asString(elementValue));
 			request.pushValue(TValue.createString(element.identity));
 		}
 	},
@@ -2335,12 +2335,16 @@ var TOperationFunctions =
 		"name": 'HEADER', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			var headerName = request.popValue();
+			let headerName = request.popValue();
 			
 			if (!TValue.isLiteral(headerName))
 				throw TAMEError.UnexpectedValueType("Expected literal type in HEADER call.");
 			
-			request.pushValue(TValue.createString(request.moduleContext.module.header[TValue.asString(headerName)]));
+			let val = request.moduleContext.module.header[TValue.asString(headerName)];
+			if ((typeof val) === 'undefined' || val === null)
+				request.pushValue(TValue.createBoolean(false));
+			else
+				request.pushValue(TValue.createString(val));
 		}
 	},
 

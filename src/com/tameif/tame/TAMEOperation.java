@@ -3808,7 +3808,11 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			if (!headerName.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in HEADER call.");
 
-			request.pushValue(Value.create(request.getModuleContext().getModule().getHeader().getAttribute(headerName.asString())));
+			String val = request.getModuleContext().getModule().getHeader().getAttribute(headerName.asString());
+			if (val != null)
+				request.pushValue(Value.create(val));
+			else
+				request.pushValue(Value.create(false));
 		}
 		
 		@Override
