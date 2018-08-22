@@ -319,51 +319,51 @@ UNKNOWN Command:
 
 MALFORMED Command:
 	If current player is set,
-		If RESOLVE player.onMalformedCommandBlock(ACTION),
-			CALL player.onMalformedCommandBlock(ACTION).
+		If RESOLVE player.onMalformedCommand(ACTION),
+			CALL player.onMalformedCommand(ACTION).
 			Return.
-		If RESOLVE player.onMalformedCommandBlock(),
-			CALL player.onMalformedCommandBlock(),
+		If RESOLVE player.onMalformedCommand(),
+			CALL player.onMalformedCommand(),
 			Return.
-	If RESOLVE world.onMalformedCommandBlock(ACTION),
-		CALL world.onMalformedCommandBlock(ACTION).
+	If RESOLVE world.onMalformedCommand(ACTION),
+		CALL world.onMalformedCommand(ACTION).
 		Return.
-	If RESOLVE world.onMalformedCommandBlock(),
-		CALL world.onMalformedCommandBlock(),
+	If RESOLVE world.onMalformedCommand(),
+		CALL world.onMalformedCommand(),
 		Return.
 	Add ERROR cue: MALFORMED.
 	Return.
 
 INCOMPLETE Command:
 	If current player is set,
-		If RESOLVE player.onIncompleteCommandBlock(ACTION),
-			CALL RESOLVE player.onIncompleteCommandBlock(ACTION).
+		If RESOLVE player.onIncompleteCommand(ACTION),
+			CALL RESOLVE player.onIncompleteCommand(ACTION).
 			Return.
-		If RESOLVE player.onIncompleteCommandBlock(),
-			CALL player.onIncompleteCommandBlock().
+		If RESOLVE player.onIncompleteCommand(),
+			CALL player.onIncompleteCommand().
 			Return.
-	If RESOLVE world.onIncompleteCommandBlock(ACTION),
-		CALL world.onIncompleteCommandBlock(ACTION).
+	If RESOLVE world.onIncompleteCommand(ACTION),
+		CALL world.onIncompleteCommand(ACTION).
 		Return.
-	If RESOLVE world.onIncompleteCommandBlock(),
-		CALL world.onIncompleteCommandBlock().
+	If RESOLVE world.onIncompleteCommand(),
+		CALL world.onIncompleteCommand().
 		Return.
 	Add ERROR cue: INCOMPLETE.
 	Return.
 
 AMBIGUOUS Command:
 	If current player is set,
-		If RESOLVE player.onAmbiguousCommandBlock(ACTION),
-			CALL player.onAmbiguousCommandBlock(ACTION).
+		If RESOLVE player.onAmbiguousCommand(ACTION),
+			CALL player.onAmbiguousCommand(ACTION).
 			Return.
-		If RESOLVE player.onAmbiguousCommandBlock(),
-			CALL player.onAmbiguousCommandBlock().
+		If RESOLVE player.onAmbiguousCommand(),
+			CALL player.onAmbiguousCommand().
 			Return.
-	If RESOLVE world.onAmbiguousCommandBlock(ACTION),
-		CALL world.onAmbiguousCommandBlock(ACTION).
+	If RESOLVE world.onAmbiguousCommand(ACTION),
+		CALL world.onAmbiguousCommand(ACTION).
 		Return.
-	If RESOLVE world.onAmbiguousCommandBlock(),
-		CALL world.onAmbiguousCommandBlock().
+	If RESOLVE world.onAmbiguousCommand(),
+		CALL world.onAmbiguousCommand().
 		Return.
 	Add ERROR cue: AMBIGUOUS.
 	Return.
