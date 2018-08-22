@@ -108,31 +108,6 @@ Interpret:
 	Return.
 	
 
-Successful Parse:
-	CALL [COMMAND Loop].
-	If RESOLVE world.afterSuccessfulCommand(),
-		CALL world.afterSuccessfulCommand().
-		Return.
-	CALL [COMMAND Loop].
-	If RESOLVE world.afterEveryCommand(),
-		CALL world.afterEveryCommand().
-		Return.
-	CALL [COMMAND Loop].
-	Return.
-
-Failed Parse:
-	CALL [COMMAND Loop].
-	If RESOLVE world.afterFailedCommand(),
-		CALL world.afterFailedCommand().
-		Return.
-	CALL [COMMAND Loop].
-	If RESOLVE world.afterEveryCommand(),
-		CALL world.afterEveryCommand().
-		Return.
-	CALL [COMMAND Loop].
-	Return.
-	
-
 COMMAND Loop:
 	While Command Queue is not empty,
 		COMMAND = Dequeue Command Queue.
@@ -304,6 +279,32 @@ Process COMMAND:
 			Return.
 	Else,
 		Throw INTERNAL ERROR.
+
+Successful Parse:
+	CALL [COMMAND Loop].
+	If RESOLVE world.afterSuccessfulCommand(),
+		CALL world.afterSuccessfulCommand().
+		Return.
+	CALL [COMMAND Loop].
+	If RESOLVE world.afterEveryCommand(),
+		CALL world.afterEveryCommand().
+		Return.
+	CALL [COMMAND Loop].
+	Return.
+
+
+Failed Parse:
+	CALL [COMMAND Loop].
+	If RESOLVE world.afterFailedCommand(),
+		CALL world.afterFailedCommand().
+		Return.
+	CALL [COMMAND Loop].
+	If RESOLVE world.afterEveryCommand(),
+		CALL world.afterEveryCommand().
+		Return.
+	CALL [COMMAND Loop].
+	Return.
+	
 
 UNKNOWN Command:
 	If current player is set,
