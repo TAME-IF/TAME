@@ -1,250 +1,385 @@
+Initialize:
+	For each ELEMENT in MODULE,
+		If RESOLVE ELEMENT.init(),
+			CALL ELEMENT.init().
+		Loop FOR.
+	If RESOLVE world.start(),
+		CALL world.start().
+	CALL [Successful Parse].
+	Return.
+
 Interpret:
-	Parse ACTION.
-	If Action is GENERAL,
-		If Strict,
+	ACTION = Read action.
+	If ACTION Type is GENERAL,
+		If ACTION is STRICT,
 			If more tokens,
-				-> MALFORMED Command
-				world.afterFailedCommand()
-				-> Action LOOP
-				world.afterEveryCommand()
-				-> Action LOOP
-				FINISH.
-		Enqueue ACTION.
-	Else If Action is OPEN,
+				CALL [MALFORMED Command].
+				CALL [Failed Parse].
+				Return.
+		Enqueue COMMAND(ACTION).
+		
+	Else If ACTION Type is OPEN,
 		If no more tokens,
-			-> INCOMPLETE Command
-			world.afterFailedCommand()
-			-> Action LOOP
-			world.afterEveryCommand()
-			-> Action LOOP
-			FINISH.
-		Else,
-			Enqueue ACTION.
-	Else If Action is MODAL,
+			CALL [INCOMPLETE Command].
+			CALL [Failed Parse].
+			Return.
+		Enqueue COMMAND(ACTION, OPENSTRING).
+			
+	Else If ACTION Type is MODAL,
 		If no more tokens,
-			-> INCOMPLETE Command
-			world.afterFailedCommand()
-			-> Action LOOP
-			world.afterEveryCommand()
-			-> Action LOOP
-			FINISH.
+			CALL [INCOMPLETE Command].
+			CALL [Failed Parse].
+			Return.
+		MODE = Read mode.
 		If bad mode,
-			-> MALFORMED Command
-			world.afterFailedCommand()
-			-> Action LOOP
-			world.afterEveryCommand()
-			-> Action LOOP
-			FINISH.
-		If Strict,
+			CALL [MALFORMED Command].
+			CALL [Failed Parse].
+			Return.
+		If ACTION is STRICT,
 			If more tokens,
-				-> MALFORMED Command
-				world.afterFailedCommand()
-				-> Action LOOP
-				world.afterEveryCommand()
-				-> Action LOOP
-				FINISH.
-			Else,
-				Enqueue ACTION.
-		Else,
-			Enqueue ACTION.
-	Else If Action is TRANSITIVE,
+				CALL [MALFORMED Command].
+				CALL [Failed Parse].
+				Return.
+		Enqueue COMMAND(ACTION, MODE).
+		
+	Else If ACTION Type is TRANSITIVE,
 		If no more tokens,
-			-> INCOMPLETE Command
-			world.afterFailedCommand()
-			-> Action LOOP
-			world.afterEveryCommand()
-			-> Action LOOP
-			FINISH.
-		If unknown object,
-			-> MALFORMED Command
-			world.afterFailedCommand()
-			-> Action LOOP
-			world.afterEveryCommand()
-			-> Action LOOP
-			FINISH.
-		Else If Strict,
+			CALL [INCOMPLETE Command].
+			CALL [Failed Parse].
+			Return.
+		OBJECT1 = Read object.
+		If best match refers to more than one object,
+			CALL [AMBIGUOUS Command].
+			CALL [Failed Parse].
+			Return.
+		Else If unknown object,
+			CALL [MALFORMED Command].
+			CALL [Failed Parse].
+			Return.
+		Else If ACTION is STRICT,
 			If more tokens,
-				-> MALFORMED Command
-				world.afterFailedCommand()
-				-> Action LOOP
-				world.afterEveryCommand()
-				-> Action LOOP
-				FINISH.
-			Else,
-				Enqueue ACTION.
-		Else,
-			Enqueue ACTION.
-	Else If Action is DITRANSITIVE,
+				CALL [MALFORMED Command].
+				CALL [Failed Parse].
+				Return.
+		Enqueue COMMAND(ACTION, OBJECT1).
+		
+	Else If ACTION Type is DITRANSITIVE,
 		If no more tokens,
-			-> INCOMPLETE Command
-			world.afterFailedCommand()
-			-> Action LOOP
-			world.afterEveryCommand()
-			-> Action LOOP
-			FINISH.
-		Read object.
-		If unknown object,
-			-> MALFORMED Command
-			world.afterFailedCommand()
-			-> Action LOOP
-			world.afterEveryCommand()
-			-> Action LOOP
-			FINISH.
+			CALL [INCOMPLETE Command].
+			CALL [Failed Parse].
+			Return.
+		OBJECT1 = Read object.
+		If best match refers to more than one object,
+			CALL [AMBIGUOUS Command].
+			CALL [Failed Parse].
+			Return.
+		Else If unknown object,
+			CALL [MALFORMED Command].
+			CALL [Failed Parse].
+			Return.
 		If no more tokens,
-			Enqueue ACTION (as transitive).
+			Enqueue COMMAND(ACTION, OBJECT1). // Treat as TRANSITIVE
 		Else,
 			Read conjugate.
 			If bad conjugate,
-				-> MALFORMED Command
-				world.afterFailedCommand()
-				-> Action LOOP
-				world.afterEveryCommand()
-				-> Action LOOP
-				FINISH.
+				CALL [MALFORMED Command].
+				CALL [Failed Parse].
+				Return.
 			If no more tokens,
-				-> INCOMPLETE Command
-				world.afterFailedCommand()
-				-> Action LOOP
-				world.afterEveryCommand()
-				-> Action LOOP
-				FINISH.
-			Read object.
-			If unknown object,
-				-> MALFORMED Command
-				world.afterFailedCommand()
-				-> Action LOOP
-				world.afterEveryCommand()
-				-> Action LOOP
-				FINISH.
-			Else,
-				Enqueue ACTION.
+				CALL [INCOMPLETE Command].
+				CALL [Failed Parse].
+				Return.
+			OBJECT2 = Read object.
+			If best match refers to more than one object,
+				CALL [AMBIGUOUS Command].
+				CALL [Failed Parse].
+				Return.
+			Else If unknown object,
+				CALL [MALFORMED Command].
+				CALL [Failed Parse].
+				Return.
+			Enqueue COMMAND(ACTION, OBJECT1, OBJECT2).
 	Else,
-		-> UNKNOWN Command
-		world.afterFailedCommand()
-		-> Action LOOP
-		world.afterEveryCommand()
-		-> Action LOOP
-		FINISH.
+		CALL [UNKNOWN Command].
+		CALL [Failed Parse].
+		Return.
 	
-	-> Action LOOP
-	world.afterSuccessfulCommand()
-	-> Action LOOP
-	world.afterEveryCommand()
-	-> Action LOOP
-	FINISH.
+	CALL [Successful Parse].
+	Return.
+	
 
+Successful Parse:
+	CALL [COMMAND Loop].
+	If RESOLVE world.afterSuccessfulCommand(),
+		CALL world.afterSuccessfulCommand().
+		Return.
+	CALL [COMMAND Loop].
+	If RESOLVE world.afterEveryCommand(),
+		CALL world.afterEveryCommand().
+		Return.
+	CALL [COMMAND Loop].
+	Return.
 
-Action LOOP:
-	While ACTIONS to PROCESS,
-		Fetch next enqueued ACTION.
-		Process ACTION.
-	Return
+Failed Parse:
+	CALL [COMMAND Loop].
+	If RESOLVE world.afterFailedCommand(),
+		CALL world.afterFailedCommand().
+		Return.
+	CALL [COMMAND Loop].
+	If RESOLVE world.afterEveryCommand(),
+		CALL world.afterEveryCommand().
+		Return.
+	CALL [COMMAND Loop].
+	Return.
+	
 
-Process ACTION:
-	If Action is GENERAL,
-		If current room exists,
-			room.onAction(ACTION)
-			Return
-		Else If current player exists,
-			player.onAction(ACTION) -> Return
-		Else,
-			world.onAction(ACTION) -> Return
-		-> UNHANDLED Action
-		Return
+COMMAND Loop:
+	While Command Queue is not empty,
+		COMMAND = Dequeue Command Queue.
+		Process COMMAND.
+		Loop WHILE.
+	Return.
 
-	Else If Action is OPEN,
-		If current room exists,
-			room.onAction(ACTION) -> Return
-		Else If current player exists,
-			player.onAction(ACTION) -> Return
-		Else,
-			world.onAction(ACTION) -> Return
-		-> UNHANDLED Action
-		Return
-	Else If Action is MODAL,
-		If current room exists,
-			room.onModalAction(ACTION, MODE) -> Return
-		Else If current player exists,
-			player.onModalAction(ACTION, MODE) -> Return
-		Else,
-			world.onModalAction(ACTION, MODE) -> Return
-		-> UNHANDLED Action
-		Return
-	Else If Action is TRANSITIVE,
-		OBJECT1.onAction(ACTION) -> Return
-		If current room exists,
-			room.onActionWith(ACTION, OBJECT1) -> Return
-			room.onActionWithAncestor(ACTION, OBJECT1-ANCESTOR) -> Return
-			room.onActionWithOther(ACTION) -> Return
-		Else If current player exists,
-			player.onActionWith(ACTION, OBJECT1) -> Return
-			player.onActionWithAncestor(ACTION, OBJECT1-ANCESTOR) -> Return
-			player.onActionWithOther(ACTION) -> Return
-		Else,
-			world.onAction(ACTION) -> Return
-		-> UNHANDLED Action
-		Return
-	Else If Action is DITRANSITIVE,
-		If STRICT,
-			If REVERSED,
-				OBJECT2.onActionWith(ACTION, OBJECT1) -> Return
-				OBJECT2.onActionWithAncestor(ACTION, OBJECT1-ANCESTOR) -> Return
-				OBJECT2.onActionWithOther(ACTION) -> Return
-				-> UNHANDLED Action
-				Return
+Process COMMAND:
+	ACTION = COMMAND.ACTION.
+	If ACTION Type is GENERAL,
+		If current room is set,
+			If RESOLVE room.onAction(ACTION),
+				CALL room.onAction(ACTION).
+				Return.
+				
+		If current player is set,
+			If RESOLVE player.onAction(ACTION),
+				CALL player.onAction(ACTION).
+				Return.
+				
+		If RESOLVE world.onAction(ACTION),
+			CALL world.onAction(ACTION).
+			Return.
+			
+		CALL [UNHANDLED Action].
+		Return.
+
+	Else If ACTION Type is OPEN,
+		Set local ACTION.TARGET to COMMAND.STRING.
+		If current room is set,
+			If RESOLVE room.onAction(ACTION),
+				CALL room.onAction(ACTION).
+				Return.
+		If current player is set,
+			If RESOLVE player.onAction(ACTION),
+				CALL player.onAction(ACTION),
+				Return.
+
+		If RESOLVE world.onAction(ACTION),
+			CALL world.onAction(ACTION).
+			Return.
+		CALL [UNHANDLED Action].
+		Return.
+
+	Else If ACTION Type is MODAL,
+		MODE = COMMAND.STRING.
+		If current room is set,
+			IF RESOLVE room.onModalAction(ACTION, MODE),
+				CALL room.onModalAction(ACTION, MODE).
+				Return.
+		
+		If current player is set,
+			IF RESOLVE player.onModalAction(ACTION, MODE),
+				CALL player.onModalAction(ACTION, MODE).
+				Return.
+			
+		If RESOLVE world.onModalAction(ACTION, MODE),
+			CALL world.onModalAction(ACTION, MODE).
+			Return.
+		CALL [UNHANDLED Action].
+		Return.
+
+	Else If ACTION Type is TRANSITIVE,
+		OBJECT1 = COMMAND.OBJECT1.
+		If RESOLVE OBJECT1.onAction(ACTION),
+			CALL OBJECT1.onAction(ACTION).
+			Return.
+		
+		If current room is set,
+			If RESOLVE room.onActionWith(ACTION, OBJECT1),
+				CALL room.onActionWith(ACTION, OBJECT1).
+				Return.
+			ANCESTOR = OBJECT1.PARENT.
+			WHILE ANCESTOR is NOT NULL:
+				If RESOLVE room.onActionWithAncestor(ACTION, ANCESTOR),
+					CALL room.onActionWithAncestor(ACTION, ANCESTOR).
+					Return.
+				ANCESTOR = ANCESTOR.PARENT.			
+				Loop WHILE.
+			If RESOLVE room.onActionWithOther(ACTION),
+				CALL room.onActionWithOther(ACTION).
+				Return.
+	
+		If current player is set,
+			If RESOLVE player.onActionWith(ACTION, OBJECT1),
+				CALL player.onActionWith(ACTION, OBJECT1).
+				Return.
+			ANCESTOR = OBJECT1.PARENT.
+			WHILE ANCESTOR is NOT NULL:
+				If RESOLVE player.onActionWithAncestor(ACTION, ANCESTOR),
+					CALL player.onActionWithAncestor(ACTION, ANCESTOR).
+					Return.
+				ANCESTOR = ANCESTOR.PARENT.			
+				Loop WHILE.
+			If RESOLVE player.onActionWithOther(ACTION),
+				CALL player.onActionWithOther(ACTION).
+				Return.
+	
+		If RESOLVE world.onAction(ACTION),
+			CALL world.onAction(ACTION).
+			Return.
+		CALL [UNHANDLED Action].
+		Return.
+		
+	Else If ACTION Type is DITRANSITIVE,
+		OBJECT1 = COMMAND.OBJECT1.
+		OBJECT2 = COMMAND.OBJECT2.
+		If ACTION is STRICT,
+			If ACTION is REVERSED,
+				If RESOLVE OBJECT2.onActionWith(ACTION, OBJECT1),
+					CALL OBJECT2.onActionWith(ACTION, OBJECT1).
+					Return.
+				ANCESTOR = OBJECT1.PARENT.
+				WHILE ANCESTOR is NOT NULL:
+					If RESOLVE OBJECT2.onActionWithAncestor(ACTION, ANCESTOR),
+						CALL OBJECT2.onActionWithAncestor(ACTION, ANCESTOR).
+						Return.
+					ANCESTOR = ANCESTOR.PARENT.			
+					Loop WHILE.
+				If RESOLVE OBJECT2.onActionWithOther(ACTION),
+					CALL OBJECT2.onActionWithOther(ACTION).
+					Return.
+				CALL [UNHANDLED Action].
+				Return.
 			Else,
-				OBJECT1.onActionWith(ACTION, OBJECT2) -> Return
-				OBJECT1.onActionWithAncestor(ACTION, OBJECT2-ANCESTOR) -> Return
-				OBJECT1.onActionWithOther(ACTION) -> Return
-				-> UNHANDLED Action
-				Return
+				If RESOLVE OBJECT1.onActionWith(ACTION, OBJECT2),
+					CALL OBJECT1.onActionWith(ACTION, OBJECT2).
+					Return.
+				ANCESTOR = OBJECT2.PARENT.
+				WHILE ANCESTOR is NOT NULL:
+					If RESOLVE OBJECT1.onActionWithAncestor(ACTION, ANCESTOR),
+						CALL OBJECT1.onActionWithAncestor(ACTION, ANCESTOR).
+						Return.
+					ANCESTOR = ANCESTOR.PARENT.			
+					Loop WHILE.
+				If RESOLVE OBJECT1.onActionWithOther(ACTION),
+					CALL OBJECT1.onActionWithOther(ACTION).
+					Return.
+				CALL [UNHANDLED Action].
+				Return.
 		Else,
-			OBJECT1.onActionWith(ACTION, OBJECT2) -> Return
-			OBJECT2.onActionWith(ACTION, OBJECT1) -> Return
-			OBJECT1.onActionWithAncestor(ACTION, OBJECT2-ANCESTOR) -> Return
-			OBJECT2.onActionWithAncestor(ACTION, OBJECT1-ANCESTOR) -> Return
-			OBJECT1.onActionWithOther(ACTION) -> Return
-			OBJECT2.onActionWithOther(ACTION) -> Return
-			-> UNHANDLED Action
-			Return
-	Else
-		Return
+			If RESOLVE OBJECT1.onActionWith(ACTION, OBJECT2),
+				CALL OBJECT1.onActionWith(ACTION, OBJECT2).
+				Return.
+			If RESOLVE OBJECT2.onActionWith(ACTION, OBJECT1),
+				CALL OBJECT2.onActionWith(ACTION, OBJECT1).
+				Return.
+			ANCESTOR = OBJECT2.PARENT.
+			WHILE ANCESTOR is NOT NULL:
+				If RESOLVE OBJECT1.onActionWithAncestor(ACTION, ANCESTOR),
+					CALL OBJECT1.onActionWithAncestor(ACTION, ANCESTOR).
+					Return.
+				ANCESTOR = ANCESTOR.PARENT.			
+				Loop WHILE.
+			ANCESTOR = OBJECT1.PARENT.
+			WHILE ANCESTOR is NOT NULL:
+				If RESOLVE OBJECT2.onActionWithAncestor(ACTION, ANCESTOR),
+					CALL OBJECT2.onActionWithAncestor(ACTION, ANCESTOR).
+					Return.
+				ANCESTOR = ANCESTOR.PARENT.			
+				Loop WHILE.
+			If RESOLVE OBJECT1.onActionWithOther(ACTION),
+				CALL OBJECT1.onActionWithOther(ACTION).
+				Return.
+			If RESOLVE OBJECT2.onActionWithOther(ACTION),
+				CALL OBJECT2.onActionWithOther(ACTION).
+				Return.
+			CALL [UNHANDLED Action].
+			Return.
+	Else,
+		Throw INTERNAL ERROR.
 
 UNKNOWN Command:
-	If current player exists,
-		player.onUnknownCommand() -> Return
-	world.onUnknownCommand() -> Return
-	[ERROR CUE - UNKNOWN] -> Return
+	If current player is set,
+		If RESOLVE player.onUnknownCommand(),
+			CALL player.onUnknownCommand().
+			Return.
+	If RESOLVE world.onUnknownCommand(),
+		CALL world.onUnknownCommand().
+		Return.
+	Add ERROR cue: UNKNOWN.
+	Return.
 
 MALFORMED Command:
-	If current player exists,
-		player.onMalformedCommandBlock(ACTION) -> Return
-		player.onMalformedCommandBlock() -> Return
-	world.onMalformedCommandBlock(ACTION) -> Return
-	world.onMalformedCommandBlock() -> Return
-	[ERROR CUE - MALFORMED] -> Return
+	If current player is set,
+		If RESOLVE player.onMalformedCommandBlock(ACTION),
+			CALL player.onMalformedCommandBlock(ACTION).
+			Return.
+		If RESOLVE player.onMalformedCommandBlock(),
+			CALL player.onMalformedCommandBlock(),
+			Return.
+	If RESOLVE world.onMalformedCommandBlock(ACTION),
+		CALL world.onMalformedCommandBlock(ACTION).
+		Return.
+	If RESOLVE world.onMalformedCommandBlock(),
+		CALL world.onMalformedCommandBlock(),
+		Return.
+	Add ERROR cue: MALFORMED.
+	Return.
 
 INCOMPLETE Command:
-	If current player exists,
-		player.onIncompleteCommandBlock(ACTION) -> Return
-		player.onIncompleteCommandBlock() -> Return
-	world.onIncompleteCommandBlock(ACTION) -> Return
-	world.onIncompleteCommandBlock() -> Return
-	[ERROR CUE - INCOMPLETE] -> Return
+	If current player is set,
+		If RESOLVE player.onIncompleteCommandBlock(ACTION),
+			CALL RESOLVE player.onIncompleteCommandBlock(ACTION).
+			Return.
+		If RESOLVE player.onIncompleteCommandBlock(),
+			CALL player.onIncompleteCommandBlock().
+			Return.
+	If RESOLVE world.onIncompleteCommandBlock(ACTION),
+		CALL world.onIncompleteCommandBlock(ACTION).
+		Return.
+	If RESOLVE world.onIncompleteCommandBlock(),
+		CALL world.onIncompleteCommandBlock().
+		Return.
+	Add ERROR cue: INCOMPLETE.
+	Return.
 
 AMBIGUOUS Command:
-	If current player exists,
-		player.onAmbiguousCommandBlock(ACTION) -> Return
-		player.onAmbiguousCommandBlock() -> Return
-	world.onAmbiguousCommandBlock(ACTION) -> Return
-	world.onAmbiguousCommandBlock() -> Return
-	[ERROR CUE - AMBIGUOUS] -> Return
+	If current player is set,
+		If RESOLVE player.onAmbiguousCommandBlock(ACTION),
+			CALL player.onAmbiguousCommandBlock(ACTION).
+			Return.
+		If RESOLVE player.onAmbiguousCommandBlock(),
+			CALL player.onAmbiguousCommandBlock().
+			Return.
+	If RESOLVE world.onAmbiguousCommandBlock(ACTION),
+		CALL world.onAmbiguousCommandBlock(ACTION).
+		Return.
+	If RESOLVE world.onAmbiguousCommandBlock(),
+		CALL world.onAmbiguousCommandBlock().
+		Return.
+	Add ERROR cue: AMBIGUOUS.
+	Return.
 
 UNHANDLED Action:
-	If current player exists,
-		player.onUnhandledAction(ACTION) -> Return
-		player.onUnhandledAction() -> Return
-	world.onUnhandledAction(ACTION) -> Return
-	world.onUnhandledAction() -> Return
-	[ERROR CUE - UNHANDLED] -> Return
-
+	If current player is set,
+		If RESOLVE player.onUnhandledAction(ACTION),
+			CALL player.onUnhandledAction(ACTION). 
+			Return.
+		If RESOLVE player.onUnhandledAction(),
+			CALL player.onUnhandledAction().
+			Return.
+	If RESOLVE world.onUnhandledAction(ACTION),
+		CALL world.onUnhandledAction(ACTION).
+		Return.
+	If RESOLVE world.onUnhandledAction(),
+		CALL world.onUnhandledAction().
+		Return.
+	Add ERROR cue: UNHANDLED.
+	Return.

@@ -177,7 +177,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param tracing if true, this does tracing.
 	 * @return a TAMERequest a new request.
 	 */
-	public static TAMEResponse handleAction(TAMEModuleContext moduleContext, TAMECommand command, boolean tracing)
+	public static TAMEResponse handleCommand(TAMEModuleContext moduleContext, TAMECommand command, boolean tracing)
 	{
 		TAMERequest request = TAMERequest.create(moduleContext, tracing);
 		TAMEResponse response = new TAMEResponse();
