@@ -3,6 +3,12 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
+0.9BETA7
+........
+
+	- Changed TAMELogic.handleAction(...) to TAMELogic.handleCommand(...).
+
+
 0.9BETA6
 ........
 
