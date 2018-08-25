@@ -135,6 +135,18 @@ Util.fromBase64 = function(data){return atob(data);};
 	};
 
 	/**
+	 * Inspects an element or element's value.
+	 * @param context (object) the module context.
+	 * @param elementIdentity (string) the identity of a non-archetype element.
+	 * @param variable (string) [OPTIONAL] the name of the variable to inspect. 
+	 * @return (Object) the queried identifiers and values as debug strings. 
+	 */
+	this.inspect = function(context, elementIdentity, variable)
+	{
+		return TLogic.inspect(context, elementIdentity, variable);
+	};
+	
+	/**
 	 * Assists in parsing a cue with formatted text (TEXTF cue), or one known to have formatted text.
 	 * @param sequence the character sequence to parse.
 	 * @param tagStartFunc the function called on tag start. Should take one argument: the tag name.  

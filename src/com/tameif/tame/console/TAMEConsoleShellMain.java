@@ -92,6 +92,17 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		out.println("                             internal    - trace INTERNAL function calls.");
 		out.println("                             value       - trace VALUE set/clear, local or");
 		out.println("                                           context.");
+		out.println();
+		out.println("About the Inspector:");
+		out.println("    The inspector is a debugging tool that is useful for querying the values");
+		out.println("    of various variables and contexts. While the module is running, you may");
+		out.println("    type '?' followed by a non-archetype element identifier to query its");
+		out.println("    current value.");
+		out.println();
+		out.println("  Examples:");
+		out.println("    ?p_mainplayer         Get all persisted values on element 'p_mainplayer'.");
+		out.println("    ?p_mainplayer.steps   Get value of 'steps' on element 'p_mainplayer'.");
+		out.println("    ?world                Get all persisted values on element 'world'.");
 	}
 
 	// Entry point.

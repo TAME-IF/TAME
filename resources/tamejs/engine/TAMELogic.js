@@ -593,6 +593,35 @@ TLogic.handleRequest = function(context, inputMessage, traceTypes)
 };
 
 /**
+ * Inspects an element or element's value.
+ * @param context (object) the module context.
+ * @param elementIdentity (string) the identity of a non-archetype element.
+ * @param variable (string) [OPTIONAL] the name of the variable to inspect. 
+ * @return (Object) the queried identifiers and values as debug strings. 
+ */
+TLogic.inspect = function(context, elementIdentity, variable)
+{
+	let out = {};
+	let element = context.getElementContext(elementIdentity);
+	if (element)
+	{
+		if (!variable)
+		{
+			Util.each(element.variables, (value, key) => {
+				out[element.identity+'.'+key] = TValue.toString(value);
+			});
+		}
+		else
+		{
+			out[element.identity+'.'+variable] = TValue.toString(TLogic.getValue(element.variables, variable));
+		}
+	}
+	else
+		return null;
+	return out;
+};
+
+/**
  * Performs the necessary tasks for calling an object block.
  * Ensures that the block is called cleanly.
  * @param request (TRequest) the request object.

@@ -118,7 +118,8 @@ BodyElement.onload = function()
 			{
 				var val = InputBox.value;
 				InputBox.value = '';
-				println("\n] "+val);
+				println();
+				println("] "+val);
 				handler.prepare(TAME.interpret(modulectx, val));
 				handler.resume();
 			}

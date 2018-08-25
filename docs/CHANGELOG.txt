@@ -7,6 +7,9 @@
 ........
 
 	- Changed TAMELogic.handleAction(...) to TAMELogic.handleCommand(...).
+	- Added a message to the HTML-Debug compilation type that notifies the 
+	  user about how to trace input commands. 
+	- Debug inspector added to JS implementation.
 
 
 0.9BETA6
