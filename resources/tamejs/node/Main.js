@@ -15,6 +15,7 @@
 var readline = require('readline');
 var fs = require('fs');
 
+var inspect = false;
 var debug = false;
 var trace = false;
 var tracelist = null;
@@ -26,8 +27,11 @@ for (let x in args) if (args.hasOwnProperty(x))
 {
 	let arg = args[x];
 	
-	if (trace)
-		tracelist.push(arg.toUpperCase());
+	if (arg == '--inspect')
+	{
+		trace = false;
+		inspect = true;
+	}
 	else if (arg == '--debug')
 	{
 		trace = false;
@@ -38,7 +42,8 @@ for (let x in args) if (args.hasOwnProperty(x))
 		trace = true;
 		tracelist = [];
 	}
-
+	else if (trace)
+		tracelist.push(arg.toUpperCase());
 }
 
 if (tracelist !== null && tracelist.length === 0)
@@ -223,7 +228,29 @@ rl.on('line', function(line){
 		pause = false;
 		responseStop(responseRead());
 	} else {
-		if (COMMAND_SAVE == line.substring(0, COMMAND_SAVE.length))
+		if (inspect && line.substring(0,1) == '?')
+		{
+			let split = line.substring(1).split(/\./);
+			if (split.length < 1 || !split[0] || !split[0].trim())
+			{
+				println("?> Must specify a variable.");
+			}
+			else
+			{
+				let result = TAME.inspect(tamectx, split[0], split[1]);
+				if (result === null)
+				{
+					println("?> Context \""+split[0]+"\" not found.");
+				}
+				else
+				{
+					for (let key in result) if (result.hasOwnProperty(key))
+						println("?> "+key+" = "+result[key]);			
+				}
+			}
+			rl.prompt();
+		}
+		else if (COMMAND_SAVE == line.substring(0, COMMAND_SAVE.length))
 		{
 			let name = line.substring(COMMAND_SAVE.length).trim();
 			try {
