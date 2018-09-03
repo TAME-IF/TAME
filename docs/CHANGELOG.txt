@@ -10,6 +10,7 @@
 	- Added a message to the HTML-Debug compilation type that notifies the 
 	  user about how to trace input commands. 
 	- Debug inspector added to JS implementation.
+	- Fixed some value stuff.
 
 
 0.9BETA6
