@@ -270,7 +270,7 @@ TValue.not = function(value1)
  */
 TValue.add = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createNaN();
 
 	if (TValue.isBoolean(value1) && TValue.isBoolean(value2))
@@ -307,7 +307,7 @@ TValue.add = function(value1, value2)
  */
 TValue.subtract = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createNaN();
 	if (TValue.isList(value1) || TValue.isList(value2))
 		return TValue.createNaN();
@@ -342,7 +342,7 @@ TValue.subtract = function(value1, value2)
  */
 TValue.multiply = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createNaN();
 	if (TValue.isList(value1) || TValue.isList(value2))
 		return TValue.createNaN();
@@ -378,8 +378,8 @@ TValue.multiply = function(value1, value2)
  */
 TValue.divide = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be divided: " + value1 + ", " + value2);
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
+		return TValue.createNaN();
 	if (TValue.isList(value1) || TValue.isList(value2))
 		return TValue.createNaN();
 	if (TValue.isString(value1) || TValue.isString(value2))
@@ -424,8 +424,8 @@ TValue.divide = function(value1, value2)
  */
 TValue.modulo = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be modulo divided: " + value1 + ", " + value2);
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
+		return TValue.createNaN();
 	if (TValue.isList(value1) || TValue.isList(value2))
 		return TValue.createNaN();
 	if (TValue.isString(value1) || TValue.isString(value2))
@@ -460,8 +460,8 @@ TValue.modulo = function(value1, value2)
  */
 TValue.power = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
-		throw TAMEError.Arithmetic("These values can't be raised to a power: " + value1 + ", " + value2);
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
+		return TValue.createNaN();
 	if (TValue.isList(value1) || TValue.isList(value2))
 		return TValue.createNaN();
 	if (TValue.isString(value1) || TValue.isString(value2))
@@ -481,7 +481,7 @@ TValue.power = function(value1, value2)
  */
 TValue.logicalAnd = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
 	
 	let v1 = TValue.asBoolean(value1);
@@ -497,7 +497,7 @@ TValue.logicalAnd = function(value1, value2)
  */
 TValue.logicalOr = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
 	
 	let v1 = TValue.asBoolean(value1);
@@ -513,7 +513,7 @@ TValue.logicalOr = function(value1, value2)
  */
 TValue.logicalXOr = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
 	
 	let v1 = TValue.asBoolean(value1);
@@ -574,7 +574,7 @@ TValue.strictNotEquals = function(value1, value2)
  */
 TValue.less = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
@@ -591,7 +591,7 @@ TValue.less = function(value1, value2)
  */
 TValue.lessOrEqual = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
@@ -608,7 +608,7 @@ TValue.lessOrEqual = function(value1, value2)
  */
 TValue.greater = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
@@ -625,7 +625,7 @@ TValue.greater = function(value1, value2)
  */
 TValue.greaterOrEqual = function(value1, value2)
 {
-	if (!(TValue.isLiteral(value1) || TValue.isLiteral(value2)))
+	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);

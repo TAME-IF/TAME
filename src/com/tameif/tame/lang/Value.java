@@ -1159,7 +1159,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value add(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(Double.NaN);
 
 		if (value1.isBoolean() && value2.isBoolean())
@@ -1197,7 +1197,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value subtract(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(Double.NaN);
 		if (value1.isList() || value2.isList())
 			return create(Double.NaN);
@@ -1233,7 +1233,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value multiply(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(Double.NaN);
 		if (value1.isList() || value2.isList())
 			return create(Double.NaN);
@@ -1270,7 +1270,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value divide(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(Double.NaN);
 		if (value1.isList() || value2.isList())
 			return create(Double.NaN);
@@ -1317,7 +1317,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value modulo(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(Double.NaN);
 		if (value1.isList() || value2.isList())
 			return create(Double.NaN);
@@ -1354,7 +1354,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value power(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(Double.NaN);
 		if (value1.isList() || value2.isList())
 			return create(Double.NaN);
@@ -1376,6 +1376,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value logicalAnd(Value value1, Value value2)
 	{
+		if (!value1.isLiteral() || !value2.isLiteral())
+			return create(false);
 		boolean v1 = value1.asBoolean();
 		boolean v2 = value2.asBoolean();
 		return create(v1 && v2);
@@ -1390,6 +1392,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value logicalOr(Value value1, Value value2)
 	{
+		if (!value1.isLiteral() || !value2.isLiteral())
+			return create(false);
 		boolean v1 = value1.asBoolean();
 		boolean v2 = value2.asBoolean();
 		return create(v1 || v2);
@@ -1404,6 +1408,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value logicalXOr(Value value1, Value value2)
 	{
+		if (!value1.isLiteral() || !value2.isLiteral())
+			return create(false);
 		boolean v1 = value1.asBoolean();
 		boolean v2 = value2.asBoolean();
 		return create(v1 ^ v2);
@@ -1468,7 +1474,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value less(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
@@ -1487,7 +1493,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value lessOrEqual(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
@@ -1506,7 +1512,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value greater(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
@@ -1525,7 +1531,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 */
 	public static Value greaterOrEqual(Value value1, Value value2)
 	{
-		if (!(value1.isLiteral() || value2.isLiteral()))
+		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(false);
 		else if (value1.isList() || value2.isList())
 			return create(false);
