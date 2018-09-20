@@ -1,0 +1,15 @@
+world
+{
+	start()
+	{
+		textln(5 && 6);
+		textln(5 && 0);
+		textln(0 && 6);
+		textln(0 && 0);
+		textln(5 || 6);
+		textln(5 || 0);
+		textln(0 || 6);
+		textln(0 || 0);
+		quit;
+	}
+}
