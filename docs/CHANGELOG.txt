@@ -3,6 +3,13 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
+0.9BETA8
+........
+
+	- Fixed Short-Circuit And/Or not casting its final result to a boolean 
+	  value.
+
+
 0.9BETA7
 ........
 

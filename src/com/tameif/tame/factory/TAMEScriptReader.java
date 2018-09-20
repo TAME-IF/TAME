@@ -3257,6 +3257,8 @@ public final class TAMEScriptReader implements TAMEConstants
 						if ((successBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 						
+						successBlock.add(Operation.create(TAMEOperation.ASBOOLEAN));
+
 						Block failureBlock = new Block();
 						failureBlock.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create(false)));
 
@@ -3278,6 +3280,8 @@ public final class TAMEScriptReader implements TAMEConstants
 						if ((successBlock = parseBlockExpression(currentElement)) == null)
 							return false;
 						
+						successBlock.add(Operation.create(TAMEOperation.ASBOOLEAN));
+
 						Block failureBlock = new Block();
 						failureBlock.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create(true)));
 
