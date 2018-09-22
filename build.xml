@@ -63,6 +63,8 @@
 
 	<property name="js.node.filename" value="tame.js" />
 	<property name="js.browser.filename" value="tame-${build.version}.js" />
+	<property name="js.browser.min.filename" value="tame-${build.version}.min.js" />
+	<property name="js.browser.min.map.filename" value="tame-${build.version}.min.map" />
 
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
 	<property name="jar.tame.one.filename" value="${project.archive}-standalone-${build.version}.jar" />
@@ -244,6 +246,20 @@
 
 	<!-- JS Build Targets -->
 
+	<target name="uglify.check.windows" if="${os.isWindows}">
+		<exec executable="cmd" failonerror="false" resultproperty="uglify.check.result">
+			<arg value="/c"/>
+			<arg value="where /q uglifyjs"/>
+		</exec>
+	</target>
+
+	<target name="uglify.check.bash" if="${os.isWindows}">
+		<exec executable="/bin/sh" failonerror="false" resultproperty="uglify.check.result" output="/dev/null">
+			<arg value="-c"/>
+			<arg value="which uglifyjs"/>
+		</exec>
+	</target>
+	
 	<target name="clean.js">
 		<delete dir="${js.dir}" includeemptydirs="true" casesensitive="false" />
 	</target>
@@ -266,6 +282,22 @@
 			<arg value="-o" />
 			<arg value="${js.dir}/${js.browser.filename}" />
 		</java>
+	</target>
+
+	<target name="js.browser.minify" unless="${uglify.check.result}" depends="uglify.check.windows, uglify.check.bash, js.browser">
+		<exec executable="cmd">
+			<arg value="/c" />
+			<arg value="uglifyjs" />
+			<arg value="-c" />
+			<arg value="-m" />
+			<arg value="--comments" />
+			<arg value="-o" />
+			<arg value="${js.dir}/${js.browser.min.filename}" />
+			<arg value="--source-map" />
+			<arg value="${js.dir}/${js.browser.min.map.filename}" />
+			<arg value="--" />
+			<arg value="${js.dir}/${js.browser.filename}" />
+		</exec>
 	</target>
 
 	<target name="js" depends="js.browser, js.node">
