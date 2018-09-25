@@ -332,7 +332,7 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					}
 					else
 					{
-						response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: Unknown Conjunction (MALFORMED)", action.identity));
+						response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: No Conjunction, Process TRANSITIVE", action.identity));
 						request.addCommand(TCommand.createObject(action, interpreterContext.object1));
 						return true;
 					}

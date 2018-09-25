@@ -23,9 +23,9 @@ var TCommand = function(action, target, object1, object2)
 
 // Convenience constructors.
 
-TCommand.create = function(action) { return new TCommand(action); };
-TCommand.createModal = function(action, target) { return new TCommand(action, target); };
-TCommand.createObject = function(action, object1) { return new TCommand(action, null, object1); };
+TCommand.create = function(action) { return new TCommand(action, null, null, null); };
+TCommand.createModal = function(action, target) { return new TCommand(action, target, null, null); };
+TCommand.createObject = function(action, object1) { return new TCommand(action, null, object1, null); };
 TCommand.createObject2 = function(action, object1, object2) { return new TCommand(action, null, object1, object2); };
 
 TCommand.prototype.toString = function()
