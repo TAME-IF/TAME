@@ -253,7 +253,7 @@
 		</exec>
 	</target>
 
-	<target name="uglify.check.bash" if="${os.isWindows}">
+	<target name="uglify.check.bash" if="${os.isBash}">
 		<exec executable="/bin/sh" failonerror="false" resultproperty="uglify.check.result" output="/dev/null">
 			<arg value="-c"/>
 			<arg value="which uglifyjs"/>
@@ -284,7 +284,7 @@
 		</java>
 	</target>
 
-	<target name="js.browser.minify" unless="${uglify.check.result}" depends="uglify.check.windows, uglify.check.bash, js.browser">
+	<target name="js.browser.minify.windows" unless="${uglify.check.result}" depends="uglify.check.windows, uglify.check.bash, js.browser">
 		<exec executable="cmd">
 			<arg value="/c" />
 			<arg value="uglifyjs" />
@@ -294,13 +294,13 @@
 			<arg value="-o" />
 			<arg value="${js.dir}/${js.browser.min.filename}" />
 			<arg value="--source-map" />
-			<arg value="${js.dir}/${js.browser.min.map.filename}" />
+			<arg value="filename" />
 			<arg value="--" />
 			<arg value="${js.dir}/${js.browser.filename}" />
 		</exec>
 	</target>
 
-	<target name="js" depends="js.browser, js.node">
+	<target name="js" depends="js.browser, js.browser.minify.windows, js.node">
 	</target>
 
 	<!-- JRE Embedded Targets -->
