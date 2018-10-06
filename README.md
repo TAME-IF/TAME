@@ -17,6 +17,12 @@ Black Rook Common Lang 2.9.1+
 
 [java.base](https://docs.oracle.com/javase/10/docs/api/java.base-summary.html)  
 
+### Optional JavaScript/NPM Packages
+
+UglifyJS (via uglify-es 3.3.9+)  
+[https://www.npmjs.com/package/uglify-es](https://www.npmjs.com/package/uglify-es)  
+For TAME JS minification on build.
+
 ### Introduction
 
 This library reads, compiles, and executes TAME modules.
