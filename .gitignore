@@ -4,6 +4,11 @@
 .classpath
 .project
 
+# NPM (optional per local clone - do not check in)
+/node_modules
+package-lock.json
+package.json
+
 # Eclipse Tools
 .jshintrc
 

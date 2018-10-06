@@ -246,18 +246,30 @@
 
 	<!-- JS Build Targets -->
 
+	<!-- Check if UglifyJS is installed (Windows flavor). -->
 	<target name="uglify.check.windows" if="${os.isWindows}">
 		<exec executable="cmd" failonerror="false" resultproperty="uglify.check.result">
 			<arg value="/c"/>
 			<arg value="where /q uglifyjs"/>
 		</exec>
+		<condition property="uglify.not.exists" value="true" else="false">
+			<not>
+				<equals arg1="${uglify.check.result}" arg2="0" />
+			</not>
+		</condition>
 	</target>
 
-	<target name="uglify.check.bash" if="${os.isBash}">
+	<!-- Check if UglifyJS is installed (Bash shell flavor). -->
+	<target name="uglify.check.bash" if="${os.bash}">
 		<exec executable="/bin/bash" failonerror="false" resultproperty="uglify.check.result" output="/dev/null">
 			<arg value="-c"/>
-			<arg value="which uglifyjs"/>
+			<arg value="which -s uglifyjs"/>
 		</exec>
+		<condition property="uglify.not.exists" value="true" else="false">
+			<not>
+				<equals arg1="${uglify.check.result}" arg2="0" />
+			</not>
+		</condition>
 	</target>
 	
 	<target name="clean.js">
@@ -284,7 +296,7 @@
 		</java>
 	</target>
 
-	<target name="js.browser.minify.windows" if="${os.isWindows}" unless="${uglify.check.result}" depends="uglify.check.windows, js.browser">
+	<target name="js.browser.minify.windows" if="${os.isWindows}" unless="${uglify.not.exists}" depends="uglify.check.windows, js.browser">
 		<exec executable="cmd">
 			<arg value="/c" />
 			<arg value="uglifyjs" />
@@ -300,10 +312,8 @@
 		</exec>
 	</target>
 
-	<target name="js.browser.minify.bash" if="${os.isBash}" unless="${uglify.check.result}" depends="uglify.check.bash, js.browser">
-		<exec executable="/bin/bash">
-			<arg value="-c" />
-			<arg value="uglifyjs" />
+	<target name="js.browser.minify.bash" if="${os.bash}" unless="${uglify.not.exists}" depends="uglify.check.bash, js.browser">
+		<exec executable="uglifyjs">
 			<arg value="-c" />
 			<arg value="-m" />
 			<arg value="--comments" />
