@@ -146,7 +146,7 @@ public class TAMECommand
 				sb.append('[').append(action.getIdentity()).append(", ").append(object1.getIdentity()).append(']');
 				break;
 			case DITRANSITIVE:
-				sb.append('[').append(action.getIdentity()).append(", ").append(object1.getIdentity()).append(", ").append(object2.getIdentity()).append(']');
+				sb.append('[').append(action.getIdentity()).append(", ").append(object1.getIdentity()).append(", ").append(object2 != null ? object2.getIdentity() : "").append(']');
 				break;
 		}
 		

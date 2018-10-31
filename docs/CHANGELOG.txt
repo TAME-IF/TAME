@@ -8,6 +8,8 @@
 
 	- Fixed Short-Circuit And/Or not casting its final result to a boolean 
 	  value.
+	- Fixed ditransitive commands (executed as transitive) with one 
+	  object threw an NPE in the Java implementation.
 
 
 0.9BETA7
