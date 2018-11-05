@@ -146,6 +146,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_OVERRIDE = 		97;
 		static final int TYPE_STRICT = 			98;
 		static final int TYPE_REVERSED = 		99;
+		static final int TYPE_QUEUE = 			100;
 
 		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
 		
@@ -237,6 +238,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			addCaseInsensitiveKeyword("override", TYPE_OVERRIDE);
 			addCaseInsensitiveKeyword("strict", TYPE_STRICT);
 			addCaseInsensitiveKeyword("reversed", TYPE_REVERSED);
+			addCaseInsensitiveKeyword("queue", TYPE_QUEUE);
 
 			for (BlockEntryType entryType : BlockEntryType.VALUES)
 				BLOCKENTRYTYPE_MAP.put(entryType.name(), entryType);
@@ -2003,13 +2005,200 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
+		 * Parses the "queue" clause for queuing commands.
+		 * [QueueClause] := 
+		 * 		[GeneralAction]
+		 * 		[OpenAction] "," [VALUE]
+		 * 		[ModalAction] "," [VALUE]
+		 * 		[TransitiveAction] "," [OBJECT]
+		 * 		[TransitiveAction] ":" [OBJECT-CONTAINER]
+		 * 		[TransitiveAction] ":" [OBJECT-CONTAINER] "," [VALUE]
+		 * 		[DitransitiveAction] "," [OBJECT]
+		 * 		[DitransitiveAction] "," [OBJECT] "," [OBJECT]
+		 */
+		private boolean parseQueue(TElement currentElement, Block block)
+		{
+			if (!isAction())
+			{
+				addErrorMessage("Expected action.");
+				return false;
+			}
+			
+			TAction action = currentModule.getActionByIdentity(currentToken().getLexeme());
+			Value actionValue = tokenToValue();
+			nextToken();
+
+			// General action.
+			if (action.getType() == TAction.Type.GENERAL)
+			{
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
+				block.add(Operation.create(TAMEOperation.QUEUEACTION));
+				return true;
+			}
+			// Open action.
+			else if (action.getType() == TAction.Type.OPEN)
+			{
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
+				
+				if (!matchType(TSKernel.TYPE_COMMA))
+				{
+					addErrorMessage("Expected \",\" after open action.");
+					return false;
+				}
+				
+				if (!parseExpression(currentElement, block))
+					return false;
+				
+				block.add(Operation.create(TAMEOperation.QUEUEACTIONSTRING));
+				return true;
+			}
+			// Modal action.
+			else if (action.getType() == TAction.Type.MODAL)
+			{
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
+				
+				if (!matchType(TSKernel.TYPE_COMMA))
+				{
+					addErrorMessage("Expected \",\" after modal action.");
+					return false;
+				}
+
+				if (!parseExpression(currentElement, block))
+					return false;
+				
+				block.add(Operation.create(TAMEOperation.QUEUEACTIONSTRING));
+				return true;
+			}
+			// Transitive action.
+			else if (action.getType() == TAction.Type.TRANSITIVE)
+			{
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
+
+				// Single object?
+				if (matchType(TSKernel.TYPE_COMMA))
+				{
+					if (!isObject(false))
+					{
+						addErrorMessage("Expected non-archetype OBJECT after transitive action.");
+						return false;
+					}
+
+					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+					nextToken();
+
+					block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
+					return true;
+				}
+				// Object container?
+				else if (matchType(TSKernel.TYPE_COLON))
+				{
+					if (!isObjectContainer(false))
+					{
+						addErrorMessage("Expected non-archetype OBJECT-CONTAINER after transitive action.");
+						return false;
+					}
+
+					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+					nextToken();
+					
+					if (matchType(TSKernel.TYPE_COMMA))
+					{
+						if (!parseExpression(currentElement, block))
+							return false;
+
+						block.add(Operation.create(TAMEOperation.QUEUEACTIONFORTAGGEDOBJECTSIN));
+						return true;
+					}
+					
+					block.add(Operation.create(TAMEOperation.QUEUEACTIONFOROBJECTSIN));
+					return true;
+				}
+				else
+				{
+					addErrorMessage("Expected \",\" or \":\" after transitive action.");
+					return false;
+				}
+			}
+			// Ditransitive action.
+			else if (action.getType() == TAction.Type.DITRANSITIVE)
+			{
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
+
+				// Single object?
+				if (matchType(TSKernel.TYPE_COMMA))
+				{
+					if (!isObject(false))
+					{
+						addErrorMessage("Expected non-archetype OBJECT after ditransitive action.");
+						return false;
+					}
+
+					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+					nextToken();
+
+					if (matchType(TSKernel.TYPE_COMMA))
+					{
+						if (!isObject(false))
+						{
+							addErrorMessage("Expected non-archetype OBJECT after first OBJECT.");
+							return false;
+						}
+
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+						nextToken();
+
+						block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT2));
+						return true;
+					}
+
+					block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
+					return true;
+				}
+				// Object container?
+				else if (matchType(TSKernel.TYPE_COLON))
+				{
+					if (!isObjectContainer(false))
+					{
+						addErrorMessage("Expected non-archetype OBJECT-CONTAINER after ditransitive action (interpreted as transitive).");
+						return false;
+					}
+
+					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+					nextToken();
+					
+					if (matchType(TSKernel.TYPE_COMMA))
+					{
+						if (!parseExpression(currentElement, block))
+							return false;
+
+						block.add(Operation.create(TAMEOperation.QUEUEACTIONFORTAGGEDOBJECTSIN));
+						return true;
+					}
+					
+					block.add(Operation.create(TAMEOperation.QUEUEACTIONFOROBJECTSIN));
+					return true;
+				}
+				else
+				{
+					addErrorMessage("Expected \",\" or \":\" after ditransitive action.");
+					return false;
+				}
+			}
+			else
+			{
+				addErrorMessage("INTERNAL ERROR. You shouldn't be seeing this.");
+				return false;
+			}
+		}
+		
+		/**
 		 * Parses a statement. Emits operations to the provided block.
 		 * [Statement] := 
 		 *		[ELEMENTID] "." [VARIABLE] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		[IDENTIFIER] [ASSIGNMENTOPERATOR] [EXPRESSION]
 		 * 		"local" [IDENTIFIER] [ [ASSIGNMENTOPERATOR] [EXPRESSION] ]
-		 * 		"clear" [IDENTIFIER];
-		 * 		[STATEMENTEXPRESSION]
+		 * 		"clear" [IDENTIFIER]
+		 * 		"queue" "(" [QueueClause] ")"
 		 *		[e]
 		 */
 		private boolean parseStatement(TElement currentElement, Block block)
@@ -2025,7 +2214,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					// must have a dot if an element type.
 					if (!matchType(TSKernel.TYPE_DOT))
 					{
-						addErrorMessage("Statement error - expected '.' to dereference an element.");
+						addErrorMessage("Statement error - expected \".\" to dereference an element.");
 						return false;
 					}
 					
@@ -2282,7 +2471,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					// must have a dot if an element type.
 					if (!matchType(TSKernel.TYPE_DOT))
 					{
-						addErrorMessage("Statement error - expected '.' to dereference an element.");
+						addErrorMessage("Statement error - expected \".\" to dereference an element.");
 						return false;
 					}
 
@@ -2305,6 +2494,24 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 				
 			}
+			else if (matchType(TSKernel.TYPE_QUEUE))
+			{
+				if (!matchType(TSKernel.TYPE_LPAREN))
+				{
+					addErrorMessage("Expected \"(\" after \"queue\".");
+					return false;
+				}
+				
+				if (!parseQueue(currentElement, block))
+					return false;
+				
+				if (!matchType(TSKernel.TYPE_RPAREN))
+				{
+					addErrorMessage("Expected \")\" to end queue clause.");
+					return false;
+				}
+
+			}
 
 			return true;
 		}
@@ -2317,34 +2524,31 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseStatementList(TElement currentElement, Block block)
 		{
-			if (!isValidStatementType())
-				return true;
-			
-			if (currentType(TSKernel.TYPE_SEMICOLON))
+			while (isValidStatementType())
 			{
-				nextToken();
-				return parseStatementList(currentElement, block);
-			}
-			
-			// control block handling.
-			if (currentType(TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
-			{
-				if (!parseControl(currentElement, block))
+				if (currentType(TSKernel.TYPE_SEMICOLON))
+				{
+					nextToken();
+					// Fall through as "true"
+				}
+				else if (currentType(TSKernel.TYPE_IF, TSKernel.TYPE_WHILE, TSKernel.TYPE_FOR))
+				{
+					if (!parseControl(currentElement, block))
+						return false;
+					// Fall through as "true"
+				}
+				else if (!parseExecutableStatement(currentElement, block))
+				{
 					return false;
-				
-				return parseStatementList(currentElement, block);
+				}
+				else if (!matchType(TSKernel.TYPE_SEMICOLON))
+				{
+					addErrorMessage("Expected \";\" to terminate statement.");
+					return false;
+				}
 			}
 			
-			if (!parseExecutableStatement(currentElement, block))
-				return false;
-			
-			if (!matchType(TSKernel.TYPE_SEMICOLON))
-			{
-				addErrorMessage("Expected \";\" to terminate statement.");
-				return false;
-			}
-			
-			return parseStatementList(currentElement, block);
+			return true;
 		}
 
 		/**
@@ -3595,6 +3799,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				case TSKernel.TYPE_BREAK:
 				case TSKernel.TYPE_CONTINUE:
 				case TSKernel.TYPE_RETURN:
+				case TSKernel.TYPE_QUEUE:
 					return true;
 				default:
 					return false;

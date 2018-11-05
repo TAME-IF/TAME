@@ -243,6 +243,6 @@ world
 		textln(4 === "4");
 		textln(4 === 4.0);
 		
-		queueAction(a_quit);
+		queue(a_quit);
 	}
 }

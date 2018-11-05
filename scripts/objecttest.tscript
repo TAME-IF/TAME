@@ -3,6 +3,7 @@ module
 	title = "object test";
 }
 
+action general a_quit;
 action transitive a_mash;
 action transitive a_shred;
 
@@ -135,8 +136,13 @@ world
 		giveobject(c_basket, o_cucumber);
 		giveobject(c_basket, o_eggplant);
 
-		queueActionForObjectsIn(a_mash, c_basket);
-		queueActionForTaggedObjectsIn(a_shred, c_basket, "fruit");
+		queue(a_mash : c_basket);
+		queue(a_shred : c_basket, "fruit");
+		queue(a_quit);
+	}
+	
+	onAction(a_quit)
+	{
 		quit;
 	}
 	

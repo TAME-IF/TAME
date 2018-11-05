@@ -743,7 +743,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTION (/*Return: */ null, /*Args: */ ArgumentType.ACTION_GENERAL)
+	QUEUEACTION (true)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
@@ -779,7 +779,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONSTRING (/*Return: */ null, /*Args: */ ArgumentType.ACTION_MODAL_OPEN, ArgumentType.VALUE)
+	QUEUEACTIONSTRING (true)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
@@ -819,7 +819,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONOBJECT (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT)
+	QUEUEACTIONOBJECT (true)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
@@ -860,7 +860,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONFOROBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT_CONTAINER)
+	QUEUEACTIONFOROBJECTSIN (true)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
@@ -907,7 +907,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Third POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONFORTAGGEDOBJECTSIN (/*Return: */ null, /*Args: */ ArgumentType.ACTION_TRANSITIVE_DITRANSITIVE, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
+	QUEUEACTIONFORTAGGEDOBJECTSIN (true)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
@@ -960,7 +960,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Third POP is the action.
 	 * Returns nothing.
 	 */
-	QUEUEACTIONOBJECT2 (/*Return: */ null, /*Args: */ ArgumentType.ACTION_DITRANSITIVE, ArgumentType.OBJECT, ArgumentType.OBJECT)
+	QUEUEACTIONOBJECT2 (true)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
