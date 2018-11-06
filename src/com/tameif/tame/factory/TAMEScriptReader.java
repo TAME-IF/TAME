@@ -2011,8 +2011,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[OpenAction] "," [VALUE]
 		 * 		[ModalAction] "," [VALUE]
 		 * 		[TransitiveAction] "," [OBJECT]
-		 * 		[TransitiveAction] ":" [OBJECT-CONTAINER]
-		 * 		[TransitiveAction] ":" [OBJECT-CONTAINER] "," [VALUE]
+		 * 		[TransitiveAction] "," [OBJECT-CONTAINER]
+		 * 		[TransitiveAction] "," [OBJECT-CONTAINER] "," [VALUE]
 		 * 		[DitransitiveAction] "," [OBJECT]
 		 * 		[DitransitiveAction] "," [OBJECT] "," [OBJECT]
 		 */
@@ -2077,27 +2077,20 @@ public final class TAMEScriptReader implements TAMEConstants
 				// Single object?
 				if (matchType(TSKernel.TYPE_COMMA))
 				{
-					if (!isObject(false))
-					{
-						addErrorMessage("Expected non-archetype OBJECT after transitive action.");
-						return false;
-					}
-
+					addErrorMessage("Expected \",\" after transitive action.");
+					return false;
+				}
+				
+				if (isObject(false))
+				{
 					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 					nextToken();
 
 					block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
 					return true;
 				}
-				// Object container?
-				else if (matchType(TSKernel.TYPE_COLON))
+				else if (isObjectContainer(false))
 				{
-					if (!isObjectContainer(false))
-					{
-						addErrorMessage("Expected non-archetype OBJECT-CONTAINER after transitive action.");
-						return false;
-					}
-
 					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 					nextToken();
 					
@@ -2115,7 +2108,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 				else
 				{
-					addErrorMessage("Expected \",\" or \":\" after transitive action.");
+					addErrorMessage("Expected non-archetype OBJECT or OBJECT-CONTAINER after transitive action.");
 					return false;
 				}
 			}
@@ -2125,14 +2118,14 @@ public final class TAMEScriptReader implements TAMEConstants
 				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
 
 				// Single object?
-				if (matchType(TSKernel.TYPE_COMMA))
+				if (!matchType(TSKernel.TYPE_COMMA))
 				{
-					if (!isObject(false))
-					{
-						addErrorMessage("Expected non-archetype OBJECT after ditransitive action.");
-						return false;
-					}
-
+					addErrorMessage("Expected \",\" or \":\" after ditransitive action.");
+					return false;
+				}
+				
+				if (isObject(false))
+				{
 					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 					nextToken();
 
@@ -2154,15 +2147,8 @@ public final class TAMEScriptReader implements TAMEConstants
 					block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
 					return true;
 				}
-				// Object container?
-				else if (matchType(TSKernel.TYPE_COLON))
+				else if (isObjectContainer(false))
 				{
-					if (!isObjectContainer(false))
-					{
-						addErrorMessage("Expected non-archetype OBJECT-CONTAINER after ditransitive action (interpreted as transitive).");
-						return false;
-					}
-
 					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 					nextToken();
 					
@@ -2176,11 +2162,11 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					
 					block.add(Operation.create(TAMEOperation.QUEUEACTIONFOROBJECTSIN));
-					return true;
+					return true;						
 				}
 				else
 				{
-					addErrorMessage("Expected \",\" or \":\" after ditransitive action.");
+					addErrorMessage("Expected non-archetype OBJECT or OBJECT-CONTAINER after ditransitive action.");
 					return false;
 				}
 			}
