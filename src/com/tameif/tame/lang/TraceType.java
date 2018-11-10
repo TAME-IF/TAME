@@ -25,7 +25,7 @@ public enum TraceType
 	CONTROL,
 	/** Function calls. */
 	FUNCTION,
-	/** Function calls. */
+	/** Internal function calls. */
 	INTERNAL,
 	/** Value changes. */
 	VALUE;

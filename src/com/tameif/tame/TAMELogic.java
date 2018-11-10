@@ -185,6 +185,7 @@ public final class TAMELogic implements TAMEConstants
 		
 		try {
 			request.addCommand(command);
+			response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 			processCommandLoop(request, response, true, false, true);
 		} catch (TAMEFatalException exception) {
 			response.addCue(CUE_FATAL, exception.getMessage());
@@ -287,7 +288,9 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else
 					{
-						request.addCommand(TAMECommand.create(action));
+						TAMECommand command = TAMECommand.create(action);
+						request.addCommand(command);
+						response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 						return true;
 					}
 				}
@@ -303,7 +306,9 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else
 					{
-						request.addCommand(TAMECommand.create(action, interpreterContext.getTarget()));
+						TAMECommand command = TAMECommand.create(action, interpreterContext.getTarget());
+						request.addCommand(command);
+						response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 						return true;
 					}
 				}
@@ -333,7 +338,9 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else 
 					{
-						request.addCommand(TAMECommand.create(action, interpreterContext.getMode()));
+						TAMECommand command = TAMECommand.create(action, interpreterContext.getMode());
+						request.addCommand(command);
+						response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 						return true;
 					}
 				}
@@ -370,7 +377,9 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else 
 					{
-						request.addCommand(TAMECommand.create(action, interpreterContext.getObject1()));
+						TAMECommand command = TAMECommand.create(action, interpreterContext.getObject1());
+						request.addCommand(command);
+						response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 						return true;
 					}
 				}
@@ -410,7 +419,9 @@ public final class TAMELogic implements TAMEConstants
 						else
 						{
 							response.trace(request, TraceType.INTERPRETER, "DITRANSITIVE ACTION %s: No Conjunction, Process TRANSITIVE", action.getIdentity());
-							request.addCommand(TAMECommand.create(action, interpreterContext.getObject1()));
+							TAMECommand command = TAMECommand.create(action, interpreterContext.getObject1());
+							request.addCommand(command);
+							response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 							return true;
 						}
 					}
@@ -444,7 +455,9 @@ public final class TAMELogic implements TAMEConstants
 					}
 					else 
 					{
-						request.addCommand(TAMECommand.create(action, interpreterContext.getObject1(), interpreterContext.getObject2()));
+						TAMECommand command = TAMECommand.create(action, interpreterContext.getObject1(), interpreterContext.getObject2());
+						request.addCommand(command);
+						response.trace(request, TraceType.CONTROL, "Enqueue command "+command);
 						return true;
 					}
 				}

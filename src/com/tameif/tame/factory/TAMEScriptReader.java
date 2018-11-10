@@ -2075,7 +2075,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
 
 				// Single object?
-				if (matchType(TSKernel.TYPE_COMMA))
+				if (!matchType(TSKernel.TYPE_COMMA))
 				{
 					addErrorMessage("Expected \",\" after transitive action.");
 					return false;
@@ -2120,7 +2120,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				// Single object?
 				if (!matchType(TSKernel.TYPE_COMMA))
 				{
-					addErrorMessage("Expected \",\" or \":\" after ditransitive action.");
+					addErrorMessage("Expected \",\" after ditransitive action.");
 					return false;
 				}
 				
