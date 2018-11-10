@@ -206,7 +206,9 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addCommand(TCommand.create(action));
+					let command = TCommand.create(action);
+					request.addCommand(command);
+					response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 					return true;
 				}
 				break;
@@ -223,7 +225,9 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addCommand(TCommand.createModal(action, interpreterContext.target));
+					let command = TCommand.createModal(action, interpreterContext.target);
+					request.addCommand(command);
+					response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 					return true;
 				}
 				break;
@@ -254,7 +258,9 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addCommand(TCommand.createModal(action, interpreterContext.mode));
+					let command = TCommand.createModal(action, interpreterContext.mode);
+					request.addCommand(command);
+					response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 					return true;
 				}
 				break;
@@ -292,7 +298,9 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addCommand(TCommand.createObject(action, interpreterContext.object1));
+					let command = TCommand.createObject(action, interpreterContext.object1);
+					request.addCommand(command);
+					response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 					return true;
 				}
 				break;
@@ -333,7 +341,9 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 					else
 					{
 						response.trace(request, TAMEConstants.TraceType.INTERPRETER, Util.format("DITRANSITIVE ACTION {0}: No Conjunction, Process TRANSITIVE", action.identity));
-						request.addCommand(TCommand.createObject(action, interpreterContext.object1));
+						let command = TCommand.createObject(action, interpreterContext.object1);
+						request.addCommand(command);
+						response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 						return true;
 					}
 				}
@@ -367,7 +377,9 @@ TLogic.enqueueInterpretedAction = function(request, response, interpreterContext
 				}
 				else
 				{
-					request.addCommand(TCommand.createObject2(action, interpreterContext.object1, interpreterContext.object2));
+					let command = TCommand.createObject2(action, interpreterContext.object1, interpreterContext.object2);
+					request.addCommand(command);
+					response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 					return true;
 				}
 			}

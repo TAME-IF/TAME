@@ -533,6 +533,7 @@ var TOperationFunctions =
 	/* QUEUEACTION */
 	{
 		"name": 'QUEUEACTION', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let varAction = request.popValue();
@@ -547,13 +548,14 @@ var TOperationFunctions =
 
 			let command = TCommand.create(action);
 			request.addCommand(command);
-			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 		}
 	},
 
 	/* QUEUEACTIONSTRING */
 	{
 		"name": 'QUEUEACTIONSTRING', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let varTarget = request.popValue();
@@ -571,13 +573,14 @@ var TOperationFunctions =
 
 			let command = TCommand.createModal(action, TValue.asString(varTarget));
 			request.addCommand(command);
-			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 		}
 	},
 
 	/* QUEUEACTIONOBJECT */
 	{
 		"name": 'QUEUEACTIONOBJECT', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let varObject = request.popValue();
@@ -596,13 +599,14 @@ var TOperationFunctions =
 
 			let command = TCommand.createObject(action, object);
 			request.addCommand(command);
-			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 		}
 	},
 
 	/* QUEUEACTIONFOROBJECTSIN */
 	{
 		"name": 'QUEUEACTIONFOROBJECTSIN', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let varObjectContainer = request.popValue();
@@ -624,7 +628,7 @@ var TOperationFunctions =
 				let object = context.resolveElement(objectIdentity);
 				let command = TCommand.createObject(action, object);
 				request.addCommand(command);
-				response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
+				response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 			});
 		}
 
@@ -633,6 +637,7 @@ var TOperationFunctions =
 	/* QUEUEACTIONFORTAGGEDOBJECTSIN */
 	{
 		"name": 'QUEUEACTIONFORTAGGEDOBJECTSIN', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let varTag = request.popValue();
@@ -661,7 +666,7 @@ var TOperationFunctions =
 				let object = context.resolveElement(objectIdentity);
 				let command = TCommand.createObject(action, object);
 				request.addCommand(command);
-				response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
+				response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 			});
 		}
 
@@ -670,6 +675,7 @@ var TOperationFunctions =
 	/* QUEUEACTIONOBJECT2 */
 	{
 		"name": 'QUEUEACTIONOBJECT2', 
+		"internal": true,
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let varObject2 = request.popValue();
@@ -693,7 +699,7 @@ var TOperationFunctions =
 			
 			let command = TCommand.createObject2(action, object, object2);
 			request.addCommand(command);
-			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueued command "+command.toString());
+			response.trace(request, TAMEConstants.TraceType.CONTROL, "Enqueue command "+command.toString());
 		}
 	},
 
