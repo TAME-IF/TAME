@@ -59,7 +59,6 @@ var rl = readline.createInterface ({
 
 var stop = false;
 var pause = false;
-var textBuffer = '';
 var lastColumn = 0;
 
 function startFormatTag(tag)
@@ -72,9 +71,9 @@ function endFormatTag(tag)
 	// Nothing
 }
 
-function formatText(text) 
+function formatText(text, accum) 
 {
-	textBuffer += text;
+	accum.push(text);
 }
 
 /**
@@ -118,7 +117,7 @@ function doCue(cue)
 			return true;
 		
 		case 'textf':
-			TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText);
+			textBuffer += TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText);
 			return true;
 			
 		case 'wait':

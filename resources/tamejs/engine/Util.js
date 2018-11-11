@@ -34,7 +34,7 @@ Util.fromBase64 = null;
 // Smarter foreach.
 Util.each = function(obj, func)
 {
-	for (var x in obj) 
+	for (let x in obj) 
 		if (obj.hasOwnProperty(x)) 
 			func(obj[x], x, obj.length);
 };
@@ -58,14 +58,14 @@ Util.format = function( /* str, args ... */ )
 // Adapted from Java - java.lang.String.compareTo(String).
 Util.strcmp = function(s1, s2)
 {
-    var len1 = s1.length;
-    var len2 = s2.length;
-    var lim = Math.min(len1, len2);
-    var k = 0;
+    let len1 = s1.length;
+    let len2 = s2.length;
+    let lim = Math.min(len1, len2);
+    let k = 0;
     while (k < lim)
     {
-        var c1 = s1.charCodeAt(k);
-        var c2 = s2.charCodeAt(k);
+        let c1 = s1.charCodeAt(k);
+        let c2 = s2.charCodeAt(k);
         if (c1 != c2) 
             return c1 - c2;
         k++;
@@ -76,7 +76,7 @@ Util.strcmp = function(s1, s2)
 // Array remove
 Util.arrayRemove = function(arr, obj)
 {
-	for (var i = 0; i < arr.length; i++) 
+	for (let i = 0; i < arr.length; i++) 
 		if (arr[i] == obj)
 		{
 			arr.splice(i, 1);
@@ -89,7 +89,7 @@ Util.arrayRemove = function(arr, obj)
 // Adds a string to a lookup hash.
 Util.objectStringAdd = function(hash, identity, str)
 {
-	var arr = hash[identity];
+	let arr = hash[identity];
 	if (!arr)
 		arr = hash[identity] = {};
 	if (!arr[str])
@@ -99,7 +99,7 @@ Util.objectStringAdd = function(hash, identity, str)
 // Remove a string from a lookup hash.
 Util.objectStringRemove = function(hash, identity, str)
 {
-	var arr = hash[identity];
+	let arr = hash[identity];
 	if (!arr)
 		return;
 	if (arr[str])
@@ -110,7 +110,7 @@ Util.objectStringRemove = function(hash, identity, str)
 // True if contained, false if not.
 Util.objectStringContains = function(hash, identity, str)
 {
-	var arr = hash[identity];
+	let arr = hash[identity];
 	return (arr && arr[str]);
 };
 
@@ -135,11 +135,11 @@ Util.isFunction = function(obj)
 // Mapify - [object, ...] to {object.memberKey -> object, ...}
 Util.mapify = function(objlist, memberKey, multi) 
 {
-	var out = {}; 
-	for (var x in objlist) 
+	let out = {}; 
+	for (let x in objlist) 
 		if (objlist.hasOwnProperty(x))
 		{				
-			var chain = out[objlist[x][memberKey]];
+			let chain = out[objlist[x][memberKey]];
 			if (multi && chain)
 			{
 				if (Util.isArray(chain))
@@ -156,11 +156,11 @@ Util.mapify = function(objlist, memberKey, multi)
 // Pairify - [object, ...] to {object.memberKey -> object.memberValue, ...}
 Util.pairify = function(objlist, memberKey, memberValue, multi) 
 {
-	var out = {}; 
-	for (var x in objlist) 
+	let out = {}; 
+	for (let x in objlist) 
 		if (objlist.hasOwnProperty(x))
 		{				
-			var chain = out[objlist[x][memberKey]];
+			let chain = out[objlist[x][memberKey]];
 			if (multi && chain)
 			{
 				if (Util.isArray(chain))
@@ -183,7 +183,7 @@ Util.replaceAll = function(inputstr, expression, replacement)
 // withEscChars - Return a string that includes its escape characters.
 Util.withEscChars = function(text) 
 {
-	var t = JSON.stringify(text);
+	let t = JSON.stringify(text);
 	return t.substring(1, t.length - 1);
 };
 
@@ -191,20 +191,20 @@ Util.withEscChars = function(text)
 Util.formatDate = function(date, formatstring, utc) 
 {
 	// Enumerations and stuff.
-	var _DAYINWEEK = [
+	let _DAYINWEEK = [
 		['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
 		['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
 		['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 	];
-	var _MONTHINYEAR = [
+	let _MONTHINYEAR = [
 		['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], // MMM
 		['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] // MMMM
 	];
 
-	var _PAD = function(value, len)
+	let _PAD = function(value, len)
 	{
 		value = parseInt(value, 10);
-		var out = '';
+		let out = '';
 		do {
 			out = value % 10 + out;
 			value = Math.floor(value / 10);
@@ -218,10 +218,10 @@ Util.formatDate = function(date, formatstring, utc)
 	};
 
 	// The regular expression for finding all pertinent tokens.
-	var _DATEFORMATREGEX = /G+|Y+|y+|M+|w+|W+|D+|d+|F+|E+|a+|H+|k+|K+|h+|m+|s+|S+|z+|Z+|'.*'/g;
+	let _DATEFORMATREGEX = /G+|Y+|y+|M+|w+|W+|D+|d+|F+|E+|a+|H+|k+|K+|h+|m+|s+|S+|z+|Z+|'.*'/g;
 
 	/* Mapping of token types to value function. All return strings. */
-	var _TOKENFUNCS =
+	let _TOKENFUNCS =
 	{
 		"G": function(token, date, utc)
 		{
@@ -232,7 +232,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"Y": function(token, date, utc)
 		{
-			var year = (utc ? date.getUTCFullYear() : date.getFullYear());
+			let year = (utc ? date.getUTCFullYear() : date.getFullYear());
 			if (token.length === 2)
 				return Math.floor(year % 100)+'';
 			else
@@ -240,7 +240,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"y": function(token, date, utc)
 		{
-			var year = (utc ? date.getUTCFullYear() : date.getFullYear());
+			let year = (utc ? date.getUTCFullYear() : date.getFullYear());
 			if (token.length === 2)
 				return Math.floor(year % 100)+'';
 			else
@@ -248,7 +248,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"M": function(token, date, utc)
 		{
-			var month = (utc ? date.getUTCMonth() : date.getMonth());
+			let month = (utc ? date.getUTCMonth() : date.getMonth());
 			if (token.length === 1)
 				return (month + 1)+'';
 			else if (token.length === 2)
@@ -260,7 +260,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"d": function(token, date, utc)
 		{
-			var d = (utc ? date.getUTCDate() : date.getDate());
+			let d = (utc ? date.getUTCDate() : date.getDate());
 			if (token.length === 1)
 				return d+'';
 			else
@@ -268,7 +268,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"E": function(token, date, utc)
 		{
-			var day = (utc ? date.getUTCDay() : date.getDay());
+			let day = (utc ? date.getUTCDay() : date.getDay());
 			if (token.length === 1)
 				return day+'';
 			else if (token.length === 2)
@@ -280,7 +280,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"a": function(token, date, utc)
 		{
-			var pm = (utc ? date.getUTCHours() >= 12 : date.getHours() >= 12);
+			let pm = (utc ? date.getUTCHours() >= 12 : date.getHours() >= 12);
 			if (token.length === 1)
 				return pm ? 'P' : 'A';
 			else
@@ -288,7 +288,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"H": function(token, date, utc)
 		{
-			var hours = (utc ? date.getUTCHours() : date.getHours());
+			let hours = (utc ? date.getUTCHours() : date.getHours());
 			if (token.length === 1)
 				return hours+'';
 			else
@@ -296,7 +296,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"k": function(token, date, utc)
 		{
-			var hours = (utc ? date.getUTCHours() : date.getHours()) + 1;
+			let hours = (utc ? date.getUTCHours() : date.getHours()) + 1;
 			if (token.length === 1)
 				return hours+'';
 			else
@@ -304,7 +304,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"K": function(token, date, utc)
 		{
-			var hours = Math.floor((utc ? date.getUTCHours() : date.getHours()) % 12);
+			let hours = Math.floor((utc ? date.getUTCHours() : date.getHours()) % 12);
 			if (token.length === 1)
 				return hours+'';
 			else
@@ -312,7 +312,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"h": function(token, date, utc)
 		{
-			var hours = Math.floor((utc ? date.getUTCHours() : date.getHours()) % 12);
+			let hours = Math.floor((utc ? date.getUTCHours() : date.getHours()) % 12);
 			if (hours === 0)
 				hours = 12;
 			if (token.length === 1)
@@ -322,7 +322,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"m": function(token, date, utc)
 		{
-			var minutes = (utc ? date.getUTCMinutes() : date.getMinutes());
+			let minutes = (utc ? date.getUTCMinutes() : date.getMinutes());
 			if (token.length === 1)
 				return minutes+'';
 			else
@@ -330,7 +330,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"s": function(token, date, utc)
 		{
-			var seconds = (utc ? date.getUTCSeconds() : date.getSeconds());
+			let seconds = (utc ? date.getUTCSeconds() : date.getSeconds());
 			if (token.length === 1)
 				return seconds+'';
 			else
@@ -338,7 +338,7 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"S": function(token, date, utc)
 		{
-			var millis = (utc ? date.getUTCMilliseconds() : date.getMilliseconds());
+			let millis = (utc ? date.getUTCMilliseconds() : date.getMilliseconds());
 			if (token.length === 1)
 				return Math.round(millis / 100) + '';
 			else if (token.length === 2)
@@ -348,12 +348,12 @@ Util.formatDate = function(date, formatstring, utc)
 		},
 		"z": function(token, date, utc)
 		{
-			var offset = (date.getTimezoneOffset() / 60) * 100;
+			let offset = (date.getTimezoneOffset() / 60) * 100;
 			return (offset > 0 ? '-' : '') +_PAD(offset, 4)+'';
 		},
 		"Z": function(token, date, utc)
 		{
-			var offset = (date.getTimezoneOffset() / 60) * 100;
+			let offset = (date.getTimezoneOffset() / 60) * 100;
 			return (offset > 0 ? '-' : '') +_PAD(offset, 4)+'';
 		},
 		"'": function(token, date, utc)
@@ -366,13 +366,13 @@ Util.formatDate = function(date, formatstring, utc)
 	};
 
 	date = new Date(date);
-	var out = formatstring;
-	var tokens = formatstring.match(_DATEFORMATREGEX);
+	let out = formatstring;
+	let tokens = formatstring.match(_DATEFORMATREGEX);
 
-	for (var i = tokens.length - 1; i >= 0; i--)
+	for (let i = tokens.length - 1; i >= 0; i--)
 	{
-		var element = tokens[i];
-		var func = _TOKENFUNCS[element[0]];
+		let element = tokens[i];
+		let func = _TOKENFUNCS[element[0]];
 		if (func)
 			out = out.replace(element, func(element, date, utc));
 	}
@@ -382,57 +382,67 @@ Util.formatDate = function(date, formatstring, utc)
 
 /**
  * Assists in parsing a cue with formatted text (TEXTF cue), or one known to have formatted text.
+ * The target functions passed in are provided an accumulator array to push generated text into. 
+ * On return, this function returns the accumulator's contents joined into a string. 
  * @param sequence the character sequence to parse.
- * @param tagStartFunc the function called on tag start. Should take one argument: the tag name.  
- * @param tagEndFunc the function called on tag end. Should take one argument: the tag name.  
- * @param textFunc the function called on tag contents (does not include tags - it is recommended to maintain a stack). Should take one argument: the text read inside tags.  
+ * @param tagStartFunc the function called on tag start. arguments: tagName (string), accumulator (Array)  
+ * @param tagEndFunc the function called on tag end. arguments: tagName (string), accumulator (Array)
+ * @param textFunc the function called on tag contents. arguments: text (string), accumulator (Array)
+ * @return the full accumulated result.  
  */
 Util.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 {
-	var builder = '';
-	var tagStack = [];
+	let builder = '';
+	let tagStack = [];
+	let accumulator = [];
 	
-	var emitText = function()
+	let emitText = function()
 	{
 		if (builder.length === 0)
 			return;
 		
-		textFunc(builder);
+		let accum = [];
+		textFunc(builder, accum);
+		accumulator.push.apply(accumulator, accum);
 		builder = '';
 	};
 
-	var emitTag = function()
+	let emitTag = function()
 	{
 		if (builder.length === 0)
 			return;
 
-		var tag = builder;
+		let tag = builder;
 		builder = '';
 		
 		if (tag == '/')
 		{
 			if (tagStack.length === 0)
 				return;
-			tagEndFunc(tagStack.pop());
+			let accum = [];
+			tagEndFunc(tagStack.pop(), accum);
+			accumulator.push.apply(accumulator, accum);
 		}
 		else
 		{
 			tagStack.push(tag);
-			tagStartFunc(tag);
+			let accum = [];
+			tagStartFunc(tag, accum);
+			accumulator.push.apply(accumulator, accum);
 		}
 	};
 	
-	var STATE_TEXT = 0;
-	var STATE_TAG_MAYBE = 1;
-	var STATE_TAG = 2;
-	var STATE_TAG_END_MAYBE = 3;
+	let STATE_TEXT = 0;
+	let STATE_TAG_MAYBE = 1;
+	let STATE_TAG = 2;
+	let STATE_TAG_END_MAYBE = 3;
 	
-	var state = STATE_TEXT;
-	var len = sequence.length, i = 0;
+	let state = STATE_TEXT;
+	let len = sequence.length, i = 0;
 
 	while (i < len)
 	{
-		var c = sequence.charAt(i);
+		let c = sequence.charAt(i);
 
 		switch (state)
 		{
@@ -495,7 +505,13 @@ Util.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 	
 	emitText();
 	while (tagStack.length > 0)
-		tagEndFunc(tagStack.pop());
+	{
+		let accum = [];
+		tagEndFunc(tagStack.pop(), accum);
+		accumulator.push.apply(accumulator, accum);
+	}
+	
+	return accumulator.join('');
 };
 
 

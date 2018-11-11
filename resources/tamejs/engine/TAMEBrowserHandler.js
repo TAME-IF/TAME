@@ -11,33 +11,37 @@
 //##[[EXPORTJS-START
 
 /**
- * Creates a new response handler.
- * Handles most cues and has entry points for other cues.
+ * Creates a new response handler (mostly for aiding in browser functions).
+ * Handles all standard cues and provides a way via a function to handle other cues.
  * @param TAME reference to TAME engine.
  * @param options options object.
- * 		print: fn(text): called when a string needs printing.
+ * 		print: fn(text): called when a string needs printing (may contain HTML or other things).
  * 		onStart: fn(): called before cues start processing.
+ * 			Should disable input.
  * 		onEnd: fn(): called when cues stop processing, and the end is reached.
- * 		onSuspend: fn(): called when a call to process a cue initiates a suspension.
+ * 			Should enable input.
+ * 		onSuspend: fn(): called when a call to process a cue initiates a suspension (processing stops, but not due to a pause).
+ * 			Should disable input.
  * 		onResume: fn(): called when cues process again.
- * 		onPauseCue: fn(): called when a "pause" cue is processed. 
- * 			Should prompt for continuation, then call resume().
- * 		onQuitCue: fn(): called when a "quit" cue is encountered.
- * 			Should stop input. 
- * 		onErrorCue: fn(message): called when an "error" cue is encountered.
- * 			Should make a message appear on screen. Dismissable. 
- * 		onFatalCue: fn(message): called when a "fatal" cue is encountered.
- * 			Should make a message appear on screen, and halt input. 
+ * 			Should disable input.
+ * 		onPause: fn(): called after a "pause" cue is processed. 
+ * 			Should prompt for continuation somehow, then call resume() after the user "continues."
+ * 		onQuit: fn(): called after a "quit" cue is processed.
+ * 			Should stop input and prevent further input. 
+ * 		onError: fn(message): called after an "error" cue is processed.
+ * 			Should make an error message appear on screen. Dismissable. 
+ * 		onFatal: fn(message): called after a "fatal" cue is processed.
+ * 			Should make a message appear on screen, and stop input as though a "quit" occurred. 
  * 		onOtherCue: fn(cueType, cueContent): called when a cue that is not handled by this handler needs processing. 
- * 			Should return boolean. true = keep going, false = suspend.
- * 		onStartFormatTag: fn(tagname): called when a formatted string starts a tag.
- * 		onEndFormatTag: fn(tagname): called when a formatted string ends a tag.
- * 		onFormatText: fn(tag): called when a formatted string needs to process text.
+ * 			Should return boolean. true = keep going, false = suspend (until resume() is called).
+ * 		onStartFormatTag: fn(tagname, accum): called when a formatted string starts a tag.
+ * 		onEndFormatTag: fn(tagname, accum): called when a formatted string ends a tag.
+ * 		onFormatText: fn(text, accum): called when a formatted string needs to process text.
  */
 var TBrowserHandler = function(TAMEENGINE, options)
 {
-	var self = this;
-	var BLANK_FUNCTION = function(){};
+	let self = this;
+	let BLANK_FUNCTION = function(){};
 
 	// Fill Options
 	this.defaultOptions = 
@@ -47,24 +51,26 @@ var TBrowserHandler = function(TAMEENGINE, options)
 		"onEnd": BLANK_FUNCTION,
 		"onSuspend": BLANK_FUNCTION,
 		"onResume": BLANK_FUNCTION,
-		"onQuitCue": BLANK_FUNCTION,
-		"onPauseCue": BLANK_FUNCTION,
-		"onErrorCue": BLANK_FUNCTION,
-		"onFatalCue": BLANK_FUNCTION,
+		"onQuit": BLANK_FUNCTION,
+		"onPause": BLANK_FUNCTION,
+		"onError": BLANK_FUNCTION,
+		"onFatal": BLANK_FUNCTION,
 		"onOtherCue": BLANK_FUNCTION,
 		"onStartFormatTag": BLANK_FUNCTION,
 		"onEndFormatTag": BLANK_FUNCTION, 
-		"onFormatText": function(text) 
+		"onFormatText": function(text, accum) 
 		{
-			self.textBuffer.push(text);
+			accum.push(text);
 		}
 	};
+	
+	if (!options)
+		options = {};
 	
 	let combinedOptions = {};
 	for (let x in this.defaultOptions) if (this.defaultOptions.hasOwnProperty(x)) 
 		combinedOptions[x] = options[x] || this.defaultOptions[x];
 	this.options = combinedOptions;
-
 	
 	// cue name -> function(content)
 	this.cueHandlers =
@@ -83,7 +89,12 @@ var TBrowserHandler = function(TAMEENGINE, options)
 		
 		"textf": function(content)
 		{
-			TAMEENGINE.parseFormatted(content, self.options.onStartFormatTag, self.options.onEndFormatTag, self.options.onFormatText);
+			self.textBuffer.push(TAMEENGINE.parseFormatted(
+				content, 
+				self.options.onStartFormatTag, 
+				self.options.onEndFormatTag, 
+				self.options.onFormatText
+			));
 			return true;
 		},
 			
@@ -107,13 +118,13 @@ var TBrowserHandler = function(TAMEENGINE, options)
 
 		"error": function(content)
 		{
-			self.options.onErrorCue(content);
+			self.options.onError(content);
 			return true;
 		},
 
 		"fatal": function(content)
 		{
-			self.options.onFatalCue(content);
+			self.options.onFatal(content);
 			self.stop = true;
 			return false;
 		}
@@ -151,7 +162,7 @@ TBrowserHandler.prototype.prepare = function(response)
 TBrowserHandler.prototype.resume = function()
 {
 	if (!this.response)
-		throw 'resume() before prepare()!';
+		throw new Error('resume() before prepare()!');
 
 	if (this.nextCue === 0)
 		this.options.onStart();
@@ -191,7 +202,7 @@ TBrowserHandler.prototype.resume = function()
 	
 	if (this.pause)
 	{
-		this.options.onPauseCue();
+		this.options.onPause();
 	}
 	
 	// if stop, halt completely.
@@ -199,13 +210,13 @@ TBrowserHandler.prototype.resume = function()
 	{
 		// unload response.
 		this.response = null;
-		this.options.onQuitCue();
+		this.options.onQuit();
 		this.options.onEnd();
 		return false;
 	}
 	
 	// If halted before end...
-	if (this.nextCue < this.response.responseCues.length)
+	if (!this.pause && this.nextCue < this.response.responseCues.length)
 	{
 		this.options.onSuspend();
 		return true;
@@ -216,6 +227,17 @@ TBrowserHandler.prototype.resume = function()
 		return false;
 	}
 	
+};
+
+/**
+ * Prepares the response for read and calls resume.
+ * Calls prepare(response) and then resume().
+ * @param response the response from an initialize or interpret call.
+ */
+TBrowserHandler.prototype.process = function(response)
+{
+	this.prepare(response);
+	this.resume();
 };
 
 //##[[EXPORTJS-END

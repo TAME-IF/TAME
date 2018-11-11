@@ -121,10 +121,13 @@ Util.fromBase64 = (function()
 	
 	/**
 	 * Assists in parsing a cue with formatted text (TEXTF cue), or one known to have formatted text.
+	 * The target functions passed in are provided an accumulator array to push generated text into. 
+	 * On return, this function returns the accumulator's contents joined into a string. 
 	 * @param sequence the character sequence to parse.
-	 * @param tagStartFunc the function called on tag start. Should take one argument: the tag name.  
-	 * @param tagEndFunc the function called on tag end. Should take one argument: the tag name.  
-	 * @param textFunc the function called on tag contents (does not include tags - it is recommended to maintain a stack). Should take one argument: the text read inside tags.  
+	 * @param tagStartFunc the function called on tag start. arguments: tagName (string), accumulator (Array)  
+	 * @param tagEndFunc the function called on tag end. arguments: tagName (string), accumulator (Array)
+	 * @param textFunc the function called on tag contents. arguments: text (string), accumulator (Array)
+	 * @return the full accumulated result.  
 	 */
 	this.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 	{

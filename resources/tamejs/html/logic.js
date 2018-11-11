@@ -59,7 +59,7 @@ var handler = TAME.newBrowserHandler({
 	
 	"onSuspend": function() 
 	{
-		InputBox.disabled = false;
+		InputBox.disabled = true;
 	},
 	
 	"onResume": function()
@@ -73,7 +73,7 @@ var handler = TAME.newBrowserHandler({
 		InputBox.focus();
 	},
 	
-	"onPauseCue": function()
+	"onPause": function()
 	{
 		mustContinue = true;
 		InputBox.disabled = false;
@@ -81,17 +81,17 @@ var handler = TAME.newBrowserHandler({
 		InputBox.focus();
 	},
 	
-	"onQuitCue": function(content)
+	"onQuit": function(content)
 	{
 		InputDiv.remove();
 	},
 	
-	"onErrorCue": function(content)
+	"onError": function(content)
 	{
 		println("\n !ERROR!: "+content);
 	},
 	
-	"onFatalCue": function(content)
+	"onFatal": function(content)
 	{
 		println("\n!!FATAL!!: "+content);
 		InputDiv.remove();
@@ -120,12 +120,10 @@ BodyElement.onload = function()
 				InputBox.value = '';
 				println();
 				println("] "+val);
-				handler.prepare(TAME.interpret(modulectx, val));
-				handler.resume();
+				handler.process(TAME.interpret(modulectx, val));
 			}
 		}
 	});
 	
-	handler.prepare(TAME.initialize(modulectx));
-	handler.resume();
+	handler.process(TAME.initialize(modulectx));
 };
