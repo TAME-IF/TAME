@@ -108,8 +108,8 @@ function printWrapped(message, startColumn, width)
 
 // Need a better don't-eat-CPU-solution.
 function sleep(sleepDuration) {
-    var now = Date.now();
-    while(Date.now() < now + sleepDuration){ /* do nothing */ } 
+	let now = Date.now();
+	while (Date.now() < now + sleepDuration) {;}
 }
 
 //##[[EXPORTJS-END

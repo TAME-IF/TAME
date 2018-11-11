@@ -23,7 +23,6 @@ import com.tameif.tame.factory.TAMEJSExporterOptions;
 import com.tameif.tame.factory.TAMEScriptParseException;
 import com.tameif.tame.factory.TAMEScriptReader;
 import com.tameif.tame.factory.TAMEScriptReaderOptions;
-import com.blackrook.commons.hash.CaseInsensitiveHash;
 
 /**
  * The compiler main entry point.
@@ -67,17 +66,6 @@ public final class TAMECompilerMain
 	private static boolean printVersion = false;
 	private static boolean exportJSEngine = false;
 	private static boolean exportJSEngineNode = false;
-	
-	/** Hash of valid wrapper names. */
-	private static final CaseInsensitiveHash VALID_WRAPPER_NAMES = new CaseInsensitiveHash() {{
-		put(TAMEJSExporter.WRAPPER_NODEENGINE);
-		put(TAMEJSExporter.WRAPPER_ENGINE);
-		put(TAMEJSExporter.WRAPPER_MODULE);
-		put(TAMEJSExporter.WRAPPER_NODE);
-		put(TAMEJSExporter.WRAPPER_BROWSER);
-		put(TAMEJSExporter.WRAPPER_HTML);
-		put(TAMEJSExporter.WRAPPER_HTML_DEBUG);
-	}};
 	
 	private static void printVersion(PrintStream out)
 	{
@@ -135,6 +123,8 @@ public final class TAMECompilerMain
 		out.println("                         node       - Exports an embedded NodeJS program.");
 		out.println("                         module     - Exports just module data to feed into a");
 		out.println("                                      JS TAME engine.");
+		out.println("                         [filename] - A file to use as the starting point for");
+		out.println("                                      the exporter.");
 		out.println();
 		out.println("    --js-engine          Export just TAME's engine to JS.");
 		out.println();
@@ -220,12 +210,6 @@ public final class TAMECompilerMain
 					}
 					else
 					{
-						if (!VALID_WRAPPER_NAMES.contains(arg))
-						{
-							out.println("ERROR: Expected a valid wrapper name after switch.");
-							return false;
-						}
-						
 						jsOptions.wrapperName = arg;
 						state = STATE_SWITCHES;
 					}

@@ -90,6 +90,8 @@ function debugCue(cue)
 	return true;
 }
 
+var TEXTBUFFER = [];
+
 /**
  * Handles a TAME cue.
  * @return true to continue handling, false to halt.
@@ -101,8 +103,8 @@ function doCue(cue)
 	
 	if (type !== 'text' && type !== 'textf')
 	{
-		lastColumn = printWrapped(textBuffer, lastColumn, process.stdout.columns);
-		textBuffer = '';
+		lastColumn = printWrapped(TEXTBUFFER.join(''), lastColumn, process.stdout.columns);
+		TEXTBUFFER.length = 0;
 	}
 	
 	switch (type)
@@ -113,11 +115,11 @@ function doCue(cue)
 			return false;
 		
 		case 'text':
-			textBuffer += content;
+			TEXTBUFFER.push(content);
 			return true;
 		
 		case 'textf':
-			textBuffer += TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText);
+			TEXTBUFFER.push(TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText));
 			return true;
 			
 		case 'wait':
@@ -152,11 +154,11 @@ var currentResponse = null;
 
 function responseStop(notDone)
 {
-	if (textBuffer.length > 0)
+	if (TEXTBUFFER.length > 0)
 	{
-		printWrapped(textBuffer, lastColumn, process.stdout.columns);
+		printWrapped(TEXTBUFFER.join(''), lastColumn, process.stdout.columns);
 		lastColumn = 0;
-		textBuffer = '';
+		TEXTBUFFER.length = 0;
 	}
 
 	if (stop)

@@ -12,6 +12,8 @@ package com.tameif.tame.factory;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -216,21 +218,21 @@ public final class TAMEJSExporter
 	public static void export(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
 		if (WRAPPER_NODE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeJS.js", false);
+			processResource(writer, module, options, "NodeJS.js", false);
 		else if (WRAPPER_MODULE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Module.js", false);
+			processResource(writer, module, options, "Module.js", false);
 		else if (WRAPPER_ENGINE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Engine.js", false);
+			processResource(writer, module, options, "Engine.js", false);
 		else if (WRAPPER_NODEENGINE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "NodeEngine.js", false);
+			processResource(writer, module, options, "NodeEngine.js", false);
 		else if (WRAPPER_BROWSER.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js", false);
+			processResource(writer, module, options, "Browser.js", false);
 		else if (WRAPPER_HTML.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.html", false);
+			processResource(writer, module, options, "Browser.html", false);
 		else if (WRAPPER_HTML_DEBUG.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser-Debug.html", false);
+			processResource(writer, module, options, "Browser-Debug.html", false);
 		else
-			processResource(writer, module, options, JS_ROOT_RESOURCE + "Browser.js", false);
+			processResource(writer, module, options, options.getWrapperName(), false);
 	}
 
 	/**
@@ -246,15 +248,23 @@ public final class TAMEJSExporter
 	{
 		String parentPath = path.substring(0, path.lastIndexOf('/') + 1);
 		
+		BufferedReader br = null;
 		InputStream in = null;
 		try {
-			in = Common.openResource(path);
-			if (in == null)
-				throw new IOException("Resource \""+path+"\" cannot be found! Internal error!");
+			boolean resource = false;
+			try {
+				in = new FileInputStream(path);
+			} catch (FileNotFoundException e) {
+				in = Common.openResource(JS_ROOT_RESOURCE + path);
+				if (in == null)
+					throw new IOException("Resource \""+path+"\" cannot be found! Internal error!");
+				resource = true;
+			}
 			
 			if (options.isPathOutputEnabled())
-				writer.append("// ---- "+path);
-			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+				writer.append("// ---- " + (resource ? "classpath:" : "") + path);
+			
+			br = new BufferedReader(new InputStreamReader(in));
 			String line = null;
 			boolean startWrite = false;
 			
@@ -300,6 +310,7 @@ public final class TAMEJSExporter
 
 		} finally {
 			Common.close(in);
+			Common.close(br);
 		}
 	}
 
