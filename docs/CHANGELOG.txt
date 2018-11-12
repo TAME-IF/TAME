@@ -3,6 +3,23 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
+0.9BETA9
+........
+
+	- Added queue keyword and removed QUEUEACTION*() functions. Queueing
+	  commands now works like this:
+	  queue a_generalaction;
+	  queue a_modalaction, "mode";
+	  queue a_openaction, "opentarget";
+	  queue a_transitiveaction, o_object;
+	  queue a_transitiveaction : c_container;
+	  queue a_transitiveaction : c_container, "tagname";
+	  queue a_ditransitiveaction, o_object;
+	  queue a_ditransitiveaction : c_container;
+	  queue a_ditransitiveaction : c_container, "tagname";
+	  queue a_ditransitiveaction, o_object, o_object2;
+
+
 0.9BETA8
 ........
 
