@@ -205,7 +205,7 @@ world
 		giveObject(r_room, o_twilight);
 		giveObject(r_room, o_incinerator);
 		
-		queue(a_look);
+		queue a_look;
 	}
 	
 	onAction(a_inv)
@@ -216,12 +216,12 @@ world
 		
 	onAction(a_test)
 	{
-		queue(a_say, "Hello, good morning! BUTTS");
-		queue(a_examine, o_1984);
-		queue(a_take, o_1984);
-		queue(a_use, o_1984);
-		queue(a_use, o_twilight, o_incinerator);
-		queue(a_quit);
+		queue a_say, "Hello, good morning! BUTTS";
+		queue a_examine, o_1984;
+		queue a_take, o_1984;
+		queue a_use, o_1984;
+		queue a_use, o_twilight, o_incinerator;
+		queue a_quit;
 	}
 
 	onAction(a_quit)

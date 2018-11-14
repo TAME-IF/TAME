@@ -23,7 +23,7 @@ world
 {
 	init()
 	{
-		queue(a_test);
+		queue a_test;
 	}
 	
 	onAction(a_test)

@@ -136,9 +136,9 @@ world
 		giveobject(c_basket, o_cucumber);
 		giveobject(c_basket, o_eggplant);
 
-		queue(a_mash, c_basket);
-		queue(a_shred, c_basket, "fruit");
-		queue(a_quit);
+		queue a_mash:c_basket;
+		queue a_shred:c_basket, "fruit";
+		queue a_quit;
 	}
 	
 	onAction(a_quit)

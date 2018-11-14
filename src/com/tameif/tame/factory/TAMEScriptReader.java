@@ -2011,9 +2011,11 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[OpenAction] "," [VALUE]
 		 * 		[ModalAction] "," [VALUE]
 		 * 		[TransitiveAction] "," [OBJECT]
-		 * 		[TransitiveAction] "," [OBJECT-CONTAINER]
-		 * 		[TransitiveAction] "," [OBJECT-CONTAINER] "," [VALUE]
+		 * 		[TransitiveAction] ":" [OBJECT-CONTAINER]
+		 * 		[TransitiveAction] ":" [OBJECT-CONTAINER] "," [VALUE]
 		 * 		[DitransitiveAction] "," [OBJECT]
+		 * 		[DitransitiveAction] ":" [OBJECT-CONTAINER]
+		 * 		[DitransitiveAction] ":" [OBJECT-CONTAINER] "," [VALUE]
 		 * 		[DitransitiveAction] "," [OBJECT] "," [OBJECT]
 		 */
 		private boolean parseQueue(TElement currentElement, Block block)
@@ -2074,41 +2076,51 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
 
-				// Single object?
-				if (!matchType(TSKernel.TYPE_COMMA))
+				if (matchType(TSKernel.TYPE_COMMA))
 				{
-					addErrorMessage("Expected \",\" after transitive action.");
-					return false;
-				}
-				
-				if (isObject(false))
-				{
-					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-					nextToken();
-
-					block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
-					return true;
-				}
-				else if (isObjectContainer(false))
-				{
-					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-					nextToken();
-					
-					if (matchType(TSKernel.TYPE_COMMA))
+					if (isObject(false))
 					{
-						if (!parseExpression(currentElement, block))
-							return false;
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+						nextToken();
 
-						block.add(Operation.create(TAMEOperation.QUEUEACTIONFORTAGGEDOBJECTSIN));
+						block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
 						return true;
 					}
-					
-					block.add(Operation.create(TAMEOperation.QUEUEACTIONFOROBJECTSIN));
-					return true;
+					else
+					{
+						addErrorMessage("Expected non-archetype OBJECT.");
+						return false;
+					}
 				}
+				else if (matchType(TSKernel.TYPE_COLON))
+				{
+					if (isObjectContainer(false))
+					{
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+						nextToken();
+						
+						if (matchType(TSKernel.TYPE_COMMA))
+						{
+							if (!parseExpression(currentElement, block))
+								return false;
+
+							block.add(Operation.create(TAMEOperation.QUEUEACTIONFORTAGGEDOBJECTSIN));
+							return true;
+						}
+						
+						block.add(Operation.create(TAMEOperation.QUEUEACTIONFOROBJECTSIN));
+						return true;
+					}
+					else
+					{
+						addErrorMessage("Expected non-archetype OBJECT-CONTAINER.");
+						return false;
+					}
+				}
+				
 				else
 				{
-					addErrorMessage("Expected non-archetype OBJECT or OBJECT-CONTAINER after transitive action.");
+					addErrorMessage("Expected \",\" or \":\" after transitive action.");
 					return false;
 				}
 			}
@@ -2117,56 +2129,65 @@ public final class TAMEScriptReader implements TAMEConstants
 			{
 				block.add(Operation.create(TAMEOperation.PUSHVALUE, actionValue));
 
-				// Single object?
-				if (!matchType(TSKernel.TYPE_COMMA))
+				if (matchType(TSKernel.TYPE_COMMA))
 				{
-					addErrorMessage("Expected \",\" after ditransitive action.");
-					return false;
-				}
-				
-				if (isObject(false))
-				{
-					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-					nextToken();
-
-					if (matchType(TSKernel.TYPE_COMMA))
+					if (isObject(false))
 					{
-						if (!isObject(false))
-						{
-							addErrorMessage("Expected non-archetype OBJECT after first OBJECT.");
-							return false;
-						}
-
 						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
 						nextToken();
 
-						block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT2));
+						if (matchType(TSKernel.TYPE_COMMA))
+						{
+							if (!isObject(false))
+							{
+								addErrorMessage("Expected non-archetype OBJECT after first OBJECT.");
+								return false;
+							}
+
+							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+							nextToken();
+
+							block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT2));
+							return true;
+						}
+
+						block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
 						return true;
 					}
-
-					block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
-					return true;
-				}
-				else if (isObjectContainer(false))
-				{
-					block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-					nextToken();
-					
-					if (matchType(TSKernel.TYPE_COMMA))
+					else
 					{
-						if (!parseExpression(currentElement, block))
-							return false;
-
-						block.add(Operation.create(TAMEOperation.QUEUEACTIONFORTAGGEDOBJECTSIN));
-						return true;
+						addErrorMessage("Expected non-archetype OBJECT.");
+						return false;
 					}
-					
-					block.add(Operation.create(TAMEOperation.QUEUEACTIONFOROBJECTSIN));
-					return true;						
+				}
+				else if (matchType(TSKernel.TYPE_COLON))
+				{
+					if (isObjectContainer(false))
+					{
+						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+						nextToken();
+						
+						if (matchType(TSKernel.TYPE_COMMA))
+						{
+							if (!parseExpression(currentElement, block))
+								return false;
+
+							block.add(Operation.create(TAMEOperation.QUEUEACTIONFORTAGGEDOBJECTSIN));
+							return true;
+						}
+						
+						block.add(Operation.create(TAMEOperation.QUEUEACTIONFOROBJECTSIN));
+						return true;						
+					}
+					else
+					{
+						addErrorMessage("Expected non-archetype OBJECT-CONTAINER.");
+						return false;
+					}
 				}
 				else
 				{
-					addErrorMessage("Expected non-archetype OBJECT or OBJECT-CONTAINER after ditransitive action.");
+					addErrorMessage("Expected \",\" or \":\" after ditransitive action.");
 					return false;
 				}
 			}
@@ -2482,21 +2503,8 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 			else if (matchType(TSKernel.TYPE_QUEUE))
 			{
-				if (!matchType(TSKernel.TYPE_LPAREN))
-				{
-					addErrorMessage("Expected \"(\" after \"queue\".");
-					return false;
-				}
-				
 				if (!parseQueue(currentElement, block))
 					return false;
-				
-				if (!matchType(TSKernel.TYPE_RPAREN))
-				{
-					addErrorMessage("Expected \")\" to end queue clause.");
-					return false;
-				}
-
 			}
 
 			return true;
