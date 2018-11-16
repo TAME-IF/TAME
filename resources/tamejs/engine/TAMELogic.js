@@ -676,7 +676,7 @@ TLogic.callBlock = function(request, response, elementContext, block, isFunction
  * @param blockTypeName (string) the name of the block type.
  * @param blockTypeValues (Array) list of values.
  * @param localname (string) [OPTIONAL] the name of the local variable to set.
- * @param targetValue (TValue Object) [OPTIONAL] the value to assign.
+ * @param targetValue (string) [OPTIONAL] the value to assign.
  * @return true if a block was called, false if not.
  * @throws TAMEInterrupt if an interrupt occurs. 
  */
@@ -692,6 +692,9 @@ TLogic.callElementBlock = function(request, response, elementContext, blockTypeN
 
 		if (targetValue && localname)
 		{
+			// wrap value
+			targetValue = TValue.createString(targetValue);
+			
 			// set locals
 			let blockLocal = {};
 			response.trace(request, TAMEConstants.TraceType.VALUE, Util.format("SET LOCAL {0} {1}", localname, TValue.toString(targetValue)));

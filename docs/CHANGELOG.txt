@@ -6,6 +6,13 @@
 0.9BETA9
 ........
 
+	- Fixed Open Actions causing TypeErrors in the JS implementation.
+	
+	- TAMEC can take an arbitrary starting file for the JS compiler, expanding
+	  the options for how to bundle a compiled module, but only if you
+	  know the directives, which are not documented yet (but you can
+	  find them in the source code!).
+	  
 	- Added queue keyword and removed QUEUEACTION*() functions. Queueing
 	  commands now works like this:
 	  queue a_generalaction;
