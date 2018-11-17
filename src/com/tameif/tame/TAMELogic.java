@@ -558,19 +558,18 @@ public final class TAMELogic implements TAMEConstants
 		{
 			response.trace(request, TraceType.ENTRY, "CALL %s.%s", element.getIdentity(), blockEntry.toFriendlyString());
 			
+			Value target = Value.create(openTarget);
+			ValueHash blockLocal = new ValueHash();
+
 			// just get the first local.
 			for (String variableName : locals)
 			{
-				Value target = Value.create(openTarget);
-				// set locals
-				ValueHash blockLocal = new ValueHash();
 				response.trace(request, TraceType.VALUE, "SET LOCAL %s %s", variableName, target);
 				blockLocal.put(variableName, target);
-				callBlock(request, response, context, blockToCall, false, blockLocal);
 				break;
 			}
 			
-			callBlock(request, response, context, blockToCall);
+			callBlock(request, response, context, blockToCall, false, blockLocal);
 			return true;
 		}
 		

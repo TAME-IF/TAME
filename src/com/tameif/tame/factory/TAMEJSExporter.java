@@ -71,18 +71,27 @@ public final class TAMEJSExporter
 	/** Root resource for JS */
 	private static final String JS_ROOT_RESOURCE = "tamejs/";
 	
+	/** Reader directive prefix 2. */
+	private static final String JS_DIRECTIVE_JSPREFIX = "//##[[EXPORTJS-";
 	/** Reader directive prefix. */
-	private static final String JS_DIRECTIVE_PREFIX = "//##[[EXPORTJS-";
+	private static final String JS_DIRECTIVE_JSPREFIX2 = "/*##[[EXPORTJS-";
+	/** Reader directive suffix. */
+	private static final String JS_DIRECTIVE_JSSUFFIX2 = "*/";
+	/** Reader directive prefix. */
+	private static final String JS_DIRECTIVE_HTMLPREFIX = "<!--##[[EXPORTJS-";
+	/** Reader directive suffix. */
+	private static final String JS_DIRECTIVE_HTMLSUFFIX = "-->";
+
 	/** Reader directive - START */
-	private static final String JS_DIRECTIVE_START = JS_DIRECTIVE_PREFIX + "START";
+	private static final String JS_DIRECTIVE_START = "START";
 	/** Reader directive - GENERATE */
-	private static final String JS_DIRECTIVE_GENERATE = JS_DIRECTIVE_PREFIX + "GENERATE";
+	private static final String JS_DIRECTIVE_GENERATE = "GENERATE";
 	/** Reader directive - INCLUDE */
-	private static final String JS_DIRECTIVE_INCLUDE = JS_DIRECTIVE_PREFIX + "INCLUDE";
+	private static final String JS_DIRECTIVE_INCLUDE = "INCLUDE";
 	/** Reader directive - INCLUDEALL */
-	private static final String JS_DIRECTIVE_INCLUDEALL = JS_DIRECTIVE_PREFIX + "INCLUDEALL";
+	private static final String JS_DIRECTIVE_INCLUDEALL = "INCLUDEALL";
 	/** Reader directive - END */
-	private static final String JS_DIRECTIVE_END = JS_DIRECTIVE_PREFIX + "END";
+	private static final String JS_DIRECTIVE_END = "END";
 	
 	/** Generate JS header. */
 	private static final String GENERATE_JSHEADER = "jsheader";
@@ -236,6 +245,33 @@ public final class TAMEJSExporter
 	}
 
 	/**
+	 * Attempts to cull a directive tag from an input line. 
+	 * @param line the input line.
+	 * @return a culled line, or the same line if not transformable.
+	 */
+	private static String getTrimmedTagContent(String line)
+	{
+		String trimmed = line.trim();
+		if (trimmed.startsWith(JS_DIRECTIVE_JSPREFIX))
+			return trimmed.substring(JS_DIRECTIVE_JSPREFIX.length());
+		else if (trimmed.startsWith(JS_DIRECTIVE_JSPREFIX2))
+		{
+			if (trimmed.endsWith(JS_DIRECTIVE_JSSUFFIX2))
+				return trimmed.substring(JS_DIRECTIVE_JSPREFIX2.length(), trimmed.length() - JS_DIRECTIVE_JSSUFFIX2.length()).trim();
+			else
+				return trimmed.substring(JS_DIRECTIVE_JSPREFIX2.length());
+		}
+		else if (trimmed.startsWith(JS_DIRECTIVE_HTMLPREFIX))
+		{
+			if (trimmed.endsWith(JS_DIRECTIVE_HTMLSUFFIX))
+				return trimmed.substring(JS_DIRECTIVE_HTMLPREFIX.length(), trimmed.length() - JS_DIRECTIVE_HTMLSUFFIX.length()).trim();
+			else
+				return trimmed.substring(JS_DIRECTIVE_HTMLPREFIX.length());
+		}
+		return line;
+	}
+	
+	/**
 	 * Reads a resource, stopping at a stop directive or end-of-file.
 	 * Reads directives to determine reading behavior. 
 	 * @param writer the writer to write to.
@@ -273,7 +309,7 @@ public final class TAMEJSExporter
 			
 			while ((line = br.readLine()) != null)
 			{
-				String trimline = line.trim();
+				String trimline = getTrimmedTagContent(line);
 				if (trimline.startsWith(JS_DIRECTIVE_START))
 				{
 					startWrite = true;
