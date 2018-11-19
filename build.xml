@@ -64,7 +64,7 @@
 	<property name="js.node.filename" value="tame.js" />
 	<property name="js.browser.filename" value="tame-${build.version}.js" />
 	<property name="js.browser.min.filename" value="tame-${build.version}.min.js" />
-	<property name="js.browser.min.map.filename" value="tame-${build.version}.min.map" />
+	<property name="js.browser.min.map.filename" value="tame-${build.version}.min.js.map" />
 
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
 	<property name="jar.tame.one.filename" value="${project.archive}-standalone-${build.version}.jar" />
@@ -417,10 +417,12 @@
 		</zip>
 	</target>
 
-	<target name="zip.js.browser" depends="init.zip, js.browser" description="Makes and zips the TAME browser JS version.">
+	<target name="zip.js.browser" depends="init.zip, js.browser.minify.windows, js.browser.minify.bash" description="Makes and zips the TAME browser JS version.">
 		<delete file="${zip.dir}/${zip.js.browser.filename}" />
 		<zip destfile="${zip.dir}/${zip.js.browser.filename}" compress="true" level="9">
-			<fileset file="${js.dir}/${js.browser.filename}" />
+			<zipfileset file="${js.dir}/${js.browser.filename}" />
+			<zipfileset file="${js.dir}/${js.browser.min.filename}" />
+			<zipfileset file="${js.dir}/${js.browser.min.map.filename}" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
