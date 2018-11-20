@@ -2005,6 +2005,60 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 		
 		/**
+		 * Parses an object expression.
+		 * Does not add an error on false - must be added if false.
+		 */
+		private boolean parseObjectExpression(TElement currentElement, Block block)
+		{
+			if (currentType(TSKernel.TYPE_THIS))
+			{
+				if (TObject.class.isAssignableFrom(currentElement.getClass()))
+				{
+					block.add(Operation.create(TAMEOperation.PUSHTHIS));
+					nextToken();
+					return true;
+				}
+				else
+					return false;
+			}
+			else if (!isObject(false))
+				return false;
+			else
+			{
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+				nextToken();
+				return true;
+			}
+		}
+
+		/**
+		 * Parses an object container expression.
+		 * Does not add an error on false - must be added if false.
+		 */
+		private boolean parseObjectContainerExpression(TElement currentElement, Block block)
+		{
+			if (currentType(TSKernel.TYPE_THIS))
+			{
+				if (ObjectContainer.class.isAssignableFrom(currentElement.getClass()))
+				{
+					block.add(Operation.create(TAMEOperation.PUSHTHIS));
+					nextToken();
+					return true;
+				}
+				else
+					return false;
+			}
+			else if (!isObjectContainer(false))
+				return false;
+			else
+			{
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
+				nextToken();
+				return true;
+			}
+		}
+
+		/**
 		 * Parses the "queue" clause for queuing commands.
 		 * [QueueClause] := 
 		 * 		[GeneralAction]
@@ -2018,7 +2072,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		 * 		[DitransitiveAction] ":" [OBJECT-CONTAINER] "," [VALUE]
 		 * 		[DitransitiveAction] "," [OBJECT] "," [OBJECT]
 		 */
-		private boolean parseQueue(TElement currentElement, Block block)
+		private boolean parseQueueStatement(TElement currentElement, Block block)
 		{
 			if (!isAction())
 			{
@@ -2078,27 +2132,21 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				if (matchType(TSKernel.TYPE_COMMA))
 				{
-					if (isObject(false))
-					{
-						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-						nextToken();
-
-						block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
-						return true;
-					}
-					else
+					if (!parseObjectExpression(currentElement, block))
 					{
 						addErrorMessage("Expected non-archetype OBJECT.");
 						return false;
 					}
+					else
+					{
+						block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT));
+						return true;
+					}
 				}
 				else if (matchType(TSKernel.TYPE_COLON))
 				{
-					if (isObjectContainer(false))
+					if (parseObjectContainerExpression(currentElement, block))
 					{
-						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-						nextToken();
-						
 						if (matchType(TSKernel.TYPE_COMMA))
 						{
 							if (!parseExpression(currentElement, block))
@@ -2117,7 +2165,6 @@ public final class TAMEScriptReader implements TAMEConstants
 						return false;
 					}
 				}
-				
 				else
 				{
 					addErrorMessage("Expected \",\" or \":\" after transitive action.");
@@ -2131,21 +2178,15 @@ public final class TAMEScriptReader implements TAMEConstants
 
 				if (matchType(TSKernel.TYPE_COMMA))
 				{
-					if (isObject(false))
+					if (parseObjectExpression(currentElement, block))
 					{
-						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-						nextToken();
-
 						if (matchType(TSKernel.TYPE_COMMA))
 						{
-							if (!isObject(false))
+							if (!parseObjectExpression(currentElement, block))
 							{
 								addErrorMessage("Expected non-archetype OBJECT after first OBJECT.");
 								return false;
 							}
-
-							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-							nextToken();
 
 							block.add(Operation.create(TAMEOperation.QUEUEACTIONOBJECT2));
 							return true;
@@ -2162,11 +2203,8 @@ public final class TAMEScriptReader implements TAMEConstants
 				}
 				else if (matchType(TSKernel.TYPE_COLON))
 				{
-					if (isObjectContainer(false))
+					if (parseObjectContainerExpression(currentElement, block))
 					{
-						block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-						nextToken();
-						
 						if (matchType(TSKernel.TYPE_COMMA))
 						{
 							if (!parseExpression(currentElement, block))
@@ -2177,7 +2215,7 @@ public final class TAMEScriptReader implements TAMEConstants
 						}
 						
 						block.add(Operation.create(TAMEOperation.QUEUEACTIONFOROBJECTSIN));
-						return true;						
+						return true;
 					}
 					else
 					{
@@ -2503,7 +2541,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 			else if (matchType(TSKernel.TYPE_QUEUE))
 			{
-				if (!parseQueue(currentElement, block))
+				if (!parseQueueStatement(currentElement, block))
 					return false;
 			}
 
@@ -2869,28 +2907,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case OBJECT:
 					{
-						if (currentType(TSKernel.TYPE_THIS))
-						{
-							if (TObject.class.isAssignableFrom(currentElement.getClass()))
-							{
-								block.add(Operation.create(TAMEOperation.PUSHTHIS));
-								nextToken();
-							}
-							else
-							{
-								addErrorMessage("Function "+operationType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
-								return false;
-							}
-						}
-						else if (!isObject(false))
+						if (!parseObjectExpression(currentElement, block))
 						{
 							addErrorMessage("Function "+operationType.name()+" requires a non-archetype OBJECT for parameter "+i+". \""+currentToken().getLexeme()+"\" is not a viable object type.");
 							return false;
-						}
-						else
-						{
-							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-							nextToken();
 						}
 						break;
 					}
@@ -2977,29 +2997,12 @@ public final class TAMEScriptReader implements TAMEConstants
 					}
 					case OBJECT_CONTAINER:
 					{
-						if (currentType(TSKernel.TYPE_THIS))
-						{
-							if (ObjectContainer.class.isAssignableFrom(currentElement.getClass()))
-							{
-								block.add(Operation.create(TAMEOperation.PUSHTHIS));
-								nextToken();
-							}
-							else
-							{
-								addErrorMessage("Function "+operationType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
-								return false;
-							}
-						}
-						else if (!isObjectContainer(false))
+						if (!parseObjectContainerExpression(currentElement, block))
 						{
 							addErrorMessage("Function "+operationType.name()+" requires a non-archetype OBJECT-CONTAINER for parameter "+i+". \""+currentToken().getLexeme()+"\" is not an object container type (world, player, room, container).");
 							return false;
 						}
-						else
-						{
-							block.add(Operation.create(TAMEOperation.PUSHVALUE, tokenToValue()));
-							nextToken();
-						}
+
 						break;
 					}
 					case OBJECT_CONTAINER_ANY:
