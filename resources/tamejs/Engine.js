@@ -60,6 +60,7 @@ Util.fromBase64 = function(data){return atob(data);};
 	/**
 	 * Creates a new response handler (mostly for aiding in browser functions).
 	 * Handles all standard cues and provides a way via a function to handle other cues.
+	 * This accumulates the results of contiguous "text" and "textf" cues before "print()" is called.
 	 * @param TAME reference to TAME engine.
 	 * @param options options object.
 	 * 		print: fn(text): called when a string needs printing (may contain HTML or other things).

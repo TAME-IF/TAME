@@ -28,6 +28,7 @@ import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.lang.json.JSONObject;
 import com.blackrook.lang.json.JSONWriter;
+import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.TAMELogic;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.TAMEModule.Header;
@@ -103,6 +104,8 @@ public final class TAMEJSExporter
 	private static final String GENERATE_VERSION = "version";
 	/** Generate header. */
 	private static final String GENERATE_HEADER = "header";
+	/** Generate module title. */
+	private static final String GENERATE_TITLE = "title";
 	/** Generate actions. */
 	private static final String GENERATE_ACTIONS = "actions";
 	/** Generate world. */
@@ -477,6 +480,8 @@ public final class TAMEJSExporter
 				generateResourceVersion(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_HEADER))
 				generateResourceHeader(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_TITLE))
+				generateResourceTitle(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_ACTIONS))
 				generateResourceActions(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_ELEMENTS))
@@ -580,6 +585,16 @@ public final class TAMEJSExporter
 	private static void generateResourceHeader(Writer writer, TAMEModule module) throws IOException
 	{
 		JSONWriter.writeJSON(module.getHeader().getAttributeMap(), writer);
+	}
+	
+	/**
+	 * Generates the title JS.
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceTitle(Writer writer, TAMEModule module) throws IOException
+	{
+		writer.append(module.getHeader().getAttribute(TAMEConstants.HEADER_TITLE));
 	}
 	
 	/**
