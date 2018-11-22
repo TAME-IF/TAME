@@ -8,14 +8,14 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
-//##[[EXPORTJS-GENERATE jsheader
+//[[EXPORTJS-GENERATE jsheader
 var TAME = new (function(theader, tactions, telements){
 
-//##[[EXPORTJS-GENERATE version
+//[[EXPORTJS-GENERATE version
 
-//##[[EXPORTJS-INCLUDE engine/Util.js
+//[[EXPORTJS-INCLUDE engine/Util.js
 	
 Util.nanoTime = (function(){
 	// Webkit Browser
@@ -41,18 +41,18 @@ Util.nanoTime = (function(){
 Util.toBase64 = function(text){return btoa(text);};
 Util.fromBase64 = function(data){return atob(data);};
 
-//##[[EXPORTJS-INCLUDE engine/TStringBuilder.js
-//##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
-//##[[EXPORTJS-INCLUDE engine/TAMEError.js
-//##[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
-//##[[EXPORTJS-INCLUDE engine/objects/TValue.js
-//##[[EXPORTJS-INCLUDE engine/objects/TRequest.js
-//##[[EXPORTJS-INCLUDE engine/objects/TResponse.js
-//##[[EXPORTJS-INCLUDE engine/objects/TCommand.js
-//##[[EXPORTJS-INCLUDE engine/objects/TModule.js
-//##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
-//##[[EXPORTJS-INCLUDE engine/TAMELogic.js
-//##[[EXPORTJS-INCLUDE engine/TAMEBrowserHandler.js
+//[[EXPORTJS-INCLUDE engine/TStringBuilder.js
+//[[EXPORTJS-INCLUDE engine/TAMEConstants.js
+//[[EXPORTJS-INCLUDE engine/TAMEError.js
+//[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
+//[[EXPORTJS-INCLUDE engine/objects/TValue.js
+//[[EXPORTJS-INCLUDE engine/objects/TRequest.js
+//[[EXPORTJS-INCLUDE engine/objects/TResponse.js
+//[[EXPORTJS-INCLUDE engine/objects/TCommand.js
+//[[EXPORTJS-INCLUDE engine/objects/TModule.js
+//[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
+//[[EXPORTJS-INCLUDE engine/TAMELogic.js
+//[[EXPORTJS-INCLUDE engine/TAMEBrowserHandler.js
 
 	var tameSelf = this;
 	var tameModule = new TModule(theader, tactions, telements);
@@ -157,10 +157,10 @@ Util.fromBase64 = function(data){return atob(data);};
 	return this;
 	
 })(
-//##[[EXPORTJS-GENERATE header, actions, elements
+//[[EXPORTJS-GENERATE header, actions, elements
 );
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TAME;

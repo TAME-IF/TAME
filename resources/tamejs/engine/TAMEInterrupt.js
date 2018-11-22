@@ -8,7 +8,7 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /*****************************************************************************
  Interrupt handling.
@@ -43,7 +43,7 @@ TAMEInterrupt.prototype.toString = function()
 	return "TAMEInterrupt: "+ this.type + ": " + this.message;
 };
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

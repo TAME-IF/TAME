@@ -8,7 +8,7 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /**
  * Constructor for TStringBuilder.
@@ -54,7 +54,7 @@ TStringBuilder.prototype.length = function()
 	return this.toString().length;
 };
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TStringBuilder;

@@ -13,7 +13,7 @@ var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAM
 var TAMEConstants = TAMEConstants || ((typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null);
 // ======================================================================================================
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /*****************************************************************************
  See com.tameif.tame.TAMERequest
@@ -137,7 +137,7 @@ TRequest.prototype.checkStackClear = function()
 };
 
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 
 // If testing with NODEJS ==================================================

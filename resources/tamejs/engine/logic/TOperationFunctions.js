@@ -18,7 +18,7 @@ var TAMEInterrupt = TAMEInterrupt || ((typeof require) !== 'undefined' ? require
 var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
 // ======================================================================================================
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /*****************************************************************************
 Operation entry points.
@@ -2356,7 +2356,7 @@ var TOperationFunctions =
 
 ];
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 // If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TOperationFunctions;

@@ -12,7 +12,7 @@
 var window = null;
 // =========================================================================
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /*****************************************************************************
  Utilities
@@ -515,7 +515,7 @@ Util.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 };
 
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 
 // If testing with NODEJS ==================================================

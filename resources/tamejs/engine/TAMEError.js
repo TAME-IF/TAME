@@ -8,7 +8,7 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /*****************************************************************************
  Exception handling.
@@ -45,7 +45,7 @@ TAMEError.ArithmeticStackState = function(message) {return new TAMEError(TAMEErr
 TAMEError.RunawayRequest = function(message) {return new TAMEError(TAMEError.Type.RunawayRequest, message);};
 TAMEError.UnexpectedValueType = function(message) {return new TAMEError(TAMEError.Type.UnexpectedValueType, message);};
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

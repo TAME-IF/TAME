@@ -19,12 +19,12 @@ var TOperationFunctions = TOperationFunctions || ((typeof require) !== 'undefine
 var TStringBuilder = TStringBuilder || ((typeof require) !== 'undefined' ? require('./TStringBuilder.js') : null);
 // ======================================================================================================
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 var TLogic = {};
 
-//##[[EXPORTJS-INCLUDE logic/TArithmeticFunctions.js
-//##[[EXPORTJS-INCLUDE logic/TOperationFunctions.js
+//[[EXPORTJS-INCLUDE logic/TArithmeticFunctions.js
+//[[EXPORTJS-INCLUDE logic/TOperationFunctions.js
 
 /****************************************************************************
  * Main logic.
@@ -1648,7 +1648,7 @@ TLogic.doActionDitransitive = function(request, response, action, object1, objec
 };
 
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

@@ -8,7 +8,7 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 var TAMEConstants = {};
 TAMEConstants.ActionType = {};
@@ -47,7 +47,7 @@ TAMEConstants.DEFAULT_RUNAWAY_THRESHOLD = 100000;
 TAMEConstants.DEFAULT_FUNCTION_DEPTH = 256;
 TAMEConstants.RETURN_VARIABLE = "-. 0Return0 .-";
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TAMEConstants;

@@ -13,7 +13,7 @@ var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAM
 var TAMEConstants = TAMEConstants || (typeof require) !== 'undefined' ? require('../TAMEConstants.js') : null;
 // ======================================================================================================
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /*****************************************************************************
  See com.tameif.tame.TAMEResponse
@@ -83,7 +83,7 @@ TResponse.prototype.decrementFunctionDepth = function()
 	this.functionDepth--;
 };
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 
 //If testing with NODEJS ==================================================

@@ -72,13 +72,13 @@ public final class TAMEJSExporter
 	private static final String JS_ROOT_RESOURCE = "tamejs/";
 	
 	/** Reader directive prefix 2. */
-	private static final String JS_DIRECTIVE_JSPREFIX = "//##[[EXPORTJS-";
+	private static final String JS_DIRECTIVE_JSPREFIX = "//[[EXPORTJS-";
 	/** Reader directive prefix. */
-	private static final String JS_DIRECTIVE_JSPREFIX2 = "/*##[[EXPORTJS-";
+	private static final String JS_DIRECTIVE_JSPREFIX2 = "/*[[EXPORTJS-";
 	/** Reader directive suffix. */
 	private static final String JS_DIRECTIVE_JSSUFFIX2 = "*/";
 	/** Reader directive prefix. */
-	private static final String JS_DIRECTIVE_HTMLPREFIX = "<!--##[[EXPORTJS-";
+	private static final String JS_DIRECTIVE_HTMLPREFIX = "<!--[[EXPORTJS-";
 	/** Reader directive suffix. */
 	private static final String JS_DIRECTIVE_HTMLSUFFIX = "-->";
 

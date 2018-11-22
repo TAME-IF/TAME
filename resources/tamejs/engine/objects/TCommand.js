@@ -8,7 +8,7 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /****************************************************
  See com.tameif.tame.TAMECommand
@@ -55,7 +55,7 @@ TCommand.prototype.toString = function()
 };
 
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 
 // If testing with NODEJS ==================================================

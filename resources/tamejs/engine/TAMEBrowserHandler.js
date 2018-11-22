@@ -8,7 +8,7 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /**
  * Creates a new response handler (mostly for aiding in browser functions).
@@ -240,7 +240,7 @@ TBrowserHandler.prototype.process = function(response)
 	this.resume();
 };
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TBrowserHandler;

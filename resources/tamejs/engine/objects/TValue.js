@@ -52,7 +52,7 @@ Util.fromBase64 = (function()
 	}
 })();
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /*****************************************************************************
  See com.tameif.tame.lang.Value
@@ -1161,7 +1161,7 @@ TValue.listRemoveAt = function(listValue, i)
 	return TValue.createValue(listValue.value.splice(i, 1)[0]);
 };
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 // If testing with NODEJS ==================================================
 if ((typeof module.exports) !== 'undefined') module.exports = TValue;

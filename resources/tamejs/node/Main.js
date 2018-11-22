@@ -8,9 +8,9 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
-//##[[EXPORTJS-INCLUDE Libs.js
+//[[EXPORTJS-INCLUDE Libs.js
 
 var readline = require('readline');
 var fs = require('fs');
@@ -293,5 +293,5 @@ startResponse(TAME.initialize(tamectx, tracelist));
 if (!stop)
 	rl.prompt();
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 

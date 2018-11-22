@@ -8,7 +8,7 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 function print(text) {
 	if (text)
@@ -112,4 +112,4 @@ function sleep(sleepDuration) {
 	while (Date.now() < now + sleepDuration) {;}
 }
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END

@@ -8,15 +8,15 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
-//##[[EXPORTJS-GENERATE jsheader
+//[[EXPORTJS-GENERATE jsheader
 module.exports = new (function()
 {
 
-//##[[EXPORTJS-GENERATE version
+//[[EXPORTJS-GENERATE version
 
-//##[[EXPORTJS-INCLUDE engine/Util.js
+//[[EXPORTJS-INCLUDE engine/Util.js
 	
 	Util.nanoTime = function()
 	{
@@ -57,17 +57,17 @@ module.exports = new (function()
 		}
 	})();
 
-//##[[EXPORTJS-INCLUDE engine/TStringBuilder.js
-//##[[EXPORTJS-INCLUDE engine/TAMEConstants.js
-//##[[EXPORTJS-INCLUDE engine/TAMEError.js
-//##[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
-//##[[EXPORTJS-INCLUDE engine/objects/TValue.js
-//##[[EXPORTJS-INCLUDE engine/objects/TRequest.js
-//##[[EXPORTJS-INCLUDE engine/objects/TResponse.js
-//##[[EXPORTJS-INCLUDE engine/objects/TCommand.js
-//##[[EXPORTJS-INCLUDE engine/objects/TModule.js
-//##[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
-//##[[EXPORTJS-INCLUDE engine/TAMELogic.js
+//[[EXPORTJS-INCLUDE engine/TStringBuilder.js
+//[[EXPORTJS-INCLUDE engine/TAMEConstants.js
+//[[EXPORTJS-INCLUDE engine/TAMEError.js
+//[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
+//[[EXPORTJS-INCLUDE engine/objects/TValue.js
+//[[EXPORTJS-INCLUDE engine/objects/TRequest.js
+//[[EXPORTJS-INCLUDE engine/objects/TResponse.js
+//[[EXPORTJS-INCLUDE engine/objects/TCommand.js
+//[[EXPORTJS-INCLUDE engine/objects/TModule.js
+//[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
+//[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	/**
 	 * Constructs a new module.
@@ -148,4 +148,4 @@ module.exports = new (function()
 	
 })();
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END

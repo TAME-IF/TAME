@@ -8,19 +8,19 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
-//##[[EXPORTJS-GENERATE jsmoduleheader
-//##[[EXPORTJS-GENERATE jsmodulevarname
+//[[EXPORTJS-GENERATE jsmoduleheader
+//[[EXPORTJS-GENERATE jsmodulevarname
 {
 	"header":
-		//##[[EXPORTJS-GENERATE header
+		//[[EXPORTJS-GENERATE header
 	,
 	"actions":
-		//##[[EXPORTJS-GENERATE actions
+		//[[EXPORTJS-GENERATE actions
 	,
 	"elements":
-		//##[[EXPORTJS-GENERATE elements
+		//[[EXPORTJS-GENERATE elements
 };
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END

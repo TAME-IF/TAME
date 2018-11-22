@@ -12,7 +12,7 @@
 var Util = Util || ((typeof require) !== 'undefined' ? require('../Util.js') : null);
 // ======================================================================================================
 
-//##[[EXPORTJS-START
+//[[EXPORTJS-START
 
 /****************************************************
  See com.tameif.tame.TAMEModuleContext
@@ -986,7 +986,7 @@ TModuleContext.prototype.getAccessibleObjectsByName = function(name, outputArray
 };
 
 
-//##[[EXPORTJS-END
+//[[EXPORTJS-END
 
 
 // If testing with NODEJS ==================================================
