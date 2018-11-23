@@ -588,13 +588,14 @@ public final class TAMEJSExporter
 	}
 	
 	/**
-	 * Generates the title JS.
+	 * Generates the title (for HTML), or "TAME Module" if no module header called title.
 	 * @param writer the writer to write to.
 	 * @param module the source module.
 	 */
 	private static void generateResourceTitle(Writer writer, TAMEModule module) throws IOException
 	{
-		writer.append(module.getHeader().getAttribute(TAMEConstants.HEADER_TITLE));
+		String title = module.getHeader().getAttribute(TAMEConstants.HEADER_TITLE);
+		writer.append(title != null ? title : "TAME Module");
 	}
 	
 	/**
