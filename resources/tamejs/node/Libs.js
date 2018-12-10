@@ -23,12 +23,12 @@ function println(text) {
 }
 
 function withEscChars(text) {
-	var t = JSON.stringify(text);
+	let t = JSON.stringify(text);
 	return t.substring(1, t.length - 1);
 }
 
 
-var RegexWhitespace = /\s/g;
+const RegexWhitespace = /\s/g;
 
 /**
  * Prints a message out to a PrintStream, word-wrapped
@@ -109,7 +109,7 @@ function printWrapped(message, startColumn, width)
 // Need a better don't-eat-CPU-solution.
 function sleep(sleepDuration) {
 	let now = Date.now();
-	while (Date.now() < now + sleepDuration) {;}
+	while (Date.now() < now + sleepDuration) {}
 }
 
 //[[EXPORTJS-END

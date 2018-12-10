@@ -68,7 +68,7 @@ Util.fromBase64 = (function()
 //[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
-	var tameModule = new TModule(theader, tactions, telements);
+	this.tameModule = new TModule(theader, tactions, telements);
 
 	/**
 	 * Creates a new context for the embedded module.

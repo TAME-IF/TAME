@@ -54,8 +54,8 @@ Util.fromBase64 = function(data){return atob(data);};
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 //[[EXPORTJS-INCLUDE engine/TAMEBrowserHandler.js
 
-	var tameSelf = this;
-	var tameModule = new TModule(theader, tactions, telements);
+	let tameSelf = this;
+	let tameModule = new TModule(theader, tactions, telements);
 
 	/**
 	 * Creates a new response handler (mostly for aiding in browser functions).

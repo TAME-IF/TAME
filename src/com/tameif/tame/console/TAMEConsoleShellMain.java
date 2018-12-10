@@ -70,8 +70,10 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		out.println("<switches>:");
 		out.println("    -s                       The input file is an uncompiled script.");
 		out.println("    --script");
+		out.println();
 		out.println("    -v                       Verbose script compiler output.");
 		out.println("    --verbose");
+		out.println();
 		out.println("    -d [tokens ...]          Defines predefined preprocessor tokens.");
 		out.println("    --defines [tokens ...]");
 		out.println();
@@ -81,7 +83,9 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		out.println();
 		out.println("<other>:");
 		out.println("    --debug                  Show received cues.");
-		out.println("    --inspect                Enable inspector.");
+		out.println();
+		out.println("    --inspect                Enable the Inspector.");
+		out.println();
 		out.println("    --trace [type ...]       If debug, also show trace cues (no types = all).");
 		out.println();
 		out.println("                             interpreter - trace INTERPRETER scanning.");
@@ -92,6 +96,13 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		out.println("                             internal    - trace INTERNAL function calls.");
 		out.println("                             value       - trace VALUE set/clear, local or");
 		out.println("                                           context.");
+		out.println();
+		out.println("Other commands during execution:");
+		out.println("    While running a TAME module, there a few more commands at your disposal:");
+		out.println();
+		out.println("    !save [filename]         Save this module's state.");
+		out.println("    !load [filename]         Loads this module's state.");
+		out.println("    !quit                    Quits the module.");
 		out.println();
 		out.println("About the Inspector:");
 		out.println("    The inspector is a debugging tool that is useful for querying the values");

@@ -3,6 +3,13 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
+0.9BETA10
+.........
+
+	- The console shell now has a blurb about save/load states.
+	- The NodeJS embedded compiler outputs now have a "--help" runtime mode.
+
+
 0.9BETA9
 ........
 
