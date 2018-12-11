@@ -8,7 +8,7 @@
 
 	- The console shell now has a blurb about save/load states.
 	- The NodeJS embedded compiler outputs now have a "--help" runtime mode.
-
+	- Made all output cues lower-case by default.
 
 0.9BETA9
 ........
