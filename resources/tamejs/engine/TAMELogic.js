@@ -479,6 +479,15 @@ TLogic.processCommandLoop = function(request, response, afterSuccessfulCommand, 
 	
 };
 
+/**
+ * Creates a set of tracing types from a "traceTypes" parameter from
+ * handleInit or handleRequest.
+ * @param traceTypes 
+ * 		(boolean) if true, add all trace types, false for none.
+ * 		(Array) list of tracing types (case-insensitive).
+ * 		(Object) map of tracing types (case-insensitive).
+ * @return the map/set of unique trace types.
+ */
 TLogic.createTracingMap = function(traceTypes)
 {
 	let tracing = {};
@@ -486,21 +495,21 @@ TLogic.createTracingMap = function(traceTypes)
 	// check for boolean.
 	if (traceTypes === true)
 	{
-		tracing = TAMEConstants.TraceType;
+		tracing = TAMEConstants.TraceType.ALL;
 	}
 	// check for array.
 	else if (Util.isArray(traceTypes))
 	{
 		tracing = {};
 		for (let i = 0; i < traceTypes.length; i++)
-			tracing[traceTypes[i].toString().toUpperCase()] = true;
+			tracing[traceTypes[i].toString().toLowerCase()] = true;
 	}
 	// check for array.
 	else if (Util.isObject(traceTypes))
 	{
 		tracing = {};
 		Util.each(traceTypes, function(value, key){
-			let uk = key.toUpperCase();
+			let uk = key.toLowerCase();
 			tracing[uk] = true;
 		});
 	}

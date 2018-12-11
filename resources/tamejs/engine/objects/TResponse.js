@@ -50,7 +50,7 @@ TResponse.prototype.addCue = function(type, content)
 TResponse.prototype.trace = function(request, traceType, content)
 {
 	if (request.traces(traceType))
-		this.addCue("TRACE-"+traceType, content);
+		this.addCue(TAMEConstants.Cue.TRACE+"-"+traceType, content);
 };
 
 /**

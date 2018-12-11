@@ -47,7 +47,7 @@ TRequest.prototype.getInputMessage = function()
  */
 TRequest.prototype.traces = function(traceType)
 {
-	return this.traceTypesMap[traceType];
+	return this.traceTypesMap[traceType.toLowerCase()];
 };
 
 /**

@@ -96,7 +96,7 @@ Util.fromBase64 = function(data){return atob(data);};
 	 */
 	this.newContext = function() 
 	{
-		return new TModuleContext(tameModule);
+		return new TModuleContext(this.tameModule);
 	};
 
 	/**
@@ -108,9 +108,9 @@ Util.fromBase64 = function(data){return atob(data);};
 	 * 		(Object) map of tracing types (case-insensitive).
 	 * @return (TResponse) the response from the initialize.
 	 */
-	this.initialize = function(context, tracing) 
+	this.initialize = function(context, traceTypes) 
 	{
-		return TLogic.handleInit(context, tracing);
+		return TLogic.handleInit(context, traceTypes);
 	};
 	
 	/**
@@ -123,9 +123,9 @@ Util.fromBase64 = function(data){return atob(data);};
 	 * 		(Object) map of tracing types (case-insensitive).
 	 * @return (TResponse) the response.
 	 */
-	this.interpret = function(context, inputMessage, tracing) 
+	this.interpret = function(context, inputMessage, traceTypes) 
 	{
-		return TLogic.handleRequest(context, inputMessage, tracing);
+		return TLogic.handleRequest(context, inputMessage, traceTypes);
 	};
 
 	/**

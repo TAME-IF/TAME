@@ -16,21 +16,21 @@ package com.tameif.tame;
 public interface TAMEConstants
 {
 	/** Quit cue. */
-	public static final String CUE_QUIT = "QUIT";
+	public static final String CUE_QUIT = "quit";
 	/** Text cue. */
-	public static final String CUE_TEXT = "TEXT";
+	public static final String CUE_TEXT = "text";
 	/** Formatted Text cue. */
-	public static final String CUE_TEXTF = "TEXTF";
+	public static final String CUE_TEXTF = "textf";
 	/** Wait cue. */
-	public static final String CUE_WAIT = "WAIT";
+	public static final String CUE_WAIT = "wait";
 	/** Pause cue. */
-	public static final String CUE_PAUSE = "PAUSE";
+	public static final String CUE_PAUSE = "pause";
 	/** Trace cue. */
-	public static final String CUE_TRACE = "TRACE";
+	public static final String CUE_TRACE = "trace";
 	/** Error cue. */
-	public static final String CUE_ERROR = "ERROR";
+	public static final String CUE_ERROR = "error";
 	/** Fatal cue. */
-	public static final String CUE_FATAL = "FATAL";
+	public static final String CUE_FATAL = "fatal";
 
 	/** Identity of archetype container. */
 	public static final String IDENTITY_ARCHETYPE_CONTAINER = "container";
