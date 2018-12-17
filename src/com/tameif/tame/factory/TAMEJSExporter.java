@@ -11,6 +11,7 @@ package com.tameif.tame.factory;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -102,6 +103,8 @@ public final class TAMEJSExporter
 	private static final String GENERATE_JSMODULEVARNAME = "jsmodulevarname";
 	/** Generate version. */
 	private static final String GENERATE_VERSION = "version";
+	/** Generate binary. */
+	private static final String GENERATE_BINARY = "binary";
 	/** Generate header. */
 	private static final String GENERATE_HEADER = "header";
 	/** Generate module title. */
@@ -478,6 +481,8 @@ public final class TAMEJSExporter
 				generateResourceJSModuleVariableName(writer, module, options);
 			else if (type.equalsIgnoreCase(GENERATE_VERSION))
 				generateResourceVersion(writer, module);
+			else if (type.equalsIgnoreCase(GENERATE_BINARY))
+				generateResourceBinaryString(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_HEADER))
 				generateResourceHeader(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_TITLE))
@@ -503,6 +508,20 @@ public final class TAMEJSExporter
 	private static void generateResourceVersion(Writer writer, TAMEModule module) throws IOException
 	{
 		writer.append("this.version = "+JSONWriter.writeJSONString(TAMELogic.getVersion())+";");
+	}
+	
+	/**
+	 * Generates the embedded binary (as Base64).
+	 * @param writer the writer to write to.
+	 * @param module the source module.
+	 */
+	private static void generateResourceBinaryString(Writer writer, TAMEModule module) throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		module.writeBytes(bos);
+		writer.append('"');
+		writer.append(Common.asBase64(new ByteArrayInputStream(bos.toByteArray())));
+		writer.append('"');
 	}
 	
 	/**
