@@ -1,0 +1,47 @@
+TAME Module Serialization
+=========================
+
+All Integers are little-endian (LSB to HSB).
+
+FOURCC:
+	RETURN <- Read 4 ASCII Characters 
+
+BYTE:
+	RETURN <- Read 1 byte, Unsigned Integer
+
+INT:
+	RETURN <- Read 4 bytes as Signed Integer
+
+VARINT:
+	OUT <- 0
+	DO
+		X <- Read BYTE
+		OUT <- OUT | (X & 0x7F)
+		IF X & 0x80
+			OUT <- OUT << 7;
+	WHILE (X & 0x80)
+	RETURN <- OUT
+
+U8STRING:
+	X <- Read INT
+	RETURN <- Read X UTF-8 Characters 
+
+MODULE:
+	S <- Read FOURCC
+	IF S != "TAME"
+		Error.
+	header <- Read HEADER
+	V <- Read BYTE
+	IF V is 1,
+		Read MODULEV1
+	Else,
+		Error.
+
+Header-Pair:
+	key <- Read U8STRING
+	value <- Read U8STRING
+
+Header:
+	X <- Read INT
+	attributes[] <- Read {X} Header-Pair
+

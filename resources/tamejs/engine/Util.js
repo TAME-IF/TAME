@@ -31,14 +31,14 @@ Util.toBase64 = null;
 // Stub here.
 Util.fromBase64 = null; 
 
-//base64ToArrayBuffer - converts a base64 string to an ArrayBuffer.
-Util.base64ToArrayBuffer = function(base64)
+//base64ToDataView - converts a base64 string to a DataView.
+Util.base64ToDataView = function(base64)
 {
 	let binary = atob(base64); 
-	let len = binary.length >>> 0; 
-	let view = new ArrayBuffer(len);
+	let len = binary.length >>> 0;
+	let view = new DataView(new ArrayBuffer(binary));
 	for (let i = 0; i < len; i++) 
-		view[i] = binary.charCodeAt(i);
+		view.setUint8(i, binary.charCodeAt(i));
 	return view;
 }; 
 

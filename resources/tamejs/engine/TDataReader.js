@@ -13,11 +13,11 @@
 /**
  * Constructor for TDataReader.
  * This is a sequential reader for array buffers.
- * @param arrayBuffer (ArrayBuffer) the array buffer to use to read from.
+ * @param dataView (DataView) the Data View to read from.
  */
-var TDataReader = function(arrayBuffer, littleEndian)
+var TDataReader = function(dataView, littleEndian)
 {
-	this.dataView = new DataView(arrayBuffer, 0, arrayBuffer.byteLength);
+	this.dataView = dataView;
 	this.littleEndian = littleEndian;
 	this.pos = 0;
 };
