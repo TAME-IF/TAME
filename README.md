@@ -114,7 +114,7 @@ There is a Notepad++ Syntax Highlighter config in `docs/UDL.xml`.
 
 The files in the `js` directory are executed via NodeJS.
 
-The files in the `scripts` directory are sample TAMEScript programs that are used for testing. All
+The files in the `scripts/tame` directory are sample TAMEScript programs that are used for testing. All
 of them should be working, but there may be a few that don't during major changes.
 
 
