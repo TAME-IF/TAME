@@ -16,30 +16,45 @@ var TAME = new (function(moduleData){
 //[[EXPORTJS-GENERATE version
 
 //[[EXPORTJS-INCLUDE engine/Util.js
-	
-Util.nanoTime = (function(){
-	// Webkit Browser
-	if (performance)
+
+Util.nanoTime = function()
+{
+	// s,ns to ns (ns res)
+	var t = process.hrtime();
+	return t[0] * 1e9 + t[1];
+};
+
+Util.toBase64 = (function()
+{
+	if (Buffer.from)
 	{
-		return function() 
-		{
-			// ms to ns (us res)
-			return parseInt(performance.now() * 1e6, 10);
-		};	
+		return function(text) {
+			return Buffer.from(text).toString('base64');
+		};
 	}
 	else
 	{
-		return function()
-		{
-			// ms to ns (ms res)
-			return Date.now() * 1e6;
+		return function(text) {
+			return (new Buffer(text)).toString('base64');
 		};
 	}
 })();
 
-//Must be like this in order to avoid Illegal Invocation errors.
-Util.toBase64 = function(text){return btoa(text);};
-Util.fromBase64 = function(data){return atob(data);};
+Util.fromBase64 = (function()
+{
+	if (Buffer.from)
+	{
+		return function(data) {
+			return Buffer.from(data, 'base64').toString('utf8');
+		};
+	}
+	else
+	{
+		return function(data) {
+			return (new Buffer(data, 'base64')).toString('utf8');
+		};
+	}
+})();
 
 //[[EXPORTJS-INCLUDE engine/TStringBuilder.js
 //[[EXPORTJS-INCLUDE engine/TAMEConstants.js
@@ -53,44 +68,8 @@ Util.fromBase64 = function(data){return atob(data);};
 //[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
 //[[EXPORTJS-INCLUDE engine/TModuleReader.js
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
-//[[EXPORTJS-INCLUDE engine/TAMEBrowserHandler.js
 
-	let tameSelf = this;
-	let tameModule = new TModule(theader, tactions, telements);
-
-	/**
-	 * Creates a new response handler (mostly for aiding in browser functions).
-	 * Handles all standard cues and provides a way via a function to handle other cues.
-	 * This accumulates the results of contiguous "text" and "textf" cues before "print()" is called.
-	 * @param TAME reference to TAME engine.
-	 * @param options options object.
-	 * 		print: fn(text): called when a string needs printing (may contain HTML or other things).
-	 * 		onStart: fn(): called before cues start processing.
-	 * 			Should disable input.
-	 * 		onEnd: fn(): called when cues stop processing, and the end is reached.
-	 * 			Should enable input.
-	 * 		onSuspend: fn(): called when a call to process a cue initiates a suspension (processing stops, but not due to a pause).
-	 * 			Should disable input.
-	 * 		onResume: fn(): called when cues process again.
-	 * 			Should disable input.
-	 * 		onPause: fn(): called after a "pause" cue is processed. 
-	 * 			Should prompt for continuation somehow, then call resume() after the user "continues."
-	 * 		onQuit: fn(): called after a "quit" cue is processed.
-	 * 			Should stop input and prevent further input. 
-	 * 		onError: fn(message): called after an "error" cue is processed.
-	 * 			Should make an error message appear on screen. Dismissable. 
-	 * 		onFatal: fn(message): called after a "fatal" cue is processed.
-	 * 			Should make a message appear on screen, and stop input as though a "quit" occurred. 
-	 * 		onOtherCue: fn(cueType, cueContent): called when a cue that is not handled by this handler needs processing. 
-	 * 			Should return boolean. true = keep going, false = suspend (until resume() is called).
-	 * 		onStartFormatTag: fn(tagname, accum): called when a formatted string starts a tag.
-	 * 		onEndFormatTag: fn(tagname, accum): called when a formatted string ends a tag.
-	 * 		onFormatText: fn(text, accum): called when a formatted string needs to process text.
-	 */
-	this.newBrowserHandler = function(options) 
-	{
-		return new TBrowserHandler(tameSelf, options);
-	};
+	this.tameModule = new TModule(theader, tactions, telements);
 
 	/**
 	 * Creates a new context for the embedded module.
@@ -162,8 +141,10 @@ Util.fromBase64 = function(data){return atob(data);};
 //[[EXPORTJS-GENERATE binary
 );
 
-//[[EXPORTJS-END
+/****************************************
+ * NodeJS Shell
+ ****************************************/
 
-//If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TAME;
-// =========================================================================
+//[[EXPORTJS-INCLUDE node/Main.js
+
+//[[EXPORTJS-END

@@ -11,7 +11,7 @@
 //[[EXPORTJS-START
 
 //[[EXPORTJS-GENERATE jsheader
-var TAME = new (function(theader, tactions, telements){
+var TAME = new (function(moduleData){
 
 //[[EXPORTJS-GENERATE version
 
@@ -66,6 +66,7 @@ Util.fromBase64 = (function()
 //[[EXPORTJS-INCLUDE engine/objects/TCommand.js
 //[[EXPORTJS-INCLUDE engine/objects/TModule.js
 //[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
+//[[EXPORTJS-INCLUDE engine/TModuleReader.js
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	this.tameModule = new TModule(theader, tactions, telements);
@@ -136,9 +137,7 @@ Util.fromBase64 = (function()
 
 	return this;
 	
-})(
-//[[EXPORTJS-GENERATE header, actions, elements
-);
+})();
 
 /****************************************
  * NodeJS Shell

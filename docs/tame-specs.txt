@@ -26,16 +26,6 @@ U8STRING:
 	X <- Read INT
 	RETURN <- Read X UTF-8 Characters 
 
-MODULE:
-	S <- Read FOURCC
-	IF S != "TAME"
-		Error.
-	header <- Read HEADER
-	V <- Read BYTE
-	IF V is 1,
-		Read MODULEV1
-	Else,
-		Error.
 
 Header-Pair:
 	key <- Read U8STRING
@@ -44,4 +34,15 @@ Header-Pair:
 Header:
 	X <- Read INT
 	attributes[] <- Read {X} Header-Pair
+
+Module:
+	S <- Read FOURCC
+	IF S != "TAME"
+		Error.
+	header <- Read Header
+	V <- Read BYTE
+	If V is 1,
+		RETURN <- Read ModuleV1
+	Else,
+		Error.
 

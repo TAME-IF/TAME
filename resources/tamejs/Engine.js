@@ -52,6 +52,7 @@ Util.fromBase64 = function(data){return atob(data);};
 //[[EXPORTJS-INCLUDE engine/objects/TCommand.js
 //[[EXPORTJS-INCLUDE engine/objects/TModule.js
 //[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
+//[[EXPORTJS-INCLUDE engine/TModuleReader.js
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 //[[EXPORTJS-INCLUDE engine/TAMEBrowserHandler.js
 
@@ -93,17 +94,18 @@ Util.fromBase64 = function(data){return atob(data);};
 
 	/**
 	 * Constructs a new module.
-	 * @param moduleData the module data (header, actions, elements).
+	 * @param moduleData (object) the module data (header, actions, elements).
 	 * @return a module object to use for context creation.
 	 */
 	this.createModule = function(moduleData)
 	{
+		let module = TModuleReader.readModule(moduleData.binary);
 		return new TModule(moduleData.header, moduleData.actions, moduleData.elements);
 	};
 	
 	/**
 	 * Creates a new context for a constructed module.
-	 * @param tmodule the TAME module to create a context for.
+	 * @param tmodule (TModule) the TAME module to create a context for.
 	 * @return a new module context.
 	 */
 	this.newContext = function(tmodule) 
@@ -156,10 +158,10 @@ Util.fromBase64 = function(data){return atob(data);};
 	 * Assists in parsing a cue with formatted text (TEXTF cue), or one known to have formatted text.
 	 * The target functions passed in are provided an accumulator array to push generated text into. 
 	 * On return, this function returns the accumulator's contents joined into a string. 
-	 * @param sequence the character sequence to parse.
-	 * @param tagStartFunc the function called on tag start. arguments: tagName (string), accumulator (Array)  
-	 * @param tagEndFunc the function called on tag end. arguments: tagName (string), accumulator (Array)
-	 * @param textFunc the function called on tag contents. arguments: text (string), accumulator (Array)
+	 * @param sequence (string) the character sequence to parse.
+	 * @param tagStartFunc (Function) the function called on tag start. arguments: tagName (string), accumulator (Array)  
+	 * @param tagEndFunc (Function) the function called on tag end. arguments: tagName (string), accumulator (Array)
+	 * @param textFunc (Function) the function called on tag contents. arguments: text (string), accumulator (Array)
 	 * @return the full accumulated result.  
 	 */
 	this.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
