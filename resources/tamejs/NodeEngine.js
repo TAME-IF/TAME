@@ -67,7 +67,7 @@ module.exports = new (function()
 //[[EXPORTJS-INCLUDE engine/objects/TCommand.js
 //[[EXPORTJS-INCLUDE engine/objects/TModule.js
 //[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
-//[[EXPORTJS-INCLUDE engine/TModuleReader.js
+//[[EXPORTJS-INCLUDE engine/TBinaryReader.js
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	/**

@@ -121,6 +121,91 @@ TDataReader.prototype.readFloat64 = function()
 	return out;
 };
 
+/**
+ * Reads an ASCII character.
+ * Advances 1 byte.
+ * @return (string)
+ */
+TDataReader.prototype.readASCIIChar = function()
+{
+	let c = this.readUInt8();
+	this.pos = this.pos + 1;
+	return String.fromCharCode(c);
+};
+
+/**
+ * Reads a UTF-8 character.
+ * Advances the amount of bytes that it takes to read one character, since UTF-8 characters very in width.
+ * @return (string)
+ */
+TDataReader.prototype.readUTF8Char = function()
+{
+	let c1 = this.readUInt8();
+	switch (c1 >> 4)
+	{
+		case 0:
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+			return String.fromCharCode(c1);
+		
+		case 12:
+		case 13:
+		{
+			let c2 = this.readUInt8();
+			return String.fromCharCode(((c1 & 0x1f) << 6) | (c2 & 0x3f));
+		}
+		
+		case 14:
+		{
+			let c2 = this.readUInt8();
+			let c3 = this.readUInt8();
+			return String.fromCharCode(((c1 & 0x0f) << 12) | ((c2 & 0x3f) << 6) | ((c3 & 0x3f) << 0));
+		}
+		
+		case 15:
+		{
+			let c2 = this.readUInt8();
+			let c3 = this.readUInt8();
+			let c4 = this.readUInt8();
+			return String.fromCodePoint(((c1 & 0x07) << 18) | ((c2 & 0x3f) << 12) | ((c3 & 0x3f) << 6) | (c4 & 0x3f));
+		}
+		
+		default:
+			throw new RangeError("Bad UTF-8 character encoding.");
+	}
+};
+
+/**
+ * Reads a set of bytes as an ASCII string.
+ * Advances 'byteCount' bytes.
+ * @return (string)
+ */
+TDataReader.prototype.readASCII = function(byteCount)
+{
+	let out = ""; 
+	while (byteCount--)
+		out += this.readASCIIChar();
+	return out;
+};
+
+/**
+ * Reads "charCount" UTF-8 characters.
+ * Advances as many bytes as it takes to read "charCount" characters.
+ * @return (string)
+ */
+TDataReader.prototype.readUTF8 = function(charCount)
+{
+	let out = ""; 
+	while (charCount--)
+		out += this.readUTF8Char();
+	return out;
+};
+
 //[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================

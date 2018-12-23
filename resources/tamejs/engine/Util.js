@@ -34,7 +34,7 @@ Util.fromBase64 = null;
 //base64ToDataView - converts a base64 string to a DataView.
 Util.base64ToDataView = function(base64)
 {
-	let binary = atob(base64); 
+	let binary = Util.fromBase64(base64); 
 	let len = binary.length >>> 0;
 	let view = new DataView(new ArrayBuffer(binary));
 	for (let i = 0; i < len; i++) 
