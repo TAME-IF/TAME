@@ -1,5 +1,5 @@
 /*
-	TCommand
+	TOperation
 	{
 		opcode: 0,
 		operand0: TValue,
@@ -19,44 +19,50 @@
 	}
 	TWorld:
 	{
+		tameType: 'TWorld',
 		identity: 'IDENTITY',
 		parent: 'IDENTITY',
 		archetype: false,
 		blockTable: {},
+		functionTable: {},
 	}
 	TObject:
 	{
+		tameType: 'TObject',
 		identity: 'IDENTITY',
 		parent: 'IDENTITY',
 		archetype: false,
 		blockTable: {},
+		functionTable: {},
 		names: ['NAME',],
 		tags: ['NAME',]
 	}
 	TPlayer:
 	{
+		tameType: 'TPlayer',
 		identity: 'IDENTITY',
 		parent: 'IDENTITY',
 		archetype: false,
 		blockTable: {},
-		permissionType: TAME.RestrictionType, 
-		permittedActionList: []
+		functionTable: {},
 	}
 	TRoom:
 	{
+		tameType: 'TRoom',
 		identity: 'IDENTITY',
 		parent: 'IDENTITY',
 		archetype: false,
 		blockTable: {},
-		permissionType: TAME.RestrictionType, 
-		permittedActionList: []
+		functionTable: {},
 	}
 	TContainer:
 	{
+		tameType: 'TContainer',
 		identity: 'IDENTITY',
 		parent: 'IDENTITY'
 		archetype: false,
 		blockTable: {},
+		functionTable: {},
 	}
 	Context: 
 	{

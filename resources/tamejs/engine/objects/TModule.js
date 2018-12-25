@@ -19,10 +19,11 @@ var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAM
  Constructor for the TAME Module.
  ****************************************************/
 
-function TModule(theader, tactions, telements)
+function TModule(theader, tdigest, tactions, telements)
 {	
 	// Fields --------------------
 	this.header = theader;
+	this.digest = tdigest;
 	this.actions = Util.mapify(tactions, "identity");
 	this.elements = {};
 	this.actionNameTable = {};

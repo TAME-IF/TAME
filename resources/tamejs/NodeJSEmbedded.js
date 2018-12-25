@@ -11,7 +11,7 @@
 //[[EXPORTJS-START
 
 //[[EXPORTJS-GENERATE jsheader
-var TAME = new (function(moduleData){
+var TAME = new (function(moduleBin64){
 
 //[[EXPORTJS-GENERATE version
 
@@ -69,14 +69,14 @@ Util.fromBase64 = (function()
 //[[EXPORTJS-INCLUDE engine/TBinaryReader.js
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
-	this.tameModule = new TModule(theader, tactions, telements);
+	let tameModule = TBinaryReader.readModule(moduleBin64);
 
 	/**
 	 * Creates a new context for the embedded module.
 	 */
 	this.newContext = function() 
 	{
-		return new TModuleContext(this.tameModule);
+		return new TModuleContext(tameModule);
 	};
 
 	/**
@@ -124,10 +124,10 @@ Util.fromBase64 = (function()
 	 * Assists in parsing a cue with formatted text (TEXTF cue), or one known to have formatted text.
 	 * The target functions passed in are provided an accumulator array to push generated text into. 
 	 * On return, this function returns the accumulator's contents joined into a string. 
-	 * @param sequence the character sequence to parse.
-	 * @param tagStartFunc the function called on tag start. arguments: tagName (string), accumulator (Array)  
-	 * @param tagEndFunc the function called on tag end. arguments: tagName (string), accumulator (Array)
-	 * @param textFunc the function called on tag contents. arguments: text (string), accumulator (Array)
+	 * @param sequence (string) the character sequence to parse.
+	 * @param tagStartFunc (Function) the function called on tag start. arguments: tagName (string), accumulator (Array)  
+	 * @param tagEndFunc (Function) the function called on tag end. arguments: tagName (string), accumulator (Array)
+	 * @param textFunc (Function) the function called on tag contents. arguments: text (string), accumulator (Array)
 	 * @return the full accumulated result.  
 	 */
 	this.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)

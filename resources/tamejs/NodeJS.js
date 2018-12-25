@@ -11,7 +11,7 @@
 //[[EXPORTJS-START
 
 //[[EXPORTJS-GENERATE jsheader
-var TAME = new (function(moduleData){
+var TAME = new (function(){
 
 //[[EXPORTJS-GENERATE version
 
@@ -69,14 +69,23 @@ Util.fromBase64 = (function()
 //[[EXPORTJS-INCLUDE engine/TBinaryReader.js
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
-	this.tameModule = new TModule(theader, tactions, telements);
 
 	/**
-	 * Creates a new context for the embedded module.
+	 * Creates a new module from a Base64-encoded serialized version of it.
+	 * @param moduleBase64 (string) the module's serialized, base64 representation.
+	 * @return (TModule) a deserialized module. 
 	 */
-	this.newContext = function() 
+	this.readModule = function(moduleBase64)
 	{
-		return new TModuleContext(this.tameModule);
+		return TBinaryReader.readModule(moduleBase64);
+	};
+
+	/**
+	 * Creates a new context for a module.
+	 */
+	this.newContext = function(tmodule) 
+	{
+		return new TModuleContext(tmodule);
 	};
 
 	/**

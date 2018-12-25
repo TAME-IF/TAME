@@ -23,6 +23,16 @@ var TDataReader = function(dataView, littleEndian)
 };
 
 /**
+ * Creates a new TDataReader that is split from this one from its current position.
+ * @param len (Number:int) the length of the new view in bytes.
+ */
+TDataReader.prototype.split = function(len)
+{
+	let buf = this.dataView.buffer;
+	return new TDataReader(new DataView(buf.slice(this.pos, this.pos + len)), this.littleEndian);
+};
+
+/**
  * Reads a signed 8-bit int.
  * Advances 1 byte.
  */
@@ -41,6 +51,27 @@ TDataReader.prototype.readUInt8 = function()
 {
 	let out = this.dataView.getUint8(this.pos);
 	this.pos = this.pos + 1;
+	return out;
+};
+
+/**
+ * Reads a boolean value.
+ * Advances 1 byte.
+ */
+TDataReader.prototype.readBoolean = function()
+{
+	return this.readUInt8() !== 0;
+};
+
+/**
+ * Reads an array of bytes (UInt8's).
+ * Advances 'bytes' bytes.
+ */
+TDataReader.prototype.readBytes = function(bytes)
+{
+	let out = [];
+	while (bytes--)
+		out.push(this.readUInt8());
 	return out;
 };
 
@@ -96,7 +127,7 @@ TDataReader.prototype.readInt64 = function()
 {
 	let left =  this.readUint32();
 	let right = this.readUint32();
-	return this.littleEndian ? left + (2**32*right) : (2**32*left) + right;
+	return this.littleEndian ? left + (Math.pow(2,32)*right) : (Math.pow(2,32)*left) + right;
 };
 
 /**
@@ -129,7 +160,6 @@ TDataReader.prototype.readFloat64 = function()
 TDataReader.prototype.readASCIIChar = function()
 {
 	let c = this.readUInt8();
-	this.pos = this.pos + 1;
 	return String.fromCharCode(c);
 };
 
@@ -178,32 +208,6 @@ TDataReader.prototype.readUTF8Char = function()
 		default:
 			throw new RangeError("Bad UTF-8 character encoding.");
 	}
-};
-
-/**
- * Reads a set of bytes as an ASCII string.
- * Advances 'byteCount' bytes.
- * @return (string)
- */
-TDataReader.prototype.readASCII = function(byteCount)
-{
-	let out = ""; 
-	while (byteCount--)
-		out += this.readASCIIChar();
-	return out;
-};
-
-/**
- * Reads "charCount" UTF-8 characters.
- * Advances as many bytes as it takes to read "charCount" characters.
- * @return (string)
- */
-TDataReader.prototype.readUTF8 = function(charCount)
-{
-	let out = ""; 
-	while (charCount--)
-		out += this.readUTF8Char();
-	return out;
 };
 
 //[[EXPORTJS-END

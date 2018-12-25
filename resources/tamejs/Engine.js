@@ -93,16 +93,15 @@ Util.fromBase64 = function(data){return atob(data);};
 	};
 
 	/**
-	 * Constructs a new module.
-	 * @param moduleData (object) the module data (header, actions, elements).
-	 * @return a module object to use for context creation.
+	 * Creates a new module from a Base64-encoded serialized version of it.
+	 * @param moduleBase64 (string) the module's serialized, base64 representation.
+	 * @return (TModule) a deserialized module. 
 	 */
-	this.createModule = function(moduleData)
+	this.readModule = function(moduleBase64)
 	{
-		let module = TBinaryReader.readModule(moduleData.binary);
-		return new TModule(moduleData.header, moduleData.actions, moduleData.elements);
+		return TBinaryReader.readModule(moduleBase64);
 	};
-	
+
 	/**
 	 * Creates a new context for a constructed module.
 	 * @param tmodule (TModule) the TAME module to create a context for.

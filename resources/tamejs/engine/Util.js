@@ -36,7 +36,7 @@ Util.base64ToDataView = function(base64)
 {
 	let binary = Util.fromBase64(base64); 
 	let len = binary.length >>> 0;
-	let view = new DataView(new ArrayBuffer(binary));
+	let view = new DataView(new ArrayBuffer(binary.length));
 	for (let i = 0; i < len; i++) 
 		view.setUint8(i, binary.charCodeAt(i));
 	return view;
