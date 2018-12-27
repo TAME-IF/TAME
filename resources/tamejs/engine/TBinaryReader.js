@@ -23,10 +23,10 @@ var TValue = TValue || ((typeof require) !== 'undefined' ? require('./objects/TV
  Factory for reading modules from binary data.
  ****************************************************/
 
-var TAMEBinaryReader = {};
+var TBinaryReader = {};
 
 // Block entry types.
-TAMEBinaryReader.BlockEntryType = [
+TBinaryReader.BlockEntryType = [
 	'INIT',
 	'START',
 	'AFTERSUCCESSFULCOMMAND',
@@ -49,21 +49,20 @@ TAMEBinaryReader.BlockEntryType = [
 	'ONCONTAINERBROWSE'
 ];
 
-// Value types.
-TAMEBinaryReader.ValueType = [
-	'BOOLEAN',
-	'INTEGER',
-	'FLOAT',
-	'STRING',
-	'LIST',
-	'OBJECT',
-	'CONTAINER',
-	'PLAYER',
-	'ROOM',
-	'WORLD',
-	'ACTION',
-	'VARIABLE'
-];
+/**
+ * Reads a set of ASCII characters from a data reader.
+ * @param dataReader (TDataReader) the data reader already positioned for reading.
+ * @param characters (Number:int) the amount of characters to read. 
+ * @return (string) a JS string.
+ * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ */
+TBinaryReader.readASCII = function(dataReader, characters)
+{
+	let out = '';
+	while (characters--)
+		out += dataReader.readASCIIChar();
+	return out;
+};
 
 /**
  * Reads a UTF-8 encoded string from a data reader.
@@ -71,7 +70,7 @@ TAMEBinaryReader.ValueType = [
  * @return (string) a JS string.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readUTF8String = function(dataReader)
+TBinaryReader.readUTF8String = function(dataReader)
 {
 	let out = '';
 	let len = dataReader.readInt32();
@@ -86,22 +85,16 @@ TAMEBinaryReader.readUTF8String = function(dataReader)
  * @return (Number:int) an integer.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readVariableLengthInt = function(dataReader)
+TBinaryReader.readVariableLengthInt = function(dataReader)
 {
-	/*
-	int out = 0;
-	byte b = 0;
+	let out = 0;
+	let b = 0;
 	do {
-		b = readByte();
-		out |= b & 0x7f;
-		if ((b & 0x80) != 0)
-			out <<= 7;
-	} while ((b & 0x80) != 0);
-	return out;
-	 */
-	
-	// TODO: Finish this.
-	
+		b = dataReader.readUInt8();
+		out = out | (b & 0x7f);
+		if ((b & 0x80) !== 0)
+			out = out << 7;
+	} while ((b & 0x80) !== 0);
 	return out;
 };
 
@@ -111,9 +104,9 @@ TAMEBinaryReader.readVariableLengthInt = function(dataReader)
  * @return (object) an object that represents a TValue.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readValue = function(dataReader)
+TBinaryReader.readValue = function(dataReader)
 {
-	let type = TAMEBinaryReader.ValueType[dataReader.readUInt8()];
+	let type = dataReader.readUInt8();
 	switch (type)
 	{
 		case 0:
@@ -123,27 +116,27 @@ TAMEBinaryReader.readValue = function(dataReader)
 		case 2:
 			return TValue.createFloat(dataReader.readFloat64());
 		case 3:
-			return TValue.createString(TAMEBinaryReader.readUTF8String(dataReader));
+			return TValue.createString(TBinaryReader.readUTF8String(dataReader));
 		case 4:
 			let list = TValue.createList([]);
 			let size = dataReader.readInt32();
 			while (size--)
-				TValue.listAdd(list, TAMEBinaryReader.readValue(dataReader));
+				TValue.listAdd(list, TBinaryReader.readValue(dataReader));
 			return list;
 		case 5:
-			return TValue.createObject(TAMEBinaryReader.readUTF8String(dataReader));
+			return TValue.createObject(TBinaryReader.readUTF8String(dataReader));
 		case 6:
-			return TValue.createContainer(TAMEBinaryReader.readUTF8String(dataReader));
+			return TValue.createContainer(TBinaryReader.readUTF8String(dataReader));
 		case 7:
-			return TValue.createPlayer(TAMEBinaryReader.readUTF8String(dataReader));
+			return TValue.createPlayer(TBinaryReader.readUTF8String(dataReader));
 		case 8:
-			return TValue.createRoom(TAMEBinaryReader.readUTF8String(dataReader));
+			return TValue.createRoom(TBinaryReader.readUTF8String(dataReader));
 		case 9:
-			return TValue.createWorld(TAMEBinaryReader.readUTF8String(dataReader));
+			return TValue.createWorld(TBinaryReader.readUTF8String(dataReader));
 		case 10:
-			return TValue.createAction(TAMEBinaryReader.readUTF8String(dataReader));
+			return TValue.createAction(TBinaryReader.readUTF8String(dataReader));
 		case 11:
-			return TValue.createVariable(TAMEBinaryReader.readUTF8String(dataReader));
+			return TValue.createVariable(TBinaryReader.readUTF8String(dataReader));
 		default:
 			throw TAMEError.Module("Bad value type. Internal error!");
 	}
@@ -155,11 +148,28 @@ TAMEBinaryReader.readValue = function(dataReader)
  * @return (object) a deserialized operation.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readOperation = function(dataReader)
+TBinaryReader.readOperation = function(dataReader)
 {
 	let out = {};
+	out.opcode = TBinaryReader.readVariableLengthInt(dataReader);
+
+	let bits = dataReader.readUInt8();
+	if ((bits & 0x01) !== 0)
+		out.operand0 = TBinaryReader.readValue(dataReader);
+	if ((bits & 0x02) !== 0)
+		out.operand1 = TBinaryReader.readValue(dataReader);
+
+	if ((bits & 0x04) !== 0)
+		out.initBlock = TBinaryReader.readBlock(dataReader);
+	if ((bits & 0x08) !== 0)
+		out.conditionalBlock = TBinaryReader.readBlock(dataReader);
+	if ((bits & 0x10) !== 0)
+		out.stepBlock = TBinaryReader.readBlock(dataReader);
+	if ((bits & 0x20) !== 0)
+		out.successBlock = TBinaryReader.readBlock(dataReader);
+	if ((bits & 0x40) !== 0)
+		out.failureBlock = TBinaryReader.readBlock(dataReader);
 	
-	// TODO: Finish this.
 	return out;
 };
 
@@ -169,12 +179,12 @@ TAMEBinaryReader.readOperation = function(dataReader)
  * @return (Array) a deserialized block of operations.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readBlock = function(dataReader)
+TBinaryReader.readBlock = function(dataReader)
 {
 	let out = [];
-	let size = sr.readInt();
+	let size = dataReader.readInt32();
 	while (size--)
-		out.push(TAMEBinaryReader.readOperation(dataReader));
+		out.push(TBinaryReader.readOperation(dataReader));
 	return out;
 };
 
@@ -184,13 +194,13 @@ TAMEBinaryReader.readBlock = function(dataReader)
  * @return (string) a deserialized block entry key for a block table.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readBlockEntryKey = function(dataReader)
+TBinaryReader.readBlockEntryKey = function(dataReader)
 {
 	let out = '';
-	out += TAMEBinaryReader.BlockEntryType[dataReader.readUInt8()];
+	out += TBinaryReader.BlockEntryType[dataReader.readUInt8()];
 	let size = dataReader.readInt32();
 	while (size--)
-		out += TValue.toString(TAMEBinaryReader.readValue(dataReader));
+		out += TValue.toString(TBinaryReader.readValue(dataReader));
 	return out;
 };
 
@@ -200,14 +210,14 @@ TAMEBinaryReader.readBlockEntryKey = function(dataReader)
  * @return (object) a deserialized block table.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readBlockTable = function(dataReader)
+TBinaryReader.readBlockTable = function(dataReader)
 {
 	let out = {};
 	let size = dataReader.readInt32();
 	while (size--)
 	{
-		let key = TAMEBinaryReader.readBlockEntryKey(dataReader);
-		let block = TAMEBinaryReader.readBlock(dataReader);
+		let key = TBinaryReader.readBlockEntryKey(dataReader);
+		let block = TBinaryReader.readBlock(dataReader);
 		out[key] = block;
 	}
 	return out;
@@ -219,14 +229,14 @@ TAMEBinaryReader.readBlockTable = function(dataReader)
  * @return (object) a deserialized function entry.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readFunctionEntry = function(dataReader)
+TBinaryReader.readFunctionEntry = function(dataReader)
 {
 	let out = {};
 	let argumentCount = dataReader.readInt32();
 	out.arguments = [];
 	while (argumentCount--)
-		out.arguments.push(TAMEBinaryReader.readUTF8String(dataReader));
-	out.block = TAMEBinaryReader.readBlock(dataReader);
+		out.arguments.push(TBinaryReader.readUTF8String(dataReader));
+	out.block = TBinaryReader.readBlock(dataReader);
 	return out;
 };
 
@@ -236,14 +246,14 @@ TAMEBinaryReader.readFunctionEntry = function(dataReader)
  * @return (object) a deserialized function table.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readFunctionTable = function(dataReader)
+TBinaryReader.readFunctionTable = function(dataReader)
 {
 	let out = {};
 	let size = dataReader.readInt32();
 	while (size--)
 	{
-		let name = TAMEBinaryReader.readUTF8String(dataReader).toLowerCase();
-		let functionEntry = TAMEBinaryReader.readFunctionEntry(dataReader);
+		let name = TBinaryReader.readUTF8String(dataReader).toLowerCase();
+		let functionEntry = TBinaryReader.readFunctionEntry(dataReader);
 		out[name] = functionEntry;
 	}
 	return out;
@@ -255,12 +265,12 @@ TAMEBinaryReader.readFunctionTable = function(dataReader)
  * @param element (object) the element object to read data into.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readElement = function(dataReader, element)
+TBinaryReader.readElement = function(dataReader, element)
 {
-	element.identity = TAMEBinaryReader.readUTF8String(dataReader);
+	element.identity = TBinaryReader.readUTF8String(dataReader);
 	element.archetype = dataReader.readBoolean();
-	element.blockTable = TAMEBinaryReader.readBlockTable(dataReader);
-	element.functionTable = TAMEBinaryReader.readFunctionTable(dataReader);
+	element.blockTable = TBinaryReader.readBlockTable(dataReader);
+	element.functionTable = TBinaryReader.readFunctionTable(dataReader);
 };
 
 /**
@@ -269,11 +279,11 @@ TAMEBinaryReader.readElement = function(dataReader, element)
  * @return (object) a deserialized world element.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readWorld = function(dataReader)
+TBinaryReader.readWorld = function(dataReader)
 {
 	let out = {};
 	out.tameType = "TWorld";
-	TAMEBinaryReader.readElement(dataReader, out);
+	TBinaryReader.readElement(dataReader, out);
 	return out;
 };
 
@@ -283,22 +293,22 @@ TAMEBinaryReader.readWorld = function(dataReader)
  * @param moduleOut (object) the output object to add parsed elements from {actions, elements}.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readModuleV1 = function(dataReader, moduleOut)
+TBinaryReader.readModuleV1 = function(dataReader, moduleOut)
 {
-	out.digest = dataReader.readBytes(20);
+	moduleOut.digest = dataReader.readBytes(20);
 	let bytes = dataReader.readInt32();
 	let reader = dataReader.split(bytes);
 	
 	let actions = {};
 	let elements = {};
 	
-	let world = TAMEBinaryReader.readWorld(reader);
+	let world = TBinaryReader.readWorld(dataReader);
 	elements[world.identity] = world;
 	
 	// TODO: Finish this.
 	
-	out.actions = actions;
-	out.elements = elements;
+	moduleOut.actions = actions;
+	moduleOut.elements = elements;
 };
 
 /**
@@ -307,14 +317,14 @@ TAMEBinaryReader.readModuleV1 = function(dataReader, moduleOut)
  * @return (object) an object containing the header keys mapped to values.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readModuleHeader = function(dataReader)
+TBinaryReader.readModuleHeader = function(dataReader)
 {
 	let out = {};
 	let size = dataReader.readInt32();
 	while (size--)
 	{
-		let key = TAMEBinaryReader.readUTF8String(dataReader);
-		let value = TAMEBinaryReader.readUTF8String(dataReader);
+		let key = TBinaryReader.readUTF8String(dataReader);
+		let value = TBinaryReader.readUTF8String(dataReader);
 		out[key] = value;
 	}
 	return out;
@@ -326,19 +336,19 @@ TAMEBinaryReader.readModuleHeader = function(dataReader)
  * @return (TModule) a deserialized TAME Module.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TAMEBinaryReader.readModule = function(base64Data)
+TBinaryReader.readModule = function(base64Data)
 {
 	let reader = new TDataReader(Util.base64ToDataView(b), true);
 	
-	if (reader.readASCII(4) != 'TAME')
+	if (TBinaryReader.readASCII(reader, 4) != 'TAME')
 		throw TAMEError.Module("Not a TAME Module.");
 	
 	let out = {};
-	out.header = TAMEBinaryReader.readModuleHeader(reader);
+	out.header = TBinaryReader.readModuleHeader(reader);
 	
 	let version = reader.readUInt8();
 	if (version === 1)
-		TAMEBinaryReader.readModuleV1(out);
+		TBinaryReader.readModuleV1(reader, out);
 	else
 		throw TAMEError.Module("Module does not have a recognized version.");
 	
@@ -349,5 +359,5 @@ TAMEBinaryReader.readModule = function(base64Data)
 //[[EXPORTJS-END
 
 // If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TAMEBinaryReader;
+if ((typeof module.exports) !== 'undefined') module.exports = TBinaryReader;
 // =========================================================================

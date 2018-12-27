@@ -28,7 +28,11 @@ for (let i = 0; i < buffer.length; i++)
 	view.setUint8(i, buffer.readUInt8(i));
 
 let reader = new TDataReader(view, true);
-console.log(reader.readASCII(4));
+console.log(TBinaryReader.readASCII(reader, 4));
 console.log(TBinaryReader.readModuleHeader(reader));
+let out = {};
+let version = reader.readUInt8();
+TBinaryReader.readModuleV1(reader, out);
+console.log(JSON.stringify(out));
 
 // TODO: Finish this.

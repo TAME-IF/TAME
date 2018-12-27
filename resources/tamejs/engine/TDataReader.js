@@ -64,7 +64,7 @@ TDataReader.prototype.readBoolean = function()
 };
 
 /**
- * Reads an array of bytes (UInt8's).
+ * Reads a sequence of bytes (UInt8's).
  * Advances 'bytes' bytes.
  */
 TDataReader.prototype.readBytes = function(bytes)
@@ -125,8 +125,8 @@ TDataReader.prototype.readUInt32 = function()
  */
 TDataReader.prototype.readInt64 = function()
 {
-	let left =  this.readUint32();
-	let right = this.readUint32();
+	let left =  this.readUInt32();
+	let right = this.readUInt32();
 	return this.littleEndian ? left + (Math.pow(2,32)*right) : (Math.pow(2,32)*left) + right;
 };
 
