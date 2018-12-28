@@ -8,6 +8,8 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
+// TODO: Add a version of this that loads arbitrary module binaries.
+
 //[[EXPORTJS-START
 
 //[[EXPORTJS-INCLUDE Libs.js

@@ -13,6 +13,7 @@ var Util = Util || ((typeof require) !== 'undefined' ? require('./Util.js') : nu
 var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('./TAMEError.js') : null);
 var TDataReader = TDataReader || ((typeof require) !== 'undefined' ? require('./TDataReader.js') : null);
 var TValue = TValue || ((typeof require) !== 'undefined' ? require('./objects/TValue.js') : null);
+var TModule = TModule || ((typeof require) !== 'undefined' ? require('./objects/TModule.js') : null);
 // ======================================================================================================
 
 //[[EXPORTJS-START
@@ -95,6 +96,36 @@ TBinaryReader.readVariableLengthInt = function(dataReader)
 		if ((b & 0x80) !== 0)
 			out = out << 7;
 	} while ((b & 0x80) !== 0);
+	return out;
+};
+
+/**
+ * Reads a string array from a data reader (strings are UTF-8 encoded).
+ * @param dataReader (TDataReader) the data reader already positioned for reading.
+ * @return (object) an object that maps strings to strings.
+ * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ */
+TBinaryReader.readUTF8StringArray = function(dataReader)
+{
+	let out = [];
+	let size = dataReader.readInt32();
+	while (size--)
+		out.push(TBinaryReader.readUTF8String(dataReader));
+	return out;
+};
+
+/**
+ * Reads a string map from a data reader (strings are UTF-8 encoded).
+ * @param dataReader (TDataReader) the data reader already positioned for reading.
+ * @return (object) an object that maps strings to strings.
+ * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ */
+TBinaryReader.readUTF8StringMap = function(dataReader)
+{
+	let out = {};
+	let size = dataReader.readInt32();
+	while (size--)
+		out[TBinaryReader.readUTF8String(dataReader)] = TBinaryReader.readUTF8String(dataReader);
 	return out;
 };
 
@@ -199,8 +230,14 @@ TBinaryReader.readBlockEntryKey = function(dataReader)
 	let out = '';
 	out += TBinaryReader.BlockEntryType[dataReader.readUInt8()];
 	let size = dataReader.readInt32();
+	out += '(';
 	while (size--)
+	{
 		out += TValue.toString(TBinaryReader.readValue(dataReader));
+		if (size > 0)
+			out += ',';
+	}
+	out += ')';
 	return out;
 };
 
@@ -274,6 +311,65 @@ TBinaryReader.readElement = function(dataReader, element)
 };
 
 /**
+ * Reads a container element.
+ * @param dataReader (TDataReader) the data reader already positioned for reading.
+ * @return (object) a deserialized world element.
+ * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ */
+TBinaryReader.readContainer = function(dataReader)
+{
+	let out = {};
+	out.tameType = "TContainer";
+	TBinaryReader.readElement(dataReader, out);
+	return out;
+};
+
+/**
+ * Reads a object element.
+ * @param dataReader (TDataReader) the data reader already positioned for reading.
+ * @return (object) a deserialized world element.
+ * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ */
+TBinaryReader.readObject = function(dataReader)
+{
+	let out = {};
+	out.tameType = "TObject";
+	TBinaryReader.readElement(dataReader, out);
+	out.names = TBinaryReader.readUTF8StringArray(dataReader);
+	out.determiners = TBinaryReader.readUTF8StringArray(dataReader);
+	out.tags = TBinaryReader.readUTF8StringArray(dataReader);
+	return out;
+};
+
+/**
+ * Reads a room element.
+ * @param dataReader (TDataReader) the data reader already positioned for reading.
+ * @return (object) a deserialized world element.
+ * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ */
+TBinaryReader.readRoom = function(dataReader)
+{
+	let out = {};
+	out.tameType = "TRoom";
+	TBinaryReader.readElement(dataReader, out);
+	return out;
+};
+
+/**
+ * Reads a player element.
+ * @param dataReader (TDataReader) the data reader already positioned for reading.
+ * @return (object) a deserialized world element.
+ * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ */
+TBinaryReader.readPlayer = function(dataReader)
+{
+	let out = {};
+	out.tameType = "TPlayer";
+	TBinaryReader.readElement(dataReader, out);
+	return out;
+};
+
+/**
  * Reads a world element.
  * @param dataReader (TDataReader) the data reader already positioned for reading.
  * @return (object) a deserialized world element.
@@ -284,6 +380,28 @@ TBinaryReader.readWorld = function(dataReader)
 	let out = {};
 	out.tameType = "TWorld";
 	TBinaryReader.readElement(dataReader, out);
+	return out;
+};
+
+/**
+ * Reads a world element.
+ * @param dataReader (TDataReader) the data reader already positioned for reading.
+ * @return (object) a deserialized world element.
+ * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ */
+TBinaryReader.readAction = function(dataReader)
+{
+	let out = {};
+	out.tameType = "TAction";
+	out.identity = TBinaryReader.readUTF8String(dataReader);
+	out.type = dataReader.readUInt8();
+
+	let bits = dataReader.readUInt8();
+	out.strict = ((bits & 0x01) !== 0);
+	out.reversed = ((bits & 0x02) !== 0);
+
+	out.names = TBinaryReader.readUTF8StringArray(dataReader);
+	out.extraStrings = TBinaryReader.readUTF8StringArray(dataReader);
 	return out;
 };
 
@@ -299,13 +417,44 @@ TBinaryReader.readModuleV1 = function(dataReader, moduleOut)
 	let bytes = dataReader.readInt32();
 	let reader = dataReader.split(bytes);
 	
-	let actions = {};
-	let elements = {};
+	let actions = [];
+	let elements = [];
+	let elementMap = {};
 	
 	let world = TBinaryReader.readWorld(dataReader);
 	elements[world.identity] = world;
 	
-	// TODO: Finish this.
+	let READELEMENTS = function(f)
+	{
+		let count = dataReader.readInt32();
+		while (count--) 
+		{
+			let e = f(dataReader);
+			elementMap[e.identity] = e;
+			elements.push(e);
+		}
+	};
+
+	let READPARENTS = function()
+	{
+		let map = TBinaryReader.readUTF8StringMap(dataReader);
+		Util.each(map, (value, key) => {elements[key].parent = key;});
+	};
+
+	count = dataReader.readInt32();
+	while (count--)
+		actions.push(TBinaryReader.readAction(dataReader));
+	
+	READELEMENTS(TBinaryReader.readPlayer);
+	READELEMENTS(TBinaryReader.readRoom);
+	READELEMENTS(TBinaryReader.readObject);
+	READELEMENTS(TBinaryReader.readContainer);
+	
+	// Hierarchy arranged as players, rooms, objects, containers in binary - unnecessary to separate in JS.  
+	READPARENTS();
+	READPARENTS();
+	READPARENTS();
+	READPARENTS();
 	
 	moduleOut.actions = actions;
 	moduleOut.elements = elements;
@@ -331,14 +480,14 @@ TBinaryReader.readModuleHeader = function(dataReader)
 };
 
 /**
- * Reads a module from its serialized representation in base64 data.
- * @param base64Data (string) the input base64 data to read.
+ * Reads a module from its serialized representation.
+ * @param base64Data (DataView) the input data view to use for reading.
  * @return (TModule) a deserialized TAME Module.
  * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
  */
-TBinaryReader.readModule = function(base64Data)
+TBinaryReader.readModule = function(dataView)
 {
-	let reader = new TDataReader(Util.base64ToDataView(b), true);
+	let reader = new TDataReader(dataView, true);
 	
 	if (TBinaryReader.readASCII(reader, 4) != 'TAME')
 		throw TAMEError.Module("Not a TAME Module.");

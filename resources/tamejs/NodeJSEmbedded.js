@@ -11,7 +11,7 @@
 //[[EXPORTJS-START
 
 //[[EXPORTJS-GENERATE jsheader
-var TAME = new (function(moduleBin64){
+var TAME = new (function(moduleData){
 
 //[[EXPORTJS-GENERATE version
 
@@ -23,38 +23,6 @@ Util.nanoTime = function()
 	var t = process.hrtime();
 	return t[0] * 1e9 + t[1];
 };
-
-Util.toBase64 = (function()
-{
-	if (Buffer.from)
-	{
-		return function(text) {
-			return Buffer.from(text).toString('base64');
-		};
-	}
-	else
-	{
-		return function(text) {
-			return (new Buffer(text)).toString('base64');
-		};
-	}
-})();
-
-Util.fromBase64 = (function()
-{
-	if (Buffer.from)
-	{
-		return function(data) {
-			return Buffer.from(data, 'base64').toString('utf8');
-		};
-	}
-	else
-	{
-		return function(data) {
-			return (new Buffer(data, 'base64')).toString('utf8');
-		};
-	}
-})();
 
 //[[EXPORTJS-INCLUDE engine/TStringBuilder.js
 //[[EXPORTJS-INCLUDE engine/TAMEConstants.js
@@ -69,7 +37,14 @@ Util.fromBase64 = (function()
 //[[EXPORTJS-INCLUDE engine/TBinaryReader.js
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
-	let tameModule = TBinaryReader.readModule(moduleBin64);
+	let tameModule = TBinaryReader.readModule((function(data){
+		let buffer = Buffer.from(data, 'base64');
+		let out = new DataView(new ArrayBuffer(buffer.length));
+		let i = 0;
+		for (i = 0; i < buffer.length; i++)
+			out.setUint8(i, buffer.readUInt8(i));
+		return out;
+	})(moduleData));
 
 	/**
 	 * Creates a new context for the embedded module.
@@ -138,7 +113,7 @@ Util.fromBase64 = (function()
 	return this;
 	
 })(
-//[[EXPORTJS-GENERATE binary
+//[[EXPORTJS-GENERATE modulebase64
 );
 
 /****************************************

@@ -12,8 +12,11 @@
 	}
 	TAction:
 	{
+		tameType: 'TAction',
 		identity: 'IDENTITY',
-		type: TAME.ActionType,
+		type: TAction.Type.ordinal(),
+		strict: false,
+		reversed: false,
 		names: ['name',],
 		extraStrings:['string',],
 	}
@@ -35,6 +38,7 @@
 		blockTable: {},
 		functionTable: {},
 		names: ['NAME',],
+		determiners: ['NAME',],
 		tags: ['NAME',]
 	}
 	TPlayer:

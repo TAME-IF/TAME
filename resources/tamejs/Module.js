@@ -16,8 +16,8 @@
 	"header":
 		//[[EXPORTJS-GENERATE header
 	,
-	"binary":
-		//[[EXPORTJS-GENERATE binary
+	"moduleData":
+		//[[EXPORTJS-GENERATE modulebase64
 };
 
 //[[EXPORTJS-END

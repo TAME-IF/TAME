@@ -38,10 +38,6 @@ Util.nanoTime = (function(){
 	}
 })();
 
-// Must be like this in order to avoid Illegal Invocation errors.
-Util.toBase64 = function(text){return btoa(text);};
-Util.fromBase64 = function(data){return atob(data);};
-
 //[[EXPORTJS-INCLUDE engine/TStringBuilder.js
 //[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //[[EXPORTJS-INCLUDE engine/TAMEError.js
@@ -93,13 +89,13 @@ Util.fromBase64 = function(data){return atob(data);};
 	};
 
 	/**
-	 * Creates a new module from a Base64-encoded serialized version of it.
-	 * @param moduleBase64 (string) the module's serialized, base64 representation.
+	 * Creates a new module from a DataView.
+	 * @param dataView (DataView) the a DataView containing the serialized module.
 	 * @return (TModule) a deserialized module. 
 	 */
-	this.readModule = function(moduleBase64)
+	this.readModule = function(dataView)
 	{
-		return TBinaryReader.readModule(moduleBase64);
+		return TBinaryReader.readModule(dataView);
 	};
 
 	/**

@@ -103,8 +103,8 @@ public final class TAMEJSExporter
 	private static final String GENERATE_JSMODULEVARNAME = "jsmodulevarname";
 	/** Generate version. */
 	private static final String GENERATE_VERSION = "version";
-	/** Generate binary. */
-	private static final String GENERATE_BINARY = "binary";
+	/** Generate module binary as base64. */
+	private static final String GENERATE_BASE64 = "modulebase64";
 	/** Generate header. */
 	private static final String GENERATE_HEADER = "header";
 	/** Generate module title. */
@@ -481,7 +481,7 @@ public final class TAMEJSExporter
 				generateResourceJSModuleVariableName(writer, module, options);
 			else if (type.equalsIgnoreCase(GENERATE_VERSION))
 				generateResourceVersion(writer, module);
-			else if (type.equalsIgnoreCase(GENERATE_BINARY))
+			else if (type.equalsIgnoreCase(GENERATE_BASE64))
 				generateResourceBinaryString(writer, module);
 			else if (type.equalsIgnoreCase(GENERATE_HEADER))
 				generateResourceHeader(writer, module);

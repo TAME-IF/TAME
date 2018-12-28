@@ -37,10 +37,6 @@ Util.nanoTime = (function(){
 	}
 })();
 
-//Must be like this in order to avoid Illegal Invocation errors.
-Util.toBase64 = function(text){return btoa(text);};
-Util.fromBase64 = function(data){return atob(data);};
-
 //[[EXPORTJS-INCLUDE engine/TStringBuilder.js
 //[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //[[EXPORTJS-INCLUDE engine/TAMEError.js
@@ -56,7 +52,15 @@ Util.fromBase64 = function(data){return atob(data);};
 //[[EXPORTJS-INCLUDE engine/TAMEBrowserHandler.js
 
 	let tameSelf = this;
-	let tameModule = TBinaryReader.readModule(moduleBin64);
+	
+	let tameModule = TBinaryReader.readModule((function(data){
+		let binary = window.atob(data);
+		let out = new DataView(new ArrayBuffer(binary.length));
+		let i = 0;
+		for (i = 0; i < binary.length; i++)
+			out.setUint8(i, binary.charCodeAt(i));
+		return out;
+	})(moduleData));
 
 	/**
 	 * Creates a new response handler (mostly for aiding in browser functions).
@@ -159,7 +163,7 @@ Util.fromBase64 = function(data){return atob(data);};
 	return this;
 	
 })(
-//[[EXPORTJS-GENERATE binary
+//[[EXPORTJS-GENERATE modulebase64
 );
 
 //[[EXPORTJS-END

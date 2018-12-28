@@ -23,25 +23,6 @@ var Util = {};
 // Stub here.
 Util.nanoTime = null;
 
-// toBase64 - converts a string to base64.
-//Stub here.
-Util.toBase64 = null;
-
-// fromBase64 - converts a string from base64.
-// Stub here.
-Util.fromBase64 = null; 
-
-//base64ToDataView - converts a base64 string to a DataView.
-Util.base64ToDataView = function(base64)
-{
-	let binary = Util.fromBase64(base64); 
-	let len = binary.length >>> 0;
-	let view = new DataView(new ArrayBuffer(binary.length));
-	for (let i = 0; i < len; i++) 
-		view.setUint8(i, binary.charCodeAt(i));
-	return view;
-}; 
-
 // Smarter foreach.
 Util.each = function(obj, func)
 {

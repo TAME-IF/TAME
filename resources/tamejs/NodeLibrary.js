@@ -25,38 +25,6 @@ module.exports = new (function()
 		return t[0] * 1e9 + t[1];
 	};
 
-	Util.toBase64 = (function()
-	{
-		if (Buffer.from)
-		{
-			return function(text) {
-				return Buffer.from(text).toString('base64');
-			};
-		}
-		else
-		{
-			return function(text) {
-				return (new Buffer(text)).toString('base64');
-			};
-		}
-	})();
-
-	Util.fromBase64 = (function()
-	{
-		if (Buffer.from)
-		{
-			return function(data) {
-				return Buffer.from(data, 'base64').toString('utf8');
-			};
-		}
-		else
-		{
-			return function(data) {
-				return (new Buffer(data, 'base64')).toString('utf8');
-			};
-		}
-	})();
-
 //[[EXPORTJS-INCLUDE engine/TStringBuilder.js
 //[[EXPORTJS-INCLUDE engine/TAMEConstants.js
 //[[EXPORTJS-INCLUDE engine/TAMEError.js
@@ -71,13 +39,13 @@ module.exports = new (function()
 //[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	/**
-	 * Creates a new module from a Base64-encoded serialized version of it.
-	 * @param moduleBase64 (string) the module's serialized, base64 representation.
+	 * Creates a new module from a DataView.
+	 * @param dataView (DataView) the a DataView containing the serialized module.
 	 * @return (TModule) a deserialized module. 
 	 */
-	this.readModule = function(moduleBase64)
+	this.readModule = function(dataView)
 	{
-		return TBinaryReader.readModule(moduleBase64);
+		return TBinaryReader.readModule(dataView);
 	};
 
 	/**
