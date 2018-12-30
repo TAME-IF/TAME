@@ -38,6 +38,8 @@ to the serialized format or JS modules (but not embedded ones - those are safe).
 
 * Serialization of game state that has circular references in its structure is not handled as gracefully as it should be.
 this is not expected to come up very often in user's modules.
+* TAME's compiler currently chokes on certain text encodings - this may be due to it assuming native encoding. This may
+be an easy fix by allowing the user to force an encoding type, but it is not currently implemented.
 
 ### Library
 
