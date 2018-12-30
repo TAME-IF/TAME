@@ -10,19 +10,22 @@
 
 //[[EXPORTJS-START
 
-function print(text) {
+function print(text) 
+{
 	if (text)
 		process.stdout.write(text);
 }
 
-function println(text) {
+function println(text) 
+{
 	if (!text)
 		process.stdout.write('\n');
 	else
 		process.stdout.write(text + '\n');
 }
 
-function withEscChars(text) {
+function withEscChars(text) 
+{
 	let t = JSON.stringify(text);
 	return t.substring(1, t.length - 1);
 }
@@ -107,9 +110,20 @@ function printWrapped(message, startColumn, width)
 }
 
 // Need a better don't-eat-CPU-solution.
-function sleep(sleepDuration) {
+function sleep(sleepDuration) 
+{
 	let now = Date.now();
 	while (Date.now() < now + sleepDuration) {}
+}
+
+function base64ToDataView(base64)
+{
+	let buffer = Buffer.from(base64, 'base64');
+	let out = new DataView(new ArrayBuffer(buffer.length));
+	let i = 0;
+	for (i = 0; i < buffer.length; i++)
+		out.setUint8(i, buffer.readUInt8(i));
+	return out;
 }
 
 //[[EXPORTJS-END

@@ -11,49 +11,47 @@
 //[[EXPORTJS-START
 
 //[[EXPORTJS-GENERATE jsheader
-var TAME = new (function()
+let TAME = (function(_TAMEENVCTX)
 {
 
 //[[EXPORTJS-GENERATE version
 
+	let tameSelf = this;
+
 //[[EXPORTJS-INCLUDE engine/Util.js
 	
-Util.nanoTime = (function(){
-	// Webkit Browser
-	if (performance)
-	{
-		return function() 
+	Util.nanoTime = (function(CTX){
+		// NodeJS
+		if (CTX.process)
 		{
-			// ms to ns (us res)
-			return parseInt(performance.now() * 1e6, 10);
-		};	
-	}
-	else
-	{
-		return function()
+			return function() 
+			{
+				// s,ns to ns (ns res)
+				let t = process.hrtime();
+				return t[0] * 1e9 + t[1];
+			};	
+		}
+		// Webkit Browser
+		else if (CTX.performance)
 		{
-			// ms to ns (ms res)
-			return Date.now() * 1e6;
-		};
-	}
-})();
+			return function() 
+			{
+				// ms to ns (us res)
+				return parseInt(CTX.performance.now() * 1e6, 10);
+			};	
+		}
+		else
+		{
+			return function()
+			{
+				// ms to ns (ms res)
+				return Date.now() * 1e6;
+			};
+		}
+	})(_TAMEENVCTX);
 
-//[[EXPORTJS-INCLUDE engine/TStringBuilder.js
-//[[EXPORTJS-INCLUDE engine/TAMEConstants.js
-//[[EXPORTJS-INCLUDE engine/TAMEError.js
-//[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
-//[[EXPORTJS-INCLUDE engine/objects/TValue.js
-//[[EXPORTJS-INCLUDE engine/objects/TRequest.js
-//[[EXPORTJS-INCLUDE engine/objects/TResponse.js
-//[[EXPORTJS-INCLUDE engine/objects/TCommand.js
-//[[EXPORTJS-INCLUDE engine/objects/TModule.js
-//[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
-//[[EXPORTJS-INCLUDE engine/TBinaryReader.js
-//[[EXPORTJS-INCLUDE engine/TAMELogic.js
-//[[EXPORTJS-INCLUDE engine/TAMEBrowserHandler.js
-
-	var tameSelf = this;
-
+//[[EXPORTJS-INCLUDE engine/TAMEResponseHandler.js
+	
 	/**
 	 * Creates a new response handler (mostly for aiding in browser functions).
 	 * Handles all standard cues and provides a way via a function to handle other cues.
@@ -83,10 +81,23 @@ Util.nanoTime = (function(){
 	 * 		onEndFormatTag: fn(tagname, accum): called when a formatted string ends a tag.
 	 * 		onFormatText: fn(text, accum): called when a formatted string needs to process text.
 	 */
-	this.newBrowserHandler = function(options) 
+	this.newResponseHandler = function(options) 
 	{
-		return new TBrowserHandler(tameSelf, options);
+		return new TResponseHandler(options);
 	};
+	
+//[[EXPORTJS-INCLUDE engine/TStringBuilder.js
+//[[EXPORTJS-INCLUDE engine/TAMEConstants.js
+//[[EXPORTJS-INCLUDE engine/TAMEError.js
+//[[EXPORTJS-INCLUDE engine/TAMEInterrupt.js
+//[[EXPORTJS-INCLUDE engine/objects/TValue.js
+//[[EXPORTJS-INCLUDE engine/objects/TRequest.js
+//[[EXPORTJS-INCLUDE engine/objects/TResponse.js
+//[[EXPORTJS-INCLUDE engine/objects/TCommand.js
+//[[EXPORTJS-INCLUDE engine/objects/TModule.js
+//[[EXPORTJS-INCLUDE engine/objects/TModuleContext.js
+//[[EXPORTJS-INCLUDE engine/TBinaryReader.js
+//[[EXPORTJS-INCLUDE engine/TAMELogic.js
 
 	/**
 	 * Creates a new module from a DataView.
@@ -99,13 +110,14 @@ Util.nanoTime = (function(){
 	};
 
 	/**
-	 * Creates a new context for a constructed module.
-	 * @param tmodule (TModule) the TAME module to create a context for.
-	 * @return a new module context.
+	 * Creates a new context for a module.
+	 * If module is not specified, it will use the embedded module if any.
+	 * @param module (TModule) the TAME module to create a context for.
+	 * @return (TModuleContext) a new module context, or null if no usable module.
 	 */
-	this.newContext = function(tmodule) 
+	this.newContext = function(module) 
 	{
-		return new TModuleContext(tmodule);
+		return module ? new TModuleContext(module) : null;
 	};
 
 	/**
@@ -157,7 +169,7 @@ Util.nanoTime = (function(){
 	 * @param tagStartFunc (Function) the function called on tag start. arguments: tagName (string), accumulator (Array)  
 	 * @param tagEndFunc (Function) the function called on tag end. arguments: tagName (string), accumulator (Array)
 	 * @param textFunc (Function) the function called on tag contents. arguments: text (string), accumulator (Array)
-	 * @return the full accumulated result.  
+	 * @return (string) the full accumulated result.  
 	 */
 	this.parseFormatted = function(sequence, tagStartFunc, tagEndFunc, textFunc)
 	{
@@ -166,7 +178,7 @@ Util.nanoTime = (function(){
 
 	return this;
 	
-})();
+})(this);
 
 //[[EXPORTJS-END
 

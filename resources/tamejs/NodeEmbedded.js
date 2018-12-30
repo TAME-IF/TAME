@@ -11,7 +11,12 @@
 //[[EXPORTJS-START
 
 //[[EXPORTJS-INCLUDE Engine.js
+//[[EXPORTJS-INCLUDE ModuleData.js
 
-module.exports = TAME;
+/****************************************
+ * NodeJS Shell
+ ****************************************/
+
+//[[EXPORTJS-INCLUDE node/Main.js
 
 //[[EXPORTJS-END

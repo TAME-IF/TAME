@@ -8,6 +8,10 @@
  * See AUTHORS.TXT for full credits.
  ******************************************************************************/
 
+// REQUIREMENTS =========================================================================================
+var Util = Util || ((typeof require) !== 'undefined' ? require('./Util.js') : null);
+// ======================================================================================================
+
 //[[EXPORTJS-START
 
 /**
@@ -39,7 +43,7 @@
  * 		onEndFormatTag: fn(tagname, accum): called when a formatted string ends a tag.
  * 		onFormatText: fn(text, accum): called when a formatted string needs to process text.
  */
-var TBrowserHandler = function(TAMEENGINE, options)
+var TResponseHandler = function(options)
 {
 	let self = this;
 	let BLANK_FUNCTION = function(){};
@@ -90,7 +94,7 @@ var TBrowserHandler = function(TAMEENGINE, options)
 		
 		"textf": function(content)
 		{
-			self.textBuffer.push(TAMEENGINE.parseFormatted(
+			self.textBuffer.push(Util.parseFormatted(
 				content, 
 				self.options.onStartFormatTag, 
 				self.options.onEndFormatTag, 
@@ -137,7 +141,7 @@ var TBrowserHandler = function(TAMEENGINE, options)
 /**
  * Resets the cue read state.
  */
-TBrowserHandler.prototype.reset = function()
+TResponseHandler.prototype.reset = function()
 {
 	this.stop = false;
 	this.pause = false;
@@ -148,7 +152,7 @@ TBrowserHandler.prototype.reset = function()
  * Prepares the response for read.
  * @param response the response from an initialize or interpret call.
  */
-TBrowserHandler.prototype.prepare = function(response)
+TResponseHandler.prototype.prepare = function(response)
 {
 	this.reset();
 	this.response = response;
@@ -160,7 +164,7 @@ TBrowserHandler.prototype.prepare = function(response)
  * Set with prepareResponse().
  * @return true if more unprocessed cues remain, or false if not. 
  */
-TBrowserHandler.prototype.resume = function()
+TResponseHandler.prototype.resume = function()
 {
 	if (!this.response)
 		throw new Error('resume() before prepare()!');
@@ -175,13 +179,13 @@ TBrowserHandler.prototype.resume = function()
 		this.pause = false;
 	
 	// Process Cue Loop
-	var keepGoing = true;
+	let keepGoing = true;
 	while ((this.nextCue < this.response.responseCues.length) && keepGoing) 
 	{
-		var cue = this.response.responseCues[this.nextCue++];
+		let cue = this.response.responseCues[this.nextCue++];
 		
-		var cueType = cue.type.toLowerCase();
-		var cueContent = cue.content;
+		let cueType = cue.type.toLowerCase();
+		let cueContent = cue.content;
 		
 		if (cueType !== 'text' && cueType !== 'textf') 
 		{
@@ -235,7 +239,7 @@ TBrowserHandler.prototype.resume = function()
  * Calls prepare(response) and then resume().
  * @param response the response from an initialize or interpret call.
  */
-TBrowserHandler.prototype.process = function(response)
+TResponseHandler.prototype.process = function(response)
 {
 	this.prepare(response);
 	this.resume();
@@ -244,6 +248,6 @@ TBrowserHandler.prototype.process = function(response)
 //[[EXPORTJS-END
 
 //If testing with NODEJS ==================================================
-if ((typeof module.exports) !== 'undefined') module.exports = TBrowserHandler;
+if ((typeof module.exports) !== 'undefined') module.exports = TResponseHandler;
 // =========================================================================
 

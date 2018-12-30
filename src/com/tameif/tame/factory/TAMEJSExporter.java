@@ -52,23 +52,24 @@ import com.tameif.tame.lang.Value;
  */
 public final class TAMEJSExporter 
 {
-	/** Wrapper Type: Engine Only for Node. */
-	public static final String WRAPPER_NODEENGINE = "nodeengine";
-	/** Wrapper Type: Engine Only for Browsers. */
+	/** Wrapper Type: Engine Only. */
 	public static final String WRAPPER_ENGINE = "engine";
 	/** Wrapper Type: Module Only. */
 	public static final String WRAPPER_MODULE = "module";
 	/** Wrapper Type: NodeJS, Embedded Module. */
-	public static final String WRAPPER_NODE = "node";
-	/** Wrapper Type: Browser JS, Embedded Module (default if no wrapper specified). */
-	public static final String WRAPPER_BROWSER = "browser";
+	public static final String WRAPPER_NODEEMBEDDED = "node";
 	/** Wrapper Type: Browser JS, Embedded Module, HTML Body wrapper. */
 	public static final String WRAPPER_HTML = "html";
 	/** Wrapper Type: Browser JS, Embedded Module, HTML Body wrapper (debug version). */
 	public static final String WRAPPER_HTML_DEBUG = "html-debug";
 
+	/** Wrapper Type: NodeJS, Engine. */
+	public static final String WRAPPER_NODEENGINE = "nodeengine";
+	/** Wrapper Type: Engine Only as Node Library Module. */
+	public static final String WRAPPER_NODELIBRARY = "nodelibrary";
+
 	/** JS Module Default Variable Name */
-	private static final String DEFAULT_MODULE_VARNAME = "ModuleData";
+	private static final String DEFAULT_MODULE_VARNAME = "EmbeddedData";
 	
 	/** Root resource for JS */
 	private static final String JS_ROOT_RESOURCE = "tamejs/";
@@ -232,16 +233,16 @@ public final class TAMEJSExporter
 	 */
 	public static void export(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
-		if (WRAPPER_NODE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "NodeJS.js", false);
-		else if (WRAPPER_MODULE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "Module.js", false);
+		if (WRAPPER_MODULE.equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, options, "ModuleData.js", false);
 		else if (WRAPPER_ENGINE.equalsIgnoreCase(options.getWrapperName()))
 			processResource(writer, module, options, "Engine.js", false);
+		else if (WRAPPER_NODEEMBEDDED.equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, options, "NodeEmbedded.js", false);
 		else if (WRAPPER_NODEENGINE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "NodeEngine.js", false);
-		else if (WRAPPER_BROWSER.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "Browser.js", false);
+			processResource(writer, module, options, "NodeJS.js", false);
+		else if (WRAPPER_NODELIBRARY.equalsIgnoreCase(options.getWrapperName()))
+			processResource(writer, module, options, "NodeLibrary.js", false);
 		else if (WRAPPER_HTML.equalsIgnoreCase(options.getWrapperName()))
 			processResource(writer, module, options, "Browser.html", false);
 		else if (WRAPPER_HTML_DEBUG.equalsIgnoreCase(options.getWrapperName()))
@@ -299,7 +300,7 @@ public final class TAMEJSExporter
 			} catch (FileNotFoundException e) {
 				in = Common.openResource(JS_ROOT_RESOURCE + path);
 				if (in == null)
-					throw new IOException("Resource \""+path+"\" cannot be found! Internal error!");
+					throw new IOException("Resource \""+path+"\" cannot be found!");
 				resource = true;
 			}
 			

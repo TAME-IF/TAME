@@ -52,6 +52,7 @@
 	<property name="js.dir" value="${build.dir}/js" />
 
 	<property name="zip.js.node.filename" value="${project.archive}-nodejs-${build.version}.zip" />
+	<property name="zip.js.node.lib.filename" value="${project.archive}-nodelib-${build.version}.zip" />
 	<property name="zip.js.browser.filename" value="${project.archive}-browserjs-${build.version}.zip" />
 	<property name="zip.jar.filename" value="${project.archive}-jar-${build.version}.zip" />
 	<property name="zip.jar.one.filename" value="${project.archive}-standalone-${build.version}.zip" />
@@ -62,6 +63,7 @@
 	<property name="zip.jre.linux64.filename" value="${project.archive}-jre-linux64-${build.version}.tar.gz" />
 
 	<property name="js.node.filename" value="tame.js" />
+	<property name="js.node.lib.filename" value="tame-module.js" />
 	<property name="js.browser.filename" value="tame-${build.version}.js" />
 	<property name="js.browser.min.filename" value="tame-${build.version}.min.js" />
 	<property name="js.browser.min.map.filename" value="tame-${build.version}.min.js.map" />
@@ -288,6 +290,14 @@
 		</java>
 	</target>
 
+	<target name="js.node.lib" depends="init.js, compile">
+		<java classname="com.tameif.tame.compiler.TAMECompilerMain" classpath="${project.classpath}${S}${bin.dir}">
+			<arg value="--js-engine-node-lib" />
+			<arg value="-o" />
+			<arg value="${js.dir}/${js.node.lib.filename}" />
+		</java>
+	</target>
+
 	<target name="js.browser" depends="init.js, compile">
 		<java classname="com.tameif.tame.compiler.TAMECompilerMain" classpath="${project.classpath}${S}${bin.dir}">
 			<arg value="--js-engine" />
@@ -326,7 +336,7 @@
 		</exec>
 	</target>
 
-	<target name="js" depends="js.browser, js.browser.minify.windows, js.browser.minify.bash, js.node">
+	<target name="js" depends="js.browser, js.browser.minify.windows, js.browser.minify.bash, js.node, js.node.lib">
 	</target>
 
 	<!-- JRE Embedded Targets -->
@@ -413,6 +423,14 @@
 		<delete file="${zip.dir}/${zip.js.node.filename}" />
 		<zip destfile="${zip.dir}/${zip.js.node.filename}" compress="true" level="9">
 			<fileset file="${js.dir}/${js.node.filename}" />
+			<fileset refid="fileset.documents" />
+		</zip>
+	</target>
+
+	<target name="zip.js.node.lib" depends="init.zip, js.node.lib" description="Makes and zips the TAME NodeJS Module version.">
+		<delete file="${zip.dir}/${zip.js.node.lib.filename}" />
+		<zip destfile="${zip.dir}/${zip.js.node.lib.filename}" compress="true" level="9">
+			<fileset file="${js.dir}/${js.node.lib.filename}" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -512,7 +530,7 @@
 	<target name="zip.jre" depends="jre, zip.jre.win32, zip.jre.win64, zip.jre.macos, zip.jre.linux32, zip.jre.linux64">
 	</target>
 
-	<target name="zip.js" depends="zip.js.node, zip.js.browser">
+	<target name="zip.js" depends="zip.js.node, zip.js.node.lib, zip.js.browser">
 	</target>
 	
 	<target name="zip.src" depends="init.zip" description="Archives the source code.">

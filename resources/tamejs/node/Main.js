@@ -26,23 +26,46 @@ const COMMAND_SAVE = '!save';
 const COMMAND_LOAD = '!load';
 const COMMAND_QUIT = '!quit';
 
-function printHelp(filename)
+function printVersion()
 {
 	println("TAME NodeJS Console Shell v"+TAME.version+" by Matt Tropiano");
 	println("Running on: "+os.type()+" "+os.arch()+", NodeJS v"+process.versions.node);
 	
-	if (TAME.tameModule.header['title'] || TAME.tameModule.header['author'])
+	if (EmbeddedData && (EmbeddedData.header.title || EmbeddedData.header.author))
 	{
 		print("Embedded module is");
-		if (TAME.tameModule.header['title'])
-			print(" \"" + TAME.tameModule.header['title'] + "\"");
-		if (TAME.tameModule.header['author'])
-			print(" by " + TAME.tameModule.header['author']);
+		if (EmbeddedData.header.title)
+			print(" \"" + EmbeddedData.header.title + "\"");
+		if (EmbeddedData.header.author)
+			print(" by " + EmbeddedData.header.author);
 		println();
 	}
+}
+
+function printSplash(filename)
+{
+	printVersion();
+	println("Type `node \""+filename+"\" --help` for help.");
+}
+
+function printHelp(filename, requirefile)
+{
+	printVersion();
+	print("Usage: node \"");
+	print(filename);
+	print("\"");
+	if (requirefile)
+		print(" [modulefile]");
+	print(" [switches]");
 	println();
-	println("Usage: node \""+filename+"\" [switches]");
+	
 	println();
+	if (requirefile)
+	{
+		println("[modulefile]:");
+		println("     The compiled TAME module file.");
+		println();
+	}
 	println("[switches]:");
 	println();
 	println("    --debug                  Show received cues.");
@@ -85,6 +108,7 @@ function printHelp(filename)
 	let debug = false;
 	let trace = false;
 	let tracelist = null;
+	let filename = null;
 
 	// Read commandline.
 	let args = process.argv;
@@ -100,7 +124,7 @@ function printHelp(filename)
 		if (arg == '--help' || arg == '-h' || arg == '/?')
 		{
 			trace = false;
-			printHelp(args[1]);
+			printHelp(args[1], EmbeddedData ? false : true);
 			process.exit(0);
 		}
 		else if (arg == '--inspect')
@@ -120,14 +144,14 @@ function printHelp(filename)
 		}
 		else if (trace)
 			tracelist.push(arg.toUpperCase());
+		else
+			filename = arg;
 	}
 
 	if (tracelist !== null && tracelist.length === 0)
 		tracelist = true;
 
-	// Create context.
-	let tamectx = TAME.newContext();
-
+	let tamectx = null;
 	let stop = false;
 	let pause = false;
 	let lastColumn = 0;
@@ -352,6 +376,38 @@ function printHelp(filename)
 		process.exit(0);
 	});
 
+	if (EmbeddedData)
+	{
+		tamectx = null;
+		try {
+			let module = TAME.readModule(base64ToDataView(EmbeddedData.data));
+			tamectx = TAME.newContext(module);
+		} catch (Err) {
+			println("ERROR: "+Err.toString());
+			process.exit(2);
+		}
+	}
+	else if (filename)
+	{
+		try {
+			let buffer = fs.readFileSync(filename);
+			let out = new DataView(new ArrayBuffer(buffer.length));
+			let i = 0;
+			for (i = 0; i < buffer.length; i++)
+				out.setUint8(i, buffer.readUInt8(i));
+			let module = TAME.readModule(out);
+			tamectx = TAME.newContext(module);
+		} catch (Err) {
+			println("ERROR: "+Err.toString());
+			process.exit(1);
+		}
+	}
+	else
+	{
+		printSplash(args[1]);
+		process.exit(0);
+	}
+	
 	//Initialize.
 	startResponse(TAME.initialize(tamectx, tracelist));
 

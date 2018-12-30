@@ -48,7 +48,7 @@ function println(text)
 		print(text + '\n');
 }
 
-var handler = TAME.newBrowserHandler({
+let handler = TAME.newResponseHandler({
 	
 	"print": print,
 	
@@ -99,9 +99,28 @@ var handler = TAME.newBrowserHandler({
 
 });
 
+function base64ToDataView(base64)
+{
+	let buffer = atob(base64);
+	let out = new DataView(new ArrayBuffer(buffer.length));
+	let i = 0;
+	for (i = 0; i < buffer.length; i++)
+		out.setUint8(i, buffer.charCodeAt(i));
+	return out;
+}
+
 BodyElement.onload = function() 
-{	
-	var modulectx = TAME.newContext();
+{
+	let modulectx = null;
+
+	try {
+		let module = TAME.readModule(base64ToDataView(EmbeddedData.data));
+		modulectx = TAME.newContext(module);
+	} catch (Err) {
+		println("ERROR: "+Err.toString());
+		return;
+	}
+	
 	InputBox.addEventListener("keydown", function(event) 
 	{
 		// enter
