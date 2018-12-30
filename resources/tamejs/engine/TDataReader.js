@@ -181,20 +181,20 @@ TDataReader.prototype.readUTF8Char = function()
 		case 5:
 		case 6:
 		case 7:
-			return String.fromCharCode(c1);
+			return String.fromCodePoint(c1);
 		
 		case 12:
 		case 13:
 		{
 			let c2 = this.readUInt8();
-			return String.fromCharCode(((c1 & 0x1f) << 6) | (c2 & 0x3f));
+			return String.fromCodePoint(((c1 & 0x1f) << 6) | (c2 & 0x3f));
 		}
 		
 		case 14:
 		{
 			let c2 = this.readUInt8();
 			let c3 = this.readUInt8();
-			return String.fromCharCode(((c1 & 0x0f) << 12) | ((c2 & 0x3f) << 6) | ((c3 & 0x3f) << 0));
+			return String.fromCodePoint(((c1 & 0x0f) << 12) | ((c2 & 0x3f) << 6) | ((c3 & 0x3f) << 0));
 		}
 		
 		case 15:

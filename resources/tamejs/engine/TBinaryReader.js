@@ -55,7 +55,7 @@ TBinaryReader.BlockEntryType = [
  * @param dataReader (TDataReader) the data reader already positioned for reading.
  * @param characters (Number:int) the amount of characters to read. 
  * @return (string) a JS string.
- * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ * @throws RangeError on a read error (incomplete data).
  */
 TBinaryReader.readASCII = function(dataReader, characters)
 {
@@ -65,26 +65,85 @@ TBinaryReader.readASCII = function(dataReader, characters)
 	return out;
 };
 
+
+/**
+ * Reads a UTF-8 encoded string from a set of bytes assumed to be a UTF-8 string.
+ * @param byteArray (Array) an array of 8-bit unsigned bytes.
+ * @return (string) a JS string.
+ * @throws Error on a read error (incomplete/bad data).
+ */
+TBinaryReader.utf8BytesToString = function(byteArray)
+{
+	let out = '';
+	let index = 0;
+	while (index < byteArray.length)
+	{
+		let c1 = byteArray[index++];
+		switch (c1 >> 4)
+		{
+			case 0:
+			case 1:
+			case 2:
+			case 3:
+			case 4:
+			case 5:
+			case 6:
+			case 7:
+				out += String.fromCodePoint(c1);
+				continue;
+			
+			case 12:
+			case 13:
+			{
+				let c2 = byteArray[index++];
+				out += String.fromCodePoint(((c1 & 0x1f) << 6) | (c2 & 0x3f));
+				continue;
+			}
+			
+			case 14:
+			{
+				let c2 = byteArray[index++];
+				let c3 = byteArray[index++];
+				out += String.fromCodePoint(((c1 & 0x0f) << 12) | ((c2 & 0x3f) << 6) | ((c3 & 0x3f) << 0));
+				continue;
+			}
+			
+			case 15:
+			{
+				let c2 = byteArray[index++];
+				let c3 = byteArray[index++];
+				let c4 = byteArray[index++];
+				out += String.fromCodePoint(((c1 & 0x07) << 18) | ((c2 & 0x3f) << 12) | ((c3 & 0x3f) << 6) | (c4 & 0x3f));
+				continue;
+			}
+			
+			default:
+				throw new Error("Bad UTF-8 character encoding in ["+byteArray.toString()+"]");
+		}
+	}
+	
+	return out;
+};
+
 /**
  * Reads a UTF-8 encoded string from a data reader.
  * @param dataReader (TDataReader) the data reader already positioned for reading.
  * @return (string) a JS string.
- * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ * @throws RangeError on a read error (incomplete data).
  */
 TBinaryReader.readUTF8String = function(dataReader)
 {
-	let out = '';
+	// length is in bytes, not chars!
 	let len = dataReader.readInt32();
-	while (len--)
-		out += dataReader.readUTF8Char();
-	return out;
+	let bytes = dataReader.readBytes(len);
+	return TBinaryReader.utf8BytesToString(bytes);
 };
 
 /**
  * Reads a variable-length encoded 32-bit integer.
  * @param dataReader (TDataReader) the data reader already positioned for reading.
  * @return (Number:int) an integer.
- * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ * @throws RangeError on a read error (incomplete data).
  */
 TBinaryReader.readVariableLengthInt = function(dataReader)
 {
@@ -103,7 +162,7 @@ TBinaryReader.readVariableLengthInt = function(dataReader)
  * Reads a string array from a data reader (strings are UTF-8 encoded).
  * @param dataReader (TDataReader) the data reader already positioned for reading.
  * @return (object) an object that maps strings to strings.
- * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ * @throws RangeError on a read error (incomplete data).
  */
 TBinaryReader.readUTF8StringArray = function(dataReader)
 {
@@ -118,7 +177,7 @@ TBinaryReader.readUTF8StringArray = function(dataReader)
  * Reads a string map from a data reader (strings are UTF-8 encoded).
  * @param dataReader (TDataReader) the data reader already positioned for reading.
  * @return (object) an object that maps strings to strings.
- * @throws TAMEError on a read error, RangeError on a read error (incomplete data).
+ * @throws RangeError on a read error (incomplete data).
  */
 TBinaryReader.readUTF8StringMap = function(dataReader)
 {
