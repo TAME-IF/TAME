@@ -129,7 +129,7 @@ public final class TAMECompilerMain
 		out.println();
 		out.println("    --js-engine-node      Export just TAME's engine as a NodeJS program.");
 		out.println();
-		out.println("    --js-engine-node-lib  Export just TAME's engine as a NodeJS library");
+		out.println("    --js-engine-node-lib  Export just TAME's engine as a NodeJS module");
 		out.println("                          (for 'require').");
 	}
 	
