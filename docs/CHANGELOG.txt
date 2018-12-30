@@ -3,6 +3,13 @@
     (C) 2018 Matt Tropiano
 ==============================================================================
 
+0.9BETA11
+.........
+
+	- JS interpreter now reads modules from binary serialization.
+	- Split NodeJS and NodeJS Module distributions.
+
+
 0.9BETA10
 .........
 
