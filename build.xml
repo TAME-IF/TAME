@@ -52,7 +52,7 @@
 	<property name="js.dir" value="${build.dir}/js" />
 
 	<property name="zip.js.node.filename" value="${project.archive}-nodejs-${build.version}.zip" />
-	<property name="zip.js.node.lib.filename" value="${project.archive}-nodelib-${build.version}.zip" />
+	<property name="zip.js.node.lib.filename" value="${project.archive}-nodejsmod-${build.version}.zip" />
 	<property name="zip.js.browser.filename" value="${project.archive}-browserjs-${build.version}.zip" />
 	<property name="zip.jar.filename" value="${project.archive}-jar-${build.version}.zip" />
 	<property name="zip.jar.one.filename" value="${project.archive}-standalone-${build.version}.zip" />
