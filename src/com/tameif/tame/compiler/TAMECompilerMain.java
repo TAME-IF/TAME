@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.list.List;
@@ -50,6 +52,9 @@ public final class TAMECompilerMain
 	/** Switch - add defines. */
 	private static final String SWITCH_DEFINE0 = "--defines"; 
 	private static final String SWITCH_DEFINE1 = "-d"; 
+	/** Switch - set input charset. */
+	private static final String SWITCH_CHARSET0 = "--charset"; 
+	private static final String SWITCH_CHARSET1 = "-c"; 
 
 	/** Switch - JS export, add wrapper. */
 	private static final String SWITCH_JSWRAPPER0 = "--js-wrapper"; 
@@ -104,6 +109,9 @@ public final class TAMECompilerMain
 		out.println("    -d [defines]          Adds define tokens to the parser.");
 		out.println("    --defines [defines]");
 		out.println();
+		out.println("    -c [charset]          Sets the charset to use for reading by name.");
+		out.println("    --charset [charset]");
+		out.println();
 		out.println("    -v                    Adds verbose output.");
 		out.println("    --verbose");
 		out.println();
@@ -131,6 +139,8 @@ public final class TAMECompilerMain
 		out.println();
 		out.println("    --js-engine-node-lib  Export just TAME's engine as a NodeJS module");
 		out.println("                          (for 'require').");
+		out.println();
+		out.println("The currently assumed input charset, when unspecified, is \""+Charset.defaultCharset().name()+"\".");
 	}
 	
 	// Scan options.
@@ -139,8 +149,9 @@ public final class TAMECompilerMain
 		final int STATE_INPATH = 0;
 		final int STATE_OUTPATH = 1;
 		final int STATE_DEFINES = 2;
-		final int STATE_SWITCHES = 3;
-		final int STATE_JSWRAPPERNAME = 4;
+		final int STATE_CHARSET = 3;
+		final int STATE_SWITCHES = 4;
+		final int STATE_JSWRAPPERNAME = 5;
 		
 		final PrintStream out = System.out;
 	
@@ -235,11 +246,33 @@ public final class TAMECompilerMain
 					}
 					break;
 				}
+				
+				case STATE_CHARSET:
+				{
+					if (arg.startsWith("-"))
+					{
+						out.println("ERROR: Expected a charset name after switch (try \"UTF-8\" or \""+Charset.defaultCharset().name()+"\").");
+						return false;
+					}
+					else if (!Charset.isSupported(arg.trim()))
+					{
+						out.println("ERROR: Charset \""+arg+"\" is not supported!");
+						return false;
+					}
+					else
+					{
+						options.inputCharset = Charset.forName(arg);
+						state = STATE_SWITCHES;
+					}
+					break;
+				}
 			
 				case STATE_SWITCHES:
 				{
 					if (arg.equals(SWITCH_DEFINE0) || arg.equals(SWITCH_DEFINE1))
 						state = STATE_DEFINES;
+					else if (arg.equals(SWITCH_CHARSET0) || arg.equals(SWITCH_CHARSET1))
+						state = STATE_CHARSET;
 					else if (arg.equals(SWITCH_OUTFILE0) || arg.equals(SWITCH_OUTFILE1))
 						state = STATE_OUTPATH;
 					else if (arg.equals(SWITCH_JSWRAPPER0) || arg.equals(SWITCH_JSWRAPPER1))
@@ -494,6 +527,7 @@ public final class TAMECompilerMain
 		private boolean verbose;
 		private PrintStream verboseOut;
 		private List<String> defineList;
+		private Charset inputCharset;
 		
 		Options()
 		{
@@ -505,6 +539,7 @@ public final class TAMECompilerMain
 			verbose = false;
 			verboseOut = System.out;
 			defineList = new List<>();
+			inputCharset = StandardCharsets.UTF_8;
 		}
 		
 		@Override
@@ -531,6 +566,12 @@ public final class TAMECompilerMain
 		public boolean isOptimizing() 
 		{
 			return optimizing;
+		}
+
+		@Override
+		public Charset getInputCharset()
+		{
+			return inputCharset;
 		}
 		
 	}

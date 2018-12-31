@@ -24,7 +24,8 @@ VARINT:
 
 U8STRING:
 	X <- Read INT
-	RETURN <- Read X UTF-8 Characters 
+	B[] <- Read {X} BYTE
+	RETURN <- Convert B to UTF-8 Characters 
 
 
 Header-Pair:

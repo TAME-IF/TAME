@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 
 import com.blackrook.commons.Common;
@@ -77,6 +78,9 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		out.println("    -d [tokens ...]          Defines predefined preprocessor tokens.");
 		out.println("    --defines [tokens ...]");
 		out.println();
+		out.println("    -c [charset]             Sets the charset to use for reading by name.");
+		out.println("    --charset [charset]");
+		out.println();
 		out.println("<gameload>:");
 		out.println("    -l [statefile]           Loads a save state.");
 		out.println("    --load-game [statefile]");
@@ -126,100 +130,103 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		boolean version = false;
 		boolean debug = false;
 		boolean inspector = false;
-		boolean load = false;
 		boolean nooptimize = false;
 		boolean verbose = false;
 
-		// scan state
-		boolean script = false;
-		boolean trace = false;
-		boolean defines = false;
+		final int STATE_INIT = 0;
+		final int STATE_TRACE = 1;
+		final int STATE_DEFINES = 2;
+		final int STATE_SCRIPT = 3;
+		final int STATE_CHARSET = 4;
+		final int STATE_LOAD = 5;
 
 		String path = null;
 		String binpath = null;
 		String loadpath = null;
 		List<String> defineList = new List<>();
 		Hash<TraceType> traceTypes = null;
+		Charset charset = Charset.defaultCharset();
 
-		for (String arg : args)
+		int state = STATE_INIT;
+		for (int i = 0; i < args.length; i++)
 		{
-			if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help"))
-			{
-				help = true;
-				trace = false;
-				defines = false;
-			}
-			else if (arg.equalsIgnoreCase("--version"))
+			String arg = args[i];
+			
+			if (arg.equalsIgnoreCase("--version"))
 			{
 				version = true;
-				trace = false;
-				defines = false;
+				state = STATE_INIT;
 			}
-			else if (arg.equalsIgnoreCase("-s") || arg.equalsIgnoreCase("--script"))
+			else if (arg.equalsIgnoreCase("-h") || arg.equalsIgnoreCase("--help"))
 			{
-				script = true;
-				trace = false;
-				defines = false;
+				help = true;
+				state = STATE_INIT;
 			}
 			else if (arg.equalsIgnoreCase("-n") || arg.equalsIgnoreCase("--no-optimize"))
 			{
 				nooptimize = true;
-				trace = false;
-				defines = false;
+				state = STATE_INIT;
 			}
 			else if (arg.equalsIgnoreCase("-v") || arg.equalsIgnoreCase("--verbose"))
 			{
 				verbose = true;
-				trace = false;
-				defines = false;
-			}
-			else if (arg.equalsIgnoreCase("-l") || arg.equalsIgnoreCase("--load-game"))
-			{
-				load = true;
-				trace = false;
-				defines = false;
+				state = STATE_INIT;
 			}
 			else if (arg.equalsIgnoreCase("--debug"))
 			{
 				debug = true;
-				trace = false;
-				defines = false;
+				state = STATE_INIT;
 			}
 			else if (arg.equalsIgnoreCase("--inspect"))
 			{
 				inspector = true;
-				trace = false;
-				defines = false;
+				state = STATE_INIT;
 			}
 			else if (arg.equalsIgnoreCase("--trace"))
 			{
-				trace = true;
 				traceTypes = new Hash<>();
-				defines = false;
+				state = STATE_TRACE;
 			}
-			else if (defines)
+			else if (arg.equalsIgnoreCase("-s") || arg.equalsIgnoreCase("--script"))
+				state = STATE_SCRIPT;
+			else if (arg.equalsIgnoreCase("-d") || arg.equalsIgnoreCase("--defines"))
+				state = STATE_DEFINES;
+			else if (arg.equalsIgnoreCase("-c") || arg.equalsIgnoreCase("--charset"))
+				state = STATE_CHARSET;
+			else if (arg.equalsIgnoreCase("-l") || arg.equalsIgnoreCase("--load-game"))
+				state = STATE_LOAD;
+			else switch (state)
 			{
-				defineList.add(arg);
-			}
-			else if (trace)
-			{
-				TraceType t;
-				if ((t = Reflect.getEnumInstance(arg.toUpperCase(), TraceType.class)) != null)
-					traceTypes.put(t);
-			}
-			else if (script)
-			{
-				path = arg;
-				script = false;
-			}
-			else if (load)
-			{
-				loadpath = arg;
-				load = false;
-			}
-			else
-			{
-				binpath = arg;
+				default:
+				case STATE_INIT:
+					binpath = arg;
+					break;
+				case STATE_DEFINES:
+					defineList.add(arg);
+					break;
+				case STATE_TRACE:
+					TraceType t;
+					if ((t = Reflect.getEnumInstance(arg.toUpperCase(), TraceType.class)) != null)
+						traceTypes.put(t);
+					break;
+				case STATE_SCRIPT:
+					path = arg;
+					state = STATE_INIT;
+					break;
+				case STATE_CHARSET:
+					if (Charset.isSupported(arg))
+						charset = Charset.forName(arg);
+					else
+					{
+						System.out.println("ERROR: Charset \""+arg+"\" is not supported!");
+						System.exit(5);
+					}
+					state = STATE_INIT;
+					break;
+				case STATE_LOAD:
+					loadpath = arg;
+					state = STATE_INIT;
+					break;
 			}
 		}
 		
@@ -241,14 +248,14 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			System.exit(0);
 		}
 
-		if (script)
+		if (state == STATE_SCRIPT)
 		{
 			System.out.println("ERROR: No module script file specified!");
 			System.exit(1);
 		}
 		else if (!Common.isEmpty(path))
 		{
-			module = parseScript(path, verbose, !nooptimize, defineList); 
+			module = parseScript(path, charset, verbose, !nooptimize, defineList); 
 			if (module == null)
 				System.exit(4);
 		}
@@ -273,7 +280,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		
 		moduleContext = new TAMEModuleContext(module);
 		
-		Context context = new Context(moduleContext, System.out, debug, inspector, trace);
+		Context context = new Context(moduleContext, System.out, debug, inspector, traceTypes != null);
 		TraceType[] traceList;
 		
 		// no types specified = trace all.
@@ -308,9 +315,10 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			context.gameLoop(traceList);
 	}
 	
-	static TAMEModule parseScript(String path, boolean verbose, boolean optimizing, List<String> defines)
+	static TAMEModule parseScript(String path, Charset charset, boolean verbose, boolean optimizing, List<String> defines)
 	{
 		DefaultReaderOptions opts = new DefaultReaderOptions();
+		opts.setInputCharset(charset);
 		opts.setVerbose(verbose);
 		opts.setOptimizing(optimizing);
 		String[] defineArray = new String[defines.size()];

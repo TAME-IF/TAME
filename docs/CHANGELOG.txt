@@ -8,6 +8,8 @@
 
 	- JS interpreter now reads modules from binary serialization.
 	- Split NodeJS and NodeJS Module distributions.
+	- Added "charset" switch to TAME's Java Shell and Compiler for specifying
+	  the input charset for the files being read. Default is system locale.
 
 
 0.9BETA10
@@ -16,6 +18,7 @@
 	- The console shell now has a blurb about save/load states.
 	- The NodeJS embedded compiler outputs now have a "--help" runtime mode.
 	- Made all output cues lower-case by default.
+
 
 0.9BETA9
 ........
