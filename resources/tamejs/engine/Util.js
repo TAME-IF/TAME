@@ -23,14 +23,6 @@ var Util = {};
 // Stub here.
 Util.nanoTime = null;
 
-// toBase64 - converts a string to base64.
-//Stub here.
-Util.toBase64 = null;
-
-// fromBase64 - converts a string from base64.
-// Stub here.
-Util.fromBase64 = null; 
-
 // Smarter foreach.
 Util.each = function(obj, func)
 {

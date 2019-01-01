@@ -10,6 +10,7 @@
 package com.tameif.tame.factory;
 
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 
 /**
  * An interface for reader options. 
@@ -18,6 +19,12 @@ import java.io.PrintStream;
  */
 public interface TAMEScriptReaderOptions 
 {
+	/**
+	 * Gets the charset to use for reading module source.
+	 * @return the charset.
+	 */
+	public Charset getInputCharset();
+	
 	/**
 	 * Gets what to predefine in the preprocessor.
 	 * This can affect what gets compiled and what doesn't.

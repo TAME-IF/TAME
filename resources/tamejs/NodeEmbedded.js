@@ -11,8 +11,7 @@
 //[[EXPORTJS-START
 
 //[[EXPORTJS-INCLUDE Engine.js
-
-let EmbeddedData = null;
+//[[EXPORTJS-INCLUDE ModuleData.js
 
 /****************************************
  * NodeJS Shell

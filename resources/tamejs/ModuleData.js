@@ -16,11 +16,8 @@
 	"header":
 		//[[EXPORTJS-GENERATE header
 	,
-	"actions":
-		//[[EXPORTJS-GENERATE actions
-	,
-	"elements":
-		//[[EXPORTJS-GENERATE elements
+	"data":
+		//[[EXPORTJS-GENERATE modulebase64
 };
 
 //[[EXPORTJS-END

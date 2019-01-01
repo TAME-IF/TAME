@@ -12,12 +12,6 @@
 
 //[[EXPORTJS-INCLUDE Engine.js
 
-let EmbeddedData = null;
-
-/****************************************
- * NodeJS Shell
- ****************************************/
-
-//[[EXPORTJS-INCLUDE node/Main.js
+module.exports = TAME;
 
 //[[EXPORTJS-END

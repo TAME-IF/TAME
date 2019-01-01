@@ -10,6 +10,7 @@
 package com.tameif.tame.factory;
 
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 
 /**
  * Default script reader options implementation.
@@ -19,6 +20,7 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 {
 	private static final String[] NO_DEFINES = {}; 
 	
+	private Charset inputCharset;
 	private String[] defines;
 	private boolean optimizing;
 	private boolean verbose;
@@ -33,6 +35,7 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 		this.optimizing = true;
 		this.verbose = false;
 		this.verboseOut = System.out;
+		this.inputCharset = Charset.defaultCharset();
 	}
 	
 	/**
@@ -97,6 +100,21 @@ public class DefaultReaderOptions implements TAMEScriptReaderOptions
 	public PrintStream getVerboseOut() 
 	{
 		return verboseOut;
+	}
+
+	/**
+	 * Sets the charset to use for reading module source.
+	 * @param inputCharset the charset to use.
+	 */
+	public void setInputCharset(Charset inputCharset)
+	{
+		this.inputCharset = inputCharset;
+	}
+	
+	@Override
+	public Charset getInputCharset()
+	{
+		return inputCharset;
 	}
 	
 }

@@ -13,6 +13,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import com.blackrook.commons.Common;
 import com.blackrook.commons.list.List;
@@ -50,6 +52,9 @@ public final class TAMECompilerMain
 	/** Switch - add defines. */
 	private static final String SWITCH_DEFINE0 = "--defines"; 
 	private static final String SWITCH_DEFINE1 = "-d"; 
+	/** Switch - set input charset. */
+	private static final String SWITCH_CHARSET0 = "--charset"; 
+	private static final String SWITCH_CHARSET1 = "-c"; 
 
 	/** Switch - JS export, add wrapper. */
 	private static final String SWITCH_JSWRAPPER0 = "--js-wrapper"; 
@@ -61,11 +66,13 @@ public final class TAMECompilerMain
 	private static final String SWITCH_VERSION = "--version"; 
 	private static final String SWITCH_JSENGINE = "--js-engine"; 
 	private static final String SWITCH_JSNODEENGINE = "--js-engine-node"; 
+	private static final String SWITCH_JSNODEENGINELIB = "--js-engine-node-lib"; 
 
 	private static boolean printHelp = false;
 	private static boolean printVersion = false;
 	private static boolean exportJSEngine = false;
 	private static boolean exportJSEngineNode = false;
+	private static boolean exportJSEngineNodeLib = false;
 	
 	private static void printVersion(PrintStream out)
 	{
@@ -92,44 +99,48 @@ public final class TAMECompilerMain
 		out.println("[infile]: The input file.");
 		out.println();
 		out.println("[switches]:");
-		out.println("    -h                   Print help and quit.");
+		out.println("    -h                    Print help and quit.");
 		out.println("    --help");
-		out.println("    --version            Print version and quit.");
+		out.println("    --version             Print version and quit.");
 		out.println();
-		out.println("    -o [outfile]         Sets the output file.");
+		out.println("    -o [outfile]          Sets the output file.");
 		out.println("    --outfile [outfile]");
 		out.println();
-		out.println("    -d [defines]         Adds define tokens to the parser.");
+		out.println("    -d [defines]          Adds define tokens to the parser.");
 		out.println("    --defines [defines]");
 		out.println();
-		out.println("    -v                   Adds verbose output.");
+		out.println("    -c [charset]          Sets the charset to use for reading by name.");
+		out.println("    --charset [charset]");
+		out.println();
+		out.println("    -v                    Adds verbose output.");
 		out.println("    --verbose");
 		out.println();
-		out.println("    -n                   Does not optimize blocks. DEBUG ONLY");
+		out.println("    -n                    Does not optimize blocks. DEBUG ONLY");
 		out.println("    --no-optimize");
 		out.println();
-		out.println("    -js [name]           Export to JS, and optionally declare a wrapper to");
-		out.println("    --js-wrapper [name]  use for the JavaScript exporter.");
+		out.println("    -js [name]            Export to JS, and optionally declare a wrapper to");
+		out.println("    --js-wrapper [name]   use for the JavaScript exporter.");
 		out.println();
-		out.println("                         browser    - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 6 capable browsers (default,");
-		out.println("                                      if no name declared).");
-		out.println("                         html       - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 6 capable browsers with");
-		out.println("                                      interface.");
-		out.println("                         html-debug - Exports an embedded version suitable for");
-		out.println("                                      ECMAScript 6 capable browsers with");
-		out.println("                                      interface, in debug mode.");
-		out.println("                         node       - Exports an embedded NodeJS program.");
-		out.println("                         module     - Exports just module data to feed into a");
-		out.println("                                      JS TAME engine.");
-		out.println("                         [filename] - A file to use as the starting point for");
-		out.println("                                      the exporter.");
+		out.println("                          html       - Exports an embedded version suitable for");
+		out.println("                                       ECMAScript 6 capable browsers with");
+		out.println("                                       interface.");
+		out.println("                          html-debug - Exports an embedded version suitable for");
+		out.println("                                       ECMAScript 6 capable browsers with");
+		out.println("                                       interface, in debug mode.");
+		out.println("                          node       - Exports an embedded NodeJS program.");
+		out.println("                          module     - Exports just module data to feed into a");
+		out.println("                                       JS TAME engine.");
+		out.println("                          [filename] - A file to use as the starting point for");
+		out.println("                                       the exporter.");
 		out.println();
-		out.println("    --js-engine          Export just TAME's engine to JS.");
+		out.println("    --js-engine           Export just TAME's engine to JS.");
 		out.println();
-		out.println("    --js-engine-node     Export just TAME's engine as a NodeJS library");
-		out.println("                         (for 'require').");
+		out.println("    --js-engine-node      Export just TAME's engine as a NodeJS program.");
+		out.println();
+		out.println("    --js-engine-node-lib  Export just TAME's engine as a NodeJS module");
+		out.println("                          (for 'require').");
+		out.println();
+		out.println("The currently assumed input charset, when unspecified, is \""+Charset.defaultCharset().name()+"\".");
 	}
 	
 	// Scan options.
@@ -138,8 +149,9 @@ public final class TAMECompilerMain
 		final int STATE_INPATH = 0;
 		final int STATE_OUTPATH = 1;
 		final int STATE_DEFINES = 2;
-		final int STATE_SWITCHES = 3;
-		final int STATE_JSWRAPPERNAME = 4;
+		final int STATE_CHARSET = 3;
+		final int STATE_SWITCHES = 4;
+		final int STATE_JSWRAPPERNAME = 5;
 		
 		final PrintStream out = System.out;
 	
@@ -173,6 +185,10 @@ public final class TAMECompilerMain
 					else if (arg.equals(SWITCH_JSNODEENGINE))
 					{
 						exportJSEngineNode = true;
+					}
+					else if (arg.equals(SWITCH_JSNODEENGINELIB))
+					{
+						exportJSEngineNodeLib = true;
 					}
 					else if (arg.startsWith("-"))
 					{
@@ -230,11 +246,33 @@ public final class TAMECompilerMain
 					}
 					break;
 				}
+				
+				case STATE_CHARSET:
+				{
+					if (arg.startsWith("-"))
+					{
+						out.println("ERROR: Expected a charset name after switch (try \"UTF-8\" or \""+Charset.defaultCharset().name()+"\").");
+						return false;
+					}
+					else if (!Charset.isSupported(arg.trim()))
+					{
+						out.println("ERROR: Charset \""+arg+"\" is not supported!");
+						return false;
+					}
+					else
+					{
+						options.inputCharset = Charset.forName(arg);
+						state = STATE_SWITCHES;
+					}
+					break;
+				}
 			
 				case STATE_SWITCHES:
 				{
 					if (arg.equals(SWITCH_DEFINE0) || arg.equals(SWITCH_DEFINE1))
 						state = STATE_DEFINES;
+					else if (arg.equals(SWITCH_CHARSET0) || arg.equals(SWITCH_CHARSET1))
+						state = STATE_CHARSET;
 					else if (arg.equals(SWITCH_OUTFILE0) || arg.equals(SWITCH_OUTFILE1))
 						state = STATE_OUTPATH;
 					else if (arg.equals(SWITCH_JSWRAPPER0) || arg.equals(SWITCH_JSWRAPPER1))
@@ -328,6 +366,29 @@ public final class TAMECompilerMain
 			File outJSFile = new File(options.fileOutPath);
 			try {
 				jsOptions.wrapperName = TAMEJSExporter.WRAPPER_NODEENGINE;
+				TAMEJSExporter.export(outJSFile, null, jsOptions);
+				out.println("Wrote "+outJSFile.getPath()+" successfully.");
+			} catch (IOException e) {
+				out.println("ERROR: Could not export JS file: "+outJSFile.getPath());
+				out.println(e.getMessage());
+				return;
+			} catch (SecurityException e) {
+				out.println("ERROR: Could not write JS file: "+outJSFile.getPath());
+				out.println("Writing the file was denied by the OS.");
+				return;
+			}
+			return;
+		}
+		
+		if (exportJSEngineNodeLib)
+		{
+			// Fill with default if no outfile specified.
+			if (Common.isEmpty(options.fileOutPath))
+				options.fileOutPath = "TAME.js";
+
+			File outJSFile = new File(options.fileOutPath);
+			try {
+				jsOptions.wrapperName = TAMEJSExporter.WRAPPER_NODELIBRARY;
 				TAMEJSExporter.export(outJSFile, null, jsOptions);
 				out.println("Wrote "+outJSFile.getPath()+" successfully.");
 			} catch (IOException e) {
@@ -466,6 +527,7 @@ public final class TAMECompilerMain
 		private boolean verbose;
 		private PrintStream verboseOut;
 		private List<String> defineList;
+		private Charset inputCharset;
 		
 		Options()
 		{
@@ -477,6 +539,7 @@ public final class TAMECompilerMain
 			verbose = false;
 			verboseOut = System.out;
 			defineList = new List<>();
+			inputCharset = StandardCharsets.UTF_8;
 		}
 		
 		@Override
@@ -503,6 +566,12 @@ public final class TAMECompilerMain
 		public boolean isOptimizing() 
 		{
 			return optimizing;
+		}
+
+		@Override
+		public Charset getInputCharset()
+		{
+			return inputCharset;
 		}
 		
 	}

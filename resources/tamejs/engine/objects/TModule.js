@@ -19,19 +19,20 @@ var TAMEError = TAMEError || ((typeof require) !== 'undefined' ? require('../TAM
  Constructor for the TAME Module.
  ****************************************************/
 
-function TModule(theader, tactions, telements)
+function TModule(theader, tdigest, tactions, telements)
 {	
 	// Fields --------------------
 	this.header = theader;
+	this.digest = tdigest;
 	this.actions = Util.mapify(tactions, "identity");
 	this.elements = {};
 	this.actionNameTable = {};
 	
-	var elem = this.elements;
-	var act = this.actions;
-	var antbl = this.actionNameTable;
+	let elem = this.elements;
+	let act = this.actions;
+	let antbl = this.actionNameTable;
 
-	var typeHash = {
+	let typeHash = {
 		"TAction": true, 
 		"TObject": true, 
 		"TRoom": true, 
@@ -64,7 +65,7 @@ function TModule(theader, tactions, telements)
 
 TModule.prototype.getActionByName = function(name)
 {
-	var identity = this.actionNameTable[name.toLowerCase()];
+	let identity = this.actionNameTable[name.toLowerCase()];
 	if (!identity)
 		return null;
 	return this.actions[identity];
