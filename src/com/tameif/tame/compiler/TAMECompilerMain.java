@@ -95,6 +95,7 @@ public final class TAMECompilerMain
 		out.println("tamec --version");
 		out.println("tamec --js-engine");
 		out.println("tamec --js-engine-node");
+		out.println("tamec --js-engine-node-lib");
 		out.println();
 		out.println("[infile]: The input file.");
 		out.println();
