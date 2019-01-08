@@ -27,16 +27,16 @@ world
 		textln(a === c); // false
 		textln(b === c); // true
 
-		textln(a); // false
-		textln(b); // false
-		textln(c); // true
+		textln(a);
+		textln(b);
+		textln(c);
 
 		listadd(a, 100);
 		listadd(b, 200);
 
-		textln(a); // false
-		textln(b); // false
-		textln(c); // true
+		textln(a);
+		textln(b);
+		textln(c);
 
 		listaddat(a, 300, 3);
 		textln(a);

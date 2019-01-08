@@ -391,12 +391,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			return false;
 		else if (otherValue.isStrictlyNaN())
 			return false;
-		else if (isList())
-			return false;
-		else if (otherValue.isList())
-			return false;
-		
-		return type == otherValue.type && value.equals(otherValue.value);
+		else
+			return type == otherValue.type && value.equals(otherValue.value);
 	}
 	
 	@Override

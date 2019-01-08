@@ -15,6 +15,12 @@ world
 		textln("c = "+c);
 		textln("d = "+d);
 		textln("e = "+e);
+		textln("a == b: "+ (a == b));
+		textln("a === b: "+ (a === b));
+		textln("b == c: "+ (b == c));
+		textln("b === c: "+ (b === c));
+		textln("e[0] == d: "+ (e[0] == d));
+		textln("e[0] === d: "+ (e[0] === d));
 	} 
 	
 	start()

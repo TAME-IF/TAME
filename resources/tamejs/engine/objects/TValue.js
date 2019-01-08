@@ -104,10 +104,6 @@ TValue.areEqual = function(v1, v2)
 		return false;
 	else if (TValue.isStrictlyNaN(v2))
 		return false;
-	else if (TValue.isList(v1))
-		return false;
-	else if (TValue.isList(v2))
-		return false;
 	else
 		return v1.type === v2.type && v1.value === v2.value;
 };
