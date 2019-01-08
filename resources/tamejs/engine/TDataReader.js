@@ -136,7 +136,7 @@ TDataReader.prototype.readInt64 = function()
  */
 TDataReader.prototype.readFloat32 = function()
 {
-	let out = this.dataView.getFloat32(this.pos);
+	let out = this.dataView.getFloat32(this.pos, this.littleEndian);
 	this.pos = this.pos + 4;
 	return out;
 };
@@ -147,7 +147,7 @@ TDataReader.prototype.readFloat32 = function()
  */
 TDataReader.prototype.readFloat64 = function()
 {
-	let out = this.dataView.getFloat64(this.pos);
+	let out = this.dataView.getFloat64(this.pos, this.littleEndian);
 	this.pos = this.pos + 8;
 	return out;
 };

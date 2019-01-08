@@ -7,6 +7,7 @@
 .........
 
 	- Fixed broken list equality.
+	- Fixed deserializing 64-bit floats in the JS implementation.
 
 
 0.9BETA11
