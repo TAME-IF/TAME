@@ -1472,6 +1472,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	{
 		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(false);
+		else if (value1.isList() || value2.isList())
+			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
 		else
@@ -1491,6 +1493,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	{
 		if (!value1.isLiteral() || !value2.isLiteral())
 			return create(false);
+		else if (value1.isList() || value2.isList())
+			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);
 		else
@@ -1509,6 +1513,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	public static Value greater(Value value1, Value value2)
 	{
 		if (!value1.isLiteral() || !value2.isLiteral())
+			return create(false);
+		else if (value1.isList() || value2.isList())
 			return create(false);
 		else if (value1.isStrictlyNaN() || value2.isStrictlyNaN())
 			return create(false);

@@ -6,7 +6,7 @@
 0.9BETA12
 .........
 
-	- Fixed broken list equality.
+	- Fixed broken list equality/comparison.
 	- Fixed deserializing 64-bit floats in the JS implementation.
 
 

@@ -534,6 +534,8 @@ TValue.less = function(value1, value2)
 {
 	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
+	else if (TValue.isList(value1) || TValue.isList(value2))
+		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -550,6 +552,8 @@ TValue.less = function(value1, value2)
 TValue.lessOrEqual = function(value1, value2)
 {
 	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
+		return TValue.createBoolean(false);
+	else if (TValue.isList(value1) || TValue.isList(value2))
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
@@ -568,6 +572,8 @@ TValue.greater = function(value1, value2)
 {
 	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
 		return TValue.createBoolean(false);
+	else if (TValue.isList(value1) || TValue.isList(value2))
+		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
 	else 
@@ -584,6 +590,8 @@ TValue.greater = function(value1, value2)
 TValue.greaterOrEqual = function(value1, value2)
 {
 	if (!TValue.isLiteral(value1) || !TValue.isLiteral(value2))
+		return TValue.createBoolean(false);
+	else if (TValue.isList(value1) || TValue.isList(value2))
 		return TValue.createBoolean(false);
 	else if (TValue.isStrictlyNaN(value1) || TValue.isStrictlyNaN(value2))
 		return TValue.createBoolean(false);
