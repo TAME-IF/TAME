@@ -120,14 +120,29 @@ TDataReader.prototype.readUInt32 = function()
 };
 
 /**
- * Reads a signed 64-bit int.
+ * Reads a signed 64-bit int (MAX 2^53).
  * Advances 8 bytes.
  */
 TDataReader.prototype.readInt64 = function()
 {
-	let left =  this.readUInt32();
-	let right = this.readUInt32();
-	return this.littleEndian ? left + (Math.pow(2,32)*right) : (Math.pow(2,32)*left) + right;
+	let low = 0;
+	let high = 0;
+	if (this.littleEndian)
+	{
+		low =  this.readUInt32();
+		high = this.readUInt32();
+	}
+	else
+	{
+		high = this.readUInt32();
+		low =  this.readUInt32();
+	}
+
+	// negative check
+	if (high & 0x80000000)
+		return (Math.pow(2,32)*(high & 0x001fffff) + low) - 0x0020000000000000;
+	else
+		return Math.pow(2,32)*(high & 0x001fffff) + low; 
 };
 
 /**

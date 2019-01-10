@@ -8,6 +8,8 @@
 
 	- Fixed broken list equality/comparison.
 	- Fixed deserializing 64-bit floats in the JS implementation.
+	- Fixed deserializing 64-bit integers (up to 53-bits) in the JS 
+	  implementation.
 
 
 0.9BETA11
