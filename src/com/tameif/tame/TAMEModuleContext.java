@@ -49,6 +49,9 @@ import com.tameif.tame.lang.Value;
 
 /**
  * A mutable context for a module.
+ * <p>
+ * The "get" methods are lenient, as they will not throw errors on a bad state.
+ * The "resolve" methods are less so, since they are used for when good return is expected, and throw errors otherwise.
  * @author Matthew Tropiano
  */
 public class TAMEModuleContext implements TAMEConstants, Saveable
