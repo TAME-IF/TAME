@@ -11,5 +11,3 @@ for (let i = 0; i < buffer.length; i++)
 
 let out = TBinaryReader.readModule(view);
 console.log(JSON.stringify(out));
-
-// TODO: Finish this.
