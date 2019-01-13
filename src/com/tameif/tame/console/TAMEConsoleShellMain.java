@@ -139,6 +139,13 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		final int STATE_SCRIPT = 3;
 		final int STATE_CHARSET = 4;
 		final int STATE_LOAD = 5;
+		
+		final int ERROR_NONE = 0;
+		final int ERROR_BADOPTIONS = 1;
+		final int ERROR_BADCOMPILE = 2;
+		final int ERROR_BADREAD = 3;
+		final int ERROR_NOINPUTFILE = 4;
+		final int ERROR_FATALERROR = 5;
 
 		String path = null;
 		String binpath = null;
@@ -219,7 +226,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 					else
 					{
 						System.out.println("ERROR: Charset \""+arg+"\" is not supported!");
-						System.exit(5);
+						System.exit(ERROR_BADOPTIONS);
 					}
 					state = STATE_INIT;
 					break;
@@ -233,49 +240,57 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		if (args.length == 0)
 		{
 			printSplash(System.out);
-			System.exit(0);
+			System.exit(ERROR_NONE);
+			return;
 		}
 		
 		if (help)
 		{
 			printHelp(System.out);
-			System.exit(0);
+			System.exit(ERROR_NONE);
+			return;
 		}
 		
 		if (version)
 		{
 			printVersion(System.out);
-			System.exit(0);
+			System.exit(ERROR_NONE);
+			return;
 		}
 
 		if (state == STATE_SCRIPT)
 		{
 			System.out.println("ERROR: No module script file specified!");
-			System.exit(1);
+			System.exit(ERROR_NOINPUTFILE);
+			return;
 		}
 		else if (!Common.isEmpty(path))
 		{
 			module = parseScript(path, charset, verbose, !nooptimize, defineList); 
 			if (module == null)
-				System.exit(4);
+			{
+				System.exit(ERROR_BADCOMPILE);
+				return;
+			}
 		}
 		else
 		{
 			if (Common.isEmpty(binpath))
 			{
 				System.out.println("ERROR: No module file specified!");
-				System.exit(2);
+				System.exit(ERROR_NOINPUTFILE);
+				return;
 			}
 			else
 			{
 				module = readBinary(binpath); 
+				if (module == null)
+				{
+					System.out.println("ERROR: No module!");
+					System.exit(ERROR_BADREAD);
+					return;
+				}
 			}
-		}
-		
-		if (module == null)
-		{
-			System.out.println("ERROR: No module!");
-			System.exit(3);
 		}
 		
 		moduleContext = new TAMEModuleContext(module);
@@ -302,7 +317,10 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		if (loadpath != null)
 		{
 			if (!loadGame(moduleContext, loadpath))
+			{
+				System.exit(ERROR_BADREAD);
 				return;
+			}
 		}
 		else
 		{
@@ -313,6 +331,8 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		
 		if (!context.quit)
 			context.gameLoop(traceList);
+		else if (context.fatal)
+			System.exit(ERROR_FATALERROR);
 	}
 	
 	static TAMEModule parseScript(String path, Charset charset, boolean verbose, boolean optimizing, List<String> defines)
@@ -536,6 +556,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		PrintStream out;
 		boolean paused;
 		boolean quit;
+		boolean fatal;
 		boolean debug;
 		boolean inspector;
 		
@@ -548,6 +569,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 
 			this.paused = false;
 			this.quit = false;
+			this.fatal = false;
 		}
 		
 		void gameLoop(TraceType[] traceList)
@@ -645,6 +667,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 				case CUE_FATAL:
 					context.out.println("!!FATAL!! " + cue.getContent());
 					context.quit = true;
+					context.fatal = true;
 					lastColumn = 0;
 					return false;
 			}

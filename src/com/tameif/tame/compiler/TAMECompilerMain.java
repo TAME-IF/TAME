@@ -68,11 +68,19 @@ public final class TAMECompilerMain
 	private static final String SWITCH_JSNODEENGINE = "--js-engine-node"; 
 	private static final String SWITCH_JSNODEENGINELIB = "--js-engine-node-lib"; 
 
+	/** Errors */
+	private static final int ERROR_NONE = 0;
+	private static final int ERROR_BADOPTIONS = 1;
+	private static final int ERROR_BADCOMPILE = 2;
+	private static final int ERROR_IOERROR = 3;
+	private static final int ERROR_SECURITYERROR = 4;
+	private static final int ERROR_NOINPUT = 5;
+
 	private static boolean printHelp = false;
 	private static boolean printVersion = false;
 	private static boolean exportJSEngine = false;
 	private static boolean exportJSEngineNode = false;
-	private static boolean exportJSEngineNodeLib = false;
+	private static boolean exportJSEngineNodeLib = false;	
 	
 	private static void printVersion(PrintStream out)
 	{
@@ -314,25 +322,31 @@ public final class TAMECompilerMain
 		if (args.length == 0)
 		{
 			printSplash(out);
-			System.exit(0);
+			System.exit(ERROR_NONE);
+			return;
 		}
 		
 		Options options = new Options();
 		JSOptions jsOptions = new JSOptions();
 		
 		if (!scanOptions(options, jsOptions, args))
+		{
+			System.exit(ERROR_BADOPTIONS);
 			return;
+		}
 		
 		if (printHelp)
 		{
 			printHelp(out);
-			System.exit(0);
+			System.exit(ERROR_NONE);
+			return;
 		}
 		
 		if (printVersion)
 		{
 			printVersion(out);
-			System.exit(0);
+			System.exit(ERROR_NONE);
+			return;
 		}
 		
 		if (exportJSEngine)
@@ -349,12 +363,15 @@ public final class TAMECompilerMain
 			} catch (IOException e) {
 				out.println("ERROR: Could not export JS file: "+outJSFile.getPath());
 				out.println(e.getMessage());
+				System.exit(ERROR_IOERROR);
 				return;
 			} catch (SecurityException e) {
 				out.println("ERROR: Could not write JS file: "+outJSFile.getPath());
 				out.println("Writing the file was denied by the OS.");
+				System.exit(ERROR_SECURITYERROR);
 				return;
 			}
+			System.exit(ERROR_NONE);
 			return;
 		}
 			
@@ -372,12 +389,15 @@ public final class TAMECompilerMain
 			} catch (IOException e) {
 				out.println("ERROR: Could not export JS file: "+outJSFile.getPath());
 				out.println(e.getMessage());
+				System.exit(ERROR_IOERROR);
 				return;
 			} catch (SecurityException e) {
 				out.println("ERROR: Could not write JS file: "+outJSFile.getPath());
 				out.println("Writing the file was denied by the OS.");
+				System.exit(ERROR_SECURITYERROR);
 				return;
 			}
+			System.exit(ERROR_NONE);
 			return;
 		}
 		
@@ -395,18 +415,22 @@ public final class TAMECompilerMain
 			} catch (IOException e) {
 				out.println("ERROR: Could not export JS file: "+outJSFile.getPath());
 				out.println(e.getMessage());
+				System.exit(ERROR_IOERROR);
 				return;
 			} catch (SecurityException e) {
 				out.println("ERROR: Could not write JS file: "+outJSFile.getPath());
 				out.println("Writing the file was denied by the OS.");
+				System.exit(ERROR_SECURITYERROR);
 				return;
 			}
+			System.exit(ERROR_NONE);
 			return;
 		}
 		
 		if (Common.isEmpty(options.fileInPath))
 		{
 			out.println("ERROR: No input file specified!");
+			System.exit(ERROR_NOINPUT);
 			return;
 		}
 
@@ -415,6 +439,7 @@ public final class TAMECompilerMain
 		if (!infile.exists())
 		{
 			out.println("ERROR: Input file not found.");
+			System.exit(ERROR_NOINPUT);
 			return;
 		}
 
@@ -423,13 +448,16 @@ public final class TAMECompilerMain
 			module = TAMEScriptReader.read(infile, options);
 		} catch (TAMEScriptParseException e) {
 			out.println("ERROR: "+e.getMessage());
+			System.exit(ERROR_BADCOMPILE);
 			return;
 		} catch (IOException e) {
 			out.println("ERROR: Could not read input file: "+infile.getPath());
+			System.exit(ERROR_IOERROR);
 			return;
 		} catch (SecurityException e) {
 			out.println("ERROR: Could not read input file: "+infile.getPath());
 			out.println("Access to the file was denied.");
+			System.exit(ERROR_SECURITYERROR);
 			return;
 		}
 
@@ -454,10 +482,12 @@ public final class TAMECompilerMain
 			} catch (IOException e) {
 				out.println("ERROR: Could not export JS file: "+outJSFile.getPath());
 				out.println(e.getMessage());
+				System.exit(ERROR_IOERROR);
 				return;
 			} catch (SecurityException e) {
 				out.println("ERROR: Could not write JS file: "+outJSFile.getPath());
 				out.println("Writing the file was denied by the OS.");
+				System.exit(ERROR_SECURITYERROR);
 				return;
 			}
 		}
@@ -476,10 +506,12 @@ public final class TAMECompilerMain
 				out.println("Wrote "+outFile.getPath()+" successfully.");
 			} catch (IOException e) {
 				out.println("ERROR: Could not write output file: "+outFile.getPath());
+				System.exit(ERROR_IOERROR);
 				return;
 			} catch (SecurityException e) {
 				out.println("ERROR: Could not write output file: "+outFile.getPath());
 				out.println("You may not have permission to write a file there.");
+				System.exit(ERROR_SECURITYERROR);
 				return;
 			} finally {
 				Common.close(fos);

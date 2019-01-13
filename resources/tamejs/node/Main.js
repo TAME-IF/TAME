@@ -24,6 +24,10 @@ const COMMAND_SAVE = '!save';
 const COMMAND_LOAD = '!load';
 const COMMAND_QUIT = '!quit';
 
+const NO_ERROR = 0;
+const ERROR_BADINITIALIZE = 1;
+const ERROR_FATAL = 2;
+
 function printVersion()
 {
 	println("TAME NodeJS Console Shell v"+TAME.version+" by Matt Tropiano");
@@ -123,7 +127,7 @@ function printHelp(filename, requirefile)
 		{
 			trace = false;
 			printHelp(args[1], EmbeddedData ? false : true);
-			process.exit(0);
+			process.exit(NO_ERROR);
 		}
 		else if (arg == '--inspect')
 		{
@@ -150,7 +154,7 @@ function printHelp(filename, requirefile)
 		tracelist = true;
 
 	let tamectx = null;
-	let stop = false;
+	let stop = null;
 	let pause = false;
 	let lastColumn = 0;
 
@@ -178,7 +182,7 @@ function printHelp(filename, requirefile)
 		println('['+cue.type+'] '+withEscChars(cue.content));
 		let type = cue.type.toLowerCase();
 		if (type === 'quit' || type === 'fatal')
-			stop = true;
+			stop = type;
 			
 		return true;
 	}
@@ -203,7 +207,7 @@ function printHelp(filename, requirefile)
 		switch (type)
 		{
 			case 'quit':
-				stop = true;
+				stop = type;
 				return false;
 			
 			case 'text':
@@ -235,7 +239,7 @@ function printHelp(filename, requirefile)
 			case 'fatal':
 				println('\n!!FATAL!! '+content);
 				lastColumn = 0;
-				stop = true;
+				stop = type;
 				return false;
 		}
 		
@@ -364,14 +368,14 @@ function printHelp(filename, requirefile)
 			}
 			else if (COMMAND_QUIT == line.substring(0, COMMAND_QUIT.length))
 			{
-				stop = true;
+				stop = 'quit';
 				rl.close();
 			}
 			else
 				startResponse(TAME.interpret(tamectx, line.trim(), tracelist));
 		}
 	}).on('close', function(){
-		process.exit(0);
+		process.exit(stop === 'quit' ? NO_ERROR : ERROR_FATAL);
 	});
 
 	if (EmbeddedData)
@@ -382,7 +386,7 @@ function printHelp(filename, requirefile)
 			tamectx = TAME.newContext(module);
 		} catch (Err) {
 			println("ERROR: "+Err.toString());
-			process.exit(2);
+			process.exit(ERROR_BADINITIALIZE);
 		}
 	}
 	else if (filename)
@@ -397,22 +401,24 @@ function printHelp(filename, requirefile)
 			tamectx = TAME.newContext(module);
 		} catch (Err) {
 			println("ERROR: "+Err.toString());
-			process.exit(1);
+			process.exit(ERROR_BADINITIALIZE);
 		}
 	}
 	else
 	{
 		printSplash(args[1]);
-		process.exit(0);
+		process.exit(NO_ERROR);
 	}
 	
 	//Initialize.
 	startResponse(TAME.initialize(tamectx, tracelist));
 
 	// start loop.
-	if (!stop)
+	if (stop)
+		process.exit(stop === 'quit' ? NO_ERROR : ERROR_FATAL);
+	else
 		rl.prompt();
-	
+
 })();
 
 //[[EXPORTJS-END
