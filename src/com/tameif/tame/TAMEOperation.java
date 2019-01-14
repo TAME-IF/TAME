@@ -1286,7 +1286,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Casts a value to a list with one .
+	 * Casts a value to a list with one element.
 	 * POP is the value to convert. 
 	 * Returns value as string. 
 	 */
