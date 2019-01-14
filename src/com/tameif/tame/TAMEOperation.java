@@ -1300,9 +1300,14 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			if (!value.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in ASLIST call.");
 
-			Value out = Value.createEmptyList(2);
-			out.listAdd(value);
-			request.pushValue(out);
+			if (value.isList())
+				request.pushValue(value);
+			else
+			{
+				Value out = Value.createEmptyList(2);
+				out.listAdd(value);
+				request.pushValue(out);
+			}
 		}
 		
 		@Override

@@ -864,10 +864,15 @@ var TOperationFunctions =
 			
 			if (!TValue.isLiteral(value))
 				throw TAMEError.UnexpectedValueType("Expected literal type in ASLIST call.");
-			
-			let out = TValue.createList([]);
-			TValue.listAdd(out, value);
-			request.pushValue(out);
+
+			if (TValue.isList(value))
+				request.pushValue(value);
+			else
+			{
+				let out = TValue.createList([]);
+				TValue.listAdd(out, value);
+				request.pushValue(out);
+			}
 		}
 	},
 
