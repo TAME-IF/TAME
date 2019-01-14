@@ -12,6 +12,8 @@
 	  implementation.
 	- The Java/NodeJS shell implementations return exit codes - mostly for
 	  detecting quit on FATAL vs. QUIT.
+	- Changed the behavior of AsList() in order to differentiate it from 
+	  wrapping a value in a list literal.
 
 
 0.9BETA11
