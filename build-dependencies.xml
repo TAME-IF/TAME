@@ -44,6 +44,20 @@
 		</sequential>
 	</macrodef>
 	
+	<macrodef name="git-clone-shallow">
+		<attribute name="repository" />
+		<attribute name="dest" />
+		<sequential>
+			<git command="clone">
+				<args>
+					<arg value="@{repository}" />
+					<arg value="@{dest}" />
+					<arg value="--depth=1" />
+				</args>
+			</git>
+		</sequential>
+	</macrodef>
+
 	<macrodef name="git-pull">
 		<attribute name="dest" />
 		<sequential>
@@ -55,7 +69,7 @@
 		<attribute name="repository" />
 		<attribute name="dest" />
 		<sequential>
-			<git-clone repository="@{repository}" dest="@{dest}" />
+			<git-clone-shallow repository="@{repository}" dest="@{dest}" />
 			<delete dir="@{dest}/.git" includeemptydirs="true" casesensitive="false" /> 
 		</sequential>
 	</macrodef>
