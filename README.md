@@ -1,6 +1,6 @@
 # TAME (Text Adventure Module Engine)
 
-Copyright (c) 2015-2018 Matt Tropiano. All rights reserved.  
+Copyright (c) 2015-2019 Matt Tropiano. All rights reserved.  
 
 ### Required Libraries
 
