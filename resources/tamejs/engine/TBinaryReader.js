@@ -497,7 +497,7 @@ TBinaryReader.readModuleV1 = function(dataReader, moduleOut)
 	let READPARENTS = function()
 	{
 		let map = TBinaryReader.readUTF8StringMap(dataReader);
-		Util.each(map, (value, key) => {elements[key].parent = key;});
+		Util.each(map, (value, key) => {elementMap[key].parent = value;});
 	};
 
 	count = dataReader.readInt32();
