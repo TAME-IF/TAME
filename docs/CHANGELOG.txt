@@ -10,6 +10,7 @@
 	- Fixed deserializing 64-bit floats in the JS implementation.
 	- Fixed deserializing 64-bit integers (up to 53-bits) in the JS 
 	  implementation.
+	- Fixed reading the inheritance hierarchy from modules in JS. 
 	- The Java/NodeJS shell implementations return exit codes - mostly for
 	  detecting quit on FATAL vs. QUIT.
 	- Changed the behavior of AsList() in order to differentiate it from 
