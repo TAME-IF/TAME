@@ -1401,7 +1401,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Replaces a part of a string with another.
+	 * Replaces every occurrence of a string with another.
 	 * First POP is the string to replace with. 
 	 * Second POP is the replacement sequence. 
 	 * Third POP is the string to do replacing in. 
@@ -1424,10 +1424,10 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACE call.");
 
 			String replacement = value3.asString();
-			String pattern = value2.asString();
+			String substring = value2.asString();
 			String source = value1.asString();
 			
-			request.pushValue(Value.create(source.replace(pattern, replacement)));
+			request.pushValue(Value.create(source.replace(substring, replacement)));
 		}
 		
 		@Override
@@ -1957,6 +1957,88 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				throw new UnexpectedValueTypeException("Expected literal type in STRTRIM call.");
 
 			request.pushValue(Value.create(value.asString().trim()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
+	},
+	
+	/**
+	 * Replaces parts of a string with "[X]" with objects in a list. X is a list index.
+	 * The second parameter is treated as a one-entry list if it isn't a list.
+	 * First POP is the list.
+	 * Second POP is the string. 
+	 * Returns string. 
+	 */
+	STRFORMAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value list = request.popValue();
+			Value str = request.popValue();
+			
+			if (!list.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRFORMAT call.");
+			if (!str.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRFORMAT call.");
+
+			if (!list.isList())
+				list = Value.createList(list);
+			
+			StringBuilder sb = new StringBuilder();
+			StringBuilder err = new StringBuilder();
+			char[] strchars = str.asString().toCharArray();
+			final int STATE_START = 0;
+			final int STATE_INDEX = 1;
+			int state = STATE_START;
+			int index = 0;
+			for (int i = 0; i < strchars.length; i++) 
+			{
+				char c = strchars[i];
+				switch (state)
+				{
+					case STATE_START:
+					{
+						if (c == '[')
+						{
+							state = STATE_INDEX;
+							index = 0;
+							err.delete(0,  err.length());
+							err.append('[');
+						}
+						else
+							sb.append(c);
+					}
+					break;
+
+					case STATE_INDEX:
+					{
+						if (c == ']')
+						{
+							state = STATE_START;
+							sb.append(list.listGet(index).asString());
+						}
+						else if (c >= '0' && c <= '9')
+						{
+							index = (index * 10) + (c - '0');
+							err.append(c);
+						}
+						else
+						{
+							err.append(c);
+							sb.append(err);
+							state = STATE_START;
+						}
+					}
+					break;
+				}
+			}			
+			request.pushValue(Value.create(sb.toString()));
 		}
 		
 		@Override

@@ -3,6 +3,13 @@
     (C) 2019 Matt Tropiano
 ==============================================================================
 
+0.9BETA13
+.........
+
+	- STRREPLACE() now replaces every occurrence of a string in both Java and 
+	  JS.
+	- Added STRFORMAT() for formatting strings.
+
 0.9BETA12
 .........
 

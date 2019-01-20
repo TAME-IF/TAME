@@ -941,7 +941,11 @@ var TOperationFunctions =
 			let pattern = TValue.asString(value2);
 			let source = TValue.asString(value1);
 
-			request.pushValue(TValue.createString(source.replace(pattern, replacement)));
+			let out = source;
+			while (out.indexOf(pattern) >= 0)
+				out = out.replace(pattern, replacement);
+			
+			request.pushValue(TValue.createString(out));
 		}
 	},
 
@@ -1273,6 +1277,82 @@ var TOperationFunctions =
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRTRIM call.");
 
 			request.pushValue(TValue.createString(TValue.asString(value1).trim()));
+		}
+	},
+
+	/* STRFORMAT */
+	{
+		"name": 'STRFORMAT', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			let list = request.popValue();
+			let str = request.popValue();
+
+			if (!TValue.isLiteral(list))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRFORMAT call.");
+			if (!TValue.isLiteral(str))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRFORMAT call.");
+
+			if (!TValue.isList(list))
+			{
+				let nl = TValue.createList([]);
+				TValue.listAdd(nl, list);
+				list = nl;
+			}
+
+			let sb = '';
+			let err = '';
+			let chars = TValue.asString(str);
+			
+			const STATE_START = 0;
+			const STATE_INDEX = 1;
+			let DIGIT_ZERO = '0'.codePointAt(0);
+			let DIGIT_NINE = '9'.codePointAt(0);
+			let state = STATE_START;
+			let index = 0;
+
+			for (let i = 0; i < chars.length; i++)
+			{
+				let c = chars.charAt(i);
+				switch (state)
+				{
+					case STATE_START:
+					{
+						if (c === '[')
+						{
+							state = STATE_INDEX;
+							index = 0;
+							err = '[';
+						}
+						else
+							sb += c;
+					}
+					break;
+					
+					case STATE_INDEX:
+					{
+						if (c === ']')
+						{
+							state = STATE_START;
+							sb += TValue.asString(TValue.listGet(list, index));
+						}
+						else if (c.codePointAt(0) >= DIGIT_ZERO && c.codePointAt(0) <= DIGIT_NINE)
+						{
+							index = (index * 10) + (c.codePointAt(0) - DIGIT_ZERO);
+							err += c;
+						}
+						else
+						{
+							err += c;
+							sb += err;
+							state = STATE_START;
+						}
+					}
+					break;
+				}
+			}
+			
+			request.pushValue(TValue.createString(sb));
 		}
 	},
 
