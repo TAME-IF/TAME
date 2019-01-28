@@ -9,6 +9,8 @@
 	- STRREPLACE() now replaces every occurrence of a string in both Java and 
 	  JS.
 	- Added STRFORMAT() for formatting strings.
+	- SUBSTRING() behavior was changed to clamp start and end indices, plus
+	  flip the start and end if the end was less than start.
 
 0.9BETA12
 .........

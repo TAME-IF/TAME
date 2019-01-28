@@ -1842,6 +1842,15 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			int startIndex = (int)value2.asLong();
 			String source = value1.asString();
 			
+			startIndex = RMath.clampValue(startIndex, 0, source.length());
+			endIndex = RMath.clampValue(endIndex, 0, source.length());
+			if (endIndex < startIndex)
+			{
+				int temp = endIndex;
+				endIndex = startIndex;
+				startIndex = temp;
+			}
+			
 			request.pushValue(Value.create(source.substring(startIndex, endIndex)));
 		}
 		
