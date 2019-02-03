@@ -72,8 +72,7 @@
 
 	<!-- Replace Tokens -->
 
-	<property name="replace.key.compile.classpath" value="{{COMPILE_PATH}}" />
-	<property name="replace.key.command.readlink" value="{{CMD_READLINK}}" />
+	<property name="replace.key.compile.classpath" value="{{COMPILE_CLASSPATH}}" />
 	<property name="replace.key.jar.one.tame.filename" value="{{JAR_ONE_FILENAME}}" />
 	
 	<!-- Filesets -->

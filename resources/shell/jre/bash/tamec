@@ -1,6 +1,10 @@
 #!/bin/bash
 CMD_READLINK="readlink -f"
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	CMD_READLINK="readlink"
+	function realpath {
+    	[ "." = "${1}" ] && n=${PWD} || n=${1}; while nn=$( readlink -n "$n" ); do n=$nn; done; echo "$n"
+	}
+	CMD_READLINK="realpath"
+fi
 SCRIPTDIR="$(cd "$(dirname $($CMD_READLINK "$0"))"; pwd)"
 "$SCRIPTDIR/../jre/bin/java" -cp "$SCRIPTDIR/../jar/{{JAR_ONE_FILENAME}}" com.tameif.tame.compiler.TAMECompilerMain $@
