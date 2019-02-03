@@ -87,6 +87,9 @@
 				<os family="unix" />
 			</and>
 		</condition>
+		<condition property="os.isLinux" value="true" else="false">
+			<os family="unix" />
+		</condition>
 		<condition property="os.isLinux32" value="true" else="false">
 			<and>
 				<os family="unix" />

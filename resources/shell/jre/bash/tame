@@ -1,0 +1,6 @@
+#!/bin/bash
+CMD_READLINK="readlink -f"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	CMD_READLINK="readlink"
+SCRIPTDIR="$(cd "$(dirname $($CMD_READLINK "$0"))"; pwd)"
+"$SCRIPTDIR/../jre/bin/java" -cp "$SCRIPTDIR/../jar/{{JAR_ONE_FILENAME}}" com.tameif.tame.console.TAMEConsoleShellMain $@

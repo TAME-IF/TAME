@@ -44,7 +44,6 @@
 	<property name="src.test.dir" value="testsrc" />
 	<property name="package.base.dir" value="com/tameif/tame" />
 	<property name="resource.dir" value="resources" />
-	<property name="replace.dir" value="${build.dir}/replace" />
 	<property name="tamedocs.dir" value="${build.dir}/tamedocs" />
 	<property name="jre.dir" value="${build.dir}/jre" />
 	<property name="jre.scripts.dir" value="${jre.dir}/scripts" />
@@ -71,28 +70,29 @@
 	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
 	<property name="jar.tame.one.filename" value="${project.archive}-standalone-${build.version}.jar" />
 
+	<!-- Replace Tokens -->
+
+	<property name="replace.key.compile.classpath" value="{{COMPILE_PATH}}" />
+	<property name="replace.key.command.readlink" value="{{CMD_READLINK}}" />
+	<property name="replace.key.jar.one.tame.filename" value="{{JAR_ONE_FILENAME}}" />
+	
 	<!-- Filesets -->
 
 	<target name="clean" depends="clean.jar, clean.docs, clean.zip, clean.compile, clean.jre, clean.jar.scripts"  description="Cleans up everything.">
 	</target>
 
 	<target name="compile.scripts.windows" if="${os.isWindows}">
-		<!-- Windows Commands -->
-		<echo message="@java -cp &quot;%~dp0\${project.classpath}${S}${bin.dir}&quot; com.tameif.tame.console.TAMEConsoleShellMain %*&#10;" file="tame.cmd" />
-		<echo message="@java -cp &quot;%~dp0\${project.classpath}${S}${bin.dir}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="tamec.cmd" />
+		<copy file="${resource.dir}/shell/compile/windows/tame.cmd" tofile="tame.cmd" />
+		<replace file="tame.cmd" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<copy file="${resource.dir}/shell/compile/windows/tamec.cmd" tofile="tamec.cmd" />
+		<replace file="tamec.cmd" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
 	</target>
 
 	<target name="compile.scripts.bash" if="${os.bash}">
-		<!-- Bash Shell Commands -->
-		<echo message="#!/bin/bash&#10;" file="tame.sh" />
-		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="tame.sh" append="true" />
-		<echo message="java -cp &quot;$SCRIPTDIR/${project.classpath}${S}${bin.dir}&quot; com.tameif.tame.console.TAMEConsoleShellMain $@&#10;" file="tame.sh" append="true" />
-
-		<echo message="#!/bin/bash&#10;" file="tamec.sh" />
-		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="tamec.sh" append="true" />
-		<echo message="java -cp &quot;$SCRIPTDIR/${project.classpath}${S}${bin.dir}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="tamec.sh" append="true" />
-
-		<!-- Set permissions -->
+		<copy file="${resource.dir}/shell/compile/bash/tame" tofile="tame.sh" />
+		<replace file="tame.sh" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<copy file="${resource.dir}/shell/compile/bash/tamec" tofile="tamec.sh" />
+		<replace file="tamec.sh" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
 		<chmod file="tame.sh" perm="ugo+rx"/>
 		<chmod file="tamec.sh" perm="ugo+rx"/>
 	</target>
@@ -107,8 +107,9 @@
 			classpath="${project.classpath}"
 			debug="off"
 		/>
-		<copy todir="${bin.dir}">
-			<fileset dir="${resource.dir}" />
+		<mkdir dir="${bin.dir}/tamejs" />
+		<copy todir="${bin.dir}/tamejs">
+			<fileset dir="${resource.dir}/tamejs" />
 		</copy>
 		<echo message="${build.version.number}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
 	</target>
@@ -221,21 +222,17 @@
 	</target>
 
 	<target name="jar.scripts.windows">
-		<!-- Windows Commands -->
-		<echo message="@java -cp &quot;%~dp0\..\jar\${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleShellMain %*&#10;" file="${scripts.dir}/tame.cmd" />
-		<echo message="@java -cp &quot;%~dp0\..\jar\${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${scripts.dir}/tamec.cmd" />
+		<copy file="${resource.dir}/shell/jar/windows/tame.cmd" tofile="${scripts.dir}/tame.cmd" />
+		<replace file="${scripts.dir}/tame.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
+		<copy file="${resource.dir}/shell/jar/windows/tamec.cmd" tofile="${scripts.dir}/tamec.cmd" />
+		<replace file="${scripts.dir}/tamec.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 	</target>
 
 	<target name="jar.scripts.bash">
-		<!-- Bash Shell Commands -->
-		<echo message="#!/bin/bash&#10;" file="${scripts.dir}/tame" />
-		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="${scripts.dir}/tame" append="true" />
-		<echo message="java -cp &quot;$SCRIPTDIR/../jar/${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleShellMain $@&#10;" file="${scripts.dir}/tame" append="true" />
-
-		<echo message="#!/bin/bash&#10;" file="${scripts.dir}/tamec" />
-		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="${scripts.dir}/tamec" append="true" />
-		<echo message="java -cp &quot;$SCRIPTDIR/../jar/${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${scripts.dir}/tamec" append="true" />
-		<!-- Set permissions -->
+		<copy file="${resource.dir}/shell/jar/bash/tame" tofile="${scripts.dir}/tame" />
+		<replace file="${scripts.dir}/tame" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
+		<copy file="${resource.dir}/shell/jar/bash/tamec" tofile="${scripts.dir}/tamec" />
+		<replace file="${scripts.dir}/tamec" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<chmod file="${scripts.dir}/tame" perm="ugo+rx"/>
 		<chmod file="${scripts.dir}/tamec" perm="ugo+rx"/>
 	</target>
@@ -392,21 +389,17 @@
 	</target>
 
 	<target name="jre.scripts.windows">
-		<!-- Windows Commands -->
-		<echo message="@&quot;%~dp0\..\jre\bin\java.exe&quot; -cp &quot;%~dp0\..\jar\${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleShellMain %*&#10;" file="${jre.scripts.dir}/windows/tame.cmd" />
-		<echo message="@&quot;%~dp0\..\jre\bin\java.exe&quot; -cp &quot;%~dp0\..\jar\${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain %*&#10;" file="${jre.scripts.dir}/windows/tamec.cmd" />
+		<copy file="${resource.dir}/shell/jre/windows/tame.cmd" tofile="${jre.scripts.dir}/windows/tame.cmd" />
+		<replace file="${jre.scripts.dir}/windows/tame.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
+		<copy file="${resource.dir}/shell/jre/windows/tamec.cmd" tofile="${jre.scripts.dir}/windows/tamec.cmd" />
+		<replace file="${jre.scripts.dir}/windows/tamec.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 	</target>
 
 	<target name="jre.scripts.bash">
-		<!-- Bash Shell Commands -->
-		<echo message="#!/bin/bash&#10;" file="${jre.scripts.dir}/bash/tame" />
-		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="${jre.scripts.dir}/bash/tame" append="true" />
-		<echo message="&quot;$SCRIPTDIR/../jre/bin/java&quot; -cp &quot;$SCRIPTDIR/../jar/${jar.tame.one.filename}&quot; com.tameif.tame.console.TAMEConsoleShellMain $@&#10;" file="${jre.scripts.dir}/bash/tame" append="true" />
-
-		<echo message="#!/bin/bash&#10;" file="${jre.scripts.dir}/bash/tamec" />
-		<echo message="SCRIPTDIR=&quot;$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)&quot;&#10;" file="${jre.scripts.dir}/bash/tamec" append="true" />
-		<echo message="&quot;$SCRIPTDIR/../jre/bin/java&quot; -cp &quot;$SCRIPTDIR/../jar/${jar.tame.one.filename}&quot; com.tameif.tame.compiler.TAMECompilerMain $@&#10;" file="${jre.scripts.dir}/bash/tamec" append="true" />
-		<!-- Set permissions -->
+		<copy file="${resource.dir}/shell/jre/bash/tame" tofile="${jre.scripts.dir}/bash/tame" />
+		<replace file="${jre.scripts.dir}/bash/tame" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
+		<copy file="${resource.dir}/shell/jre/bash/tamec" tofile="${jre.scripts.dir}/bash/tamec" />
+		<replace file="${jre.scripts.dir}/bash/tamec" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<chmod file="${jre.scripts.dir}/bash/tame" perm="ugo+rx"/>
 		<chmod file="${jre.scripts.dir}/bash/tamec" perm="ugo+rx"/>
 	</target>
