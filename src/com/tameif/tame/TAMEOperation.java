@@ -1844,14 +1844,10 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			
 			startIndex = RMath.clampValue(startIndex, 0, source.length());
 			endIndex = RMath.clampValue(endIndex, 0, source.length());
-			if (endIndex < startIndex)
-			{
-				int temp = endIndex;
-				endIndex = startIndex;
-				startIndex = temp;
-			}
-			
-			request.pushValue(Value.create(source.substring(startIndex, endIndex)));
+			if (endIndex <= startIndex)
+				request.pushValue(Value.create(""));
+			else
+				request.pushValue(Value.create(source.substring(startIndex, endIndex)));
 		}
 		
 		@Override
@@ -2649,6 +2645,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Returns a random number from 0 to input-1.
+	 * If input < 0, the result is -IRANDOM(+input)
 	 * POP is the interval end.
 	 * Returns integer or float, depending on input.
 	 */
@@ -2660,7 +2657,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			Value valueInput = request.popValue();
 			
 			if (!valueInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in RANDOM call.");
+				throw new UnexpectedValueTypeException("Expected literal type in IRANDOM call.");
 
 			long value = valueInput.asLong();
 
@@ -2668,6 +2665,8 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			
 			if (value == 0)
 				request.pushValue(Value.create(0));
+			else if (value < 0)
+				request.pushValue(Value.create(-(Math.abs(random.nextLong()) % -value)));
 			else
 				request.pushValue(Value.create(Math.abs(random.nextLong()) % value));
 		}

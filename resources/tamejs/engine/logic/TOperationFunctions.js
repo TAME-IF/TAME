@@ -1211,7 +1211,12 @@ var TOperationFunctions =
 			let start = TValue.asLong(value2);
 			let source = TValue.asString(value1);
 			
-			request.pushValue(TValue.createString(source.substring(start, end)));
+			start = Math.min(Math.max(start, 0), source.length);
+			end = Math.min(Math.max(end, 0), source.length);
+			if (end <= start)
+				request.pushValue(TValue.createString(""));
+			else
+				request.pushValue(TValue.createString(source.substring(start, end)));
 		}
 	},
 

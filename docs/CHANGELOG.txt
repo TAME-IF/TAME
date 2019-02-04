@@ -9,8 +9,11 @@
 	- STRREPLACE() now replaces every occurrence of a string in both Java and 
 	  JS.
 	- Added STRFORMAT() for formatting strings.
-	- SUBSTRING() behavior was changed to clamp start and end indices, plus
-	  flip the start and end if the end was less than start.
+	- SUBSTRING() behavior was changed to clamp start and end indices, if end 
+	  is equal to or before start, returns empty string.
+	- All OS/Java distributions can now have their "tame" and "tamec" scripts 
+	  symlinked to safely.
+
 
 0.9BETA12
 .........
