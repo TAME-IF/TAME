@@ -2645,7 +2645,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Returns a random number from 0 to input-1.
-	 * If input < 0, the result is -IRANDOM(+input)
+	 * If input &lt; 0, the result is -IRANDOM(+input)
 	 * POP is the interval end.
 	 * Returns integer or float, depending on input.
 	 */
