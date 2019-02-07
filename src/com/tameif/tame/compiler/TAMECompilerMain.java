@@ -91,7 +91,7 @@ public final class TAMECompilerMain
 	private static void printSplash(PrintStream out)
 	{
 		printVersion(out);
-		out.println("Type `tame --help` for help.");
+		out.println("Type `tamec --help` for help.");
 	}
 
 	private static void printHelp(PrintStream out)
