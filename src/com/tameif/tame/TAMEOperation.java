@@ -739,7 +739,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Enqueues a general action to perform after the current one finishes.
+	 * [INTERNAL] Enqueues a general action to perform after the current one finishes.
 	 * POP is the action.
 	 * Returns nothing.
 	 */
@@ -774,7 +774,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 
 	/**
-	 * Enqueues an open/modal action to perform after the current one finishes.
+	 * [INTERNAL] Enqueues an open/modal action to perform after the current one finishes.
 	 * First POP is the modal or open target.
 	 * Second POP is the action.
 	 * Returns nothing.
@@ -814,7 +814,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Enqueues a transitive action to perform after the current one finishes.
+	 * [INTERNAL] Enqueues a transitive action to perform after the current one finishes.
 	 * First POP is the object.
 	 * Second POP is the action.
 	 * Returns nothing.
@@ -855,7 +855,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Enqueues a transitive action to perform after the current one finishes for each object.
+	 * [INTERNAL] Enqueues a transitive action to perform after the current one finishes for each object.
 	 * First POP is the object-container.
 	 * Second POP is the action.
 	 * Returns nothing.
@@ -901,7 +901,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Enqueues a transitive action to perform after the current one finishes for each object.
+	 * [INTERNAL] Enqueues a transitive action to perform after the current one finishes for each object.
 	 * First POP is the tag name.
 	 * Second POP is the object-container.
 	 * Third POP is the action.
@@ -954,7 +954,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Enqueues a ditransitive action to perform after the current one finishes.
+	 * [INTERNAL] Enqueues a ditransitive action to perform after the current one finishes.
 	 * First POP is the second object.
 	 * Second POP is the object.
 	 * Third POP is the action.
@@ -1401,7 +1401,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Replaces every occurrence of a string with another.
+	 * Replaces the first occurrence of a string with another.
 	 * First POP is the string to replace with. 
 	 * Second POP is the replacement sequence. 
 	 * Third POP is the string to do replacing in. 
@@ -1426,6 +1426,104 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			String replacement = value3.asString();
 			String substring = value2.asString();
 			String source = value1.asString();
+			int index = source.indexOf(substring);
+			if (index >= 0)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.append(source.substring(0, index));
+				sb.append(replacement);
+				sb.append(source.substring(index + substring.length()));
+				request.pushValue(Value.create(sb.toString()));
+			}
+			else
+			{
+				request.pushValue(Value.create(source));
+			}
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
+	},
+	
+	/**
+	 * Replaces the last occurrence of a string with another.
+	 * First POP is the string to replace with. 
+	 * Second POP is the replacement sequence. 
+	 * Third POP is the string to do replacing in. 
+	 * Returns string. 
+	 */
+	STRREPLACELAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value value3 = request.popValue();
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value3.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACELAST call.");
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACELAST call.");
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACELAST call.");
+
+			String replacement = value3.asString();
+			String substring = value2.asString();
+			String source = value1.asString();
+			int index = source.lastIndexOf(substring);
+			if (index >= 0)
+			{
+				StringBuilder sb = new StringBuilder();
+				sb.append(source.substring(0, index));
+				sb.append(replacement);
+				sb.append(source.substring(index + substring.length()));
+				request.pushValue(Value.create(sb.toString()));
+			}
+			else
+			{
+				request.pushValue(Value.create(source));
+			}
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "String Operations";
+		}
+		
+	},
+	
+	/**
+	 * Replaces every occurrence of a string with another.
+	 * First POP is the string to replace with. 
+	 * Second POP is the replacement sequence. 
+	 * Third POP is the string to do replacing in. 
+	 * Returns string. 
+	 */
+	STRREPLACEALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value value3 = request.popValue();
+			Value value2 = request.popValue();
+			Value value1 = request.popValue();
+			
+			if (!value3.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEALL call.");
+			if (!value2.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEALL call.");
+			if (!value1.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEALL call.");
+
+			String replacement = value3.asString();
+			String substring = value2.asString();
+			String source = value1.asString();
 			
 			request.pushValue(Value.create(source.replace(substring, replacement)));
 		}
@@ -1438,90 +1536,6 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 		
 	},
 	
-	/**
-	 * Replaces the first found RegEx pattern of characters in a string with another string.
-	 * First POP is the string to replace with. 
-	 * Second POP is the search regex pattern. 
-	 * Third POP is the string to do replacing in. 
-	 * Returns string. 
-	 */
-	STRREPLACEPATTERN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-	{
-		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
-		{
-			Value value3 = request.popValue();
-			Value value2 = request.popValue();
-			Value value1 = request.popValue();
-			
-			if (!value3.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERN call.");
-			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERN call.");
-			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERN call.");
-
-			String replacement = value3.asString();
-			String pattern = value2.asString();
-			String source = value1.asString();
-
-			try {
-				request.pushValue(Value.create(source.replaceFirst(pattern, replacement)));
-			} catch (PatternSyntaxException e) {
-				throw new UnexpectedValueTypeException("Expected valid RegEx in STRREPLACEPATTERN call.");
-			}
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return "String Operations";
-		}
-		
-	},
-
-	/**
-	 * Replaces every found RegEx pattern of characters in a string with another string.
-	 * First POP is the string to replace with. 
-	 * Second POP is the search regex pattern. 
-	 * Third POP is the string to do replacing in. 
-	 * Returns string. 
-	 */
-	STRREPLACEPATTERNALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
-	{
-		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
-		{
-			Value value3 = request.popValue();
-			Value value2 = request.popValue();
-			Value value1 = request.popValue();
-			
-			if (!value3.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERNALL call.");
-			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERNALL call.");
-			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREPLACEPATTERNALL call.");
-
-			String replacement = value3.asString();
-			String pattern = value2.asString();
-			String source = value1.asString();
-
-			try {
-				request.pushValue(Value.create(source.replaceAll(pattern, replacement)));
-			} catch (PatternSyntaxException e) {
-				throw new UnexpectedValueTypeException("Expected valid RegEx in STRREPLACEPATTERNALL call.");
-			}
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return "String Operations";
-		}
-		
-	},
-
 	/**
 	 * Returns the index of where a character sequence starts in a string. -1 is not found.
 	 * First POP is what to search for. 
@@ -1622,51 +1636,10 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Returns if a character sequence matching a regular expression exists in a given string. 
-	 * True if so. False if not. Fatal error on bad pattern.
-	 * First POP is what to search for (RegEx). 
-	 * Second POP is the string. 
-	 * Returns boolean.
-	 */
-	STRCONTAINSPATTERN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
-	{
-		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
-		{
-			Value value2 = request.popValue();
-			Value value1 = request.popValue();
-			
-			if (!value1.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINSPATTERN call.");
-			if (!value2.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRCONTAINSPATTERN call.");
-
-			String pattern = value2.asString();
-			String str = value1.asString();
-			
-			Pattern p = null;
-			try {
-				p = Pattern.compile(pattern);
-			} catch (PatternSyntaxException e) {
-				throw new UnexpectedValueTypeException("Expected valid RegEx in STRCONTAINSPATTERN call.");
-			}
-			
-			request.pushValue(Value.create(p.matcher(str).find()));
-		}
-		
-		@Override
-		public String getGrouping()
-		{
-			return "String Operations";
-		}
-		
-	},
-	
-	/**
-	 * Returns a string split into a list of strings using a regular expression for matching the delimitation.
+	 * Returns a string split into a list of strings using a string for matching the delimitation.
 	 * First POP is the regular expression. 
 	 * Second POP is the string. 
-	 * Returns a list or FALSE if the pattern is not a regular expression.
+	 * Returns a list.
 	 */
 	STRSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
@@ -1681,17 +1654,17 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			if (!value2.isLiteral())
 				throw new UnexpectedValueTypeException("Expected literal type in STRSPLIT call.");
 
-			String pattern = value2.asString();
+			String split = value2.asString();
 			String str = value1.asString();
 			
 			try {
-				String[] tokens = str.split(pattern);
+				String[] tokens = Pattern.compile(split, Pattern.LITERAL).split(str);
 				Value out = Value.createEmptyList(tokens.length);
 				for (String s : tokens)
 					out.listAdd(Value.create(s));
 				request.pushValue(out);
 			} catch (PatternSyntaxException e) {
-				throw new UnexpectedValueTypeException("Expected valid RegEx in STRSPLIT call.");
+				throw new UnexpectedValueTypeException("This should not have been thrown.");
 			}
 		}
 		

@@ -938,70 +938,84 @@ var TOperationFunctions =
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACE call.");
 
 			let replacement = TValue.asString(value3);
-			let pattern = TValue.asString(value2);
+			let sequence = TValue.asString(value2);
+			let source = TValue.asString(value1);
+			let index = source.indexOf(sequence);
+			if (index >= 0)
+			{
+				request.pushValue(TValue.createString(
+					source.substring(0, index) + 
+					replacement + 
+					source.substring(index + sequence.length, source.length)
+				));
+			}
+			else
+			{
+				request.pushValue(TValue.createString(source));
+			}
+		}
+	},
+
+	/* STRREPLACELAST */
+	{
+		"name": 'STRREPLACELAST', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			let value3 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACELAST call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACELAST call.");
+			if (!TValue.isLiteral(value3))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACELAST call.");
+
+			let replacement = TValue.asString(value3);
+			let sequence = TValue.asString(value2);
+			let source = TValue.asString(value1);
+			let index = source.lastIndexOf(sequence);
+			if (index >= 0)
+			{
+				request.pushValue(TValue.createString(
+					source.substring(0, index) + 
+					replacement + 
+					source.substring(index + sequence.length, source.length)
+				));
+			}
+			else
+			{
+				request.pushValue(TValue.createString(source));
+			}
+		}
+	},
+
+	/* STRREPLACEALL */
+	{
+		"name": 'STRREPLACEALL', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			let value3 = request.popValue();
+			let value2 = request.popValue();
+			let value1 = request.popValue();
+
+			if (!TValue.isLiteral(value1))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEALL call.");
+			if (!TValue.isLiteral(value2))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEALL call.");
+			if (!TValue.isLiteral(value3))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEALL call.");
+
+			let replacement = TValue.asString(value3);
+			let sequence = TValue.asString(value2);
 			let source = TValue.asString(value1);
 
 			let out = source;
-			while (out.indexOf(pattern) >= 0)
-				out = out.replace(pattern, replacement);
+			while (out.indexOf(sequence) >= 0)
+				out = out.replace(sequence, replacement);
 			
 			request.pushValue(TValue.createString(out));
-		}
-	},
-
-	/* STRREPLACEPATTERN */
-	{
-		"name": 'STRREPLACEPATTERN', 
-		"doOperation": function(request, response, blockLocal, operation)
-		{
-			let value3 = request.popValue();
-			let value2 = request.popValue();
-			let value1 = request.popValue();
-
-			if (!TValue.isLiteral(value1))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERN call.");
-			if (!TValue.isLiteral(value2))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERN call.");
-			if (!TValue.isLiteral(value3))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERN call.");
-
-			let replacement = TValue.asString(value3);
-			let pattern = TValue.asString(value2);
-			let source = TValue.asString(value1);
-			
-			try {
-				request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'm'), replacement)));
-			} catch (err) {
-				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRREPLACEPATTERN call.");
-			}
-		}
-	},
-
-	/* STRREPLACEPATTERNALL */
-	{
-		"name": 'STRREPLACEPATTERNALL', 
-		"doOperation": function(request, response, blockLocal, operation)
-		{
-			let value3 = request.popValue();
-			let value2 = request.popValue();
-			let value1 = request.popValue();
-
-			if (!TValue.isLiteral(value1))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERNALL call.");
-			if (!TValue.isLiteral(value2))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERNALL call.");
-			if (!TValue.isLiteral(value3))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRREPLACEPATTERNALL call.");
-
-			let replacement = TValue.asString(value3);
-			let pattern = TValue.asString(value2);
-			let source = TValue.asString(value1);
-			
-			try {
-				request.pushValue(TValue.createString(source.replace(new RegExp(pattern, 'gm'), replacement)));
-			} catch (err) {
-				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRREPLACEPATTERNALL call.");
-			}
 		}
 	},
 
@@ -1065,31 +1079,6 @@ var TOperationFunctions =
 		}
 	},
 
-	/* STRCONTAINSPATTERN */
-	{
-		"name": 'STRCONTAINSPATTERN', 
-		"doOperation": function(request, response, blockLocal, operation)
-		{
-			let value2 = request.popValue();
-			let value1 = request.popValue();
-
-			if (!TValue.isLiteral(value1))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSPATTERN call.");
-			if (!TValue.isLiteral(value2))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRCONTAINSPATTERN call.");
-			
-			let pattern = TValue.asString(value2);
-			let str = TValue.asString(value1);
-			
-			try {
-				let regex = new RegExp(pattern, 'gm');
-				request.pushValue(TValue.createBoolean(regex.test(str)));
-			} catch (err) {
-				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRCONTAINSPATTERN call.");
-			}
-		}
-	},
-
 	/* STRSPLIT */
 	{
 		"name": 'STRSPLIT', 
@@ -1103,19 +1092,18 @@ var TOperationFunctions =
 			if (!TValue.isLiteral(value2))
 				throw TAMEError.UnexpectedValueType("Expected literal type in STRSPLIT call.");
 			
-			let pattern = TValue.asString(value2);
+			let sequence = TValue.asString(value2);
 			let str = TValue.asString(value1);
 
-			try {
-				let regex = new RegExp(pattern, 'gm');
-				let tokens = str.split(regex);
-				let out = TValue.createList([]);
-				for (let x in tokens)
-					TValue.listAdd(out, TValue.createString(tokens[x]));
-				request.pushValue(out);
-			} catch (err) {
-				throw TAMEError.UnexpectedValueType("Expected valid RegEx in STRSPLIT call.");
+			let out = TValue.createList([]);
+			let index = str.indexOf(sequence);
+			while (index >= 0)
+			{
+				TValue.listAdd(out, TValue.createString(str.substring(0, index)));
+				str = str.substring(index + sequence.length, str.length);
 			}
+			TValue.listAdd(out, TValue.createString(str));
+			request.pushValue(out);
 		}
 	},
 
