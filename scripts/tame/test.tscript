@@ -96,16 +96,15 @@ world
 		textln(strconcat("to", "gether")); 
 
 		textln(strreplace(s, "Apples", "Oranges"));
-		textln(strreplacepattern(s, "s", "_"));
-		textln(strreplacepatternall(s, "s", "_"));
+		textln(strreplacelast(s, "s", "_"));
+		textln(strreplaceall(s, "s", "_"));
 		textln(strstartswith(s, "Apples")); 
 		textln(strendswith(s, "Pears")); 
 		 
 		textln(strindex(s, "Pears")); 
 		textln(strlastindex(s, "s")); 
 		textln(strcontains(s, "and") + ":" + strcontains(s, "or")); 
-		textln(strcontainspattern(s, "\\s+")); 
-		textln(strsplit(s, "\\s+")); 
+		textln(strsplit(s, " ")); 
 		textln(strjoin(["This", "is", "a", "kebab", true, 5, 7.8], "-")); 
 		textln(substring(s, 0, length(s) - 8)); 
 		textln(strlower(s)); 
