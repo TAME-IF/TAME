@@ -1101,6 +1101,7 @@ var TOperationFunctions =
 			{
 				TValue.listAdd(out, TValue.createString(str.substring(0, index)));
 				str = str.substring(index + sequence.length, str.length);
+				index = str.indexOf(sequence);
 			}
 			TValue.listAdd(out, TValue.createString(str));
 			request.pushValue(out);
