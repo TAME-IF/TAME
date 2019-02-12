@@ -1017,6 +1017,8 @@ TValue.listAddAt = function(listValue, i, v)
 {
 	if (!TValue.isList(listValue))
 		return false;
+	if (i < 0)
+		return false;
 	listValue.value.splice(i, 0, TValue.createValue(v));
 	return true;
 };

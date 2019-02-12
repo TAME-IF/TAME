@@ -3,6 +3,13 @@
     (C) 2019 Matt Tropiano
 ==============================================================================
 
+0.9BETA14
+.........
+
+	- Fixed ListAddAt() with a negative index - now it returns false, since
+	  nothing is added.
+	
+
 0.9BETA13
 .........
 

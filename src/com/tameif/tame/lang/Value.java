@@ -983,6 +983,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	
 	/**
 	 * Adds a value to this at a specific index, if this is a list.
+	 * Does nothing if <code>i</code> is less than 0.
 	 * @param i the index to add the value at.
 	 * @param v the value to add.
 	 * @return true if added, false if not.
@@ -993,6 +994,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			return false;
 		@SuppressWarnings("unchecked")
 		List<Value> list = (List<Value>)value;
+		if (i < 0)
+			return false;
 		list.add(i, create(v));
 		return true;
 	}
