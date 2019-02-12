@@ -1350,6 +1350,27 @@ var TOperationFunctions =
 		}
 	},
 
+	/* LISTNEW */
+	{
+		"name": 'LISTNEW', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			let size = request.popValue();
+			
+			if (!TValue.isLiteral(size))
+				throw TAMEError.UnexpectedValueType("Expected literal type in LISTNEW call.");
+
+			let len = TValue.asLong(size);
+			if (len < 0)
+				len = 0;
+			
+			let list = TValue.createList([]);
+			while (len-- > 0)
+				TValue.listAdd(list, TValue.createBoolean(false));
+			request.pushValue(list);
+		}
+	},
+		
 	/* LISTADD */
 	{
 		"name": 'LISTADD', 

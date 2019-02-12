@@ -2028,6 +2028,39 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
+	 * Makes a new list with a specific length.
+	 * POP is the initial capacity. 
+	 * Returns a list. 
+	 */
+	LISTNEW (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value size = request.popValue();
+			
+			if (!size.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in LISTNEW call.");
+
+			int len = (int)size.asLong();
+			if (len < 0)
+				len = 0;
+			
+			Value list = Value.createEmptyList(len);
+			while (len-- > 0)
+				list.listAdd(Value.create(false));
+			request.pushValue(list);
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "List Operations";
+		}
+		
+	},
+		
+	/**
 	 * Adds a value to the end of the list.
 	 * First POP is the value to add. 
 	 * Second POP is the list. 

@@ -1,0 +1,60 @@
+world
+{
+	start()
+	{
+		local ret;
+		local list;
+
+		// New
+		list = listNew(5);
+		textln(list);
+		local x = 1;
+		while (x <= length(list))
+		{
+			list[x - 1] = x;
+			x = x + 1;
+		}
+		textln(list);
+
+		// Add		
+		ret = listAdd(list, 6);						// list = [1, 2, 3, 4, 5, 6], returns true
+		textln(list + ": " + ret);
+		ret = listAdd(list, "apple");				// list = [1, 2, 3, 4, 5, 6, "apple"], returns true
+		textln(list + ": " + ret);
+
+		// AddAt
+		ret = listAddAt(list, 7, 2);				// list = [1, 2, 7, 3, 4, 5, 6, "apple", "banana"], returns true
+		textln(list + ": " + ret);
+		ret = listAddAt(list, "banana", 10);		// list = [1, 2, 7, 3, 4, 5, 6, "apple", "banana"], returns true
+		textln(list + ": " + ret);
+
+		// Remove
+		ret = listRemove(list, 3);					// list = [1, 2, 7, 4, 5, 6, "apple", "banana"], returns true
+		textln(list + ": " + ret);
+		ret = listRemove(list, 100);				// list = [1, 2, 7, 4, 5, 6, "apple", "banana"], returns false 
+		textln(list + ": " + ret);
+
+		// RemoveAt
+		ret = listRemoveAt(list, 0);				// list = [2, 7, 4, 5, 6, "apple", "banana"], returns 1
+		textln(list + ": " + ret);
+		ret = listRemoveAt(list, 50);				// list = [2, 7, 4, 5, 6, "apple", "banana"], returns false
+		textln(list + ": " + ret);
+
+		// Index
+		textln(listIndex(list, 4));					// 2
+		textln(listIndex(list, 1));					// -1
+		textln(listIndex(list, "4"));				// -1
+
+		// Contains
+		textln(listContains(list, 4));				// true
+		textln(listContains(list, 1));				// false
+		textln(listContains(list, "4"));			// false
+
+		// Concatenation
+		textln(listConcat([1, 2, 3], [4, 5, 6]));	// [1, 2, 3, 4, 5, 6]
+		textln(listConcat([1, 2, 3], 4));			// [1, 2, 3, 4]
+		textln(listConcat("apple", "orange"));		// ["apple", "orange"]
+
+		quit;
+	}
+}
