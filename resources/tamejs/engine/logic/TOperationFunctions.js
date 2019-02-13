@@ -1370,6 +1370,69 @@ var TOperationFunctions =
 		}
 	},
 
+	/* STRREGEXFIND */
+	{
+		"name": 'STRREGEXFIND', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			// TODO: Finish this.
+		}
+	},
+	
+	/* STRREGEXFINDLAST */
+	{
+		"name": 'STRREGEXFINDLAST', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			// TODO: Finish this.
+		}
+	},
+	
+	/* STRREGEXGET */
+	{
+		"name": 'STRREGEXGET', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			// TODO: Finish this.
+		}
+	},
+	
+	/* STRREGEXGETLAST */
+	{
+		"name": 'STRREGEXGETLAST', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			// TODO: Finish this.
+		}
+	},
+	
+	/* STRREGEXGETALL */
+	{
+		"name": 'STRREGEXGETALL', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			// TODO: Finish this.
+		}
+	},
+	
+	/* STRREGEXMATCHES */
+	{
+		"name": 'STRREGEXMATCHES', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			// TODO: Finish this.
+		}
+	},
+		
+	/* STRREGEXSPLIT */
+	{
+		"name": 'STRREGEXSPLIT', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			// TODO: Finish this.
+		}
+	},
+		
 	/* LISTNEW */
 	{
 		"name": 'LISTNEW', 

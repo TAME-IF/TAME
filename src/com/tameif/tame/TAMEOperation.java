@@ -2028,7 +2028,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Tests if a string is a valid regular expression.
+	 * Tests if a string is a valid RegEx.
 	 * POP is the string.
 	 * Returns boolean.
 	 */
@@ -2058,6 +2058,132 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			return "RegEx Operations";
 		}
 
+	},
+	
+	/**
+	 * Tests if a string contains a pattern matched by a RegEx.
+	 * First POP is the RegEx String.
+	 * Second POP is the string to search.
+	 * Returns integer.
+	 */
+	STRREGEXFIND (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		// TODO: Finish this.
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
+	},
+	
+	/**
+	 * Tests if a string contains the last pattern matched by a RegEx.
+	 * First POP is the RegEx String.
+	 * Second POP is the string to search.
+	 * Returns integer.
+	 */
+	STRREGEXFINDLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		// TODO: Finish this.
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
+	},
+	
+	/**
+	 * Gets the first matching substring in a string that matches a RegEx.
+	 * First POP is the RegEx String.
+	 * Second POP is the string to search.
+	 * Returns string.
+	 */
+	STRREGEXGET (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		// TODO: Finish this.
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
+	},
+	
+	/**
+	 * Gets the last matching substring in a string that matches a RegEx.
+	 * First POP is the RegEx String.
+	 * Second POP is the string to search.
+	 * Returns string.
+	 */
+	STRREGEXGETLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		// TODO: Finish this.
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
+	},
+	
+	/**
+	 * Gets all matching substrings in a string that matches a RegEx.
+	 * First POP is the RegEx String.
+	 * Second POP is the string to search.
+	 * Returns list.
+	 */
+	STRREGEXGETALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		// TODO: Finish this.
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
+	},
+	
+	/**
+	 * Gets if a whole string matches a RegEx.
+	 * First POP is the RegEx String.
+	 * Second POP is the string to search.
+	 * Returns boolean.
+	 */
+	STRREGEXMATCHES (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		// TODO: Finish this.
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
+	},
+	
+	/**
+	 * Splits a string into many via a RegEx.
+	 * First POP is the RegEx String.
+	 * Second POP is the string to search.
+	 * Returns list.
+	 */
+	STRREGEXSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		// TODO: Finish this.
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
 	},
 	
 	/**
