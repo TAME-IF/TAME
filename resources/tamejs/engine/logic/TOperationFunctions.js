@@ -1350,6 +1350,26 @@ var TOperationFunctions =
 		}
 	},
 
+	/* STRISREGEX */
+	{
+		"name": 'STRISREGEX', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRISREGEX call.");
+
+			let pattern = TValue.asString(valPattern);
+			try {
+				new RegExp(pattern);
+				request.pushValue(TValue.createBoolean(true));
+			} catch (err) {
+				request.pushValue(TValue.createBoolean(false));
+			}
+		}
+	},
+
 	/* LISTNEW */
 	{
 		"name": 'LISTNEW', 

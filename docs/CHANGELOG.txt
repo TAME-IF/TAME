@@ -8,9 +8,9 @@
 
 	- Fixed ListAddAt() with a negative index - now it returns false, since
 	  nothing is added.
-	- Added ListNew() function.
+	- Added ListNew(), StrIsRegex() functions.
 	
-
+	
 0.9BETA13
 .........
 

@@ -1,0 +1,10 @@
+world
+{
+	start()
+	{
+		textln(StrIsRegex("asdf\\s\\+"));
+		textln(StrIsRegex("\\"));
+		
+		quit;
+	}
+}

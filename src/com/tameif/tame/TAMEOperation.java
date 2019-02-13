@@ -2028,6 +2028,39 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
+	 * Tests if a string is a valid regular expression.
+	 * POP is the string.
+	 * Returns boolean.
+	 */
+	STRISREGEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	{
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value valPattern = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRISREGEX call.");
+
+			String pattern = valPattern.asString(); 
+			
+			try {
+				Pattern.compile(pattern);
+				request.pushValue(Value.create(true));
+			} catch (PatternSyntaxException e) {
+				request.pushValue(Value.create(false));
+			}
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+
+	},
+	
+	/**
 	 * Makes a new list with a specific length.
 	 * POP is the initial capacity. 
 	 * Returns a list. 
