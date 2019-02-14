@@ -12,6 +12,7 @@ package com.tameif.tame;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -27,6 +28,7 @@ import com.tameif.tame.element.TWorld;
 import com.tameif.tame.element.TAction.Type;
 import com.tameif.tame.element.context.TElementContext;
 import com.tameif.tame.element.context.TOwnershipMap;
+import com.tameif.tame.exception.BadParameterExeception;
 import com.tameif.tame.exception.ModuleExecutionException;
 import com.tameif.tame.exception.UnexpectedValueTypeException;
 import com.tameif.tame.interrupt.BreakInterrupt;
@@ -43,6 +45,7 @@ import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
 import com.tameif.tame.lang.ValueHash;
 import com.tameif.tame.lang.ValueType;
+import com.tameif.tame.util.PatternCache;
 
 /**
  * The set of operations.
@@ -2045,7 +2048,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			String pattern = valPattern.asString(); 
 			
 			try {
-				Pattern.compile(pattern);
+				PatternCache.get(pattern);
 				request.pushValue(Value.create(true));
 			} catch (PatternSyntaxException e) {
 				request.pushValue(Value.create(false));
@@ -2068,7 +2071,30 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 */
 	STRREGEXFIND (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
-		// TODO: Finish this.
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value valPattern = request.popValue();
+			Value valInput = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXFIND call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXFIND call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+			}
+			
+			Matcher matcher = pattern.matcher(valInput.asString());
+			if (matcher.find())
+				request.pushValue(Value.create(matcher.start()));
+			else
+				request.pushValue(Value.create(-1));
+		}
 		
 		@Override
 		public String getGrouping()
@@ -2086,7 +2112,30 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 */
 	STRREGEXFINDLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
-		// TODO: Finish this.
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value valPattern = request.popValue();
+			Value valInput = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXFINDLAST call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXFINDLAST call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+			}
+			
+			Matcher matcher = pattern.matcher(valInput.asString());
+			int start = -1;
+			while (matcher.find())
+				start = matcher.start();
+			request.pushValue(Value.create(start));
+		}
 		
 		@Override
 		public String getGrouping()
@@ -2100,11 +2149,34 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Gets the first matching substring in a string that matches a RegEx.
 	 * First POP is the RegEx String.
 	 * Second POP is the string to search.
-	 * Returns string.
+	 * Returns string or boolean.
 	 */
 	STRREGEXGET (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
-		// TODO: Finish this.
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value valPattern = request.popValue();
+			Value valInput = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGET call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGET call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+			}
+			
+			Matcher matcher = pattern.matcher(valInput.asString());
+			if (matcher.find())
+				request.pushValue(Value.create(matcher.group()));
+			else
+				request.pushValue(Value.create(false));
+		}
 		
 		@Override
 		public String getGrouping()
@@ -2118,11 +2190,34 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Gets the last matching substring in a string that matches a RegEx.
 	 * First POP is the RegEx String.
 	 * Second POP is the string to search.
-	 * Returns string.
+	 * Returns string or boolean.
 	 */
 	STRREGEXGETLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
-		// TODO: Finish this.
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value valPattern = request.popValue();
+			Value valInput = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGETLAST call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGETLAST call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+			}
+			
+			Matcher matcher = pattern.matcher(valInput.asString());
+			String out = null;
+			while (matcher.find())
+				out = matcher.group();
+			request.pushValue(out != null ? Value.create(out) : Value.create(false));
+		}
 		
 		@Override
 		public String getGrouping()
@@ -2140,7 +2235,30 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 */
 	STRREGEXGETALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
-		// TODO: Finish this.
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value valPattern = request.popValue();
+			Value valInput = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGETLAST call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGETLAST call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+			}
+			
+			Matcher matcher = pattern.matcher(valInput.asString());
+			Value out = Value.createEmptyList(4);
+			while (matcher.find())
+				out.listAdd(Value.create(matcher.group()));
+			request.pushValue(out);
+		}
 		
 		@Override
 		public String getGrouping()
@@ -2158,7 +2276,12 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 */
 	STRREGEXMATCHES (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
-		// TODO: Finish this.
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			// TODO: Finish this.
+			request.pushValue(Value.create(false));
+		}
 		
 		@Override
 		public String getGrouping()
@@ -2176,7 +2299,12 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 */
 	STRREGEXSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
-		// TODO: Finish this.
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			// TODO: Finish this.
+			request.pushValue(Value.createEmptyList());
+		}
 		
 		@Override
 		public String getGrouping()

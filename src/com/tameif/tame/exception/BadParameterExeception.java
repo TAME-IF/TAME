@@ -9,37 +9,38 @@
  ******************************************************************************/
 package com.tameif.tame.exception;
 
-import java.io.IOException;
+import com.tameif.tame.TAMEFatalException;
 
 /**
- * Thrown when a JS Exporter exception occurs.
+ * Thrown when an operation deals with an author-made value that cannot be
+ * implicitly handled.
  * @author Matthew Tropiano
  */
-public class JSExportException extends IOException
+public class BadParameterExeception extends TAMEFatalException
 {
-	private static final long serialVersionUID = 1132950289635623481L;
+	private static final long serialVersionUID = 3977795940884710775L;
 
-	public JSExportException()
+	public BadParameterExeception()
 	{
 		super();
 	}
 
-	public JSExportException(String message, Throwable cause)
+	public BadParameterExeception(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
 
-	public JSExportException(String message) 
+	public BadParameterExeception(String message) 
 	{
 		super(message);
 	}
 
-	public JSExportException(String message, Object ... args) 
+	public BadParameterExeception(String message, Object ... args) 
 	{
 		super(String.format(message, args));
 	}
 
-	public JSExportException(Throwable cause)
+	public BadParameterExeception(Throwable cause)
 	{
 		super(cause);
 	}

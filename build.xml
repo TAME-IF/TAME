@@ -34,7 +34,8 @@
 		com.tameif.tame.exception,
 		com.tameif.tame.factory,
 		com.tameif.tame.interrupt,
-		com.tameif.tame.lang
+		com.tameif.tame.lang,
+		com.tameif.tame.util
 	"/>
 
 	<import file="build-import.xml" />

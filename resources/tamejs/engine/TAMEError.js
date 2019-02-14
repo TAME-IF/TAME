@@ -27,7 +27,8 @@ TAMEError.Type =
 	"Arithmetic": "Arithmetic",
 	"ArithmeticStackState": "ArithmeticStackState",
 	"RunawayRequest": "RunawayRequest",
-	"UnexpectedValueType": "UnexpectedValueType"
+	"UnexpectedValueType": "UnexpectedValueType",
+	"BadParameter": "BadParameter"
 };
 
 TAMEError.prototype.toString = function()
@@ -44,6 +45,7 @@ TAMEError.Arithmetic = function(message) {return new TAMEError(TAMEError.Type.Ar
 TAMEError.ArithmeticStackState = function(message) {return new TAMEError(TAMEError.Type.ArithmeticStackState, message);};
 TAMEError.RunawayRequest = function(message) {return new TAMEError(TAMEError.Type.RunawayRequest, message);};
 TAMEError.UnexpectedValueType = function(message) {return new TAMEError(TAMEError.Type.UnexpectedValueType, message);};
+TAMEError.BadParameter = function(message) {return new TAMEError(TAMEError.Type.BadParameter, message);};
 
 //[[EXPORTJS-END
 
