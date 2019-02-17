@@ -29,6 +29,11 @@ public final class PatternCache
 	/** The main cache map. */
 	private static HashMap<String, Pattern> cacheMap;
 	
+	static
+	{
+		cacheMap = new HashMap<>(8);
+	}
+	
 	/**
 	 * Gets an existing, compiled pattern or a newly-compiled one for the provided expression.
 	 * Also useful for pre-warming oft-used expressions.

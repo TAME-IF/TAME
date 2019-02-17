@@ -1350,19 +1350,18 @@ var TOperationFunctions =
 		}
 	},
 
-	/* STRISREGEX */
+	/* ISREGEX */
 	{
-		"name": 'STRISREGEX', 
+		"name": 'ISREGEX', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let valPattern = request.popValue();
 			
 			if (!TValue.isLiteral(valPattern))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRISREGEX call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in ISREGEX call.");
 
-			let pattern = TValue.asString(valPattern);
 			try {
-				new RegExp(pattern);
+				new RegExp(TValue.asString(valPattern));
 				request.pushValue(TValue.createBoolean(true));
 			} catch (err) {
 				request.pushValue(TValue.createBoolean(false));
@@ -1370,66 +1369,233 @@ var TOperationFunctions =
 		}
 	},
 
-	/* STRREGEXFIND */
+	/* REGEXCONTAINS */
 	{
-		"name": 'STRREGEXFIND', 
+		"name": 'REGEXCONTAINS', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			// TODO: Finish this.
+			let valInput = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXCONTAINS call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXCONTAINS call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let input = TValue.asString(valInput);
+			let result = pattern.test(input);
+			request.pushValue(TValue.createBoolean(pattern.test(input)));
 		}
 	},
 	
-	/* STRREGEXFINDLAST */
+	/* REGEXFIND */
 	{
-		"name": 'STRREGEXFINDLAST', 
+		"name": 'REGEXFIND', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			// TODO: Finish this.
+			let valInput = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXFIND call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXFIND call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let input = TValue.asString(valInput);
+			let result = pattern.exec(input);
+			if (result)
+				request.pushValue(TValue.createInteger(result.index));
+			else
+				request.pushValue(TValue.createInteger(-1));
 		}
 	},
 	
-	/* STRREGEXGET */
+	/* REGEXFINDLAST */
 	{
-		"name": 'STRREGEXGET', 
+		"name": 'REGEXFINDLAST', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			// TODO: Finish this.
+			let valInput = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXFINDLAST call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXFINDLAST call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let input = TValue.asString(valInput);
+			let result = null;
+			let index = -1;
+			while (result = pattern.exec(input))
+				index = result.index;
+			request.pushValue(TValue.createInteger(index));
 		}
 	},
 	
-	/* STRREGEXGETLAST */
+	/* REGEXGET */
 	{
-		"name": 'STRREGEXGETLAST', 
+		"name": 'REGEXGET', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			// TODO: Finish this.
+			let valInput = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXGET call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXGET call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let input = TValue.asString(valInput);
+			let result = pattern.exec(input);
+			if (result)
+				request.pushValue(TValue.createString(result[0]));
+			else
+				request.pushValue(TValue.createBoolean(false));
 		}
 	},
 	
-	/* STRREGEXGETALL */
+	/* REGEXGETLAST */
 	{
-		"name": 'STRREGEXGETALL', 
+		"name": 'REGEXGETLAST', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			// TODO: Finish this.
+			let valInput = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXGETLAST call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXGETLAST call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let input = TValue.asString(valInput);
+			let result = null;
+			let found = null;
+			while (result = pattern.exec(input))
+				found = result[0];
+			if (found !== null)
+				request.pushValue(TValue.createString(found));
+			else
+				request.pushValue(TValue.createBoolean(false));
 		}
 	},
 	
-	/* STRREGEXMATCHES */
+	/* REGEXGETALL */
 	{
-		"name": 'STRREGEXMATCHES', 
+		"name": 'REGEXGETALL', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			// TODO: Finish this.
+			let valInput = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXGETALL call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXGETALL call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let input = TValue.asString(valInput);
+			let out = TValue.createList([]);
+			while (result = pattern.exec(input))
+				TValue.listAdd(out, TValue.createString(result[0]));
+			request.pushValue(out);
+		}
+	},
+	
+	/* REGEXMATCHES */
+	{
+		"name": 'REGEXMATCHES', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			let valInput = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXMATCHES call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXMATCHES call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let input = TValue.asString(valInput);
+			let result = pattern.exec(input);
+			if (result)
+				request.pushValue(TValue.createBoolean(input === result[0]));
+			else
+				request.pushValue(TValue.createBoolean(false));
 		}
 	},
 		
-	/* STRREGEXSPLIT */
+	/* REGEXSPLIT */
 	{
-		"name": 'STRREGEXSPLIT', 
+		"name": 'REGEXSPLIT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
-			// TODO: Finish this.
+			let valInput = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXMATCHES call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXMATCHES call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let out = TValue.createList([]);
+			let tokens = TValue.asString(valInput).split(pattern);
+			for (let i = 0; i < tokens.length; i++)
+				TValue.listAdd(out, TValue.createString(tokens[i]));
+			request.pushValue(out);
 		}
 	},
 		

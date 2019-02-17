@@ -2035,7 +2035,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * POP is the string.
 	 * Returns boolean.
 	 */
-	STRISREGEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
+	ISREGEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
@@ -2043,7 +2043,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRISREGEX call.");
+				throw new UnexpectedValueTypeException("Expected literal type in ISREGEX call.");
 
 			String pattern = valPattern.asString(); 
 			
@@ -2065,22 +2065,59 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Tests if a string contains a pattern matched by a RegEx.
-	 * First POP is the RegEx String.
-	 * Second POP is the string to search.
-	 * Returns integer.
+	 * First POP is the string to search.
+	 * Second POP is the RegEx String.
+	 * Returns boolean.
 	 */
-	STRREGEXFIND (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	REGEXCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			Value valPattern = request.popValue();
 			Value valInput = request.popValue();
+			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXFIND call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXCONTAINS call.");
 			if (!valInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXFIND call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXCONTAINS call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+			}
+			
+			request.pushValue(Value.create(pattern.matcher(valInput.asString()).find()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
+	},
+	
+	/**
+	 * Tests if a string contains a pattern matched by a RegEx.
+	 * First POP is the RegEx String.
+	 * Second POP is the string to search.
+	 * Returns integer.
+	 */
+	REGEXFIND (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value valInput = request.popValue();
+			Value valPattern = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXFIND call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXFIND call.");
 
 			Pattern pattern;
 			try {
@@ -2110,18 +2147,18 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the string to search.
 	 * Returns integer.
 	 */
-	STRREGEXFINDLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	REGEXFINDLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			Value valPattern = request.popValue();
 			Value valInput = request.popValue();
+			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXFINDLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXFINDLAST call.");
 			if (!valInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXFINDLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXFINDLAST call.");
 
 			Pattern pattern;
 			try {
@@ -2151,18 +2188,18 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the string to search.
 	 * Returns string or boolean.
 	 */
-	STRREGEXGET (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	REGEXGET (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			Value valPattern = request.popValue();
 			Value valInput = request.popValue();
+			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGET call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGET call.");
 			if (!valInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGET call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGET call.");
 
 			Pattern pattern;
 			try {
@@ -2192,18 +2229,18 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the string to search.
 	 * Returns string or boolean.
 	 */
-	STRREGEXGETLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	REGEXGETLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			Value valPattern = request.popValue();
 			Value valInput = request.popValue();
+			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
 			if (!valInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
 
 			Pattern pattern;
 			try {
@@ -2233,18 +2270,18 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the string to search.
 	 * Returns list.
 	 */
-	STRREGEXGETALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	REGEXGETALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			Value valPattern = request.popValue();
 			Value valInput = request.popValue();
+			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
 			if (!valInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRREGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
 
 			Pattern pattern;
 			try {
@@ -2274,13 +2311,27 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the string to search.
 	 * Returns boolean.
 	 */
-	STRREGEXMATCHES (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	REGEXMATCHES (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			// TODO: Finish this.
-			request.pushValue(Value.create(false));
+			Value valInput = request.popValue();
+			Value valPattern = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+			}
+			
+			request.pushValue(Value.create(pattern.matcher(valInput.asString()).matches()));
 		}
 		
 		@Override
@@ -2297,13 +2348,30 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is the string to search.
 	 * Returns list.
 	 */
-	STRREGEXSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	REGEXSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
 		{
-			// TODO: Finish this.
-			request.pushValue(Value.createEmptyList());
+			Value valInput = request.popValue();
+			Value valPattern = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+			}
+			
+			Value out = Value.createEmptyList(4);
+			for (String s : pattern.split(valInput.asString()))
+				out.listAdd(Value.create(s));
+			request.pushValue(out);
 		}
 		
 		@Override

@@ -2,8 +2,38 @@ world
 {
 	start()
 	{
-		textln(StrIsRegex("asdf\\s\\+"));
-		textln(StrIsRegex("\\"));
+		textln(IsRegex("asdf\\s\\+"));	// true
+		textln(IsRegex("\\"));			// false
+		textln("");
+		
+		s = "Apples and Oranges! 12345.67890";
+		
+		textln(RegexFind("[A-Za-z]+", s));
+		textln(RegexFind("[0-9]+", s));
+		textln("");
+
+		textln(RegexFindLast("[A-Za-z]+", s));
+		textln(RegexFindLast("[0-9]+", s));
+		textln("");
+
+		textln(RegexGet("[A-Za-z]+", s));
+		textln(RegexGet("[0-9]+", s));
+		textln("");
+
+		textln(RegexGetLast("[A-Za-z]+", s));
+		textln(RegexGetLast("[0-9]+", s));
+		textln("");
+
+		textln(RegexGetAll("[A-Za-z]+", s));
+		textln(RegexGetAll("[0-9]+", s));
+		textln("");
+
+		textln(RegexMatches("[A-Za-z]+", s));
+		textln(RegexMatches("[A-Za-z]+", "Apples"));
+		textln("");
+
+		textln(RegexSplit("[\\s]+", s));
+		textln(RegexSplit("[\\s!\\.]+", s));
 		
 		quit;
 	}

@@ -8,7 +8,9 @@
 
 	- Fixed ListAddAt() with a negative index - now it returns false, since
 	  nothing is added.
-	- Added ListNew(), StrIsRegex() functions.
+	- Added ListNew(), IsRegex(), RegexFind(), RegexFindLast(), RegexGet(), 
+	  RegexGetLast(), RegexGetAll(), RegexMatches(), and RegexSplit() 
+	  functions.
 	
 	
 0.9BETA13
