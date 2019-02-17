@@ -25,6 +25,7 @@
 	<property name="project.java.modules" value="java.base" />
 	<property name="project.javadoc.title" value="TAME" />
 	<property name="project.classpath" value="${common.lib}${S}${common.io.lib}${S}${common.lang.lib}" />
+	<property name="project.compiler.bootclasspath" value="" />
 	<property name="project.javadoc.packages" value="
 		com.tameif.tame,
 		com.tameif.tame.compiler,
@@ -99,12 +100,14 @@
 
 	<target name="compile" depends="init.compile, get.os, compile.scripts.windows, compile.scripts.bash" description="Compiles the project, excluding test classes.">
 		<javac
+			compiler="javac1.8"
 			source="1.8"
 			target="1.8"
 			srcdir="${src.dir}"
 			destdir="${bin.dir}"
             includeAntRuntime="false"
 			classpath="${project.classpath}"
+			bootclasspath="${project.compiler.bootclasspath}"
 			debug="off"
 		/>
 		<mkdir dir="${bin.dir}/tamejs" />
@@ -116,12 +119,14 @@
 
 	<target name="compile.tests.only" description="Compiles test classes.">
 		<javac
+			compiler="javac1.8"
 			source="1.8"
 			target="1.8"
 			srcdir="${src.test.dir}"
 			destdir="${bin.dir}"
             includeAntRuntime="false"
 			classpath="${project.classpath}${S}${bin.dir}"
+			bootclasspath="${project.compiler.bootclasspath}"
 			debug="off"
 		/>
 	</target>
