@@ -267,7 +267,7 @@
 	<target name="uglify.check.bash" if="${os.bash}">
 		<exec executable="/bin/bash" failonerror="false" resultproperty="uglify.check.result" output="/dev/null">
 			<arg value="-c"/>
-			<arg value="which -s uglifyjs"/>
+			<arg value="which uglifyjs"/>
 		</exec>
 		<condition property="uglify.not.exists" value="true" else="false">
 			<not>
