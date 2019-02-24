@@ -3,6 +3,15 @@
     (C) 2019 Matt Tropiano
 ==============================================================================
 
+0.9BETA15
+.........
+
+	- Fixed: The power operator (**) was being parsed as a valid delimiter,
+	  but not an operator.
+	- Fixed: The single equals (=) should not have been considered a binary
+	  expression operator.
+
+
 0.9BETA14
 .........
 

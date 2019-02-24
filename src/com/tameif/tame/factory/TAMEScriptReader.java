@@ -3853,6 +3853,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				case TSKernel.TYPE_STAR:
 				case TSKernel.TYPE_SLASH:
 				case TSKernel.TYPE_PERCENT:
+				case TSKernel.TYPE_STARSTAR:
 				case TSKernel.TYPE_AMPERSAND:
 				case TSKernel.TYPE_PIPE:
 				case TSKernel.TYPE_CARAT:
@@ -3860,7 +3861,6 @@ public final class TAMEScriptReader implements TAMEConstants
 				case TSKernel.TYPE_GREATEREQUAL:
 				case TSKernel.TYPE_LESS:
 				case TSKernel.TYPE_LESSEQUAL:
-				case TSKernel.TYPE_EQUAL:
 				case TSKernel.TYPE_EQUAL2:
 				case TSKernel.TYPE_EQUAL3:
 				case TSKernel.TYPE_NOTEQUAL:
