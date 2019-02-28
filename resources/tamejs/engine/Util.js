@@ -210,7 +210,7 @@ Util.formatDate = function(date, formatstring, utc)
 	};
 
 	// The regular expression for finding all pertinent tokens.
-	let _DATEFORMATREGEX = /G+|Y+|y+|M+|w+|W+|D+|d+|F+|E+|a+|H+|k+|K+|h+|m+|s+|S+|z+|Z+|'.*'/g;
+	let _DATEFORMATREGEX = /G+|Y+|y+|M+|d+|F+|E+|a+|H+|k+|K+|h+|m+|s+|S+|z+|Z+|'.*'/g;
 
 	/* Mapping of token types to value function. All return strings. */
 	let _TOKENFUNCS =
