@@ -3,6 +3,13 @@
     (C) 2019 Matt Tropiano
 ==============================================================================
 
+0.9BETA16
+.........
+
+	- Fixed: Made TimeFormat() consistent across implementations.
+	- Changed: Removed some unnecessary time functions.
+
+
 0.9BETA15
 .........
 
