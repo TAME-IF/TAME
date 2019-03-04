@@ -9,8 +9,6 @@
  ******************************************************************************/
 package com.tameif.tame;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,6 +43,7 @@ import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
 import com.tameif.tame.lang.ValueHash;
 import com.tameif.tame.lang.ValueType;
+import com.tameif.tame.util.DateUtils;
 import com.tameif.tame.util.PatternCache;
 
 /**
@@ -3132,7 +3131,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * Second POP is date value.
 	 * Returns string.
 	 */
-	FORMATTIME (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	TIMEFORMAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
@@ -3141,14 +3140,14 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			Value valueFirst = request.popValue();
 			
 			if (!valueSecond.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in FORMATDATE call.");
+				throw new UnexpectedValueTypeException("Expected literal type in TIMEFORMAT call.");
 			if (!valueFirst.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in FORMATDATE call.");
+				throw new UnexpectedValueTypeException("Expected literal type in TIMEFORMAT call.");
 
 			long date = valueFirst.asLong();
 			String format = valueSecond.asString();
 			
-			request.pushValue(Value.create((new SimpleDateFormat(format)).format(new Date(date))));
+			request.pushValue(Value.create(DateUtils.formatTime(DateUtils.DEFAULT_LOCALE, date, format)));
 		}
 		
 		@Override

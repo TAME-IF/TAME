@@ -1,0 +1,16 @@
+world
+{
+	start()
+	{
+		t = time();
+		// E+|e+|y+|M+|d+|w+|W+|a+|A+|h+|H+|k+|K+|m+|s+|S+|z+|Z+|X+|'.*'
+		textln(timeformat(t, "E e y-M-d w W a A h H k K m s S z Z X 'stuff'"));
+		textln(timeformat(t, "EE ee yy-MM-dd ww WW aa AA hh HH kk KK mm ss SS zz ZZ XX 'stuff'"));
+		textln(timeformat(t, "EEE eee yyy-MMM-ddd www WWW aaa AAA hhh HHH kkk KKK mmm sss SSS zzz ZZZ XXX 'stuff'"));
+		textln(timeformat(t, "EEEE eeee yyyy-MMMM-dddd wwww WWWW aaaa AAAA hhhh HHHH kkkk KKKK mmmm ssss SSSS zzzz ZZZZ XXXX 'stuff'"));
+		textln(timeformat(t, "EEEEE eeeee yyyyy-MMMMM-ddddd wwwww WWWWW aaaaa AAAAA hhhhh HHHHH kkkkk KKKKK mmmmm sssss SSSSS zzzzz ZZZZZ XXXXX 'stuff'"));
+		textln("");
+		textln("The current time is: " + timeformat(time(), "WWWW MMMM d, yyyy kk:mm:ss'' SSS\" aa z"));
+		quit;
+	}
+}

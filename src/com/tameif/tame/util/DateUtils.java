@@ -9,7 +9,13 @@
  ******************************************************************************/
 package com.tameif.tame.util;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.blackrook.commons.hash.HashMap;
+import com.blackrook.commons.math.RMath;
 
 /**
  * Utility class for date-related stuff.
@@ -19,7 +25,7 @@ public final class DateUtils
 {
 	// The date format pattern.
 	private static final Pattern DATE_FORMAT_PATTERN = Pattern.compile(
-		"G+|y+|M+|d+|E+|u+|a+|A+|h+|H+|k+|K+|m+|s+|S+|z+|Z+|X+|'.*'"
+		"E+|e+|y+|M+|d+|w+|W+|a+|A+|h+|H+|k+|K+|m+|s+|S+|z+|Z+|X+|'.*'"
 	);
 	
 	/**
@@ -55,7 +61,7 @@ public final class DateUtils
 	 * Formats a millisecond time into a formatted date string.
 	 * <p>Uses repeated patterns of the following letters to output parts of a number that represents a
 	 * point in time. The formatting string can output quoted characters as-is if those series of 
-	 * characters are enclosed in single-quotes (<kbd>'</kbd>).
+	 * characters are enclosed in single-quotes (<kbd>'</kbd>). Unrecognized characters are output as-is.
 	 * <p>"Text" types print full names at 4 or more of the same letter (or may max out at less letters), 
 	 * "number" types print a minimum of the amount of digits represented by the amount of letters, padding 
 	 * the rest of the digits with zeroes, "month" types print numbers at 2 or less letters, text at 3 or more.  
@@ -70,8 +76,14 @@ public final class DateUtils
 	 * 		</thead>
 	 *		<tbody>
 	 * 			<tr>
-	 * 				<td>G</td>
-	 * 				<td>Era Designator</td>
+	 * 				<td>e</td>
+	 * 				<td>Era Designator (lowercase)</td>
+	 * 				<td>Text</td>
+	 * 				<td>a; ad</td>
+	 * 			</tr>
+	 * 			<tr>
+	 * 				<td>E</td>
+	 * 				<td>Era Designator (uppercase)</td>
 	 * 				<td>Text</td>
 	 * 				<td>A; AD</td>
 	 * 			</tr>
@@ -94,14 +106,14 @@ public final class DateUtils
 	 * 				<td>5; 05</td>
 	 * 			</tr>
 	 * 			<tr>
-	 * 				<td>E</td>
+	 * 				<td>W</td>
 	 * 				<td>Day of Week in Month (Name)</td>
 	 * 				<td>Text</td>
 	 * 				<td>T; Tu; Tue; Tuesday</td>
 	 * 			</tr>
 	 * 			<tr>
-	 * 				<td>u</td>
-	 * 				<td>Day Number of Week (1=Monday, ... , 7=Sunday)</td>
+	 * 				<td>w</td>
+	 * 				<td>Day Number of Week (0=Sunday, ... , 6=Saturday)</td>
 	 * 				<td>Number</td>
 	 * 				<td>2</td>
 	 * 			</tr>
@@ -113,7 +125,7 @@ public final class DateUtils
 	 * 			</tr>
 	 * 			<tr>
 	 * 				<td>A</td>
-	 * 				<td>am/pm marker (upper case)</td>
+	 * 				<td>AM/PM marker (upper case)</td>
 	 * 				<td>Text</td>
 	 * 				<td>A; AM</td>
 	 * 			</tr>
@@ -180,16 +192,180 @@ public final class DateUtils
 	 *		</tbody>
 	 * </table>
 	 * <p>
+	 * @param locale the locale type to use for the names of days and months.
 	 * @param time the input time in milliseconds since the epoch.
 	 * @param formatString the formatting string.
-	 * @param utc if true, interpret as UTC.
 	 * @return the output string.
 	 */
-	public static String formatTime(DateLocale locale, long time, String formatString, boolean utc)
+	public static String formatTime(final DateLocale locale, final long time, final String formatString)
 	{
+		final Calendar calendar = new GregorianCalendar();
+		calendar.setTimeInMillis(time);
+		
+		Matcher matcher = DATE_FORMAT_PATTERN.matcher(formatString);
+		
+		// E+|e+|y+|M+|d+|W+|u+|a+|A+|h+|H+|k+|K+|m+|s+|S+|z+|Z+|X+|'.*'
+		HashMap<Character, FormatFunction> FORMAT_FUNCS = new HashMap<Character, FormatFunction>()
+		{{
+			put('E', (locale, token, date, sb)->
+			{
+				int val = date.get(Calendar.ERA);
+				if (val == GregorianCalendar.BC)
+					sb.append(token.length() < 2 ? "B" : "BC");
+				else
+					sb.append(token.length() < 2 ? "A" : "AD");
+			});
+			put('e', (locale, token, date, sb)->
+			{
+				int val = date.get(Calendar.ERA);
+				if (val == GregorianCalendar.BC)
+					sb.append(token.length() < 2 ? "b" : "bc");
+				else
+					sb.append(token.length() < 2 ? "a" : "ad");
+			});
+			put('y', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.YEAR)));
+			});
+			put('M', (locale, token, date, sb)->
+			{
+				if (token.length() <= 2)
+					sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MONTH) + 1));
+				else
+				{
+					int month = date.get(Calendar.MONTH);
+					sb.append(locale.getMonthsOfYear()[RMath.clampValue(token.length() - 3, 0, 1)][month]);
+				}
+			});
+			put('d', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.DAY_OF_MONTH)));
+			});
+			put('W', (locale, token, date, sb)->
+			{
+				sb.append(locale.getDaysOfWeek()[RMath.clampValue(token.length() - 1, 0, 3)][date.get(Calendar.DAY_OF_WEEK) - 1]);
+			});
+			put('w', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.DAY_OF_WEEK) - 1));
+			});
+			put('a', (locale, token, date, sb)->
+			{
+				int val = date.get(Calendar.HOUR_OF_DAY);
+				if (val < 12)
+					sb.append(token.length() < 2 ? "a" : "am");
+				else
+					sb.append(token.length() < 2 ? "p" : "pm");
+			});
+			put('A', (locale, token, date, sb)->
+			{
+				int val = date.get(Calendar.HOUR_OF_DAY);
+				if (val < 12)
+					sb.append(token.length() < 2 ? "A" : "AM");
+				else
+					sb.append(token.length() < 2 ? "P" : "PM");
+			});
+			put('h', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY)));
+			});
+			put('H', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY) + 1));
+			});
+			put('k', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY) % 12));
+			});
+			put('K', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", (date.get(Calendar.HOUR_OF_DAY) % 12) + 1));
+			});
+			put('m', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MINUTE)));
+			});
+			put('s', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.SECOND)));
+			});
+			put('S', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MILLISECOND)));
+			});
+			put('z', (locale, token, date, sb)->
+			{
+				int minuteOffset = calendar.get(Calendar.ZONE_OFFSET) / (60 * 1000);
+				int absMinuteOffset = Math.abs(minuteOffset);
+				sb.append(String.format("GMT%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+			});
+			put('Z', (locale, token, date, sb)->
+			{
+				int minuteOffset = calendar.get(Calendar.ZONE_OFFSET) / (60 * 1000);
+				int absMinuteOffset = Math.abs(minuteOffset);
+				sb.append(String.format("%c%02d%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+			});
+			put('X', (locale, token, date, sb)->
+			{
+				int minuteOffset = calendar.get(Calendar.ZONE_OFFSET) / (60 * 1000);
+				int absMinuteOffset = Math.abs(minuteOffset);
+				switch (token.length())
+				{
+					case 1:
+						sb.append(String.format("%c%d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60));
+						break;
+					case 2:
+						sb.append(String.format("%c%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60));
+						break;
+					case 3:
+						sb.append(String.format("%c%02d%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+						break;
+					case 4:
+						sb.append(String.format("%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+						break;
+					default:
+						sb.append(String.format("GMT%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+						break;
+				}
+			});
+			put('\'', (locale, token, date, sb)->
+			{
+				if (token.length() - 2 == 0)
+					sb.append('\'');
+				else
+					sb.append(token.substring(1, token.length() - 1));
+			});
+		}};
+		
+		int lastEnd = 0; 
 		StringBuilder sb = new StringBuilder();
-		// TODO: Finish this.
+		while (matcher.find())
+		{
+			int start = matcher.start();
+			if (start > lastEnd)
+				sb.append(formatString.substring(lastEnd, start));
+			
+			FormatFunction func;
+			char fc = formatString.charAt(start);
+			if ((func = FORMAT_FUNCS.get(fc)) != null)
+				func.format(locale, matcher.group(), calendar, sb);
+			
+			lastEnd = matcher.end();
+		}
+		
+		if (lastEnd < formatString.length())
+			sb.append(formatString.substring(lastEnd));
+		
 		return sb.toString();
+	}
+	
+	/**
+	 * Format functions.
+	 */
+	@FunctionalInterface
+	private static interface FormatFunction
+	{
+		void format(DateLocale locale, String token, Calendar date, StringBuilder builder);
 	}
 	
 	/**

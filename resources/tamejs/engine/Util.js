@@ -180,18 +180,22 @@ Util.withEscChars = function(text)
 };
 
 // formatDate - Return a string that is a formatted date. Similar to SimpleDateFormat in Java.
-Util.formatDate = function(date, formatstring, utc) 
+Util.formatDate = function(date, formatstring) 
 {
 	// Enumerations and stuff.
-	let _DAYINWEEK = [
-		['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-		['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-		['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-	];
-	let _MONTHINYEAR = [
-		['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], // MMM
-		['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] // MMMM
-	];
+	let DEFAULT_LOCALE = 
+	{
+		"dayInWeek": [
+			['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+			['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+			['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+			['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+		],
+		"monthInYear": [
+			['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], // MMM
+			['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] // MMMM
+		]
+	};
 
 	let _PAD = function(value, len)
 	{
@@ -210,166 +214,161 @@ Util.formatDate = function(date, formatstring, utc)
 	};
 
 	// The regular expression for finding all pertinent tokens.
-	let _DATEFORMATREGEX = /G+|Y+|y+|M+|d+|F+|E+|a+|H+|k+|K+|h+|m+|s+|S+|z+|Z+|'.*'/g;
+	let _DATEFORMATREGEX = /e+|E+|y+|M+|d+|w+|W+|a+|A+|h+|H+|k+|K+|m+|s+|S+|z+|Z+|X+|'.*'/g;
 
 	/* Mapping of token types to value function. All return strings. */
+	// TODO: Finish this.
 	let _TOKENFUNCS =
 	{
-		"G": function(token, date, utc)
+		"e": function(locale, token, date)
 		{
-			if ((utc ? date.getUTCFullYear() : date.getFullYear()) < 0)
-				return token.length === 1 ? 'B' : 'BC';
+			let val = date.getFullYear();
+			if (val < 0)
+				return token.length < 2 ? "b" : "bc";
 			else
-				return token.length === 1 ? 'A' : 'AD';
+				return token.length < 2 ? "a" : "ad";
 		},
-		"Y": function(token, date, utc)
+		"E": function(locale, token, date)
 		{
-			let year = (utc ? date.getUTCFullYear() : date.getFullYear());
-			if (token.length === 2)
-				return Math.floor(year % 100)+'';
+			let val = date.getFullYear();
+			if (val < 0)
+				return token.length < 2 ? "B" : "BC";
 			else
-				return _PAD(year, token.length);
+				return token.length < 2 ? "A" : "AD";
 		},
-		"y": function(token, date, utc)
+		"y": function(locale, token, date)
 		{
-			let year = (utc ? date.getUTCFullYear() : date.getFullYear());
-			if (token.length === 2)
-				return Math.floor(year % 100)+'';
+			return _PAD(date.getFullYear(), token.length);
+		},
+		"M": function(locale, token, date)
+		{
+			if (token.length <= 2)
+				return _PAD(date.getMonth() + 1, token.length);
 			else
-				return _PAD(year, token.length);
+			{
+				let month = date.getMonth();
+				let index = Math.min(Math.max(token.length - 3, 0), 1);
+				return locale.monthInYear[index][month];
+			}
 		},
-		"M": function(token, date, utc)
+		"d": function(locale, token, date)
 		{
-			let month = (utc ? date.getUTCMonth() : date.getMonth());
-			if (token.length === 1)
-				return (month + 1)+'';
-			else if (token.length === 2)
-				return _PAD(month + 1, 2);
-			else if (token.length === 3)
-				return _MONTHINYEAR[0][month];
+			return _PAD(date.getDate(), token.length);
+		},
+		"W": function(locale, token, date)
+		{
+			let index = Math.min(Math.max(token.length - 1, 0), 3);
+			let day = date.getDay();
+			return locale.dayInWeek[index][day];
+		},
+		"w": function(locale, token, date)
+		{
+			return _PAD(date.getDay(), token.length);
+		},
+		"a": function(locale, token, date)
+		{
+			let val = date.getHours();
+			if (val < 12)
+				return token.length < 2 ? "a" : "am";
 			else
-				return _MONTHINYEAR[1][month];
+				return token.length < 2 ? "p" : "pm";
 		},
-		"d": function(token, date, utc)
+		"A": function(locale, token, date)
 		{
-			let d = (utc ? date.getUTCDate() : date.getDate());
-			if (token.length === 1)
-				return d+'';
+			let val = date.getHours();
+			if (val < 12)
+				return token.length < 2 ? "A" : "AM";
 			else
-				return _PAD(d, token.length);
+				return token.length < 2 ? "P" : "PM";
 		},
-		"E": function(token, date, utc)
+		"h": function(locale, token, date)
 		{
-			let day = (utc ? date.getUTCDay() : date.getDay());
-			if (token.length === 1)
-				return day+'';
-			else if (token.length === 2)
-				return _DAYINWEEK[0][day];
-			else if (token.length === 3)
-				return _DAYINWEEK[1][day];
-			else
-				return _DAYINWEEK[2][day];
+			return _PAD(date.getHours(), token.length);
 		},
-		"a": function(token, date, utc)
+		"H": function(locale, token, date)
 		{
-			let pm = (utc ? date.getUTCHours() >= 12 : date.getHours() >= 12);
-			if (token.length === 1)
-				return pm ? 'P' : 'A';
-			else
-				return pm ? 'PM' : 'AM';
+			return _PAD(date.getHours() + 1, token.length);
 		},
-		"H": function(token, date, utc)
+		"k": function(locale, token, date)
 		{
-			let hours = (utc ? date.getUTCHours() : date.getHours());
-			if (token.length === 1)
-				return hours+'';
-			else
-				return _PAD(hours, token.length);
+			return _PAD(date.getHours() % 12, token.length);
 		},
-		"k": function(token, date, utc)
+		"K": function(locale, token, date)
 		{
-			let hours = (utc ? date.getUTCHours() : date.getHours()) + 1;
-			if (token.length === 1)
-				return hours+'';
-			else
-				return _PAD(hours, token.length);
+			return _PAD((date.getHours() % 12) + 1, token.length);
 		},
-		"K": function(token, date, utc)
+		"m": function(locale, token, date)
 		{
-			let hours = Math.floor((utc ? date.getUTCHours() : date.getHours()) % 12);
-			if (token.length === 1)
-				return hours+'';
-			else
-				return _PAD(hours, token.length);
+			return _PAD(date.getMinutes(), token.length);
 		},
-		"h": function(token, date, utc)
+		"s": function(locale, token, date)
 		{
-			let hours = Math.floor((utc ? date.getUTCHours() : date.getHours()) % 12);
-			if (hours === 0)
-				hours = 12;
-			if (token.length === 1)
-				return hours+'';
-			else
-				return _PAD(hours, token.length);
+			return _PAD(date.getSeconds(), token.length);
 		},
-		"m": function(token, date, utc)
+		"S": function(locale, token, date)
 		{
-			let minutes = (utc ? date.getUTCMinutes() : date.getMinutes());
-			if (token.length === 1)
-				return minutes+'';
-			else
-				return _PAD(minutes, token.length);
+			return _PAD(date.getMilliseconds(), token.length);
 		},
-		"s": function(token, date, utc)
+		"z": function(locale, token, date)
 		{
-			let seconds = (utc ? date.getUTCSeconds() : date.getSeconds());
-			if (token.length === 1)
-				return seconds+'';
-			else
-				return _PAD(seconds, token.length);
+			let minuteOffset = date.getTimezoneOffset();
+			let absMinuteOffset = Math.abs(date.getTimezoneOffset());
+			return "GMT" + (minuteOffset > 0 ? "-" : "+") + _PAD(absMinuteOffset / 60, 2) + ":" + _PAD(absMinuteOffset % 60, 2);
 		},
-		"S": function(token, date, utc)
+		"Z": function(locale, token, date)
 		{
-			let millis = (utc ? date.getUTCMilliseconds() : date.getMilliseconds());
-			if (token.length === 1)
-				return Math.round(millis / 100) + '';
-			else if (token.length === 2)
-				return _PAD(Math.round(millis / 10), 2);
-			else
-				return _PAD(millis, 3);
+			let minuteOffset = date.getTimezoneOffset();
+			let absMinuteOffset = Math.abs(date.getTimezoneOffset());
+			return (minuteOffset > 0 ? "-" : "+") + _PAD(absMinuteOffset / 60, 2) + _PAD(absMinuteOffset % 60, 2);
 		},
-		"z": function(token, date, utc)
+		"X": function(locale, token, date)
 		{
-			let offset = (date.getTimezoneOffset() / 60) * 100;
-			return (offset > 0 ? '-' : '') +_PAD(offset, 4)+'';
+			let minuteOffset = date.getTimezoneOffset();
+			let absMinuteOffset = Math.abs(date.getTimezoneOffset());
+			switch (token.length)
+			{
+				case 1:
+					return (minuteOffset > 0 ? "-" : "+") + (absMinuteOffset / 60);
+				case 2:
+					return (minuteOffset > 0 ? "-" : "+") + _PAD(absMinuteOffset / 60, 2);
+				case 3:
+					return (minuteOffset > 0 ? "-" : "+") + _PAD(absMinuteOffset / 60, 2) + _PAD(absMinuteOffset % 60, 2);
+				case 4:
+					return (minuteOffset > 0 ? "-" : "+") + _PAD(absMinuteOffset / 60, 2) + ":" + _PAD(absMinuteOffset % 60, 2);
+				default:
+					return "GMT" + (minuteOffset > 0 ? "-" : "+") + _PAD(absMinuteOffset / 60, 2) + ":" + _PAD(absMinuteOffset % 60, 2);
+			}
 		},
-		"Z": function(token, date, utc)
+		"'": function(locale, token, date)
 		{
-			let offset = (date.getTimezoneOffset() / 60) * 100;
-			return (offset > 0 ? '-' : '') +_PAD(offset, 4)+'';
-		},
-		"'": function(token, date, utc)
-		{
-			if (token.length === 2)
+			if (token.length == 2)
 				return "'";
 			else
 				return token.substring(1, token.length - 1);
-		}
+		},
 	};
 
 	date = new Date(date);
-	let out = formatstring;
-	let tokens = formatstring.match(_DATEFORMATREGEX);
-
-	for (let i = tokens.length - 1; i >= 0; i--)
+	
+	let lastEnd = 0;
+	let sb = '';
+	let match;
+	while (match = _DATEFORMATREGEX.exec(formatstring))
 	{
-		let element = tokens[i];
-		let func = _TOKENFUNCS[element[0]];
-		if (func)
-			out = out.replace(element, func(element, date, utc));
+		let token = match[0];
+		let start = match.index;
+		if (start > lastEnd)
+			sb += formatstring.substring(lastEnd, start);
+		
+		sb += _TOKENFUNCS[token[0]](DEFAULT_LOCALE, token, date);
+		
+		lastEnd = _DATEFORMATREGEX.lastIndex;
 	}
+	
+	if (lastEnd < formatstring.length)
+		sb += formatstring.substring(lastEnd);
 
-	return out;
+	return sb;
 };
 
 /**

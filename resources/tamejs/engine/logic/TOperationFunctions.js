@@ -2024,23 +2024,23 @@ var TOperationFunctions =
 		}
 	},
 
-	/* FORMATTIME */
+	/* TIMEFORMAT */
 	{
-		"name": 'FORMATTIME', 
+		"name": 'TIMEFORMAT', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let value2 = request.popValue();
 			let value1 = request.popValue();
 
 			if (!TValue.isLiteral(value1))
-				throw TAMEError.UnexpectedValueType("Expected literal type in FORMATTIME call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in TIMEFORMAT call.");
 			if (!TValue.isLiteral(value2))
-				throw TAMEError.UnexpectedValueType("Expected literal type in FORMATTIME call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in TIMEFORMAT call.");
 
 			let date = TValue.asLong(value1);
 			let format = TValue.asString(value2);
 
-			request.pushValue(TValue.createString(Util.formatDate(date, format, false)));
+			request.pushValue(TValue.createString(Util.formatDate(date, format)));
 		}
 	},
 

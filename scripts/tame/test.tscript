@@ -133,13 +133,8 @@ world
 		
 		t = time();
 		t2 = t + (1000 * 60 * 60 * 24); 
-		textln(formattime(t, "yyyy-MM-dd hh:mm:ss.SSS z"));
+		textln(timeformat(t, "yyyy-MM-dd hh:mm:ss.SSS z"));
 		
-		textln(seconds(t, t2));
-		textln(minutes(t, t2));
-		textln(hours(t, t2));
-		textln(days(t, t2));
-
 		addObjectName(o_object1, "butt");
 		textln(objecthasnoowner(o_object1));
 
