@@ -52,27 +52,8 @@ import com.tameif.tame.lang.Value;
  */
 public final class TAMEJSExporter 
 {
-	/** Wrapper Type: Engine Only. */
-	public static final String WRAPPER_ENGINE = "engine";
-	/** Wrapper Type: Module Only. */
-	public static final String WRAPPER_MODULE = "module";
-	/** Wrapper Type: NodeJS, Embedded Module. */
-	public static final String WRAPPER_NODEEMBEDDED = "node";
-	/** Wrapper Type: Browser JS, Embedded Module, HTML Body wrapper. */
-	public static final String WRAPPER_HTML = "html";
-	/** Wrapper Type: Browser JS, Embedded Module, HTML Body wrapper (debug version). */
-	public static final String WRAPPER_HTML_DEBUG = "html-debug";
-
-	/** Wrapper Type: NodeJS, Engine. */
-	public static final String WRAPPER_NODEENGINE = "nodeengine";
-	/** Wrapper Type: Engine Only as Node Library Module. */
-	public static final String WRAPPER_NODELIBRARY = "nodelibrary";
-
 	/** JS Module Default Variable Name */
 	private static final String DEFAULT_MODULE_VARNAME = "EmbeddedData";
-	
-	/** Root resource for JS */
-	private static final String JS_ROOT_RESOURCE = "tamejs/";
 	
 	/** Reader directive prefix 2. */
 	private static final String JS_DIRECTIVE_JSPREFIX = "//[[EXPORTJS-";
@@ -119,7 +100,7 @@ public final class TAMEJSExporter
 	private static final TAMEJSExporterOptions DEFAULT_OPTIONS = new DefaultJSExporterOptions();
 	
 	/** Written to header: year */
-	private static final String HEADER_COPYRIGHT_YEAR = "2018";
+	private static final String HEADER_COPYRIGHT_YEAR = "2019";
 	
 	// No constructor.
 	private TAMEJSExporter(){}
@@ -233,22 +214,7 @@ public final class TAMEJSExporter
 	 */
 	public static void export(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
-		if (WRAPPER_MODULE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "ModuleData.js", false);
-		else if (WRAPPER_ENGINE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "Engine.js", false);
-		else if (WRAPPER_NODEEMBEDDED.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "NodeEmbedded.js", false);
-		else if (WRAPPER_NODEENGINE.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "NodeJS.js", false);
-		else if (WRAPPER_NODELIBRARY.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "NodeLibrary.js", false);
-		else if (WRAPPER_HTML.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "Browser.html", false);
-		else if (WRAPPER_HTML_DEBUG.equalsIgnoreCase(options.getWrapperName()))
-			processResource(writer, module, options, "Browser-Debug.html", false);
-		else
-			processResource(writer, module, options, options.getWrapperName(), false);
+		processResource(writer, module, options, options.getStartingPath(), false);
 	}
 
 	/**
@@ -294,18 +260,13 @@ public final class TAMEJSExporter
 		BufferedReader br = null;
 		InputStream in = null;
 		try {
-			boolean resource = false;
 			try {
 				in = new FileInputStream(path);
 			} catch (FileNotFoundException e) {
-				in = Common.openResource(JS_ROOT_RESOURCE + path);
+				in = Common.openResource(path);
 				if (in == null)
 					throw new IOException("Resource \""+path+"\" cannot be found!");
-				resource = true;
 			}
-			
-			if (options.isPathOutputEnabled())
-				writer.append("// ---- " + (resource ? "classpath:" : "") + path);
 			
 			br = new BufferedReader(new InputStreamReader(in));
 			String line = null;

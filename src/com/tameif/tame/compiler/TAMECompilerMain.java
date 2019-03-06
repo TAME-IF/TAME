@@ -17,6 +17,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import com.blackrook.commons.Common;
+import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.list.List;
 import com.tameif.tame.TAMELogic;
 import com.tameif.tame.TAMEModule;
@@ -36,10 +37,8 @@ public final class TAMECompilerMain
 	private static final String DEFAULT_OUTFILENAME = "module";
 	/** Default out file. */
 	private static final String DEFAULT_OUTFILE = DEFAULT_OUTFILENAME + ".tame";
-	/** Default out for HTML. */
-	private static final String DEFAULT_OUTFILE_HTML = DEFAULT_OUTFILENAME + ".html";
-	/** Default out for JS. */
-	private static final String DEFAULT_OUTFILE_JS = DEFAULT_OUTFILENAME + ".js";
+	/** Root resource for JS */
+	private static final String JS_ROOT_RESOURCE = "tamejs/";
 	/** Switch - don't optimize. */
 	private static final String SWITCH_NOOPTIMIZE0 = "--no-optimize"; 
 	private static final String SWITCH_NOOPTIMIZE1 = "-n"; 
@@ -68,6 +67,22 @@ public final class TAMECompilerMain
 	private static final String SWITCH_JSNODEENGINE = "--js-engine-node"; 
 	private static final String SWITCH_JSNODEENGINELIB = "--js-engine-node-lib"; 
 
+	/** Wrapper Type: Engine Only. */
+	public static final String WRAPPER_ENGINE = "engine";
+	/** Wrapper Type: Module Only. */
+	public static final String WRAPPER_MODULE = "module";
+	/** Wrapper Type: NodeJS, Embedded Module. */
+	public static final String WRAPPER_NODEEMBEDDED = "node";
+	/** Wrapper Type: Browser JS, Embedded Module, HTML Body wrapper. */
+	public static final String WRAPPER_HTML = "html";
+	/** Wrapper Type: Browser JS, Embedded Module, HTML Body wrapper (debug version). */
+	public static final String WRAPPER_HTML_DEBUG = "html-debug";
+
+	/** Wrapper Type: NodeJS, Engine. */
+	public static final String WRAPPER_NODEENGINE = "nodeengine";
+	/** Wrapper Type: Engine Only as Node Library Module. */
+	public static final String WRAPPER_NODELIBRARY = "nodelibrary";
+
 	/** Errors */
 	private static final int ERROR_NONE = 0;
 	private static final int ERROR_BADOPTIONS = 1;
@@ -81,6 +96,16 @@ public final class TAMECompilerMain
 	private static boolean exportJSEngine = false;
 	private static boolean exportJSEngineNode = false;
 	private static boolean exportJSEngineNodeLib = false;	
+	
+	private static final HashMap<String, String> JS_WRAPPER_MAP = new HashMap<String, String>() {{
+		put(WRAPPER_MODULE, JS_ROOT_RESOURCE + "ModuleData.js");
+		put(WRAPPER_ENGINE, JS_ROOT_RESOURCE + "Engine.js");
+		put(WRAPPER_NODEEMBEDDED, JS_ROOT_RESOURCE + "NodeEmbedded.js");
+		put(WRAPPER_NODEENGINE, JS_ROOT_RESOURCE + "NodeJS.js");
+		put(WRAPPER_NODELIBRARY, JS_ROOT_RESOURCE + "NodeLibrary.js");
+		put(WRAPPER_HTML, JS_ROOT_RESOURCE + "Browser.html");
+		put(WRAPPER_HTML_DEBUG, JS_ROOT_RESOURCE + "Browser-Debug.html");
+	}};
 	
 	private static void printVersion(PrintStream out)
 	{
@@ -140,7 +165,9 @@ public final class TAMECompilerMain
 		out.println("                          module     - Exports just module data to feed into a");
 		out.println("                                       JS TAME engine.");
 		out.println("                          [filename] - A file to use as the starting point for");
-		out.println("                                       the exporter.");
+		out.println("                                       the exporter. All included file paths");
+		out.println("                                       search in general filesystem first, then");
+		out.println("                                       the embedded resources.");
 		out.println();
 		out.println("    --js-engine           Export just TAME's engine to JS.");
 		out.println();
@@ -235,7 +262,7 @@ public final class TAMECompilerMain
 					}
 					else
 					{
-						jsOptions.wrapperName = arg;
+						jsOptions.startingPath = arg;
 						state = STATE_SWITCHES;
 					}
 					break;
@@ -357,7 +384,7 @@ public final class TAMECompilerMain
 
 			File outJSFile = new File(options.fileOutPath);
 			try {
-				jsOptions.wrapperName = TAMEJSExporter.WRAPPER_ENGINE;
+				jsOptions.startingPath = JS_WRAPPER_MAP.get(WRAPPER_ENGINE);
 				TAMEJSExporter.export(outJSFile, null, jsOptions);
 				out.println("Wrote "+outJSFile.getPath()+" successfully.");
 			} catch (IOException e) {
@@ -383,7 +410,7 @@ public final class TAMECompilerMain
 
 			File outJSFile = new File(options.fileOutPath);
 			try {
-				jsOptions.wrapperName = TAMEJSExporter.WRAPPER_NODEENGINE;
+				jsOptions.startingPath = JS_WRAPPER_MAP.get(WRAPPER_NODEENGINE);
 				TAMEJSExporter.export(outJSFile, null, jsOptions);
 				out.println("Wrote "+outJSFile.getPath()+" successfully.");
 			} catch (IOException e) {
@@ -409,7 +436,7 @@ public final class TAMECompilerMain
 
 			File outJSFile = new File(options.fileOutPath);
 			try {
-				jsOptions.wrapperName = TAMEJSExporter.WRAPPER_NODELIBRARY;
+				jsOptions.startingPath = JS_WRAPPER_MAP.get(WRAPPER_NODELIBRARY);
 				TAMEJSExporter.export(outJSFile, null, jsOptions);
 				out.println("Wrote "+outJSFile.getPath()+" successfully.");
 			} catch (IOException e) {
@@ -464,15 +491,18 @@ public final class TAMECompilerMain
 		// Write JS standalone file.
 		if (options.jsOut)
 		{
+			jsOptions.startingPath = JS_WRAPPER_MAP.containsKey(jsOptions.startingPath) 
+					? JS_WRAPPER_MAP.get(jsOptions.startingPath)
+					: jsOptions.startingPath;
+			
 			// Fill with default if no outfile specified.
 			if (Common.isEmpty(options.fileOutPath))
 			{
-				if (Common.isEmpty(jsOptions.wrapperName))
-					options.fileOutPath = DEFAULT_OUTFILE_JS;
-				else if (TAMEJSExporter.WRAPPER_HTML.equalsIgnoreCase(jsOptions.wrapperName) || TAMEJSExporter.WRAPPER_HTML_DEBUG.equalsIgnoreCase(jsOptions.wrapperName))
-					options.fileOutPath = DEFAULT_OUTFILE_HTML;
+				int extindex = jsOptions.startingPath.lastIndexOf('.');
+				if (extindex >= 0)
+					options.fileOutPath = DEFAULT_OUTFILENAME + jsOptions.startingPath.substring(extindex);
 				else
-					options.fileOutPath = DEFAULT_OUTFILE_JS;
+					options.fileOutPath = DEFAULT_OUTFILENAME;
 			}
 			
 			File outJSFile = new File(options.fileOutPath);
@@ -522,26 +552,19 @@ public final class TAMECompilerMain
 
 	private static class JSOptions implements TAMEJSExporterOptions
 	{
-		private String wrapperName;
-		private boolean pathOutputEnabled;
+		private String startingPath;
 		
 		JSOptions()
 		{
-			wrapperName = null;
+			startingPath = null;
 		}
 
 		@Override
-		public String getWrapperName() 
+		public String getStartingPath() 
 		{
-			return wrapperName;
+			return startingPath;
 		}
 		
-		@Override
-		public boolean isPathOutputEnabled() 
-		{
-			return pathOutputEnabled;
-		}
-
 		@Override
 		public String getModuleVariableName()
 		{

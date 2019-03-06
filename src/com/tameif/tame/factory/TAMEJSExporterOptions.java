@@ -22,15 +22,9 @@ public interface TAMEJSExporterOptions
 	public String getModuleVariableName();
 
 	/**
-	 * Gets the JS Wrapper name to use.
-	 * @return the wrapper name, or null for no wrapper.
+	 * Gets the JS Wrapper starting file path to use.
+	 * @return the wrapper start path.
 	 */
-	public String getWrapperName();
-	
-	/**
-	 * Checks if this enables include path output in JS code.
-	 * @return true if so, false if not.
-	 */
-	public boolean isPathOutputEnabled();
+	public String getStartingPath();
 	
 }

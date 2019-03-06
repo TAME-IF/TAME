@@ -17,17 +17,11 @@ public class DefaultJSExporterOptions implements TAMEJSExporterOptions
 {
 
 	@Override
-	public String getWrapperName()
+	public String getStartingPath()
 	{
 		return null;
 	}
 	
-	@Override
-	public boolean isPathOutputEnabled() 
-	{
-		return false;
-	}
-
 	@Override
 	public String getModuleVariableName()
 	{

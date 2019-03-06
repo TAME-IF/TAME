@@ -31,13 +31,7 @@ public final class JSTest
 		String out = TAMEJSExporter.exportToString(TAMEScriptReader.read(new File(inProperty)), new TAMEJSExporterOptions()
 		{
 			@Override
-			public boolean isPathOutputEnabled() 
-			{
-				return true;
-			}
-			
-			@Override
-			public String getWrapperName() 
+			public String getStartingPath() 
 			{
 				return "node";
 				//return null;
