@@ -221,14 +221,21 @@ TResponseHandler.prototype.resume = function()
 	}
 	
 	// If halted before end...
-	if (!this.pause && this.nextCue < this.response.responseCues.length)
+	if (!this.pause)
 	{
-		this.options.onSuspend();
-		return true;
+		if (this.nextCue < this.response.responseCues.length)
+		{
+			this.options.onSuspend();
+			return true;
+		}
+		else
+		{
+			this.options.onEnd();
+			return false;
+		}
 	}
 	else
 	{
-		this.options.onEnd();
 		return false;
 	}
 	
