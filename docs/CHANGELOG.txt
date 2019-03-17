@@ -3,6 +3,13 @@
     (C) 2019 Matt Tropiano
 ==============================================================================
 
+0.9BETA17
+.........
+
+	- Fixed: (CONTINUE) not disappearing when control returned to user in JS
+	  shell.
+
+
 0.9BETA16
 .........
 
