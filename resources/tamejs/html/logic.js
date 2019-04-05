@@ -70,6 +70,7 @@ let handler = TAME.newResponseHandler({
 	"onEnd": function()
 	{
 		InputBox.disabled = false;
+		InputBox.value = "";
 		InputBox.focus();
 	},
 	
