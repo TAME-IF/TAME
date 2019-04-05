@@ -11,8 +11,6 @@ com/blackrook/commons/AbstractMap.class
 com/blackrook/commons/AbstractSet.class
 com/blackrook/commons/AbstractVector.class
 com/blackrook/commons/AbstractVector$*.class
-com/blackrook/commons/Common.class
-com/blackrook/commons/Common$*.class
 com/blackrook/commons/CommonTokenizer.class
 com/blackrook/commons/Dumpable.class
 com/blackrook/commons/ObjectPair.class
@@ -33,6 +31,13 @@ com/blackrook/commons/list/List.class
 com/blackrook/commons/list/SortedList.class
 com/blackrook/commons/list/SortedMap.class
 com/blackrook/commons/math/RMath.class
+com/blackrook/commons/util/EncodingUtils.class
+com/blackrook/commons/util/IOUtils.class
+com/blackrook/commons/util/ObjectUtils.class
+com/blackrook/commons/util/OSUtils.class
+com/blackrook/commons/util/StringUtils.class
+com/blackrook/commons/util/ThreadUtils.class
+com/blackrook/commons/util/ValueUtils.class
 com/blackrook/io/SuperReader.class
 com/blackrook/io/SuperReader$*.class
 com/blackrook/io/SuperWriter.class

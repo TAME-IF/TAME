@@ -17,13 +17,14 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.hash.Hash;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.list.List;
+import com.blackrook.commons.util.EncodingUtils;
+import com.blackrook.commons.util.IOUtils;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 import com.tameif.tame.element.TAction;
@@ -398,11 +399,11 @@ public class TAMEModule implements Saveable
 		} catch (IOException e) {
 			throw new ModuleException("Could not calculate digest for module.");
 		} finally {
-			Common.close(bos);
+			IOUtils.close(bos);
 		}
 
 		byte[] data = bos.toByteArray();
-		return (this.digest = Common.sha1(data));
+		return (this.digest = EncodingUtils.sha1(data));
 	}
 	
 	@Override
@@ -415,7 +416,7 @@ public class TAMEModule implements Saveable
 		bos.close();
 
 		byte[] data = bos.toByteArray();
-		byte[] digest = Common.sha1(data);
+		byte[] digest = EncodingUtils.sha1(data);
 		
 		sw.writeBytes("TAME".getBytes("ASCII"));
 
@@ -505,7 +506,7 @@ public class TAMEModule implements Saveable
 		byte[] readDigest = sr.readBytes(20);
 		byte[] data = sr.readByteArray();
 				
-		byte[] digest = Common.sha1(data);
+		byte[] digest = EncodingUtils.sha1(data);
 		if (!Arrays.equals(readDigest, digest))
 			throw new ModuleException("Module digest does not match data! Possible data corruption!");
 

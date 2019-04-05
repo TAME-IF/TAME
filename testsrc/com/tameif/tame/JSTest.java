@@ -12,7 +12,7 @@ package com.tameif.tame;
 import java.io.File;
 import java.io.PrintWriter;
 
-import com.blackrook.commons.Common;
+import com.blackrook.commons.util.IOUtils;
 import com.tameif.tame.factory.TAMEJSExporter;
 import com.tameif.tame.factory.TAMEJSExporterOptions;
 import com.tameif.tame.factory.TAMEScriptReader;
@@ -48,7 +48,7 @@ public final class JSTest
 		{
 			PrintWriter pw = new PrintWriter(new File(outProperty));
 			pw.append(out);
-			Common.close(pw);
+			IOUtils.close(pw);
 		}
 		else
 		{

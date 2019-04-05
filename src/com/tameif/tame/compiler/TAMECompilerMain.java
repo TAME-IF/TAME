@@ -16,9 +16,10 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import com.blackrook.commons.Common;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.list.List;
+import com.blackrook.commons.util.IOUtils;
+import com.blackrook.commons.util.ObjectUtils;
 import com.tameif.tame.TAMELogic;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.factory.TAMEJSExporter;
@@ -379,7 +380,7 @@ public final class TAMECompilerMain
 		if (exportJSEngine)
 		{
 			// Fill with default if no outfile specified.
-			if (Common.isEmpty(options.fileOutPath))
+			if (ObjectUtils.isEmpty(options.fileOutPath))
 				options.fileOutPath = "TAME-"+TAMELogic.getVersion()+".js";
 
 			File outJSFile = new File(options.fileOutPath);
@@ -405,7 +406,7 @@ public final class TAMECompilerMain
 		if (exportJSEngineNode)
 		{
 			// Fill with default if no outfile specified.
-			if (Common.isEmpty(options.fileOutPath))
+			if (ObjectUtils.isEmpty(options.fileOutPath))
 				options.fileOutPath = "TAME.js";
 
 			File outJSFile = new File(options.fileOutPath);
@@ -431,7 +432,7 @@ public final class TAMECompilerMain
 		if (exportJSEngineNodeLib)
 		{
 			// Fill with default if no outfile specified.
-			if (Common.isEmpty(options.fileOutPath))
+			if (ObjectUtils.isEmpty(options.fileOutPath))
 				options.fileOutPath = "TAME.js";
 
 			File outJSFile = new File(options.fileOutPath);
@@ -454,7 +455,7 @@ public final class TAMECompilerMain
 			return;
 		}
 		
-		if (Common.isEmpty(options.fileInPath))
+		if (ObjectUtils.isEmpty(options.fileInPath))
 		{
 			out.println("ERROR: No input file specified!");
 			System.exit(ERROR_NOINPUT);
@@ -496,7 +497,7 @@ public final class TAMECompilerMain
 					: jsOptions.startingPath;
 			
 			// Fill with default if no outfile specified.
-			if (Common.isEmpty(options.fileOutPath))
+			if (ObjectUtils.isEmpty(options.fileOutPath))
 			{
 				int extindex = jsOptions.startingPath.lastIndexOf('.');
 				if (extindex >= 0)
@@ -524,7 +525,7 @@ public final class TAMECompilerMain
 		else
 		{
 			// Fill with default if no outfile specified.
-			if (Common.isEmpty(options.fileOutPath))
+			if (ObjectUtils.isEmpty(options.fileOutPath))
 				options.fileOutPath = DEFAULT_OUTFILE;
 
 			// Write serialized file.
@@ -544,7 +545,7 @@ public final class TAMECompilerMain
 				System.exit(ERROR_SECURITYERROR);
 				return;
 			} finally {
-				Common.close(fos);
+				IOUtils.close(fos);
 			}
 		}
 		

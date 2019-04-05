@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
-import com.blackrook.commons.Common;
+import com.blackrook.commons.util.IOUtils;
 import com.tameif.tame.element.ObjectContainer;
 import com.tameif.tame.element.TAction;
 import com.tameif.tame.element.TContainer;
@@ -64,13 +64,13 @@ public final class TAMELogic implements TAMEConstants
 		
 		InputStream in = null;
 		try {
-			in = Common.openResource("com/tameif/tame/TAMEVersion.txt");
+			in = IOUtils.openResource("com/tameif/tame/TAMEVersion.txt");
 			if (in != null)
-				VERSION = Common.getTextualContents(in, "UTF-8").trim();
+				VERSION = IOUtils.getTextualContents(in, "UTF-8").trim();
 		} catch (IOException e) {
 			/* Do nothing. */
 		} finally {
-			Common.close(in);
+			IOUtils.close(in);
 		}
 		
 		return VERSION != null ? VERSION : "SNAPSHOT";

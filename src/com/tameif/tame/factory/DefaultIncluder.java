@@ -14,7 +14,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.blackrook.commons.Common;
+import com.blackrook.commons.util.IOUtils;
+import com.blackrook.commons.util.OSUtils;
 
 /** 
  * Default includer to use when none specified.
@@ -40,7 +41,7 @@ public class DefaultIncluder implements TAMEScriptIncluder
 	@Override
 	public String getNextIncludeResourceName(String streamName, String path) throws IOException
 	{
-		if (Common.isWindows() && streamName.contains("\\")) // check for Windows paths.
+		if (OSUtils.isWindows() && streamName.contains("\\")) // check for Windows paths.
 			streamName = streamName.replace('\\', '/');
 		
 		String streamParent = null;
@@ -74,7 +75,7 @@ public class DefaultIncluder implements TAMEScriptIncluder
 	public InputStream getIncludeResource(String path) throws IOException
 	{
 		if (path.startsWith(CLASSPATH_PREFIX))
-			return Common.openResource(path.substring(CLASSPATH_PREFIX.length()));
+			return IOUtils.openResource(path.substring(CLASSPATH_PREFIX.length()));
 		else
 			return new FileInputStream(new File(path));
 	}

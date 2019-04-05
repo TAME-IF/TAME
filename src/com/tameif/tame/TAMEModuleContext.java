@@ -19,10 +19,10 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.hash.Hash;
 import com.blackrook.commons.hash.HashMap;
+import com.blackrook.commons.util.ValueUtils;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 import com.tameif.tame.element.ObjectContainer;
@@ -123,8 +123,8 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 				ownershipMap.addObjectTag(object, tag);
 		}
 		
-		long cr = Common.parseLong(module.getHeader().getAttribute(HEADER_TAME_RUNAWAY_MAX));
-		long fd = Common.parseLong(module.getHeader().getAttribute(HEADER_TAME_FUNCDEPTH_MAX));
+		long cr = ValueUtils.parseLong(module.getHeader().getAttribute(HEADER_TAME_RUNAWAY_MAX));
+		long fd = ValueUtils.parseLong(module.getHeader().getAttribute(HEADER_TAME_FUNCDEPTH_MAX));
 		
 		this.operationRunawayMax = cr <= 0 ? DEFAULT_RUNAWAY_THRESHOLD: cr;
 		this.functionDepthMax = fd <= 0 ? DEFAULT_FUNCTION_DEPTH: fd;

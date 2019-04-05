@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.blackrook.commons.Common;
 import com.blackrook.commons.hash.CaseInsensitiveHash;
+import com.blackrook.commons.util.ObjectUtils;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 import com.tameif.tame.lang.Saveable;
@@ -111,7 +111,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	 */
 	private void setIdentity(String identity)
 	{
-		if (Common.isEmpty(identity))
+		if (ObjectUtils.isEmpty(identity))
 			throw new IllegalArgumentException("Identity cannot be blank.");
 		this.identity = identity;
 	}

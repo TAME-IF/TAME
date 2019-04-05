@@ -17,10 +17,15 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.util.Iterator;
 
-import com.blackrook.commons.Common;
 import com.blackrook.commons.Reflect;
 import com.blackrook.commons.hash.Hash;
 import com.blackrook.commons.list.List;
+import com.blackrook.commons.util.IOUtils;
+import com.blackrook.commons.util.OSUtils;
+import com.blackrook.commons.util.ObjectUtils;
+import com.blackrook.commons.util.StringUtils;
+import com.blackrook.commons.util.ThreadUtils;
+import com.blackrook.commons.util.ValueUtils;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.TAMELogic;
 import com.tameif.tame.TAMEModule;
@@ -264,7 +269,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			System.exit(ERROR_NOINPUTFILE);
 			return;
 		}
-		else if (!Common.isEmpty(path))
+		else if (!ObjectUtils.isEmpty(path))
 		{
 			module = parseScript(path, charset, verbose, !nooptimize, defineList); 
 			if (module == null)
@@ -275,7 +280,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		}
 		else
 		{
-			if (Common.isEmpty(binpath))
+			if (ObjectUtils.isEmpty(binpath))
 			{
 				System.out.println("ERROR: No module file specified!");
 				System.exit(ERROR_NOINPUTFILE);
@@ -365,10 +370,10 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			return null;
 		} catch (IOException e) {
 			System.out.println("ERROR: Could not read from "+file.getPath());
-			System.out.println(Common.getExceptionString(e));
+			System.out.println(StringUtils.getExceptionString(e));
 			return null;
 		} finally {
-			Common.close(in);
+			IOUtils.close(in);
 		}
 		
 		return out;
@@ -396,10 +401,10 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			return null;
 		} catch (IOException e) {
 			System.out.println("ERROR: Could not read from "+file.getPath());
-			System.out.println(Common.getExceptionString(e));
+			System.out.println(StringUtils.getExceptionString(e));
 			return null;
 		} finally {
-			Common.close(in);
+			IOUtils.close(in);
 		}
 		
 		return out;
@@ -423,7 +428,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			e.printStackTrace(System.err);
 			return false;
 		} finally {
-			Common.close(out);
+			IOUtils.close(out);
 		}
 		
 		return true;
@@ -453,7 +458,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			e.printStackTrace(System.err);
 			return false;
 		} finally {
-			Common.close(in);
+			IOUtils.close(in);
 		}
 		
 		return true;
@@ -472,7 +477,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			{
 				if (cue.getType().equals(CUE_FATAL) || cue.getType().equals(CUE_QUIT))
 					context.quit = true;
-				context.out.println("[" + cue.getType() + "] " + Common.withEscChars(cue.getContent()));
+				context.out.println("[" + cue.getType() + "] " + StringUtils.withEscChars(cue.getContent()));
 			}
 		}
 		else
@@ -483,15 +488,15 @@ public class TAMEConsoleShellMain implements TAMEConstants
 				if (context.paused)
 				{
 					context.out.print("(Continue) ");
-					Common.getLine();
+					IOUtils.getLine();
 					context.paused = false;
 				}
 			}
 
 			if (currentHandler.textBuffer.length() > 0)
 			{
-				if (Common.isWindows())
-					Common.printWrapped(context.out, currentHandler.textBuffer.toString(), 80); // windows terminal
+				if (OSUtils.isWindows())
+					StringUtils.printWrapped(context.out, currentHandler.textBuffer.toString(), 80); // windows terminal
 				else
 					context.out.println(currentHandler.textBuffer.toString());
 			}
@@ -501,11 +506,11 @@ public class TAMEConsoleShellMain implements TAMEConstants
 	private static void inspect(Context context, String inspectString)
 	{
 		String[] split = inspectString.split("\\.", 2);
-		if (split.length < 1 || Common.isEmpty(split[0]))
+		if (split.length < 1 || ObjectUtils.isEmpty(split[0]))
 		{
 			context.out.println("?> Must specify a variable.");
 		}
-		else if (split.length < 2 || Common.isEmpty(split[1]))
+		else if (split.length < 2 || ObjectUtils.isEmpty(split[1]))
 		{
 			TElementContext<?> ec = null;
 			
@@ -584,7 +589,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			while (good && !quit)
 			{
 				out.print("] ");
-				if ((line = Common.getLine()) != null)
+				if ((line = IOUtils.getLine()) != null)
 				{
 					out.println();
 					line = line.replaceAll("\\s+", " ").trim();
@@ -632,8 +637,8 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		{
 			if (!cue.getType().equals(CUE_TEXT) && !cue.getType().equals(CUE_TEXTF) && textBuffer.length() > 0)
 			{
-				if (Common.isWindows())
-					lastColumn = Common.printWrapped(context.out, textBuffer.toString(), lastColumn, 80); // windows terminal
+				if (OSUtils.isWindows())
+					lastColumn = StringUtils.printWrapped(context.out, textBuffer.toString(), lastColumn, 80); // windows terminal
 				else
 					context.out.print(textBuffer.toString());
 				textBuffer.delete(0, textBuffer.length());
@@ -648,7 +653,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 					context.quit = true;
 					return false;
 				case CUE_WAIT:
-					Common.sleep(Common.parseLong(cue.getContent()));
+					ThreadUtils.sleep(ValueUtils.parseLong(cue.getContent()));
 					return true;
 				case CUE_TEXT:
 					textBuffer.append(cue.getContent());

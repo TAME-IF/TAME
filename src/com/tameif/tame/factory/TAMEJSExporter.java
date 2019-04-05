@@ -25,8 +25,9 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Iterator;
 
-import com.blackrook.commons.Common;
 import com.blackrook.commons.ObjectPair;
+import com.blackrook.commons.util.EncodingUtils;
+import com.blackrook.commons.util.IOUtils;
 import com.blackrook.lang.json.JSONObject;
 import com.blackrook.lang.json.JSONWriter;
 import com.tameif.tame.TAMEConstants;
@@ -160,7 +161,7 @@ public final class TAMEJSExporter
 			export(pw, module, options);
 			pw.flush();
 		} finally {
-			Common.close(pw);
+			IOUtils.close(pw);
 		}
 	}
 	
@@ -190,7 +191,7 @@ public final class TAMEJSExporter
 			export(pw, module, options);
 			pw.flush();
 		} finally {
-			Common.close(pw);
+			IOUtils.close(pw);
 		}
 	}
 	
@@ -263,7 +264,7 @@ public final class TAMEJSExporter
 			try {
 				in = new FileInputStream(path);
 			} catch (FileNotFoundException e) {
-				in = Common.openResource(path);
+				in = IOUtils.openResource(path);
 				if (in == null)
 					throw new IOException("Resource \""+path+"\" cannot be found!");
 			}
@@ -313,8 +314,8 @@ public final class TAMEJSExporter
 			}
 
 		} finally {
-			Common.close(in);
-			Common.close(br);
+			IOUtils.close(in);
+			IOUtils.close(br);
 		}
 	}
 
@@ -388,7 +389,7 @@ public final class TAMEJSExporter
 			break;
 			
 			default:
-				out.addMember("value", Common.asBase64(new ByteArrayInputStream(value.getValue().toString().getBytes("utf-8"))));
+				out.addMember("value", EncodingUtils.asBase64(new ByteArrayInputStream(value.getValue().toString().getBytes("utf-8"))));
 			break;
 		
 		}
@@ -482,7 +483,7 @@ public final class TAMEJSExporter
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		module.writeBytes(bos);
 		writer.append('"');
-		writer.append(Common.asBase64(new ByteArrayInputStream(bos.toByteArray())));
+		writer.append(EncodingUtils.asBase64(new ByteArrayInputStream(bos.toByteArray())));
 		writer.append('"');
 	}
 	

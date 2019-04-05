@@ -18,8 +18,8 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.Common;
 import com.blackrook.commons.list.List;
+import com.blackrook.commons.util.StringUtils;
 import com.blackrook.io.SuperReader;
 import com.blackrook.io.SuperWriter;
 import com.tameif.tame.TAMEConstants;
@@ -584,8 +584,6 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			case WORLD:
 			case ACTION:
 			case VARIABLE:
-				if (value.toString().equals("Door is already open."))
-					Common.noop();
 				sw.writeString(value.toString(), "UTF-8");
 				break;
 		}	
@@ -1102,7 +1100,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	@Override
 	public String toString()
 	{
-		return type + "[" + Common.withEscChars(String.valueOf(value)) + "]";
+		return type + "[" + StringUtils.withEscChars(String.valueOf(value)) + "]";
 	}
 	
 	/**

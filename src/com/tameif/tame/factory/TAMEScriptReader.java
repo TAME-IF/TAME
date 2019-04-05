@@ -17,13 +17,13 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 
-import com.blackrook.commons.Common;
 import com.blackrook.commons.Reflect;
 import com.blackrook.commons.hash.CaseInsensitiveHashMap;
 import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.commons.linkedlist.Stack;
 import com.blackrook.commons.list.List;
+import com.blackrook.commons.util.IOUtils;
 import com.blackrook.lang.CommonLexer;
 import com.blackrook.lang.CommonLexerKernel;
 import com.blackrook.lang.Parser;
@@ -4123,7 +4123,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		try {
 			return read(file.getPath(), fis, DEFAULT_OPTIONS, DEFAULT_INCLUDER);
 		} finally {
-			Common.close(fis);
+			IOUtils.close(fis);
 		}
 	}
 
@@ -4143,7 +4143,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		try {
 			return read(file.getPath(), fis, includer);
 		} finally {
-			Common.close(fis);
+			IOUtils.close(fis);
 		}
 	}
 
@@ -4163,7 +4163,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		try {
 			return read(file.getPath(), fis, options, DEFAULT_INCLUDER);
 		} finally {
-			Common.close(fis);
+			IOUtils.close(fis);
 		}
 	}
 
@@ -4184,7 +4184,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		try {
 			return read(file.getPath(), fis, options, includer);
 		} finally {
-			Common.close(fis);
+			IOUtils.close(fis);
 		}
 	}
 
