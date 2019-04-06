@@ -26,15 +26,40 @@ public final class TAMEProjectMain
 	private enum Mode
 	{
 		/**
-		 * Prints help.
+		 * Prints help for a command.
 		 */
 		HELP
 		{
 			public int execute(PrintStream out, Queue<String> args)
 			{
-				printHelp(out);
+				Mode mode = null;
+				if (!args.isEmpty())
+					mode = Reflect.getEnumInstance(args.dequeue().toUpperCase(), Mode.class);
+				printVersion(out);
+				out.println();
+				if (mode == null)
+					HELP.help(out);
+				else
+					mode.help(out);
 				return ERROR_NONE;
 			};
+			
+			@Override
+			public void help(PrintStream out)
+			{
+				out.println("Usage: tamep help [mode]");
+				out.println("Prints help for a specific mode. Valid values for [mode] include:");
+				out.println();
+				for (Mode m : Mode.values())
+					out.printf("%-9s %s\n", m.name().toLowerCase(), m.description());
+			}
+			
+			@Override
+			public String description() 
+			{
+				return "Prints help for a specific mode.";
+			}
+			
 		},
 
 		/**
@@ -47,6 +72,21 @@ public final class TAMEProjectMain
 				printVersion(out);
 				return ERROR_NONE;
 			};
+			
+			@Override
+			public void help(PrintStream out)
+			{
+				out.println("Usage: tamep version");
+				out.println("Prints just the version splash for TAME Project.");
+				out.println("This should line up with TAME's current version.");
+			}
+
+			@Override
+			public String description() 
+			{
+				return "Prints the version splash for TAME Project.";
+			}
+			
 		},
 
 		/**
@@ -59,10 +99,41 @@ public final class TAMEProjectMain
 				// TODO: Finish this.
 				return ERROR_NONE;
 			};
+			
+			@Override
+			public void help(PrintStream out) 
+			{
+				// TODO Finish this.
+			}
+			
+			@Override
+			public String description() 
+			{
+				return "Creates/sets up a new project.";
+			}
+			
 		},
 		;
 		
+		/**
+		 * Executes this program mode.
+		 * @param out the output stream for console output.
+		 * @param args the queue of command arguments.
+		 * @return the exit code for the program.
+		 */
 		public abstract int execute(PrintStream out, Queue<String> args);
+		
+		/**
+		 * Prints help for this mode.
+		 * @param out the output stream for console output.
+		 */
+		public abstract void help(PrintStream out);
+		
+		/**
+		 * @return a short description of this mode.
+		 */
+		public abstract String description();
+		
 	}
 
 	private static void printVersion(PrintStream out)
@@ -77,12 +148,6 @@ public final class TAMEProjectMain
 		out.println("Type `tamep help` for help.");
 	}
 
-	private static void printHelp(PrintStream out)
-	{
-		printVersion(out);
-		// TODO: Finish this.
-	}
-	
 	// Scan options.
 	private static Mode scanMode(Queue<String> args)
 	{
