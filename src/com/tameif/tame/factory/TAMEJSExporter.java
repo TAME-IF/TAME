@@ -53,6 +53,9 @@ import com.tameif.tame.lang.Value;
  */
 public final class TAMEJSExporter 
 {
+	/** Prefix for paths in the classpath. */
+	public static final String RESOURCE_PREFIX = "resource:";
+
 	/** JS Module Default Variable Name */
 	private static final String DEFAULT_MODULE_VARNAME = "EmbeddedData";
 	
@@ -215,7 +218,9 @@ public final class TAMEJSExporter
 	 */
 	public static void export(Writer writer, TAMEModule module, TAMEJSExporterOptions options) throws IOException
 	{
-		processResource(writer, module, options, options.getStartingPath(), false);
+		InputStream in = getStream(options, options.getStartingPath()); 
+		processResource(writer, module, options, options.getStartingPath(), in, false);
+		IOUtils.close(in);
 	}
 
 	/**
@@ -244,6 +249,28 @@ public final class TAMEJSExporter
 		}
 		return line;
 	}
+
+	private static InputStream getStream(TAMEJSExporterOptions options, String path)
+	{
+		if (options.getVerboseStream() != null)
+			options.getVerboseStream().println("Include \"" + path + "\"...");
+		
+		if (path.startsWith(RESOURCE_PREFIX))
+		{
+			String resourcePath = path.substring(RESOURCE_PREFIX.length());
+			InputStream in = null;
+			in = IOUtils.openResource(resourcePath);
+			return in;
+		}
+		else
+		{
+			try {
+				return new FileInputStream(path);
+			} catch (FileNotFoundException e) {
+				return null;
+			}
+		}
+	}
 	
 	/**
 	 * Reads a resource, stopping at a stop directive or end-of-file.
@@ -251,37 +278,43 @@ public final class TAMEJSExporter
 	 * @param writer the writer to write to.
 	 * @param module the module to eventually write to.
 	 * @param options the exporter options.
-	 * @param path the import resource path.
+	 * @param path the import resource path. If it starts with <code>"resource:"</code>, it will search the classpath.
 	 * @param entire if true, do not wait for the start directive to read.
 	 */
-	private static void processResource(Writer writer, TAMEModule module, TAMEJSExporterOptions options, String path, boolean entire) throws IOException
+	private static void processResource(Writer writer, TAMEModule module, TAMEJSExporterOptions options, String path, InputStream in, boolean entire) throws IOException
 	{
+		if (options.getVerboseStream() != null)
+			options.getVerboseStream().println("Processing \"" + path + "\"...");
+
 		String parentPath = path.substring(0, path.lastIndexOf('/') + 1);
 		
-		BufferedReader br = null;
-		InputStream in = null;
-		try {
-			try {
-				in = new FileInputStream(path);
-			} catch (FileNotFoundException e) {
-				in = IOUtils.openResource(path);
-				if (in == null)
-					throw new IOException("Resource \""+path+"\" cannot be found!");
-			}
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
 			
-			br = new BufferedReader(new InputStreamReader(in));
+			int lineNum = 0;
 			String line = null;
 			boolean startWrite = false;
 			
 			if (entire)
+			{
+				if (options.getVerboseStream() != null)
+					options.getVerboseStream().println(path + ": Start read at line 1");
+
 				startWrite = true;
+			}
 			
 			while ((line = br.readLine()) != null)
 			{
+				lineNum++;
 				String trimline = getTrimmedTagContent(line);
 				if (trimline.startsWith(JS_DIRECTIVE_START))
 				{
-					startWrite = true;
+					if (!startWrite)
+					{
+						if (options.getVerboseStream() != null)
+							options.getVerboseStream().println(path + ": Start read at line " + lineNum);
+
+						startWrite = true;
+					}
 					continue;
 				}
 				
@@ -294,28 +327,42 @@ public final class TAMEJSExporter
 				}
 				else if (trimline.startsWith(JS_DIRECTIVE_INCLUDEALL))
 				{
-					String nextPath = parentPath + trimline.substring(JS_DIRECTIVE_INCLUDEALL.length() + 1).trim();
-					processResource(writer, module, options, nextPath, true);
+					String includePath = trimline.substring(JS_DIRECTIVE_INCLUDEALL.length() + 1).trim(); 
+					String fullPath = parentPath + includePath;
+					InputStream nextIn;
+					if ((nextIn = getStream(options, fullPath)) != null)
+						processResource(writer, module, options, fullPath, nextIn, true);
+					else if ((nextIn = getStream(options, includePath)) != null)
+						processResource(writer, module, options, includePath, nextIn, true);
+					else
+						throw new IOException("Could not include path \"" + includePath + "\".");
 				}
 				else if (trimline.startsWith(JS_DIRECTIVE_INCLUDE))
 				{
-					String nextPath = parentPath + trimline.substring(JS_DIRECTIVE_INCLUDE.length() + 1).trim();
-					processResource(writer, module, options, nextPath, false);
+					String includePath = trimline.substring(JS_DIRECTIVE_INCLUDE.length() + 1).trim(); 
+					String fullPath = parentPath + includePath;
+					InputStream nextIn;
+					if ((nextIn = getStream(options, fullPath)) != null)
+						processResource(writer, module, options, fullPath, nextIn, false);
+					else if ((nextIn = getStream(options, includePath)) != null)
+						processResource(writer, module, options, includePath, nextIn, false);
+					else
+						throw new IOException("Could not include path \"" + includePath + "\".");
 				}
 				else if (trimline.startsWith(JS_DIRECTIVE_END))
 				{
 					if (!entire)
+					{
+						if (options.getVerboseStream() != null)
+							options.getVerboseStream().println(path + ": End read at line " + lineNum);
 						break;
+					}
 				}
 				else
 				{
 					writer.write(line + "\n");
 				}
 			}
-
-		} finally {
-			IOUtils.close(in);
-			IOUtils.close(br);
 		}
 	}
 

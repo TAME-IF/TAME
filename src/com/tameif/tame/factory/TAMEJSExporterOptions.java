@@ -9,6 +9,8 @@
  ******************************************************************************/
 package com.tameif.tame.factory;
 
+import java.io.PrintStream;
+
 /**
  * The set of options for exporting a module to JS. 
  * @author Matthew Tropiano
@@ -26,5 +28,10 @@ public interface TAMEJSExporterOptions
 	 * @return the wrapper start path.
 	 */
 	public String getStartingPath();
+	
+	/**
+	 * @return the stream to output verbose output to, or null for no output.
+	 */
+	public PrintStream getVerboseStream();
 	
 }

@@ -9,6 +9,8 @@
  ******************************************************************************/
 package com.tameif.tame.factory;
 
+import java.io.PrintStream;
+
 /**
  * The default set of options for exporting a module to JS. 
  * @author Matthew Tropiano
@@ -28,4 +30,10 @@ public class DefaultJSExporterOptions implements TAMEJSExporterOptions
 		return null;
 	}
 
+	@Override
+	public PrintStream getVerboseStream()
+	{
+		return null;
+	}
+	
 }

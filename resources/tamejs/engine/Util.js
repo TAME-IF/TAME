@@ -353,7 +353,7 @@ Util.formatDate = function(date, formatstring)
 	let lastEnd = 0;
 	let sb = '';
 	let match;
-	while (match = _DATEFORMATREGEX.exec(formatstring))
+	while (match = _DATEFORMATREGEX.exec(formatstring)) // Intentional assignment.
 	{
 		let token = match[0];
 		let start = match.index;

@@ -1447,7 +1447,7 @@ var TOperationFunctions =
 			let input = TValue.asString(valInput);
 			let result = null;
 			let index = -1;
-			while (result = pattern.exec(input))
+			while (result = pattern.exec(input)) // Intentional assignment.
 				index = result.index;
 			request.pushValue(TValue.createInteger(index));
 		}
@@ -1505,7 +1505,7 @@ var TOperationFunctions =
 			let input = TValue.asString(valInput);
 			let result = null;
 			let found = null;
-			while (result = pattern.exec(input))
+			while (result = pattern.exec(input)) // Intentional assignment.
 				found = result[0];
 			if (found !== null)
 				request.pushValue(TValue.createString(found));
@@ -1536,7 +1536,7 @@ var TOperationFunctions =
 			
 			let input = TValue.asString(valInput);
 			let out = TValue.createList([]);
-			while (result = pattern.exec(input))
+			while (result = pattern.exec(input)) // Intentional assignment.
 				TValue.listAdd(out, TValue.createString(result[0]));
 			request.pushValue(out);
 		}

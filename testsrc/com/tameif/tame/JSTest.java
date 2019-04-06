@@ -10,6 +10,7 @@
 package com.tameif.tame;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 
 import com.blackrook.commons.util.IOUtils;
@@ -42,6 +43,13 @@ public final class JSTest
 			{
 				return null;
 			}
+			
+			@Override
+			public PrintStream getVerboseStream()
+			{
+				return null;
+			}
+			
 		});
 		
 		if (outProperty != null)

@@ -87,6 +87,8 @@
 		<replace file="tame.cmd" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
 		<copy file="${resource.dir}/shell/compile/windows/tamec.cmd" tofile="tamec.cmd" />
 		<replace file="tamec.cmd" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<copy file="${resource.dir}/shell/compile/windows/tamep.cmd" tofile="tamep.cmd" />
+		<replace file="tamep.cmd" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
 	</target>
 
 	<target name="compile.scripts.bash" if="${os.bash}">
@@ -94,8 +96,11 @@
 		<replace file="tame.sh" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
 		<copy file="${resource.dir}/shell/compile/bash/tamec" tofile="tamec.sh" />
 		<replace file="tamec.sh" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<copy file="${resource.dir}/shell/compile/bash/tamep" tofile="tamep.sh" />
+		<replace file="tamep.sh" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
 		<chmod file="tame.sh" perm="ugo+rx"/>
 		<chmod file="tamec.sh" perm="ugo+rx"/>
+		<chmod file="tamep.sh" perm="ugo+rx"/>
 	</target>
 
 	<target name="compile" depends="init.compile, get.os, compile.scripts.windows, compile.scripts.bash" description="Compiles the project, excluding test classes.">
@@ -184,6 +189,7 @@
 		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.tame.filename}">
 			<fileset dir="${bin.dir}" >
+			    <exclude name="**/project/" />
 			    <exclude name="**/console/" />
 			    <exclude name="**/compiler/" />
 			    <exclude name="**/test/" />
@@ -231,6 +237,8 @@
 		<replace file="${scripts.dir}/tame.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<copy file="${resource.dir}/shell/jar/windows/tamec.cmd" tofile="${scripts.dir}/tamec.cmd" />
 		<replace file="${scripts.dir}/tamec.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
+		<copy file="${resource.dir}/shell/jar/windows/tamep.cmd" tofile="${scripts.dir}/tamep.cmd" />
+		<replace file="${scripts.dir}/tamep.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 	</target>
 
 	<target name="jar.scripts.bash">
@@ -238,8 +246,11 @@
 		<replace file="${scripts.dir}/tame" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<copy file="${resource.dir}/shell/jar/bash/tamec" tofile="${scripts.dir}/tamec" />
 		<replace file="${scripts.dir}/tamec" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
+		<copy file="${resource.dir}/shell/jar/bash/tamep" tofile="${scripts.dir}/tamep" />
+		<replace file="${scripts.dir}/tamep" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<chmod file="${scripts.dir}/tame" perm="ugo+rx"/>
 		<chmod file="${scripts.dir}/tamec" perm="ugo+rx"/>
+		<chmod file="${scripts.dir}/tamep" perm="ugo+rx"/>
 	</target>
 
 	<target name="jar.scripts" depends="init.jar.scripts, jar.scripts.windows, jar.scripts.bash" description="Creates the scripts for running the standalone minified JAR.">
@@ -398,6 +409,8 @@
 		<replace file="${jre.scripts.dir}/windows/tame.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<copy file="${resource.dir}/shell/jre/windows/tamec.cmd" tofile="${jre.scripts.dir}/windows/tamec.cmd" />
 		<replace file="${jre.scripts.dir}/windows/tamec.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
+		<copy file="${resource.dir}/shell/jre/windows/tamep.cmd" tofile="${jre.scripts.dir}/windows/tamep.cmd" />
+		<replace file="${jre.scripts.dir}/windows/tamep.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 	</target>
 
 	<target name="jre.scripts.bash">
@@ -405,8 +418,11 @@
 		<replace file="${jre.scripts.dir}/bash/tame" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<copy file="${resource.dir}/shell/jre/bash/tamec" tofile="${jre.scripts.dir}/bash/tamec" />
 		<replace file="${jre.scripts.dir}/bash/tamec" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
+		<copy file="${resource.dir}/shell/jre/bash/tamep" tofile="${jre.scripts.dir}/bash/tamep" />
+		<replace file="${jre.scripts.dir}/bash/tamep" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<chmod file="${jre.scripts.dir}/bash/tame" perm="ugo+rx"/>
 		<chmod file="${jre.scripts.dir}/bash/tamec" perm="ugo+rx"/>
+		<chmod file="${jre.scripts.dir}/bash/tamep" perm="ugo+rx"/>
 	</target>
 
 	<target name="jre.scripts" depends="init.jre.scripts, jre.scripts.windows, jre.scripts.bash" description="Creates the scripts for running a minified JRE.">
