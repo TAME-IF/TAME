@@ -14,35 +14,6 @@ var Util = Util || ((typeof require) !== 'undefined' ? require('./Util.js') : nu
 
 //[[EXPORTJS-START
 
-/**
- * Creates a new response handler (mostly for aiding in browser functions).
- * Handles all standard cues and provides a way via a function to handle other cues.
- * This accumulates the results of contiguous "text" and "textf" cues before "print()" is called.
- * @param TAME reference to TAME engine.
- * @param options options object.
- * 		print: fn(text): called when a string needs printing (may contain HTML or other things).
- * 		onStart: fn(): called before cues start processing.
- * 			Should disable input.
- * 		onEnd: fn(): called when cues stop processing, and the end is reached.
- * 			Should enable input.
- * 		onSuspend: fn(): called when a call to process a cue initiates a suspension (processing stops, but not due to a pause).
- * 			Should disable input.
- * 		onResume: fn(): called when cues process again.
- * 			Should disable input.
- * 		onPause: fn(): called after a "pause" cue is processed. 
- * 			Should prompt for continuation somehow, then call resume() after the user "continues."
- * 		onQuit: fn(): called after a "quit" cue is processed.
- * 			Should stop input and prevent further input. 
- * 		onError: fn(message): called after an "error" cue is processed.
- * 			Should make an error message appear on screen. Dismissable. 
- * 		onFatal: fn(message): called after a "fatal" cue is processed.
- * 			Should make a message appear on screen, and stop input as though a "quit" occurred. 
- * 		onOtherCue: fn(cueType, cueContent): called when a cue that is not handled by this handler needs processing. 
- * 			Should return boolean. true = keep going, false = suspend (until resume() is called).
- * 		onStartFormatTag: fn(tagname, accum): called when a formatted string starts a tag.
- * 		onEndFormatTag: fn(tagname, accum): called when a formatted string ends a tag.
- * 		onFormatText: fn(text, accum): called when a formatted string needs to process text.
- */
 var TResponseHandler = function(options)
 {
 	let self = this;
@@ -60,6 +31,7 @@ var TResponseHandler = function(options)
 		"onPause": BLANK_FUNCTION,
 		"onError": BLANK_FUNCTION,
 		"onFatal": BLANK_FUNCTION,
+		"onTrace": BLANK_FUNCTION,
 		"onOtherCue": BLANK_FUNCTION,
 		"onStartFormatTag": BLANK_FUNCTION,
 		"onEndFormatTag": BLANK_FUNCTION, 
@@ -115,12 +87,6 @@ var TResponseHandler = function(options)
 			return false;
 		},
 
-		"trace": function()
-		{
-			// Ignore trace.
-			return true;
-		},
-
 		"error": function(content)
 		{
 			self.options.onError(content);
@@ -161,7 +127,7 @@ TResponseHandler.prototype.prepare = function(response)
 
 /**
  * Reads the response.
- * Set with prepareResponse().
+ * Set with prepare().
  * @return true if more unprocessed cues remain, or false if not. 
  */
 TResponseHandler.prototype.resume = function()
@@ -192,8 +158,13 @@ TResponseHandler.prototype.resume = function()
 			this.options.print(this.textBuffer.join(''));
 			this.textBuffer.length = 0;
 		}
-
-		if (this.cueHandlers[cueType])
+		
+		if (cueType.startsWith('trace-'))
+		{
+			let type = cueType.substring('trace-'.length);
+			this.options.onTrace(type, cueContent);
+		}
+		else if (this.cueHandlers[cueType])
 			keepGoing = this.cueHandlers[cueType](cueContent);
 		else
 			keepGoing = this.options.onOtherCue(cueType, cueContent);
@@ -245,11 +216,12 @@ TResponseHandler.prototype.resume = function()
  * Prepares the response for read and calls resume.
  * Calls prepare(response) and then resume().
  * @param response the response from an initialize or interpret call.
+ * @return true if more unprocessed cues remain, or false if not. 
  */
 TResponseHandler.prototype.process = function(response)
 {
 	this.prepare(response);
-	this.resume();
+	return this.resume();
 };
 
 //[[EXPORTJS-END
