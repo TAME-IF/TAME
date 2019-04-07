@@ -40,16 +40,10 @@ public interface TAMEScriptReaderOptions
 	public boolean isOptimizing();
 	
 	/**
-	 * Gets if this prints what it is emitting or constructing.
-	 * Only good for debugging.
-	 * @return true if so, false if not.
-	 */
-	public boolean isVerbose();
-	
-	/**
 	 * Gets the output stream to print verbose messages to.
+	 * Only good for debugging. Null emits no verbose output.
 	 * @return the print stream to use.
 	 */
-	public PrintStream getVerboseOut();
+	public PrintStream getVerboseStream();
 	
 }

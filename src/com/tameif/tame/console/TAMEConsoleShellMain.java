@@ -344,7 +344,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 	{
 		DefaultReaderOptions opts = new DefaultReaderOptions();
 		opts.setInputCharset(charset);
-		opts.setVerbose(verbose);
+		opts.setVerboseStream(verbose ? System.out : null);
 		opts.setOptimizing(optimizing);
 		String[] defineArray = new String[defines.size()];
 		defines.toArray(defineArray);

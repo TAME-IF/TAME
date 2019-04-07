@@ -1,10 +1,16 @@
 package com.tameif.tame.project;
 
 import java.io.PrintStream;
+import java.nio.charset.Charset;
+import java.util.Properties;
 
 import com.blackrook.commons.Reflect;
 import com.blackrook.commons.linkedlist.Queue;
+import com.blackrook.commons.util.ObjectUtils;
+import com.blackrook.commons.util.ValueUtils;
 import com.tameif.tame.TAMELogic;
+import com.tameif.tame.factory.TAMEJSExporterOptions;
+import com.tameif.tame.factory.TAMEScriptReaderOptions;
 
 /**
  * The entry point for the project main.
@@ -12,6 +18,40 @@ import com.tameif.tame.TAMELogic;
  */
 public final class TAMEProjectMain
 {
+	/** Replace Key - Current Year */
+	private static final String REPLACEKEY_CURRENT_YEAR = "{{CURRENT_YEAR}}";
+	/** Replace Key - Current Date */
+	private static final String REPLACEKEY_CURRENT_DATE = "{{CURRENT_DATE}}";
+	/** Replace Key - System Charset */
+	private static final String REPLACEKEY_SYSTEM_CHARSET = "{{SYSTEM_CHARSET}}";
+	/** Replace Key - Compiler Version */
+	private static final String REPLACEKEY_COMPILER_VERSION = "{{COMPILER_VERSION}}";
+
+	/** Project Property - Distribution Output Module */
+	private static final String PROJECT_PROPERTY_DIST_MODULE = "tame.project.dist.module";
+	/** Project Property - Distribution Output Web Directory */
+	private static final String PROJECT_PROPERTY_DIST_WEB = "tame.project.dist.web";
+	/** Project Property - Distribution Output Web Directory Zipped */
+	private static final String PROJECT_PROPERTY_DIST_WEB_ZIP = "tame.project.dist.web.zip";
+
+	/** Project Property - Charset. */
+	private static final String PROJECT_PROPERTY_CHARSET = "tame.project.charset";
+	/** Project Property - TAMEScript Entry Point. */
+	private static final String PROJECT_PROPERTY_SRC_MAIN = "tame.project.src.main";
+	/** Project Property - TAMEScript Web Starting Index. */
+	private static final String PROJECT_PROPERTY_HTML_INDEX = "tame.project.html.index";
+	/** Project Property - TAMEScript Web Static Assets. */
+	private static final String PROJECT_PROPERTY_HTML_ASSETS = "tame.project.html.assets";
+
+	/** Project Property - TAMEScript Defines. */
+	private static final String PROJECT_PROPERTY_DEFINES = "tame.project.defines";
+
+	/** Project Property - No Optimize. */
+	private static final String PROJECT_PROPERTY_NOOPTIMIZE = "tame.project.nooptimize";
+	/** Project Property - Verbose Output. */
+	private static final String PROJECT_PROPERTY_VERBOSE = "tame.project.verbose";
+
+	
 	/** Errors */
 	private static final int ERROR_NONE = 0;
 	private static final int ERROR_BADOPTIONS = 1;
@@ -103,7 +143,9 @@ public final class TAMEProjectMain
 			@Override
 			public void help(PrintStream out) 
 			{
-				// TODO Finish this.
+				out.println("Usage: tamep create [directory] [switches]");
+				out.println("Creates ");
+				out.println("This should line up with TAME's current version.");
 			}
 			
 			@Override
@@ -113,6 +155,112 @@ public final class TAMEProjectMain
 			}
 			
 		},
+
+		/**
+		 * Updates TAME components.
+		 */
+		UPDATE
+		{
+			public int execute(PrintStream out, Queue<String> args)
+			{
+				// TODO: Finish this.
+				return ERROR_NONE;
+			};
+			
+			@Override
+			public void help(PrintStream out) 
+			{
+				out.println("Usage: tamep update [component]");
+				// TODO: Finish this.
+			}
+			
+			@Override
+			public String description() 
+			{
+				return "Updates parts of the project.";
+			}
+			
+		},
+
+		/**
+		 * Cleans up the compiled project, deleting the contents of the distribution folder.
+		 */
+		CLEAN
+		{
+			public int execute(PrintStream out, Queue<String> args)
+			{
+				// TODO: Finish this.
+				return ERROR_NONE;
+			};
+			
+			@Override
+			public void help(PrintStream out) 
+			{
+				out.println("Usage: tamep clean");
+				// TODO: Finish this.
+			}
+			
+			@Override
+			public String description() 
+			{
+				return "Deletes the compiled project files.";
+			}
+			
+		},
+
+		/**
+		 * Compiles the project.
+		 */
+		COMPILE
+		{
+			public int execute(PrintStream out, Queue<String> args)
+			{
+				// TODO: Finish this.
+				return ERROR_NONE;
+			};
+			
+			@Override
+			public void help(PrintStream out) 
+			{
+				out.println("Usage: tamep compile [switches]");
+				// TODO: Finish this.
+			}
+			
+			@Override
+			public String description() 
+			{
+				return "Compiles the project.";
+			}
+			
+		},
+
+		/**
+		 * Compiles and releases the project.
+		 * Zips up the compiled web assets.
+		 */
+		RELEASE
+		{
+			public int execute(PrintStream out, Queue<String> args)
+			{
+				// TODO: Finish this.
+				return ERROR_NONE;
+			};
+			
+			@Override
+			public void help(PrintStream out) 
+			{
+				out.println("Usage: tamep release");
+				// TODO: Finish this.
+			}
+			
+			@Override
+			public String description() 
+			{
+				return "Releases the project, creating a Zip of the web assets.";
+			}
+			
+		},
+
 		;
 		
 		/**
@@ -182,4 +330,134 @@ public final class TAMEProjectMain
 		System.exit(mode.execute(out, argQueue));
 	}
 
+	@FunctionalInterface
+	private static interface PropertyConverter<T>
+	{
+		T convert(String input);
+	}
+	
+	/**
+	 * Compiler options.
+	 */
+	private static final class Options implements TAMEScriptReaderOptions, TAMEJSExporterOptions
+	{
+		private String outModulePath; 
+		private String outWebDirectory; 
+		private String outWebZip; 
+
+		private Charset charset;
+		private String scriptPath;
+		private String webStartingFile;
+		private String webAssetsDirectory;
+
+		private String[] defines;
+		private boolean optimizing;
+		private PrintStream verboseOut;
+		
+		private Options(Properties properties)
+		{
+			this.outModulePath = convertProperty(properties, PROJECT_PROPERTY_DIST_MODULE, null, (input)->
+				input
+			);
+			this.outWebDirectory = convertProperty(properties, PROJECT_PROPERTY_DIST_WEB, null, (input)->
+				input
+			);
+			this.outWebZip = convertProperty(properties, PROJECT_PROPERTY_DIST_WEB_ZIP, null, (input)->
+				input
+			);
+			
+			this.charset = convertProperty(properties, PROJECT_PROPERTY_CHARSET, Charset.defaultCharset().displayName(), (input)->
+				Charset.forName(input)
+			);
+			this.scriptPath = convertProperty(properties, PROJECT_PROPERTY_SRC_MAIN, null, (input)->
+				input
+			);
+			this.webStartingFile = convertProperty(properties, PROJECT_PROPERTY_HTML_INDEX, null, (input)->
+				input
+			);
+			this.webAssetsDirectory = convertProperty(properties, PROJECT_PROPERTY_HTML_ASSETS, null, (input)->
+				input
+			);
+			
+			this.defines = convertProperty(properties, PROJECT_PROPERTY_DEFINES, "", (input)->
+				ObjectUtils.isEmpty(input) ? new String[]{} : input.split("\\,\\s+")
+			);
+			this.optimizing = convertProperty(properties, PROJECT_PROPERTY_NOOPTIMIZE, "false", (input)->
+				!ValueUtils.parseBoolean(input)
+			);
+			this.verboseOut = convertProperty(properties, PROJECT_PROPERTY_VERBOSE, "false", (input)->
+				ValueUtils.parseBoolean(input) ? System.out : null
+			);
+		}
+		
+		private static <T> T convertProperty(Properties properties, String key, String defValue, PropertyConverter<T> converter)
+		{
+			String value = properties.getProperty(key);
+			String convertable = ObjectUtils.isEmpty(value) ? defValue : value;
+			return converter.convert(convertable);
+		}
+		
+		public String getOutModulePath()
+		{
+			return outModulePath;
+		}
+		
+		public String getOutWebDirectory() 
+		{
+			return outWebDirectory;
+		}
+		
+		public String getOutWebZip()
+		{
+			return outWebZip;
+		} 
+		
+		public String getScriptPath()
+		{
+			return scriptPath;
+		}
+		
+		@Override
+		public Charset getInputCharset()
+		{
+			return charset;
+		}
+
+		@Override
+		public String[] getDefines()
+		{
+			return defines;
+		}
+
+		@Override
+		public boolean isOptimizing()
+		{
+			return optimizing;
+		}
+
+		@Override
+		public String getModuleVariableName() 
+		{
+			return "EmbeddedData";
+		}
+
+		@Override
+		public String getStartingPath() 
+		{
+			return webStartingFile;
+		}
+		
+		public String getAssetsPath()
+		{
+			return webAssetsDirectory;
+		}
+
+		@Override
+		public PrintStream getVerboseStream() 
+		{
+			return verboseOut;
+		}
+		
+	}
+	
 }

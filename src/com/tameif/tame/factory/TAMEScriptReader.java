@@ -3979,8 +3979,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private void verbose(Object output)
 		{
-			if (options.isVerbose() && options.getVerboseOut() != null)
-				options.getVerboseOut().println(String.valueOf(output));
+			if (options.getVerboseStream() != null)
+				options.getVerboseStream().println(String.valueOf(output));
 		}
 		
 		/**

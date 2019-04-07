@@ -315,7 +315,7 @@ public final class TAMECompilerMain
 					}
 					else if (arg.equals(SWITCH_VERBOSE0) || arg.equals(SWITCH_VERBOSE1))
 					{
-						options.verbose = true;
+						options.verboseOut = System.out;
 						jsOptions.verbose = System.out;
 						state = STATE_INPATH;
 					}
@@ -581,7 +581,6 @@ public final class TAMECompilerMain
 		private boolean jsOut;
 		
 		private boolean optimizing;
-		private boolean verbose;
 		private PrintStream verboseOut;
 		private List<String> defineList;
 		private Charset inputCharset;
@@ -593,8 +592,7 @@ public final class TAMECompilerMain
 			jsOut = false;
 			
 			optimizing = true;
-			verbose = false;
-			verboseOut = System.out;
+			verboseOut = null;
 			defineList = new List<>();
 			inputCharset = StandardCharsets.UTF_8;
 		}
@@ -608,15 +606,9 @@ public final class TAMECompilerMain
 		}
 		
 		@Override
-		public PrintStream getVerboseOut() 
+		public PrintStream getVerboseStream() 
 		{
 			return verboseOut;
-		}
-		
-		@Override
-		public boolean isVerbose() 
-		{
-			return verbose;
 		}
 		
 		@Override

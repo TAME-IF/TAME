@@ -1,0 +1,22 @@
+/*****************************************************************************
+ * New TAME Module
+ * Copyright {{CURRENT_YEAR}}
+ ****************************************************************************/
+
+module
+{
+	title = "Untitled TAME Project";
+	author = "Unknown Author";
+	email = "author@email.com";
+	twitter = "@tame_if";
+	// ifid = "[ADD IFID]";
+}
+
+world
+{
+	start()
+	{
+		textln("Hello, World!");
+		quit;
+	}
+}
