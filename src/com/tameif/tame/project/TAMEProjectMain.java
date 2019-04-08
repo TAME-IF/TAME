@@ -1,11 +1,18 @@
 package com.tameif.tame.project;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
 import com.blackrook.commons.Reflect;
 import com.blackrook.commons.linkedlist.Queue;
+import com.blackrook.commons.util.IOUtils;
+import com.blackrook.commons.util.OSUtils;
 import com.blackrook.commons.util.ObjectUtils;
 import com.blackrook.commons.util.ValueUtils;
 import com.tameif.tame.TAMELogic;
@@ -19,13 +26,13 @@ import com.tameif.tame.factory.TAMEScriptReaderOptions;
 public final class TAMEProjectMain
 {
 	/** Replace Key - Current Year */
-	private static final String REPLACEKEY_CURRENT_YEAR = "{{CURRENT_YEAR}}";
+	private static final String REPLACEKEY_CURRENT_YEAR = "CURRENT_YEAR";
 	/** Replace Key - Current Date */
-	private static final String REPLACEKEY_CURRENT_DATE = "{{CURRENT_DATE}}";
+	private static final String REPLACEKEY_CURRENT_DATE = "CURRENT_DATE";
 	/** Replace Key - System Charset */
-	private static final String REPLACEKEY_SYSTEM_CHARSET = "{{SYSTEM_CHARSET}}";
+	private static final String REPLACEKEY_SYSTEM_CHARSET = "SYSTEM_CHARSET";
 	/** Replace Key - Compiler Version */
-	private static final String REPLACEKEY_COMPILER_VERSION = "{{COMPILER_VERSION}}";
+	private static final String REPLACEKEY_COMPILER_VERSION = "COMPILER_VERSION";
 
 	/** Project Property - Distribution Output Module */
 	private static final String PROJECT_PROPERTY_DIST_MODULE = "tame.project.dist.module";
@@ -330,6 +337,150 @@ public final class TAMEProjectMain
 		System.exit(mode.execute(out, argQueue));
 	}
 
+	private static void export(Reader reader, Writer writer) throws IOException
+	{
+		final int STATE_INIT = 0;
+		final int STATE_TAG_START = 1;
+		final int STATE_TAG = 2;
+		final int STATE_TAG_END = 3;
+		int state = STATE_INIT;
+		StringBuilder tag = new StringBuilder();
+		char c;
+		while ((c = (char)reader.read()) >= 0) switch (state)
+		{
+			case STATE_INIT:
+			{
+				if (c == '{')
+					state = STATE_TAG_START;
+				else
+					writer.append(c);
+			}
+			break;
+
+			case STATE_TAG_START:
+			{
+				if (c == '{')
+					state = STATE_TAG;
+				else
+				{
+					state = STATE_INIT;
+					writer.append('{');
+					writer.append(c);
+				}
+			}
+			break;
+
+			case STATE_TAG:
+			{
+				if (c == '}')
+				{
+					state = STATE_TAG_END;
+				}
+				else
+				{
+					tag.append(c);
+				}
+			}
+			break;
+			
+			case STATE_TAG_END:
+			{
+				if (c == '}')
+				{
+					state = STATE_INIT;
+					String tagName = tag.toString();
+					switch (tagName)
+					{
+						case REPLACEKEY_CURRENT_YEAR:
+							// TODO: Finish.
+							break;
+						case REPLACEKEY_CURRENT_DATE:
+							// TODO: Finish.
+							break;
+						case REPLACEKEY_SYSTEM_CHARSET:
+							// TODO: Finish.
+							break;
+						case REPLACEKEY_COMPILER_VERSION:
+							// TODO: Finish.
+							break;
+						default:
+							tag.append("{{");
+							tag.append(c);
+							tag.append("}}");
+							break;
+					}
+					tag.delete(0, tag.length());
+				}
+				else
+				{
+					state = STATE_TAG;
+					tag.append('}');
+					tag.append(c);
+				}
+			}
+			break;
+		}
+	}
+	
+	/**
+	 * Calls UglifyJS with a STDIN stream and STDOUT.
+	 * @param inputData the file input.
+	 * @param outputData the file output.
+	 * @throws IOException If a read/write error occurs.
+	 * @throws SecurityException if read/write has no permission to continue.
+	 * @throws InterruptedException if this thread is interrupted waiting for the process to finish.
+	 */
+	private static void uglify(InputStream inputData, OutputStream outputData) throws IOException, InterruptedException
+	{
+		Process proc;
+		if (OSUtils.isWindows())
+		{
+			proc = Runtime.getRuntime().exec(new String[] {
+				"cmd", "/c", "uglifyjs", "-c", "-m", "--comments"
+			});
+		}
+		else
+		{
+			proc = Runtime.getRuntime().exec(new String[] {
+				"/bin/bash", "-c", "uglifyjs", "-c", "-m", "--comments"	
+			});
+		}
+
+		IOUtils.relay(inputData, proc.getOutputStream(), 16384);
+		IOUtils.relay(proc.getInputStream(), outputData, 16384);
+		proc.waitFor();
+	}
+
+	/**
+	 * Checks if UglifyJS is present.
+	 * @return true if so, false if not, null on error.
+	 */
+	private static Boolean hasUglify()
+	{
+		Process proc;
+		if (OSUtils.isWindows())
+		{
+			try {
+				(proc = Runtime.getRuntime().exec(new String[] {
+					"cmd", "/c", "where /q uglifyjs"	
+				})).waitFor();
+			} catch (SecurityException | IOException | InterruptedException e) {
+				return null;
+			}
+		}
+		else
+		{
+			try {
+				(proc = Runtime.getRuntime().exec(new String[] {
+					"/bin/bash", "-c", "which uglifyjs"	
+				})).waitFor();
+			} catch (SecurityException | IOException | InterruptedException e) {
+				return null;
+			}
+		}
+		return proc.exitValue() == 0;
+	}
+	
 	@FunctionalInterface
 	private static interface PropertyConverter<T>
 	{
