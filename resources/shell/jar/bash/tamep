@@ -7,4 +7,5 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 	CMD_READLINK="realpath"
 fi
 SCRIPTDIR="$(cd "$(dirname $($CMD_READLINK "$0"))"; pwd)"
-java -cp "$SCRIPTDIR/../jar/{{JAR_ONE_FILENAME}}" com.tameif.tame.project.TAMEProjectMain $@
+TAME_HOME="$(cd "$SCRIPTDIR/.."; pwd)"
+java -cp "$TAME_HOME/jar/{{JAR_ONE_FILENAME}}" "-Dtame.project.template.path=$TAME_HOME/templates" com.tameif.tame.project.TAMEProjectMain $@

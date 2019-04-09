@@ -1,9 +1,14 @@
 package com.tameif.tame.project;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -11,6 +16,8 @@ import java.util.Properties;
 
 import com.blackrook.commons.Reflect;
 import com.blackrook.commons.linkedlist.Queue;
+import com.blackrook.commons.util.ArrayUtils;
+import com.blackrook.commons.util.FileUtils;
 import com.blackrook.commons.util.IOUtils;
 import com.blackrook.commons.util.OSUtils;
 import com.blackrook.commons.util.ObjectUtils;
@@ -25,6 +32,21 @@ import com.tameif.tame.factory.TAMEScriptReaderOptions;
  */
 public final class TAMEProjectMain
 {
+	public static final String[] TEXT_FILE_TYPES = 
+	{
+		"css",
+		"htm",
+		"html",
+		"js",
+		"txt",
+	};
+	
+	/** System property - Template Path. */
+	private static final String SYSTEM_PROPERTY_TEMPLATE_PATH = "tame.project.template.path";
+
+	/** Template Directory */
+	private static final String TEMPLATE_PATH = System.getProperty(SYSTEM_PROPERTY_TEMPLATE_PATH);
+	
 	/** Replace Key - Current Year */
 	private static final String REPLACEKEY_CURRENT_YEAR = "CURRENT_YEAR";
 	/** Replace Key - Current Date */
@@ -34,6 +56,8 @@ public final class TAMEProjectMain
 	/** Replace Key - Compiler Version */
 	private static final String REPLACEKEY_COMPILER_VERSION = "COMPILER_VERSION";
 
+	/** Project Property - Distribution Output */
+	private static final String PROJECT_PROPERTY_DIST = "tame.project.dist";
 	/** Project Property - Distribution Output Module */
 	private static final String PROJECT_PROPERTY_DIST_MODULE = "tame.project.dist.module";
 	/** Project Property - Distribution Output Web Directory */
@@ -58,6 +82,12 @@ public final class TAMEProjectMain
 	/** Project Property - Verbose Output. */
 	private static final String PROJECT_PROPERTY_VERBOSE = "tame.project.verbose";
 
+	/** Switch CREATE - Use template. */
+	private static final String SWITCH_CREATE_TEMPLATE0 = "--template";
+	/** Switch CREATE - Use template. */
+	private static final String SWITCH_CREATE_TEMPLATE1 = "-t";
+	/** Switch CREATE - Make Git Ignore. */
+	private static final String SWITCH_CREATE_GIT = "--git";
 	
 	/** Errors */
 	private static final int ERROR_NONE = 0;
@@ -143,6 +173,70 @@ public final class TAMEProjectMain
 		{
 			public int execute(PrintStream out, Queue<String> args)
 			{
+				if (args.isEmpty())
+				{
+					out.println("ERROR: Missing project directory.");
+					return ERROR_BADOPTIONS;
+				}
+				
+				File projectDir = new File(args.dequeue());
+				if (projectDir.exists())
+				{
+					out.println("ERROR: Target directory already exists: " + projectDir.getPath());
+					return ERROR_IOERROR;
+				}
+				else if (!FileUtils.createPath(projectDir.getPath()))
+				{
+					out.println("ERROR: Could not create directory for project: " + projectDir);
+					return ERROR_IOERROR;
+				}
+				
+				boolean addGitIgnore = false;
+				String webTemplateName = "standard";
+				
+				final int STATE_START = 0;
+				final int STATE_TEMPLATE = 1;
+				int state = STATE_START;
+				while (!args.isEmpty())
+				{
+					String arg = args.dequeue();
+					switch (state)
+					{
+						case STATE_START:
+						{
+							if (arg.equals(SWITCH_CREATE_TEMPLATE0) || arg.equals(SWITCH_CREATE_TEMPLATE1))
+								state = STATE_TEMPLATE;
+							else if (arg.equals(SWITCH_CREATE_GIT))
+								addGitIgnore = true;
+							else
+							{
+								out.println("ERROR: Unknown switch: " + arg);
+								return ERROR_BADOPTIONS;
+							}
+						}
+						break;
+						
+						case STATE_TEMPLATE:
+						{
+							webTemplateName = args.dequeue();
+							state = STATE_START;
+						}
+						break;
+					}
+				}
+				if (state == STATE_TEMPLATE)
+				{
+					out.println("ERROR: Expected template name after template switch.");
+					return ERROR_BADOPTIONS;
+				}
+
+				File webTemplateDirectory = new File(TEMPLATE_PATH + File.separator + webTemplateName);
+				if (!webTemplateDirectory.isDirectory())
+				{
+					out.println("ERROR: Could not find template: " + webTemplateDirectory.getPath());
+					return ERROR_IOERROR;
+				}
+				
 				// TODO: Finish this.
 				return ERROR_NONE;
 			};
@@ -151,8 +245,18 @@ public final class TAMEProjectMain
 			public void help(PrintStream out) 
 			{
 				out.println("Usage: tamep create [directory] [switches]");
-				out.println("Creates ");
-				out.println("This should line up with TAME's current version.");
+				out.println("Creates a new project in a directory.");
+				out.println();
+				out.println("[directory]:");
+				out.println("    The directory to create with the project data.");
+				out.println();
+				out.println("[switches]:");
+				out.println();
+				out.println("    --template [name]    If specified, changes what template to use for");
+				out.println("    -t                   the project.");
+				out.println();
+				out.println("    --git                Adds a .gitignore file to the project.");
+				out.println();
 			}
 			
 			@Override
@@ -337,6 +441,56 @@ public final class TAMEProjectMain
 		System.exit(mode.execute(out, argQueue));
 	}
 
+	private static void copyToDirectory(File sourceDirectory, File destinationDirectory) throws IOException
+	{
+		if (!FileUtils.createPath(destinationDirectory.getPath()))
+			throw new IOException("Could not create directory: " + destinationDirectory.getPath());
+
+		for (File f : sourceDirectory.listFiles())
+		{
+			File destinationFile = new File(destinationDirectory.getPath() + File.separator + f.getName());
+			if (f.isDirectory())
+				copyToDirectory(f, destinationFile);
+			else 
+			{
+				// if text file, export() instead of copy.
+				if (ArrayUtils.indexOf(FileUtils.getFileExtension(f).toLowerCase(), TEXT_FILE_TYPES) >= 0)
+				{
+					try (
+						Reader src = IOUtils.openTextFile(f); 
+						Writer dest = new PrintWriter(new FileOutputStream(destinationFile))
+					)
+					{
+						export(src, dest);
+					}
+				}
+				else
+				{
+					try (
+						InputStream src = new BufferedInputStream(new FileInputStream(f)); 
+						OutputStream dest = new FileOutputStream(destinationFile)
+					)
+					{
+						IOUtils.relay(src, dest, 16384);
+					}
+				}
+			}
+		}
+	}
+	
+	private static void deleteDirectory(File directory, boolean deleteTop) throws IOException
+	{
+		for (File f : directory.listFiles())
+		{
+			if (f.isDirectory())
+				deleteDirectory(f, true);
+			else if (!f.delete())
+				throw new IOException("Could not delete file: " + f.getPath());
+		}
+		if (deleteTop && !directory.delete())
+			throw new IOException("Could not delete directory: " + directory.getPath());
+	}
+
 	private static void export(Reader reader, Writer writer) throws IOException
 	{
 		final int STATE_INIT = 0;
@@ -492,6 +646,7 @@ public final class TAMEProjectMain
 	 */
 	private static final class Options implements TAMEScriptReaderOptions, TAMEJSExporterOptions
 	{
+		private String outPath; 
 		private String outModulePath; 
 		private String outWebDirectory; 
 		private String outWebZip; 
@@ -507,6 +662,9 @@ public final class TAMEProjectMain
 		
 		private Options(Properties properties)
 		{
+			this.outPath = convertProperty(properties, PROJECT_PROPERTY_DIST, null, (input)->
+				input
+			);
 			this.outModulePath = convertProperty(properties, PROJECT_PROPERTY_DIST_MODULE, null, (input)->
 				input
 			);
@@ -546,6 +704,11 @@ public final class TAMEProjectMain
 			String value = properties.getProperty(key);
 			String convertable = ObjectUtils.isEmpty(value) ? defValue : value;
 			return converter.convert(convertable);
+		}
+		
+		public String getOutPath() 
+		{
+			return outPath;
 		}
 		
 		public String getOutModulePath()

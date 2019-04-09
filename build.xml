@@ -472,6 +472,7 @@
 		<zip destfile="${zip.dir}/${zip.jar.one.filename}" compress="true" level="9">
 			<zipfileset dir="${scripts.dir}" filemode="755" prefix="bin/" />
 			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
+			<zipfileset file="${resource.dir}/templates" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -482,6 +483,7 @@
 			<zipfileset dir="${jre.win32.dir}" prefix="jre/"/>
 			<zipfileset dir="${jre.scripts.dir}/windows" prefix="bin/" />
 			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
+			<zipfileset dir="${resource.dir}/templates" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -492,6 +494,7 @@
 			<zipfileset dir="${jre.win64.dir}" prefix="jre/"/>
 			<zipfileset dir="${jre.scripts.dir}/windows" prefix="bin/" />
 			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
+			<zipfileset dir="${resource.dir}/templates" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -507,6 +510,7 @@
 			</tarfileset>
 			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
 			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/"/>
+			<zipfileset dir="${resource.dir}/templates" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</tar>
 	</target>
@@ -522,6 +526,7 @@
 			</tarfileset>
 			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/" />
 			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
+			<tarfileset dir="${resource.dir}/templates" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</tar>
 	</target>
@@ -537,6 +542,7 @@
 			</tarfileset>
 			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/" />
 			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
+			<tarfileset dir="${resource.dir}/templates" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</tar>
 	</target>
