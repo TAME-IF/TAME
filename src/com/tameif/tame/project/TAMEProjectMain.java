@@ -107,6 +107,7 @@ public final class TAMEProjectMain
 		 */
 		HELP
 		{
+			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				Mode mode = null;
@@ -128,7 +129,7 @@ public final class TAMEProjectMain
 				out.println("Prints help for a specific mode. Valid values for [mode] include:");
 				out.println();
 				for (Mode m : Mode.values())
-					out.printf("%-9s %s\n", m.name().toLowerCase(), m.description());
+					out.printf("%-10s %s\n", m.name().toLowerCase(), m.description());
 			}
 			
 			@Override
@@ -144,6 +145,7 @@ public final class TAMEProjectMain
 		 */
 		VERSION
 		{
+			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				printVersion(out);
@@ -167,10 +169,51 @@ public final class TAMEProjectMain
 		},
 
 		/**
+		 * Lists found or available templates.
+		 */
+		TEMPLATES
+		{
+			@Override
+			public int execute(PrintStream out, Queue<String> args)
+			{
+				File templateDir = new File(TEMPLATE_PATH);
+				if (!templateDir.exists())
+				{
+					out.println("ERROR: The template directory is MISSING: " + templateDir.getPath());
+					return ERROR_IOERROR;
+				}
+				
+				out.println("Available templates:\n");
+				for (File f : templateDir.listFiles())
+				{
+					if (f.isDirectory())
+						out.println("\t" + f.getName());
+				}
+				
+				return ERROR_NONE;
+			}
+			
+			@Override
+			public void help(PrintStream out)
+			{
+				out.println("Usage: tamep templates");
+				out.println("Lists the available project templates.");
+			}
+
+			@Override
+			public String description()
+			{
+				return "Lists the available project templates.";
+			}
+			
+		},
+
+		/**
 		 * Creates projects.
 		 */
 		CREATE
 		{
+			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				if (args.isEmpty())
@@ -272,6 +315,7 @@ public final class TAMEProjectMain
 		 */
 		UPDATE
 		{
+			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				// TODO: Finish this.
@@ -298,6 +342,7 @@ public final class TAMEProjectMain
 		 */
 		CLEAN
 		{
+			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				// TODO: Finish this.
@@ -324,6 +369,7 @@ public final class TAMEProjectMain
 		 */
 		COMPILE
 		{
+			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				// TODO: Finish this.
@@ -351,6 +397,7 @@ public final class TAMEProjectMain
 		 */
 		RELEASE
 		{
+			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				// TODO: Finish this.
