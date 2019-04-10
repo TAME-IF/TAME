@@ -188,6 +188,11 @@ public final class TAMEProjectMain
 				{
 					if (f.isDirectory())
 						out.println("\t" + f.getName());
+					else if (FileUtils.getFileExtension(f).toLowerCase().equals("zip"))
+					{
+						int extindex = f.getName().lastIndexOf(".");
+						out.println("\t" + (extindex >= 0 ? f.getName().substring(0, extindex) : f.getName()));
+					}
 				}
 				
 				return ERROR_NONE;
