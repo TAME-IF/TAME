@@ -13,6 +13,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import com.blackrook.commons.Reflect;
 import com.blackrook.commons.linkedlist.Queue;
@@ -82,6 +84,9 @@ public final class TAMEProjectMain
 	/** Project Property - Verbose Output. */
 	private static final String PROJECT_PROPERTY_VERBOSE = "tame.project.verbose";
 
+	/** Template description file/entry. */
+	private static final String TEMPLATE_DESCRIPTION_FILE = "description.txt";
+	
 	/** Switch CREATE - Use template. */
 	private static final String SWITCH_CREATE_TEMPLATE0 = "--template";
 	/** Switch CREATE - Use template. */
@@ -187,11 +192,15 @@ public final class TAMEProjectMain
 				for (File f : templateDir.listFiles())
 				{
 					if (f.isDirectory())
-						out.println("\t" + f.getName());
+					{
+						String description = getShortDescription(f);
+						out.println("\t" + f.getName() + (description != null ? ": " + description : ""));
+					}
 					else if (FileUtils.getFileExtension(f).toLowerCase().equals("zip"))
 					{
+						String description = getShortDescription(f);
 						int extindex = f.getName().lastIndexOf(".");
-						out.println("\t" + (extindex >= 0 ? f.getName().substring(0, extindex) : f.getName()));
+						out.println("\t" + (extindex >= 0 ? f.getName().substring(0, extindex) : f.getName()) + (description != null ? ": " + description : ""));
 					}
 				}
 				
@@ -209,6 +218,46 @@ public final class TAMEProjectMain
 			public String description()
 			{
 				return "Lists the available project templates.";
+			}
+			
+			private String getShortDescription(File template)
+			{
+				if (template.isDirectory())
+				{
+					String descriptionFile = template.getPath() + File.separator + TEMPLATE_DESCRIPTION_FILE;
+					try (Reader reader = IOUtils.openTextFile(descriptionFile)) {
+						return readShortDescription(reader);
+					} catch (IOException e) {
+						return null;
+					}
+				}
+				else
+				{
+					try (ZipFile zf = new ZipFile(template.getPath()))
+					{
+						ZipEntry ze = zf.getEntry(TEMPLATE_DESCRIPTION_FILE);
+						if (ze == null)
+							return null;
+						try (Reader reader = IOUtils.openTextStream(zf.getInputStream(ze))) {
+							return readShortDescription(reader);
+						}
+					} catch (IOException e) {
+						return null;
+					}
+				}
+					
+			}
+
+			// Reads the description until the end of the first sentence or line.
+			private String readShortDescription(Reader reader) throws IOException
+			{
+				StringBuilder sb = new StringBuilder();
+				int ch = -1;
+				while ((ch = reader.read()) >= 0 && ch != '.' && ch != '\n')
+					sb.append((char)ch);
+				if (ch == '.')
+					sb.append('.');
+				return sb.toString();
 			}
 			
 		},

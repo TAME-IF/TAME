@@ -1,1 +1,1 @@
-Standard template.
+Standard template that handles required cues.
