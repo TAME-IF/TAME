@@ -386,7 +386,7 @@ public final class TAMEProjectMain
 				// Export engine, minify if possible.
 				File outJSFile = new File(webAssetsPath + File.separator + "tame.js");
 				try {
-					exportEngine(out, outJSFile);
+					exportEngine(outJSFile);
 				} catch (FileNotFoundException e) {
 					out.println("ERROR: Could not create project: " + e.getMessage());
 					return ERROR_IOERROR;
@@ -862,7 +862,7 @@ public final class TAMEProjectMain
 		}
 	}
 	
-	private static void exportEngine(PrintStream out, File outJSFile) throws IOException, InterruptedException
+	private static void exportEngine(File outJSFile) throws IOException, InterruptedException
 	{
 		ByteArrayOutputStream outTameEngineJSData = new ByteArrayOutputStream(400 * 1024);
 		TAMEJSExporter.export(outTameEngineJSData, null, new TAMEJSExporterOptions()
