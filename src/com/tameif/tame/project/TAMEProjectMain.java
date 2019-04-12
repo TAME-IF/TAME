@@ -292,17 +292,6 @@ public final class TAMEProjectMain
 				}
 				
 				File projectDir = new File(args.dequeue());
-				if (projectDir.exists())
-				{
-					out.println("ERROR: Target directory already exists: " + projectDir.getPath());
-					return ERROR_IOERROR;
-				}
-				else if (!FileUtils.createPath(projectDir.getPath()))
-				{
-					out.println("ERROR: Could not create directory for project: " + projectDir);
-					return ERROR_IOERROR;
-				}
-				
 				boolean addGitIgnore = false;
 				String webTemplateName = "standard";
 				
@@ -347,6 +336,18 @@ public final class TAMEProjectMain
 				if (templateFile == null)
 				{
 					out.println("ERROR: Could not find template: " + webTemplateName);
+					return ERROR_IOERROR;
+				}
+				
+				// Make directory.
+				if (projectDir.exists())
+				{
+					out.println("ERROR: Target directory already exists: " + projectDir.getPath());
+					return ERROR_IOERROR;
+				}
+				else if (!FileUtils.createPath(projectDir.getPath()))
+				{
+					out.println("ERROR: Could not create directory for project: " + projectDir);
 					return ERROR_IOERROR;
 				}
 				
