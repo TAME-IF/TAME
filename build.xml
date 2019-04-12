@@ -119,6 +119,9 @@
 		<copy todir="${bin.dir}/tamejs">
 			<fileset dir="${resource.dir}/tamejs" />
 		</copy>
+		<copy todir="${bin.dir}/tameprojects">
+			<fileset dir="${resource.dir}/tameprojects" />
+		</copy>
 		<echo message="${build.version.number}" file="${bin.dir}/${package.base.dir}/TAMEVersion.txt" />
 	</target>
 
@@ -472,7 +475,7 @@
 		<zip destfile="${zip.dir}/${zip.jar.one.filename}" compress="true" level="9">
 			<zipfileset dir="${scripts.dir}" filemode="755" prefix="bin/" />
 			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
-			<zipfileset file="${resource.dir}/templates" prefix="templates/" />
+			<zipfileset dir="${resource.dir}/templates" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -510,7 +513,7 @@
 			</tarfileset>
 			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
 			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/"/>
-			<zipfileset dir="${resource.dir}/templates" prefix="templates/" />
+			<tarfileset dir="${resource.dir}/templates" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</tar>
 	</target>

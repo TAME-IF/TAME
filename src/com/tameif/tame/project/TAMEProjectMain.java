@@ -1,22 +1,34 @@
 package com.tameif.tame.project;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.Reflect;
+import com.blackrook.commons.hash.CaseInsensitiveHashMap;
+import com.blackrook.commons.hash.HashMap;
 import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.commons.util.ArrayUtils;
 import com.blackrook.commons.util.FileUtils;
@@ -25,6 +37,7 @@ import com.blackrook.commons.util.OSUtils;
 import com.blackrook.commons.util.ObjectUtils;
 import com.blackrook.commons.util.ValueUtils;
 import com.tameif.tame.TAMELogic;
+import com.tameif.tame.factory.TAMEJSExporter;
 import com.tameif.tame.factory.TAMEJSExporterOptions;
 import com.tameif.tame.factory.TAMEScriptReaderOptions;
 
@@ -41,8 +54,10 @@ public final class TAMEProjectMain
 		"html",
 		"js",
 		"txt",
+		"tscript",
+		"properties"
 	};
-	
+
 	/** System property - Template Path. */
 	private static final String SYSTEM_PROPERTY_TEMPLATE_PATH = "tame.project.template.path";
 
@@ -57,6 +72,14 @@ public final class TAMEProjectMain
 	private static final String REPLACEKEY_SYSTEM_CHARSET = "SYSTEM_CHARSET";
 	/** Replace Key - Compiler Version */
 	private static final String REPLACEKEY_COMPILER_VERSION = "COMPILER_VERSION";
+
+	/** Current time. */
+	private static final Date EXECUTION_TIME = new Date();
+	/** Current year pattern. */
+	private static final SimpleDateFormat YEAR_FORMAT = new SimpleDateFormat("yyyy");
+	/** Current date pattern. */
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
 
 	/** Project Property - Distribution Output */
 	private static final String PROJECT_PROPERTY_DIST = "tame.project.dist";
@@ -85,7 +108,7 @@ public final class TAMEProjectMain
 	private static final String PROJECT_PROPERTY_VERBOSE = "tame.project.verbose";
 
 	/** Template description file/entry. */
-	private static final String TEMPLATE_DESCRIPTION_FILE = "description.txt";
+	private static final String TEMPLATE_DESCRIPTION_FILE = "template-info.txt";
 	
 	/** Switch CREATE - Use template. */
 	private static final String SWITCH_CREATE_TEMPLATE0 = "--template";
@@ -181,27 +204,20 @@ public final class TAMEProjectMain
 			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
-				File templateDir = new File(TEMPLATE_PATH);
-				if (!templateDir.exists())
+				HashMap<String, File> templateMap = getTemplates();
+				if (templateMap == null)
 				{
-					out.println("ERROR: The template directory is MISSING: " + templateDir.getPath());
+					out.println("ERROR: The template directory is MISSING: " + TEMPLATE_PATH);
 					return ERROR_IOERROR;
 				}
 				
 				out.println("Available templates:\n");
-				for (File f : templateDir.listFiles())
+				for (ObjectPair<String, File> pair : templateMap)
 				{
-					if (f.isDirectory())
-					{
-						String description = getShortDescription(f);
-						out.println("\t" + f.getName() + (description != null ? ": " + description : ""));
-					}
-					else if (FileUtils.getFileExtension(f).toLowerCase().equals("zip"))
-					{
-						String description = getShortDescription(f);
-						int extindex = f.getName().lastIndexOf(".");
-						out.println("\t" + (extindex >= 0 ? f.getName().substring(0, extindex) : f.getName()) + (description != null ? ": " + description : ""));
-					}
+					String name = pair.getKey();
+					File f = pair.getValue();
+					String description = getShortDescription(f);
+					out.println("\t" + name + (description != null ? ": " + description : ""));
 				}
 				
 				return ERROR_NONE;
@@ -245,7 +261,6 @@ public final class TAMEProjectMain
 						return null;
 					}
 				}
-					
 			}
 
 			// Reads the description until the end of the first sentence or line.
@@ -315,7 +330,7 @@ public final class TAMEProjectMain
 						
 						case STATE_TEMPLATE:
 						{
-							webTemplateName = args.dequeue();
+							webTemplateName = arg;
 							state = STATE_START;
 						}
 						break;
@@ -327,17 +342,86 @@ public final class TAMEProjectMain
 					return ERROR_BADOPTIONS;
 				}
 
-				File webTemplateDirectory = new File(TEMPLATE_PATH + File.separator + webTemplateName);
-				if (!webTemplateDirectory.isDirectory())
+				HashMap<String, File> templateMap = getTemplates();
+				File templateFile = templateMap.get(webTemplateName);
+				if (templateFile == null)
 				{
-					out.println("ERROR: Could not find template: " + webTemplateDirectory.getPath());
+					out.println("ERROR: Could not find template: " + webTemplateName);
 					return ERROR_IOERROR;
 				}
 				
-				// TODO: Finish this.
+				// Export template.
+				try {
+					copyToDirectory(templateFile, projectDir);
+				} catch (IOException e) {
+					out.println("ERROR: Could not create project: " + e.getMessage());
+					return ERROR_IOERROR;
+				} catch (SecurityException e) {
+					out.println("ERROR: Could not create project: Access denied: " + e.getMessage());
+					return ERROR_SECURITYERROR;
+				}
+
+				// Export properties.
+				try (
+					Reader reader = IOUtils.openTextStream(IOUtils.openResource("tameprojects/default.properties"));
+					Writer writer = new PrintWriter(new FileOutputStream(projectDir.getPath() + File.separator + "project.properties"));
+				){
+					export(reader, writer);
+				} catch (IOException e) {
+					out.println("ERROR: Could not create project: " + e.getMessage());
+					return ERROR_IOERROR;
+				} catch (SecurityException e) {
+					out.println("ERROR: Could not create project: Access denied: " + e.getMessage());
+					return ERROR_SECURITYERROR;
+				}
+
+				String webAssetsPath = projectDir.getPath() + File.separator + "src" + File.separator + "webassets";
+				// Make web assets directory.
+				if (!FileUtils.createPath(webAssetsPath))
+				{
+					out.println("ERROR: Could not create web asset directory in project.");
+					return ERROR_IOERROR;
+				}
+
+				// Export engine, minify if possible.
+				File outJSFile = new File(webAssetsPath + File.separator + "tame.js");
+				try {
+					exportEngine(out, outJSFile);
+				} catch (FileNotFoundException e) {
+					out.println("ERROR: Could not create project: " + e.getMessage());
+					return ERROR_IOERROR;
+				} catch (IOException e) {
+					out.println("ERROR: Could not create project: " + e.getMessage());
+					return ERROR_IOERROR;
+				} catch (SecurityException e) {
+					out.println("ERROR: Could not create project: Access denied: " + e.getMessage());
+					return ERROR_SECURITYERROR;
+				} catch (InterruptedException e) {
+					out.println("ERROR: Could not create project: Call to JS minifier was interrupted.");
+					return ERROR_IOERROR;
+				}
+
+				// Export Git Ignore, maybe.
+				if (addGitIgnore)
+				{
+					try (
+						Reader reader = new InputStreamReader(IOUtils.openResource("tameprojects/default.gitignore"));
+						Writer writer = new PrintWriter(new FileOutputStream(projectDir.getPath() + File.separator + ".gitignore"));
+					){
+						export(reader, writer);
+					} catch (IOException e) {
+						out.println("ERROR: Could not create project: " + e.getMessage());
+						return ERROR_IOERROR;
+					} catch (SecurityException e) {
+						out.println("ERROR: Could not create project: Access denied: " + e.getMessage());
+						return ERROR_SECURITYERROR;
+					}
+				}
+
+				out.println("Created project \"" + projectDir.getPath() + "\" with template \"" + webTemplateName + "\" successfully!");
 				return ERROR_NONE;
-			};
-			
+			}
+
 			@Override
 			public void help(PrintStream out) 
 			{
@@ -373,6 +457,7 @@ public final class TAMEProjectMain
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				// TODO: Finish this.
+				out.println("NOT IMPLEMENTED YET");
 				return ERROR_NONE;
 			};
 			
@@ -400,6 +485,7 @@ public final class TAMEProjectMain
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				// TODO: Finish this.
+				out.println("NOT IMPLEMENTED YET");
 				return ERROR_NONE;
 			};
 			
@@ -427,6 +513,7 @@ public final class TAMEProjectMain
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				// TODO: Finish this.
+				out.println("NOT IMPLEMENTED YET");
 				return ERROR_NONE;
 			};
 			
@@ -455,6 +542,7 @@ public final class TAMEProjectMain
 			public int execute(PrintStream out, Queue<String> args)
 			{
 				// TODO: Finish this.
+				out.println("NOT IMPLEMENTED YET");
 				return ERROR_NONE;
 			};
 			
@@ -542,12 +630,67 @@ public final class TAMEProjectMain
 		System.exit(mode.execute(out, argQueue));
 	}
 
-	private static void copyToDirectory(File sourceDirectory, File destinationDirectory) throws IOException
+	// Tests (shallowly) if this is a Zip File.
+	private static boolean isZipFile(File file)
+	{
+		return file.isFile() && FileUtils.getFileExtension(file).toLowerCase().equals("zip");
+	}
+	
+	// Converts an Enumeration<T> to an Iterable<T>.
+	private static <T> Iterable<T> toIterable(final Enumeration<T> e)
+	{
+		return ()->{
+			return new Iterator<T>() {
+				@Override
+				public boolean hasNext() {
+					return e.hasMoreElements();
+				}
+
+				@Override
+				public T next() {
+					return e.nextElement();
+				}
+			};
+		};
+	}
+	
+	private static CaseInsensitiveHashMap<File> getTemplates()
+	{
+		CaseInsensitiveHashMap<File> out = new CaseInsensitiveHashMap<>();
+		File templateDir = new File(TEMPLATE_PATH);
+		if (!templateDir.exists())
+		{
+			return null;
+		}
+		
+		for (File f : templateDir.listFiles())
+		{
+			if (f.isDirectory())
+				out.put(f.getName().toLowerCase(), f);
+			else if (isZipFile(f))
+			{
+				int extindex = f.getName().lastIndexOf(".");
+				String name = (extindex >= 0 ? f.getName().substring(0, extindex) : f.getName());
+				out.put(name, f);
+			}
+		}
+
+		return out;
+	}
+	
+	private static void copyToDirectory(File source, File destinationDirectory) throws IOException
 	{
 		if (!FileUtils.createPath(destinationDirectory.getPath()))
 			throw new IOException("Could not create directory: " + destinationDirectory.getPath());
-
-		for (File f : sourceDirectory.listFiles())
+		
+		if (isZipFile(source))
+		{
+			try (ZipFile zf = new ZipFile(source))
+			{
+				unzipToDirectory(zf, destinationDirectory);
+			}
+		}
+		else for (File f : source.listFiles())
 		{
 			File destinationFile = new File(destinationDirectory.getPath() + File.separator + f.getName());
 			if (f.isDirectory())
@@ -560,8 +703,7 @@ public final class TAMEProjectMain
 					try (
 						Reader src = IOUtils.openTextFile(f); 
 						Writer dest = new PrintWriter(new FileOutputStream(destinationFile))
-					)
-					{
+					){
 						export(src, dest);
 					}
 				}
@@ -570,9 +712,48 @@ public final class TAMEProjectMain
 					try (
 						InputStream src = new BufferedInputStream(new FileInputStream(f)); 
 						OutputStream dest = new FileOutputStream(destinationFile)
-					)
-					{
+					){
 						IOUtils.relay(src, dest, 16384);
+					}
+				}
+			}
+		}
+	}
+
+	private static void unzipToDirectory(ZipFile sourceZip, File destinationDirectory) throws IOException
+	{
+		for (ZipEntry entry : toIterable(sourceZip.entries()))
+		{
+			String target = destinationDirectory + File.separator + entry.getName();
+			if (entry.isDirectory())
+			{
+				if (!FileUtils.createPath(target))
+					throw new IOException("Could not create directory for " + sourceZip.getName() + ":" + entry.getName());
+			}
+			else
+			{
+				File f = new File(target);
+				
+				if (ArrayUtils.indexOf(FileUtils.getFileExtension(entry.getName()).toLowerCase(), TEXT_FILE_TYPES) >= 0)
+				{
+					try (
+						Reader reader = new InputStreamReader(sourceZip.getInputStream(entry));
+						Writer writer = new PrintWriter(new FileOutputStream(f));
+					){
+						if (!FileUtils.createPathForFile(target))
+							throw new IOException("Could not create directory for " + sourceZip.getName() + ":" + entry.getName());
+						export(reader, writer);
+					}
+				}
+				else
+				{
+					try (
+						InputStream in = sourceZip.getInputStream(entry); 
+						OutputStream out = new BufferedOutputStream(new FileOutputStream(f))
+					){
+						if (!FileUtils.createPathForFile(target))
+							throw new IOException("Could not create directory for " + sourceZip.getName() + ":" + entry.getName());
+						IOUtils.relay(in, out, 16384);
 					}
 				}
 			}
@@ -600,81 +781,116 @@ public final class TAMEProjectMain
 		final int STATE_TAG_END = 3;
 		int state = STATE_INIT;
 		StringBuilder tag = new StringBuilder();
-		char c;
-		while ((c = (char)reader.read()) >= 0) switch (state)
+		int ch;
+		while ((ch = reader.read()) >= 0)
 		{
-			case STATE_INIT:
+			char c = (char)ch;
+			switch (state)
 			{
-				if (c == '{')
-					state = STATE_TAG_START;
-				else
-					writer.append(c);
-			}
-			break;
+				case STATE_INIT:
+				{
+					if (c == '{')
+						state = STATE_TAG_START;
+					else
+						writer.append(c);
+				}
+				break;
 
-			case STATE_TAG_START:
-			{
-				if (c == '{')
-					state = STATE_TAG;
-				else
+				case STATE_TAG_START:
 				{
-					state = STATE_INIT;
-					writer.append('{');
-					writer.append(c);
-				}
-			}
-			break;
-
-			case STATE_TAG:
-			{
-				if (c == '}')
-				{
-					state = STATE_TAG_END;
-				}
-				else
-				{
-					tag.append(c);
-				}
-			}
-			break;
-			
-			case STATE_TAG_END:
-			{
-				if (c == '}')
-				{
-					state = STATE_INIT;
-					String tagName = tag.toString();
-					switch (tagName)
+					if (c == '{')
+						state = STATE_TAG;
+					else
 					{
-						case REPLACEKEY_CURRENT_YEAR:
-							// TODO: Finish.
-							break;
-						case REPLACEKEY_CURRENT_DATE:
-							// TODO: Finish.
-							break;
-						case REPLACEKEY_SYSTEM_CHARSET:
-							// TODO: Finish.
-							break;
-						case REPLACEKEY_COMPILER_VERSION:
-							// TODO: Finish.
-							break;
-						default:
-							tag.append("{{");
-							tag.append(c);
-							tag.append("}}");
-							break;
+						state = STATE_INIT;
+						writer.append('{');
+						writer.append(c);
 					}
-					tag.delete(0, tag.length());
 				}
-				else
+				break;
+
+				case STATE_TAG:
 				{
-					state = STATE_TAG;
-					tag.append('}');
-					tag.append(c);
+					if (c == '}')
+					{
+						state = STATE_TAG_END;
+					}
+					else
+					{
+						tag.append(c);
+					}
 				}
+				break;
+				
+				case STATE_TAG_END:
+				{
+					if (c == '}')
+					{
+						state = STATE_INIT;
+						String tagName = tag.toString();
+						switch (tagName)
+						{
+							case REPLACEKEY_CURRENT_YEAR:
+								writer.append(YEAR_FORMAT.format(EXECUTION_TIME));
+								break;
+							case REPLACEKEY_CURRENT_DATE:
+								writer.append(DATE_FORMAT.format(EXECUTION_TIME));
+								break;
+							case REPLACEKEY_SYSTEM_CHARSET:
+								writer.append(Charset.defaultCharset().displayName());
+								break;
+							case REPLACEKEY_COMPILER_VERSION:
+								writer.append(TAMELogic.getVersion());
+								break;
+							default:
+								writer.append("{{");
+								writer.append(c);
+								writer.append("}}");
+								break;
+						}
+						tag.delete(0, tag.length());
+					}
+					else
+					{
+						state = STATE_TAG;
+						tag.append('}');
+						tag.append(c);
+					}
+				}
+				break;
 			}
-			break;
 		}
+	}
+	
+	private static void exportEngine(PrintStream out, File outJSFile) throws IOException, InterruptedException
+	{
+		ByteArrayOutputStream outTameEngineJSData = new ByteArrayOutputStream(400 * 1024);
+		TAMEJSExporter.export(outTameEngineJSData, null, new TAMEJSExporterOptions()
+		{
+			@Override
+			public PrintStream getVerboseStream()
+			{
+				return null;
+			}
+			
+			@Override
+			public String getStartingPath()
+			{
+				return "resource:tamejs/Engine.js";
+			}
+			
+			@Override
+			public String getModuleVariableName()
+			{
+				return null;
+			}
+		});
+
+		OutputStream outFileStream = new BufferedOutputStream(new FileOutputStream(outJSFile));
+		if (hasUglify())
+			uglify(new ByteArrayInputStream(outTameEngineJSData.toByteArray()), outFileStream);
+		else
+			IOUtils.relay(new ByteArrayInputStream(outTameEngineJSData.toByteArray()), outFileStream, 16384);
 	}
 	
 	/**
@@ -701,7 +917,9 @@ public final class TAMEProjectMain
 			});
 		}
 
-		IOUtils.relay(inputData, proc.getOutputStream(), 16384);
+		OutputStream procIn = proc.getOutputStream();
+		IOUtils.relay(inputData, procIn, 16384);
+		procIn.close();
 		IOUtils.relay(proc.getInputStream(), outputData, 16384);
 		proc.waitFor();
 	}

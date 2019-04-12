@@ -1,5 +1,6 @@
 com/tameif/tame/**
 tamejs/**
+tameprojects/**
 com/blackrook/commons/AbstractArrayStorage.class
 com/blackrook/commons/AbstractChainedHash.class
 com/blackrook/commons/AbstractChainedHash$*.class
@@ -31,7 +32,9 @@ com/blackrook/commons/list/List.class
 com/blackrook/commons/list/SortedList.class
 com/blackrook/commons/list/SortedMap.class
 com/blackrook/commons/math/RMath.class
+com/blackrook/commons/util/ArrayUtils.class
 com/blackrook/commons/util/EncodingUtils.class
+com/blackrook/commons/util/FileUtils.class
 com/blackrook/commons/util/IOUtils.class
 com/blackrook/commons/util/ObjectUtils.class
 com/blackrook/commons/util/OSUtils.class
