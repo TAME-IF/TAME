@@ -2,6 +2,7 @@ package com.tameif.tame.project;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -37,8 +38,11 @@ import com.blackrook.commons.util.OSUtils;
 import com.blackrook.commons.util.ObjectUtils;
 import com.blackrook.commons.util.ValueUtils;
 import com.tameif.tame.TAMELogic;
+import com.tameif.tame.TAMEModule;
 import com.tameif.tame.factory.TAMEJSExporter;
 import com.tameif.tame.factory.TAMEJSExporterOptions;
+import com.tameif.tame.factory.TAMEScriptParseException;
+import com.tameif.tame.factory.TAMEScriptReader;
 import com.tameif.tame.factory.TAMEScriptReaderOptions;
 
 /**
@@ -78,9 +82,18 @@ public final class TAMEProjectMain
 	/** Current year pattern. */
 	private static final SimpleDateFormat YEAR_FORMAT = new SimpleDateFormat("yyyy");
 	/** Current date pattern. */
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");
 
-
+	/** Resource - default properties. */
+	private static final String RESOURCE_PROJECT_PROPERTIES = "tameprojects/default.properties";
+	/** Resource - default properties template addendum. */
+	private static final String RESOURCE_PROJECT_TEMPLATE_PROPERTIES = "tameprojects/template.properties";
+	/** Resource - default Git ignore. */
+	private static final String RESOURCE_PROJECT_GITIGNORE = "tameprojects/default.gitignore";
+	
+	/** Project properties file. */
+	private static final String PROJECT_PROPERTIES = "project.properties";
+	
 	/** Project Property - Distribution Output */
 	private static final String PROJECT_PROPERTY_DIST = "tame.project.dist";
 	/** Project Property - Distribution Output Module */
@@ -106,6 +119,8 @@ public final class TAMEProjectMain
 	private static final String PROJECT_PROPERTY_NOOPTIMIZE = "tame.project.nooptimize";
 	/** Project Property - Verbose Output. */
 	private static final String PROJECT_PROPERTY_VERBOSE = "tame.project.verbose";
+	/** Project Property - Source template. */
+	private static final String PROJECT_PROPERTY_SOURCE_TEMPLATE = "tame.project.template";
 
 	/** Template description file/entry. */
 	private static final String TEMPLATE_DESCRIPTION_FILE = "template-info.txt";
@@ -116,6 +131,18 @@ public final class TAMEProjectMain
 	private static final String SWITCH_CREATE_TEMPLATE1 = "-t";
 	/** Switch CREATE - Make Git Ignore. */
 	private static final String SWITCH_CREATE_GIT = "--git";
+
+	/** Switch UPDATE - Update Engine. */
+	private static final String SWITCH_UPDATE_ENGINE = "engine";
+	/** Switch UPDATE - Update Template. */
+	//private static final String SWITCH_UPDATE_TEMPLATE = "template";
+
+	/** Switch COMPILE - Compile script. */
+	private static final String SWITCH_COMPILE_SCRIPT = "--script";
+	/** Switch COMPILE - Compile web. */
+	private static final String SWITCH_COMPILE_WEB = "--web";
+	/** Switch COMPILE - Compile/copy web assets. */
+	private static final String SWITCH_COMPILE_WEBASSETS = "--assets";
 	
 	/** Errors */
 	private static final int ERROR_NONE = 0;
@@ -124,6 +151,7 @@ public final class TAMEProjectMain
 	private static final int ERROR_IOERROR = 3;
 	private static final int ERROR_SECURITYERROR = 4;
 	private static final int ERROR_NOINPUT = 5;
+	private static final int ERROR_NOTAPROJECT = 6;
 
 	/**
 	 * Program modes.
@@ -364,10 +392,24 @@ public final class TAMEProjectMain
 
 				// Export properties.
 				try (
-					Reader reader = IOUtils.openTextStream(IOUtils.openResource("tameprojects/default.properties"));
-					Writer writer = new PrintWriter(new FileOutputStream(projectDir.getPath() + File.separator + "project.properties"));
+					Reader reader = IOUtils.openTextStream(IOUtils.openResource(RESOURCE_PROJECT_PROPERTIES));
+					Writer writer = new PrintWriter(new FileOutputStream(projectDir.getPath() + File.separator + PROJECT_PROPERTIES));
 				){
 					export(reader, writer);
+				} catch (IOException e) {
+					out.println("ERROR: Could not create project: " + e.getMessage());
+					return ERROR_IOERROR;
+				} catch (SecurityException e) {
+					out.println("ERROR: Could not create project: Access denied: " + e.getMessage());
+					return ERROR_SECURITYERROR;
+				}
+
+				try (
+					Reader reader = IOUtils.openTextStream(IOUtils.openResource(RESOURCE_PROJECT_TEMPLATE_PROPERTIES));
+					Writer writer = new PrintWriter(new FileOutputStream(projectDir.getPath() + File.separator + PROJECT_PROPERTIES, true));
+				){
+					export(reader, writer);
+					writer.write(PROJECT_PROPERTY_SOURCE_TEMPLATE + "=" + webTemplateName + "\n");
 				} catch (IOException e) {
 					out.println("ERROR: Could not create project: " + e.getMessage());
 					return ERROR_IOERROR;
@@ -406,7 +448,7 @@ public final class TAMEProjectMain
 				if (addGitIgnore)
 				{
 					try (
-						Reader reader = new InputStreamReader(IOUtils.openResource("tameprojects/default.gitignore"));
+						Reader reader = new InputStreamReader(IOUtils.openResource(RESOURCE_PROJECT_GITIGNORE));
 						Writer writer = new PrintWriter(new FileOutputStream(projectDir.getPath() + File.separator + ".gitignore"));
 					){
 						export(reader, writer);
@@ -457,8 +499,58 @@ public final class TAMEProjectMain
 			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
-				// TODO: Finish this.
-				out.println("NOT IMPLEMENTED YET");
+				Options options = getProjectOptions();
+				if (options == null)
+				{
+					out.println("ERROR: Project properties not found - must be in a project directory.");
+					return ERROR_NOTAPROJECT;
+				}
+				
+				boolean updateEngine = false;
+				
+				while (!args.isEmpty())
+				{
+					String arg = args.dequeue();
+					if (arg.equals(SWITCH_UPDATE_ENGINE))
+						updateEngine = true;
+					else
+					{
+						out.println("ERROR: Unknown switch: " + arg);
+						return ERROR_BADOPTIONS;
+					}
+				}
+
+				boolean updatedSomething = false;
+				out.println("Updating engine...");
+				if (updateEngine)
+				{
+					// Export engine, minify if possible.
+					File outJSFile = new File(options.webAssetsDirectory + File.separator + "tame.js");
+					try {
+						exportEngine(outJSFile);
+						out.println("Re-exported TAME engine to " + outJSFile.getPath() + ".");
+						updatedSomething = true;
+					} catch (FileNotFoundException e) {
+						out.println("ERROR: Could not create project: " + e.getMessage());
+						return ERROR_IOERROR;
+					} catch (IOException e) {
+						out.println("ERROR: Could not create project: " + e.getMessage());
+						return ERROR_IOERROR;
+					} catch (SecurityException e) {
+						out.println("ERROR: Could not create project: Access denied: " + e.getMessage());
+						return ERROR_SECURITYERROR;
+					} catch (InterruptedException e) {
+						out.println("ERROR: Could not create project: Call to JS minifier was interrupted.");
+						return ERROR_IOERROR;
+					}
+				}
+				
+				if (!updatedSomething)
+				{
+					out.println("Nothing to do.");
+					out.println("Try `tamep help update`.");
+				}
+				
 				return ERROR_NONE;
 			};
 			
@@ -466,7 +558,13 @@ public final class TAMEProjectMain
 			public void help(PrintStream out) 
 			{
 				out.println("Usage: tamep update [component]");
-				// TODO: Finish this.
+				out.println("Creates a new project in a directory.");
+				out.println();
+				out.println("[component]:");
+				out.println("    One of the following components:");
+				out.println();
+				out.println("    engine     Updates the embedded engine.");
+				out.println();
 			}
 			
 			@Override
@@ -485,8 +583,31 @@ public final class TAMEProjectMain
 			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
-				// TODO: Finish this.
-				out.println("NOT IMPLEMENTED YET");
+				Options options = getProjectOptions();
+				if (options == null)
+				{
+					out.println("ERROR: Project properties not found - must be in a project directory.");
+					return ERROR_NOTAPROJECT;
+				}
+				
+				File destDir = new File(options.getOutPath());
+
+				try {
+					if (destDir.exists())
+						deleteDirectory(destDir, true);
+				} catch (TAMEScriptParseException e) {
+					out.println("COMPILE ERROR: "+e.getMessage());
+					return ERROR_BADCOMPILE;
+				} catch (IOException e) {
+					out.println("ERROR: Could not delete directory: "+e.getMessage());
+					return ERROR_IOERROR;
+				} catch (SecurityException e) {
+					out.println("ERROR: Could not delete directory: "+e.getMessage());
+					out.println("Access to the file was denied.");
+					return ERROR_SECURITYERROR;
+				}
+
+				out.println("Done.");
 				return ERROR_NONE;
 			};
 			
@@ -494,7 +615,7 @@ public final class TAMEProjectMain
 			public void help(PrintStream out) 
 			{
 				out.println("Usage: tamep clean");
-				// TODO: Finish this.
+				out.println("Deletes the compiled project files.");
 			}
 			
 			@Override
@@ -513,16 +634,162 @@ public final class TAMEProjectMain
 			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
-				// TODO: Finish this.
-				out.println("NOT IMPLEMENTED YET");
+				Options options = getProjectOptions();
+				if (options == null)
+				{
+					out.println("ERROR: Project properties not found - must be in a project directory.");
+					return ERROR_NOTAPROJECT;
+				}
+				
+				boolean compileModule = false;
+				boolean compileWeb = false;
+				boolean compileWebAssets = false;
+				
+				while (!args.isEmpty())
+				{
+					String arg = args.dequeue();
+					if (arg.equals(SWITCH_COMPILE_SCRIPT))
+						compileModule = true;
+					else if (arg.equals(SWITCH_COMPILE_WEB))
+						compileWeb = true;
+					else if (arg.equals(SWITCH_COMPILE_WEBASSETS))
+						compileWebAssets = true;
+					else
+					{
+						out.println("ERROR: Unknown switch: " + arg);
+						return ERROR_BADOPTIONS;
+					}
+				}
+				
+				// if none explicitly set, 
+				if (!compileModule && !compileWeb && !compileWebAssets)
+				{
+					compileModule = true;
+					compileWeb = true;
+					compileWebAssets = true;
+				}
+
+				TAMEModule module = null;
+				File scriptFile = new File(options.getScriptPath());
+				
+				// Compile module if destined for an executable target.
+				if (compileModule || compileWeb)
+				{
+					out.println("Compiling " + scriptFile.getPath() + " ....");
+					if (!scriptFile.exists())
+					{
+						out.println("ERROR: Script file not found - " + scriptFile.getPath());
+						return ERROR_NOINPUT;
+					}
+					
+					try {
+						module = TAMEScriptReader.read(scriptFile, options);
+					} catch (TAMEScriptParseException e) {
+						out.println("COMPILE ERROR: "+e.getMessage());
+						return ERROR_BADCOMPILE;
+					} catch (IOException e) {
+						out.println("ERROR: Could not read input file: "+scriptFile.getPath());
+						return ERROR_IOERROR;
+					} catch (SecurityException e) {
+						out.println("ERROR: Could not read input file: "+scriptFile.getPath());
+						out.println("Access to the file was denied.");
+						return ERROR_SECURITYERROR;
+					}
+				}
+
+				if (compileModule)
+				{
+					File outFile = new File(options.getOutModulePath());
+					if (!FileUtils.createPathForFile(outFile))
+					{
+						out.println("ERROR: Could not create path for file: "+outFile.getPath());
+						return ERROR_IOERROR;
+					}
+
+					try (OutputStream outStream = new BufferedOutputStream(new FileOutputStream(outFile))) {
+						module.writeBytes(outStream);
+						out.println("Wrote " + outFile.getPath() + ".");
+					} catch (IOException e) {
+						out.println("ERROR: Could not write module: "+scriptFile.getPath());
+						return ERROR_IOERROR;
+					} catch (SecurityException e) {
+						out.println("ERROR: Could not write module: "+scriptFile.getPath());
+						out.println("Access to the file was denied.");
+						return ERROR_SECURITYERROR;
+					}
+				}
+				
+				if (compileWeb)
+				{
+					File outFile = new File(options.getOutWebDirectory() + File.separator + "index.html");
+					out.println("Exporting to " + outFile.getPath() + " ....");
+					if (!FileUtils.createPathForFile(outFile))
+					{
+						out.println("ERROR: Could not create path for file: "+outFile.getPath());
+						return ERROR_IOERROR;
+					}
+
+					try {
+						TAMEJSExporter.export(outFile, module, options);
+						out.println("Wrote " + outFile.getPath() + ".");
+					} catch (IOException e) {
+						out.println("ERROR: Could not write Web module: "+outFile.getPath());
+						return ERROR_IOERROR;
+					} catch (SecurityException e) {
+						out.println("ERROR: Could not write Web module: "+outFile.getPath());
+						out.println("Access to the file was denied.");
+						return ERROR_SECURITYERROR;
+					}
+				}
+				
+				if (compileWebAssets)
+				{
+					File inDir = new File(options.getAssetsPath());
+					if (!inDir.exists())
+					{
+						out.println("ERROR: Directory " + inDir.getPath() + " does not exist!");
+						return ERROR_IOERROR;
+					}
+					
+					File outDir = new File(options.getOutWebDirectory());
+					out.println("Copying files from " + inDir.getPath() + " to " + outDir.getPath() + " ....");
+					if (!FileUtils.createPath(outDir.getPath()))
+					{
+						out.println("ERROR: Could not create path: "+outDir.getPath());
+						return ERROR_IOERROR;
+					}
+
+					try {
+						copyToDirectory(inDir, outDir);
+					} catch (IOException e) {
+						out.println("ERROR: Could not copy Web assets to: "+outDir.getPath());
+						return ERROR_IOERROR;
+					} catch (SecurityException e) {
+						out.println("ERROR: Could not copy Web assets to: "+outDir.getPath());
+						out.println("Access to the file was denied.");
+						return ERROR_SECURITYERROR;
+					}
+				}
+				
+				out.println("Done.");
 				return ERROR_NONE;
-			};
-			
+			}
+
 			@Override
 			public void help(PrintStream out) 
 			{
 				out.println("Usage: tamep compile [switches]");
-				// TODO: Finish this.
+				out.println("Compiles the TAME project and also copies web assets to the destination folder.");
+				out.println("It may be beneficial to only compile certain pieces if not every part changes.");
+				out.println();
+				out.println("[switches]:");
+				out.println();
+				out.println("    --script   Compiles the script to the binary output only.");
+				out.println("    --web      Compiles the script to web output only.");
+				out.println("    --assets   Copies static web assets only.");
+				out.println();
+				out.println("If none of the above are specified, this assumes ALL parts are compiled.");
+				out.println();
 			}
 			
 			@Override
@@ -653,6 +920,22 @@ public final class TAMEProjectMain
 				}
 			};
 		};
+	}
+	
+	private static Options getProjectOptions()
+	{
+		File file = new File(PROJECT_PROPERTIES);
+		if (!file.exists())
+			return null;
+		Properties properties = new Properties();
+		try (BufferedReader br = IOUtils.openTextFile(file)) {
+			properties.load(br);
+		} catch (FileNotFoundException e) {
+			return null;
+		} catch (IOException e) {
+			return null;
+		}
+		return new Options(properties);
 	}
 	
 	private static CaseInsensitiveHashMap<File> getTemplates()
@@ -918,6 +1201,7 @@ public final class TAMEProjectMain
 			});
 		}
 
+		// Close STDIN to process or UglifyJS will hang forever.
 		OutputStream procIn = proc.getOutputStream();
 		IOUtils.relay(inputData, procIn, 16384);
 		procIn.close();
@@ -975,6 +1259,7 @@ public final class TAMEProjectMain
 		private String scriptPath;
 		private String webStartingFile;
 		private String webAssetsDirectory;
+		private String templateName;
 
 		private String[] defines;
 		private boolean optimizing;
@@ -1005,6 +1290,9 @@ public final class TAMEProjectMain
 				input
 			);
 			this.webAssetsDirectory = convertProperty(properties, PROJECT_PROPERTY_HTML_ASSETS, null, (input)->
+				input
+			);
+			this.templateName = convertProperty(properties, PROJECT_PROPERTY_SOURCE_TEMPLATE, null, (input)->
 				input
 			);
 			
@@ -1072,7 +1360,7 @@ public final class TAMEProjectMain
 		@Override
 		public String getModuleVariableName() 
 		{
-			return "EmbeddedData";
+			return "ModuleData";
 		}
 
 		@Override
@@ -1086,6 +1374,11 @@ public final class TAMEProjectMain
 			return webAssetsDirectory;
 		}
 
+		public String getTemplateName() 
+		{
+			return templateName;
+		}
+		
 		@Override
 		public PrintStream getVerboseStream() 
 		{
