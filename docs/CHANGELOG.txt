@@ -3,6 +3,13 @@
     (C) 2019 Matt Tropiano
 ==============================================================================
 
+0.9BETA18
+.........
+
+	- Added: TAME Project (tamep).
+	- Fixed: JS exporter path resolution problems.
+
+
 0.9BETA17
 .........
 
