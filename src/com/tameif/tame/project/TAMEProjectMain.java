@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import com.blackrook.commons.ObjectPair;
 import com.blackrook.commons.Reflect;
@@ -94,14 +95,21 @@ public final class TAMEProjectMain
 	/** Project properties file. */
 	private static final String PROJECT_PROPERTIES = "project.properties";
 	
-	/** Project Property - Distribution Output */
+	/** Project Property - Build Output */
+	private static final String PROJECT_PROPERTY_BUILD = "tame.project.build";
+	/** Project Property - Build Output Module */
+	private static final String PROJECT_PROPERTY_BUILD_MODULE = "tame.project.build.module";
+	/** Project Property - Build Output Web Directory */
+	private static final String PROJECT_PROPERTY_BUILD_WEB = "tame.project.build.web";
+
+	/** Project Property - Distribution Output Directory */
 	private static final String PROJECT_PROPERTY_DIST = "tame.project.dist";
-	/** Project Property - Distribution Output Module */
-	private static final String PROJECT_PROPERTY_DIST_MODULE = "tame.project.dist.module";
-	/** Project Property - Distribution Output Web Directory */
-	private static final String PROJECT_PROPERTY_DIST_WEB = "tame.project.dist.web";
 	/** Project Property - Distribution Output Web Directory Zipped */
 	private static final String PROJECT_PROPERTY_DIST_WEB_ZIP = "tame.project.dist.web.zip";
+	/** Project Property - Distribution Output Web Directory Zipped Compression Method */
+	private static final String PROJECT_PROPERTY_DIST_WEB_ZIP_METHOD = "tame.project.dist.web.zip.compression.method";
+	/** Project Property - Distribution Output Web Directory Zipped Compression Level */
+	private static final String PROJECT_PROPERTY_DIST_WEB_ZIP_LEVEL = "tame.project.dist.web.zip.compression.level";
 
 	/** Project Property - Charset. */
 	private static final String PROJECT_PROPERTY_CHARSET = "tame.project.charset";
@@ -152,6 +160,7 @@ public final class TAMEProjectMain
 	private static final int ERROR_SECURITYERROR = 4;
 	private static final int ERROR_NOINPUT = 5;
 	private static final int ERROR_NOTAPROJECT = 6;
+	private static final int ERROR_PROJECTERROR = 7;
 
 	/**
 	 * Program modes.
@@ -429,7 +438,7 @@ public final class TAMEProjectMain
 				// Export engine, minify if possible.
 				File outJSFile = new File(webAssetsPath + File.separator + "tame.js");
 				try {
-					exportEngine(outJSFile);
+					exportEngine(out, outJSFile);
 				} catch (FileNotFoundException e) {
 					out.println("ERROR: Could not create project: " + e.getMessage());
 					return ERROR_IOERROR;
@@ -521,26 +530,32 @@ public final class TAMEProjectMain
 				}
 
 				boolean updatedSomething = false;
-				out.println("Updating engine...");
 				if (updateEngine)
 				{
+					out.println("Updating engine ....");
+					if (ObjectUtils.isEmpty(options.getAssetsDirectory()))
+					{
+						out.println("ERROR: Project property "+PROJECT_PROPERTY_HTML_ASSETS+" is blank!");
+						return ERROR_PROJECTERROR;
+					}
+
 					// Export engine, minify if possible.
-					File outJSFile = new File(options.webAssetsDirectory + File.separator + "tame.js");
+					File outJSFile = new File(options.getAssetsDirectory() + File.separator + "tame.js");
 					try {
-						exportEngine(outJSFile);
+						exportEngine(out, outJSFile);
 						out.println("Re-exported TAME engine to " + outJSFile.getPath() + ".");
 						updatedSomething = true;
 					} catch (FileNotFoundException e) {
-						out.println("ERROR: Could not create project: " + e.getMessage());
+						out.println("ERROR: Could not update project engine: " + e.getMessage());
 						return ERROR_IOERROR;
 					} catch (IOException e) {
-						out.println("ERROR: Could not create project: " + e.getMessage());
+						out.println("ERROR: Could not update project engine: " + e.getMessage());
 						return ERROR_IOERROR;
 					} catch (SecurityException e) {
-						out.println("ERROR: Could not create project: Access denied: " + e.getMessage());
+						out.println("ERROR: Could not update project engine: Access denied: " + e.getMessage());
 						return ERROR_SECURITYERROR;
 					} catch (InterruptedException e) {
-						out.println("ERROR: Could not create project: Call to JS minifier was interrupted.");
+						out.println("ERROR: Could not update project engine: Call to JS minifier was interrupted.");
 						return ERROR_IOERROR;
 					}
 				}
@@ -590,19 +605,35 @@ public final class TAMEProjectMain
 					return ERROR_NOTAPROJECT;
 				}
 				
-				File destDir = new File(options.getOutPath());
+				if (ObjectUtils.isEmpty(options.getOutPath()))
+				{
+					out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD+" is blank!");
+					return ERROR_PROJECTERROR;
+				}
+				
+				if (ObjectUtils.isEmpty(options.getDistDirectory()))
+				{
+					out.println("ERROR: Project property "+PROJECT_PROPERTY_DIST+" is blank!");
+					return ERROR_PROJECTERROR;
+				}
+
+
+				File buildDir = new File(options.getOutPath());
+				File destDir = new File(options.getDistDirectory());
 
 				try {
+					if (buildDir.exists())
+						deleteDirectory(buildDir, true);
 					if (destDir.exists())
 						deleteDirectory(destDir, true);
 				} catch (TAMEScriptParseException e) {
 					out.println("COMPILE ERROR: "+e.getMessage());
 					return ERROR_BADCOMPILE;
 				} catch (IOException e) {
-					out.println("ERROR: Could not delete directory: "+e.getMessage());
+					out.println("ERROR: "+e.getMessage());
 					return ERROR_IOERROR;
 				} catch (SecurityException e) {
-					out.println("ERROR: Could not delete directory: "+e.getMessage());
+					out.println("ERROR: "+e.getMessage());
 					out.println("Access to the file was denied.");
 					return ERROR_SECURITYERROR;
 				}
@@ -669,6 +700,12 @@ public final class TAMEProjectMain
 					compileWebAssets = true;
 				}
 
+				if (ObjectUtils.isEmpty(options.getScriptPath()))
+				{
+					out.println("ERROR: Project property "+PROJECT_PROPERTY_SRC_MAIN+" is blank!");
+					return ERROR_PROJECTERROR;
+				}
+
 				TAMEModule module = null;
 				File scriptFile = new File(options.getScriptPath());
 				
@@ -699,6 +736,12 @@ public final class TAMEProjectMain
 
 				if (compileModule)
 				{
+					if (ObjectUtils.isEmpty(options.getOutModulePath()))
+					{
+						out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD_MODULE+" is blank!");
+						return ERROR_PROJECTERROR;
+					}
+
 					File outFile = new File(options.getOutModulePath());
 					if (!FileUtils.createPathForFile(outFile))
 					{
@@ -721,6 +764,12 @@ public final class TAMEProjectMain
 				
 				if (compileWeb)
 				{
+					if (ObjectUtils.isEmpty(options.getOutWebDirectory()))
+					{
+						out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD_WEB+" is blank!");
+						return ERROR_PROJECTERROR;
+					}
+
 					File outFile = new File(options.getOutWebDirectory() + File.separator + "index.html");
 					out.println("Exporting to " + outFile.getPath() + " ....");
 					if (!FileUtils.createPathForFile(outFile))
@@ -744,13 +793,25 @@ public final class TAMEProjectMain
 				
 				if (compileWebAssets)
 				{
-					File inDir = new File(options.getAssetsPath());
+					if (ObjectUtils.isEmpty(options.getAssetsDirectory()))
+					{
+						out.println("ERROR: Project property "+PROJECT_PROPERTY_HTML_ASSETS+" is blank!");
+						return ERROR_PROJECTERROR;
+					}
+
+					File inDir = new File(options.getAssetsDirectory());
 					if (!inDir.exists())
 					{
 						out.println("ERROR: Directory " + inDir.getPath() + " does not exist!");
 						return ERROR_IOERROR;
 					}
 					
+					if (ObjectUtils.isEmpty(options.getOutWebDirectory()))
+					{
+						out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD_WEB+" is blank!");
+						return ERROR_PROJECTERROR;
+					}
+
 					File outDir = new File(options.getOutWebDirectory());
 					out.println("Copying files from " + inDir.getPath() + " to " + outDir.getPath() + " ....");
 					if (!FileUtils.createPath(outDir.getPath()))
@@ -809,8 +870,63 @@ public final class TAMEProjectMain
 			@Override
 			public int execute(PrintStream out, Queue<String> args)
 			{
-				// TODO: Finish this.
-				out.println("NOT IMPLEMENTED YET");
+				Options options = getProjectOptions();
+				if (options == null)
+				{
+					out.println("ERROR: Project properties not found - must be in a project directory.");
+					return ERROR_NOTAPROJECT;
+				}
+				
+				if (ObjectUtils.isEmpty(options.getOutWebDirectory()))
+				{
+					out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD_WEB+" is blank!");
+					return ERROR_PROJECTERROR;
+				}
+
+				if (ObjectUtils.isEmpty(options.getDistWebZip()))
+				{
+					out.println("ERROR: Project property "+PROJECT_PROPERTY_DIST_WEB_ZIP+" is blank!");
+					return ERROR_PROJECTERROR;
+				}
+
+				File inDir = new File(options.getOutWebDirectory());
+				File outZip = new File(options.getDistWebZip());
+				int compressLevel = options.getDistWebZipLevel();
+				int compressMethod = options.getDistWebZipMethod();
+
+				if (!inDir.exists())
+				{
+					out.println("ERROR: Web build directory does not exist: " + inDir.getPath());
+					out.println("Try `tamep compile` first." + inDir.getPath());
+					return ERROR_IOERROR;
+				}
+
+				if (outZip.exists() && !outZip.delete())
+				{
+					out.println("ERROR: Could not delete previous release zip: " + outZip.getPath());
+					return ERROR_IOERROR;
+				}
+
+				if (!FileUtils.createPathForFile(outZip))
+				{
+					out.println("ERROR: Could not create directory for release zip: " + outZip.getPath());
+					return ERROR_IOERROR;
+				}
+
+				out.println("Zipping " + inDir.getPath() + " into " + outZip.getPath() + " ....");
+				
+				try {
+					zipDirectory(inDir, outZip, compressMethod, compressLevel);
+				} catch (IOException e) {
+					out.println("ERROR: Could not zip up Web assets to: "+outZip.getPath() + ": " + e.getMessage());
+					return ERROR_IOERROR;
+				} catch (SecurityException e) {
+					out.println("ERROR: Could not zip up Web assets to: "+outZip.getPath() + ": " + e.getMessage());
+					out.println("Access to the file was denied.");
+					return ERROR_SECURITYERROR;
+				}
+				
+				out.println("Wrote " + outZip.getPath() + " successfully.");
 				return ERROR_NONE;
 			};
 			
@@ -818,7 +934,7 @@ public final class TAMEProjectMain
 			public void help(PrintStream out) 
 			{
 				out.println("Usage: tamep release");
-				// TODO: Finish this.
+				out.println("Releases the project, creating a Zip of the web assets.");
 			}
 			
 			@Override
@@ -1004,6 +1120,37 @@ public final class TAMEProjectMain
 		}
 	}
 
+	private static void zipDirectory(File sourceDir, File destinationZip, int compressionMethod, int compressionLevel) throws IOException
+	{
+		try (ZipOutputStream zipOut = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(destinationZip))))
+		{
+			zipOut.setMethod(compressionMethod);
+			zipOut.setLevel(compressionLevel);
+			zipDirectoryRecurse(sourceDir, sourceDir, zipOut);
+		}
+	}
+
+	private static void zipDirectoryRecurse(File rootDir, File sourceDir, ZipOutputStream zipOut) throws IOException
+	{
+		for (File f : sourceDir.listFiles())
+		{
+			if (f.isDirectory())
+			{
+				zipOut.closeEntry();
+				zipDirectoryRecurse(rootDir, f, zipOut);
+			}
+			else
+			{
+				ZipEntry nextEntry = new ZipEntry(f.getPath().substring(rootDir.getPath().length() + 1));
+				zipOut.putNextEntry(nextEntry);
+				try (InputStream in = new BufferedInputStream(new FileInputStream(f)))
+				{
+					IOUtils.relay(in, zipOut, 4096);
+				}
+			}
+		}
+	}
+	
 	private static void unzipToDirectory(ZipFile sourceZip, File destinationDirectory) throws IOException
 	{
 		for (ZipEntry entry : toIterable(sourceZip.entries()))
@@ -1146,8 +1293,9 @@ public final class TAMEProjectMain
 		}
 	}
 	
-	private static void exportEngine(File outJSFile) throws IOException, InterruptedException
+	private static void exportEngine(PrintStream out, File outJSFile) throws IOException, InterruptedException
 	{
+		out.println("Exporting TAME JS engine ....");
 		ByteArrayOutputStream outTameEngineJSData = new ByteArrayOutputStream(400 * 1024);
 		TAMEJSExporter.export(outTameEngineJSData, null, new TAMEJSExporterOptions()
 		{
@@ -1172,7 +1320,10 @@ public final class TAMEProjectMain
 
 		OutputStream outFileStream = new BufferedOutputStream(new FileOutputStream(outJSFile));
 		if (hasUglify())
+		{
+			out.println("UglifyJS detected. Minifying ....");
 			uglify(new ByteArrayInputStream(outTameEngineJSData.toByteArray()), outFileStream);
+		}
 		else
 			IOUtils.relay(new ByteArrayInputStream(outTameEngineJSData.toByteArray()), outFileStream, 16384);
 	}
@@ -1253,7 +1404,11 @@ public final class TAMEProjectMain
 		private String outPath; 
 		private String outModulePath; 
 		private String outWebDirectory; 
-		private String outWebZip; 
+
+		private String distDirectory; 
+		private String distWebZip; 
+		private int distWebZipMethod; 
+		private int distWebZipLevel; 
 
 		private Charset charset;
 		private String scriptPath;
@@ -1267,18 +1422,41 @@ public final class TAMEProjectMain
 		
 		private Options(Properties properties)
 		{
-			this.outPath = convertProperty(properties, PROJECT_PROPERTY_DIST, null, (input)->
+			this.outPath = convertProperty(properties, PROJECT_PROPERTY_BUILD, null, (input)->
 				input
 			);
-			this.outModulePath = convertProperty(properties, PROJECT_PROPERTY_DIST_MODULE, null, (input)->
+			this.outModulePath = convertProperty(properties, PROJECT_PROPERTY_BUILD_MODULE, null, (input)->
 				input
 			);
-			this.outWebDirectory = convertProperty(properties, PROJECT_PROPERTY_DIST_WEB, null, (input)->
+			this.outWebDirectory = convertProperty(properties, PROJECT_PROPERTY_BUILD_WEB, null, (input)->
 				input
 			);
-			this.outWebZip = convertProperty(properties, PROJECT_PROPERTY_DIST_WEB_ZIP, null, (input)->
+			
+			this.distDirectory = convertProperty(properties, PROJECT_PROPERTY_DIST, null, (input)->
 				input
 			);
+			this.distWebZip = convertProperty(properties, PROJECT_PROPERTY_DIST_WEB_ZIP, null, (input)->
+				input
+			);
+			this.distWebZipMethod = convertProperty(properties, PROJECT_PROPERTY_DIST_WEB_ZIP_METHOD, null, (input)->{
+				if (input == null)
+					return ZipOutputStream.STORED;
+				else if ("compress".equalsIgnoreCase(input))
+					return ZipOutputStream.DEFLATED;
+				else
+					return ZipOutputStream.STORED;
+			});
+			this.distWebZipLevel = convertProperty(properties, PROJECT_PROPERTY_DIST_WEB_ZIP_LEVEL, null, (input)->{
+				if (input == null)
+					return 0;
+				
+				int level = ValueUtils.parseInt(input, 0);
+				
+				if (level < 0 || level > 9)
+					return 0;
+				else
+					return level;
+			});
 			
 			this.charset = convertProperty(properties, PROJECT_PROPERTY_CHARSET, Charset.defaultCharset().displayName(), (input)->
 				Charset.forName(input)
@@ -1329,10 +1507,25 @@ public final class TAMEProjectMain
 			return outWebDirectory;
 		}
 		
-		public String getOutWebZip()
+		public String getDistDirectory() 
 		{
-			return outWebZip;
-		} 
+			return distDirectory;
+		}
+		
+		public String getDistWebZip()
+		{
+			return distWebZip;
+		}
+		
+		public int getDistWebZipLevel() 
+		{
+			return distWebZipLevel;
+		}
+		
+		public int getDistWebZipMethod()
+		{
+			return distWebZipMethod;
+		}
 		
 		public String getScriptPath()
 		{
@@ -1369,11 +1562,12 @@ public final class TAMEProjectMain
 			return webStartingFile;
 		}
 		
-		public String getAssetsPath()
+		public String getAssetsDirectory()
 		{
 			return webAssetsDirectory;
 		}
 
+		@SuppressWarnings("unused")
 		public String getTemplateName() 
 		{
 			return templateName;
