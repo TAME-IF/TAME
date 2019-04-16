@@ -897,7 +897,7 @@ public final class TAMEProjectMain
 				if (!inDir.exists())
 				{
 					out.println("ERROR: Web build directory does not exist: " + inDir.getPath());
-					out.println("Try `tamep compile` first." + inDir.getPath());
+					out.println("Try `tamep compile` first.");
 					return ERROR_IOERROR;
 				}
 
