@@ -35,7 +35,6 @@ import com.blackrook.commons.linkedlist.Queue;
 import com.blackrook.commons.util.ArrayUtils;
 import com.blackrook.commons.util.FileUtils;
 import com.blackrook.commons.util.IOUtils;
-import com.blackrook.commons.util.OSUtils;
 import com.blackrook.commons.util.ObjectUtils;
 import com.blackrook.commons.util.ValueUtils;
 import com.tameif.tame.TAMELogic;
@@ -542,6 +541,7 @@ public final class TAMEProjectMain
 					// Export engine, minify if possible.
 					File outJSFile = new File(options.getAssetsDirectory() + File.separator + "tame.js");
 					try {
+						out.println("Exporting TAME JS engine ....");
 						exportEngine(out, outJSFile);
 						out.println("Re-exported TAME engine to " + outJSFile.getPath() + ".");
 						updatedSomething = true;
@@ -1295,7 +1295,6 @@ public final class TAMEProjectMain
 	
 	private static void exportEngine(PrintStream out, File outJSFile) throws IOException, InterruptedException
 	{
-		out.println("Exporting TAME JS engine ....");
 		ByteArrayOutputStream outTameEngineJSData = new ByteArrayOutputStream(400 * 1024);
 		TAMEJSExporter.export(outTameEngineJSData, null, new TAMEJSExporterOptions()
 		{
@@ -1319,75 +1318,7 @@ public final class TAMEProjectMain
 		});
 
 		OutputStream outFileStream = new BufferedOutputStream(new FileOutputStream(outJSFile));
-		if (hasUglify())
-		{
-			out.println("UglifyJS detected. Minifying ....");
-			uglify(new ByteArrayInputStream(outTameEngineJSData.toByteArray()), outFileStream);
-		}
-		else
-			IOUtils.relay(new ByteArrayInputStream(outTameEngineJSData.toByteArray()), outFileStream, 16384);
-	}
-	
-	/**
-	 * Calls UglifyJS with a STDIN stream and STDOUT.
-	 * @param inputData the file input.
-	 * @param outputData the file output.
-	 * @throws IOException If a read/write error occurs.
-	 * @throws SecurityException if read/write has no permission to continue.
-	 * @throws InterruptedException if this thread is interrupted waiting for the process to finish.
-	 */
-	private static void uglify(InputStream inputData, OutputStream outputData) throws IOException, InterruptedException
-	{
-		Process proc;
-		if (OSUtils.isWindows())
-		{
-			proc = Runtime.getRuntime().exec(new String[] {
-				"cmd", "/c", "uglifyjs", "-c", "-m", "--comments"
-			});
-		}
-		else
-		{
-			proc = Runtime.getRuntime().exec(new String[] {
-				"/bin/bash", "-c", "uglifyjs", "-c", "-m", "--comments"	
-			});
-		}
-
-		// Close STDIN to process or UglifyJS will hang forever.
-		OutputStream procIn = proc.getOutputStream();
-		IOUtils.relay(inputData, procIn, 16384);
-		procIn.close();
-		IOUtils.relay(proc.getInputStream(), outputData, 16384);
-		proc.waitFor();
-	}
-
-	/**
-	 * Checks if UglifyJS is present.
-	 * @return true if so, false if not, null on error.
-	 */
-	private static Boolean hasUglify()
-	{
-		Process proc;
-		if (OSUtils.isWindows())
-		{
-			try {
-				(proc = Runtime.getRuntime().exec(new String[] {
-					"cmd", "/c", "where /q uglifyjs"	
-				})).waitFor();
-			} catch (SecurityException | IOException | InterruptedException e) {
-				return null;
-			}
-		}
-		else
-		{
-			try {
-				(proc = Runtime.getRuntime().exec(new String[] {
-					"/bin/bash", "-c", "which uglifyjs"	
-				})).waitFor();
-			} catch (SecurityException | IOException | InterruptedException e) {
-				return null;
-			}
-		}
-		return proc.exitValue() == 0;
+		IOUtils.relay(new ByteArrayInputStream(outTameEngineJSData.toByteArray()), outFileStream, 16384);
 	}
 	
 	@FunctionalInterface
