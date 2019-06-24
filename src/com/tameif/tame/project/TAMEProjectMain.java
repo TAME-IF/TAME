@@ -21,22 +21,16 @@ import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.Reflect;
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
-import com.blackrook.commons.hash.HashMap;
-import com.blackrook.commons.linkedlist.Queue;
-import com.blackrook.commons.util.ArrayUtils;
-import com.blackrook.commons.util.FileUtils;
-import com.blackrook.commons.util.IOUtils;
-import com.blackrook.commons.util.ObjectUtils;
-import com.blackrook.commons.util.ValueUtils;
 import com.tameif.tame.TAMELogic;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.factory.TAMEJSExporter;
@@ -44,6 +38,10 @@ import com.tameif.tame.factory.TAMEJSExporterOptions;
 import com.tameif.tame.factory.TAMEScriptParseException;
 import com.tameif.tame.factory.TAMEScriptReader;
 import com.tameif.tame.factory.TAMEScriptReaderOptions;
+import com.tameif.tame.util.ArrayUtils;
+import com.tameif.tame.util.FileUtils;
+import com.tameif.tame.util.IOUtils;
+import com.tameif.tame.util.ValueUtils;
 
 /**
  * The entry point for the project main.
@@ -176,7 +174,7 @@ public final class TAMEProjectMain
 			{
 				Mode mode = null;
 				if (!args.isEmpty())
-					mode = Reflect.getEnumInstance(args.dequeue().toUpperCase(), Mode.class);
+					mode = ValueUtils.getEnumInstance(args.poll().toUpperCase(), Mode.class);
 				printVersion(out);
 				out.println();
 				if (mode == null)
@@ -248,7 +246,7 @@ public final class TAMEProjectMain
 				}
 				
 				out.println("Available templates:\n");
-				for (ObjectPair<String, File> pair : templateMap)
+				for (Map.Entry<String, File> pair : templateMap.entrySet())
 				{
 					String name = pair.getKey();
 					File f = pair.getValue();
@@ -327,7 +325,7 @@ public final class TAMEProjectMain
 					return ERROR_BADOPTIONS;
 				}
 				
-				File projectDir = new File(args.dequeue());
+				File projectDir = new File(args.poll());
 				boolean addGitIgnore = false;
 				String webTemplateName = "standard";
 				
@@ -336,7 +334,7 @@ public final class TAMEProjectMain
 				int state = STATE_START;
 				while (!args.isEmpty())
 				{
-					String arg = args.dequeue();
+					String arg = args.poll();
 					switch (state)
 					{
 						case STATE_START:
@@ -518,7 +516,7 @@ public final class TAMEProjectMain
 				
 				while (!args.isEmpty())
 				{
-					String arg = args.dequeue();
+					String arg = args.poll();
 					if (arg.equals(SWITCH_UPDATE_ENGINE))
 						updateEngine = true;
 					else
@@ -532,7 +530,7 @@ public final class TAMEProjectMain
 				if (updateEngine)
 				{
 					out.println("Updating engine ....");
-					if (ObjectUtils.isEmpty(options.getAssetsDirectory()))
+					if (ValueUtils.isStringEmpty(options.getAssetsDirectory()))
 					{
 						out.println("ERROR: Project property "+PROJECT_PROPERTY_HTML_ASSETS+" is blank!");
 						return ERROR_PROJECTERROR;
@@ -605,13 +603,13 @@ public final class TAMEProjectMain
 					return ERROR_NOTAPROJECT;
 				}
 				
-				if (ObjectUtils.isEmpty(options.getOutPath()))
+				if (ValueUtils.isStringEmpty(options.getOutPath()))
 				{
 					out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD+" is blank!");
 					return ERROR_PROJECTERROR;
 				}
 				
-				if (ObjectUtils.isEmpty(options.getDistDirectory()))
+				if (ValueUtils.isStringEmpty(options.getDistDirectory()))
 				{
 					out.println("ERROR: Project property "+PROJECT_PROPERTY_DIST+" is blank!");
 					return ERROR_PROJECTERROR;
@@ -678,7 +676,7 @@ public final class TAMEProjectMain
 				
 				while (!args.isEmpty())
 				{
-					String arg = args.dequeue();
+					String arg = args.poll();
 					if (arg.equals(SWITCH_COMPILE_SCRIPT))
 						compileModule = true;
 					else if (arg.equals(SWITCH_COMPILE_WEB))
@@ -700,7 +698,7 @@ public final class TAMEProjectMain
 					compileWebAssets = true;
 				}
 
-				if (ObjectUtils.isEmpty(options.getScriptPath()))
+				if (ValueUtils.isStringEmpty(options.getScriptPath()))
 				{
 					out.println("ERROR: Project property "+PROJECT_PROPERTY_SRC_MAIN+" is blank!");
 					return ERROR_PROJECTERROR;
@@ -736,7 +734,7 @@ public final class TAMEProjectMain
 
 				if (compileModule)
 				{
-					if (ObjectUtils.isEmpty(options.getOutModulePath()))
+					if (ValueUtils.isStringEmpty(options.getOutModulePath()))
 					{
 						out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD_MODULE+" is blank!");
 						return ERROR_PROJECTERROR;
@@ -764,7 +762,7 @@ public final class TAMEProjectMain
 				
 				if (compileWeb)
 				{
-					if (ObjectUtils.isEmpty(options.getOutWebDirectory()))
+					if (ValueUtils.isStringEmpty(options.getOutWebDirectory()))
 					{
 						out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD_WEB+" is blank!");
 						return ERROR_PROJECTERROR;
@@ -793,7 +791,7 @@ public final class TAMEProjectMain
 				
 				if (compileWebAssets)
 				{
-					if (ObjectUtils.isEmpty(options.getAssetsDirectory()))
+					if (ValueUtils.isStringEmpty(options.getAssetsDirectory()))
 					{
 						out.println("ERROR: Project property "+PROJECT_PROPERTY_HTML_ASSETS+" is blank!");
 						return ERROR_PROJECTERROR;
@@ -806,7 +804,7 @@ public final class TAMEProjectMain
 						return ERROR_IOERROR;
 					}
 					
-					if (ObjectUtils.isEmpty(options.getOutWebDirectory()))
+					if (ValueUtils.isStringEmpty(options.getOutWebDirectory()))
 					{
 						out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD_WEB+" is blank!");
 						return ERROR_PROJECTERROR;
@@ -877,13 +875,13 @@ public final class TAMEProjectMain
 					return ERROR_NOTAPROJECT;
 				}
 				
-				if (ObjectUtils.isEmpty(options.getOutWebDirectory()))
+				if (ValueUtils.isStringEmpty(options.getOutWebDirectory()))
 				{
 					out.println("ERROR: Project property "+PROJECT_PROPERTY_BUILD_WEB+" is blank!");
 					return ERROR_PROJECTERROR;
 				}
 
-				if (ObjectUtils.isEmpty(options.getDistWebZip()))
+				if (ValueUtils.isStringEmpty(options.getDistWebZip()))
 				{
 					out.println("ERROR: Project property "+PROJECT_PROPERTY_DIST_WEB_ZIP+" is blank!");
 					return ERROR_PROJECTERROR;
@@ -983,8 +981,8 @@ public final class TAMEProjectMain
 	// Scan options.
 	private static Mode scanMode(Queue<String> args)
 	{
-		String modeName = args.dequeue().toUpperCase();
-		return Reflect.getEnumInstance(modeName, Mode.class);
+		String modeName = args.poll().toUpperCase();
+		return ValueUtils.getEnumInstance(modeName, Mode.class);
 	}
 	
 	public static void main(String[] args)
@@ -998,7 +996,7 @@ public final class TAMEProjectMain
 			return;
 		}
 		
-		Queue<String> argQueue = new Queue<>();
+		Queue<String> argQueue = new LinkedList<>();
 		for (String a : args)
 			argQueue.add(a);
 		
@@ -1054,9 +1052,9 @@ public final class TAMEProjectMain
 		return new Options(properties);
 	}
 	
-	private static CaseInsensitiveHashMap<File> getTemplates()
+	private static HashMap<String, File> getTemplates()
 	{
-		CaseInsensitiveHashMap<File> out = new CaseInsensitiveHashMap<>();
+		HashMap<String, File> out = new HashMap<>();
 		File templateDir = new File(TEMPLATE_PATH);
 		if (!templateDir.exists())
 		{
@@ -1406,7 +1404,7 @@ public final class TAMEProjectMain
 			);
 			
 			this.defines = convertProperty(properties, PROJECT_PROPERTY_DEFINES, "", (input)->
-				ObjectUtils.isEmpty(input) ? new String[]{} : input.split("\\,\\s+")
+				ValueUtils.isStringEmpty(input) ? new String[]{} : input.split("\\,\\s+")
 			);
 			this.optimizing = convertProperty(properties, PROJECT_PROPERTY_NOOPTIMIZE, "false", (input)->
 				!ValueUtils.parseBoolean(input)
@@ -1419,7 +1417,7 @@ public final class TAMEProjectMain
 		private static <T> T convertProperty(Properties properties, String key, String defValue, PropertyConverter<T> converter)
 		{
 			String value = properties.getProperty(key);
-			String convertable = ObjectUtils.isEmpty(value) ? defValue : value;
+			String convertable = ValueUtils.isStringEmpty(value) ? defValue : value;
 			return converter.convert(convertable);
 		}
 		

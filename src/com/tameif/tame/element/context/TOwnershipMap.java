@@ -541,21 +541,5 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		
 		return out;
 	}
-
-	@Override
-	public byte[] toStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeStateBytes(module, referenceCounter, referenceSet, bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readStateBytes(module, referenceMap, bis);
-		bis.close();
-	}
 	
 }

@@ -9,14 +9,12 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
 
 /**
  * Describes a single block entry stub for a block table.
@@ -151,9 +149,9 @@ public class BlockEntry implements Saveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeByte((byte)entryType.ordinal());
-		sw.writeInt(values.length);
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeByte(out, (byte)entryType.ordinal());
+		sw.writeInt(out, values.length);
 		for (int i = 0; i < values.length; i++)
 			values[i].writeBytes(out);
 	}
@@ -161,29 +159,13 @@ public class BlockEntry implements Saveable
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		entryType = BlockEntryType.VALUES[sr.readByte()];
-		values = new Value[sr.readInt()];
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		entryType = BlockEntryType.VALUES[sr.readByte(in)];
+		values = new Value[sr.readInt(in)];
 		for (int i = 0; i < values.length; i++)
 			values[i] = Value.read(in);
 	}
 
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
-	}
-	
 	/**
 	 * Gets the string representation of this as a non-debugging-human-friendly string.
 	 * @return an output-friendly string of this entry.

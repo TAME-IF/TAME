@@ -9,10 +9,9 @@
  ******************************************************************************/
 package com.tameif.tame.util;
 
+import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import com.blackrook.commons.hash.HashMap;
 
 /**
  * A caching structure for all RegEx patterns.

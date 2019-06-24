@@ -9,18 +9,16 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.TAMEOperation;
 import com.tameif.tame.TAMEInterrupt;
 import com.tameif.tame.TAMERequest;
 import com.tameif.tame.TAMEResponse;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
 
 /**
  * A single low-level machine operation.
@@ -242,17 +240,18 @@ public class Operation implements CallableType, Saveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeVariableLengthInt(operation.ordinal());
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeVariableLengthInt(out, operation.ordinal());
 		
-		sw.writeBit(operand0 != null);
-		sw.writeBit(operand1 != null);
-		sw.writeBit(initBlock != null);
-		sw.writeBit(conditionalBlock != null);
-		sw.writeBit(stepBlock != null);
-		sw.writeBit(successBlock != null);
-		sw.writeBit(failureBlock != null);
-		sw.flushBits();
+		byte blockflags = 0;
+		blockflags |= operand0 != null ? 0x01 : 0x00;
+		blockflags |= operand1 != null ? 0x02 : 0x00;
+		blockflags |= initBlock != null ? 0x04 : 0x00;
+		blockflags |= conditionalBlock != null ? 0x08 : 0x00;
+		blockflags |= stepBlock != null ? 0x10 : 0x00;
+		blockflags |= successBlock != null ? 0x20 : 0x00;
+		blockflags |= failureBlock != null ? 0x40 : 0x00;
+		sw.writeByte(out, blockflags);
 		
 		if (operand0 != null)
 			operand0.writeBytes(out);
@@ -274,10 +273,10 @@ public class Operation implements CallableType, Saveable
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		this.operation = TAMEOperation.VALUES[sr.readVariableLengthInt()];
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		this.operation = TAMEOperation.VALUES[sr.readVariableLengthInt(in)];
 		
-		byte objectbits = sr.readByte();
+		byte objectbits = sr.readByte(in);
 		
 		if ((objectbits & 0x01) != 0)
 			this.operand0 = Value.read(in);
@@ -295,22 +294,6 @@ public class Operation implements CallableType, Saveable
 		if ((objectbits & 0x40) != 0)
 			this.failureBlock = Block.create(in);
 		
-	}
-
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
 	}
 
 }

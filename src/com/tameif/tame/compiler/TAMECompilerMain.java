@@ -15,11 +15,10 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-import com.blackrook.commons.hash.HashMap;
-import com.blackrook.commons.list.List;
-import com.blackrook.commons.util.IOUtils;
-import com.blackrook.commons.util.ObjectUtils;
 import com.tameif.tame.TAMELogic;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.factory.TAMEJSExporter;
@@ -27,6 +26,8 @@ import com.tameif.tame.factory.TAMEJSExporterOptions;
 import com.tameif.tame.factory.TAMEScriptParseException;
 import com.tameif.tame.factory.TAMEScriptReader;
 import com.tameif.tame.factory.TAMEScriptReaderOptions;
+import com.tameif.tame.util.IOUtils;
+import com.tameif.tame.util.ValueUtils;
 
 /**
  * The compiler main entry point.
@@ -92,12 +93,15 @@ public final class TAMECompilerMain
 	private static boolean exportJSEngineNodeLib = false;	
 	
 	private static final HashMap<String, String> JS_WRAPPER_MAP = new HashMap<String, String>()
-	{{
-		put(WRAPPER_MODULE, JS_ROOT_RESOURCE + "ModuleData.js");
-		put(WRAPPER_NODEEMBEDDED, JS_ROOT_RESOURCE + "NodeEmbedded.js");
-		put(WRAPPER_HTML, JS_ROOT_RESOURCE + "Browser.html");
-		put(WRAPPER_HTML_DEBUG, JS_ROOT_RESOURCE + "Browser-Debug.html");
-	}};
+	{
+		private static final long serialVersionUID = -2513870919129174671L;
+		{
+			put(WRAPPER_MODULE, JS_ROOT_RESOURCE + "ModuleData.js");
+			put(WRAPPER_NODEEMBEDDED, JS_ROOT_RESOURCE + "NodeEmbedded.js");
+			put(WRAPPER_HTML, JS_ROOT_RESOURCE + "Browser.html");
+			put(WRAPPER_HTML_DEBUG, JS_ROOT_RESOURCE + "Browser-Debug.html");
+		}
+	};
 	
 	private static void printVersion(PrintStream out)
 	{
@@ -372,7 +376,7 @@ public final class TAMECompilerMain
 		if (exportJSEngine)
 		{
 			// Fill with default if no outfile specified.
-			if (ObjectUtils.isEmpty(options.fileOutPath))
+			if (ValueUtils.isStringEmpty(options.fileOutPath))
 				options.fileOutPath = "TAME-"+TAMELogic.getVersion()+".js";
 
 			File outJSFile = new File(options.fileOutPath);
@@ -398,7 +402,7 @@ public final class TAMECompilerMain
 		if (exportJSEngineNode)
 		{
 			// Fill with default if no outfile specified.
-			if (ObjectUtils.isEmpty(options.fileOutPath))
+			if (ValueUtils.isStringEmpty(options.fileOutPath))
 				options.fileOutPath = "TAME.js";
 
 			File outJSFile = new File(options.fileOutPath);
@@ -424,7 +428,7 @@ public final class TAMECompilerMain
 		if (exportJSEngineNodeLib)
 		{
 			// Fill with default if no outfile specified.
-			if (ObjectUtils.isEmpty(options.fileOutPath))
+			if (ValueUtils.isStringEmpty(options.fileOutPath))
 				options.fileOutPath = "TAME.js";
 
 			File outJSFile = new File(options.fileOutPath);
@@ -447,7 +451,7 @@ public final class TAMECompilerMain
 			return;
 		}
 		
-		if (ObjectUtils.isEmpty(options.fileInPath))
+		if (ValueUtils.isStringEmpty(options.fileInPath))
 		{
 			out.println("ERROR: No input file specified!");
 			System.exit(ERROR_NOINPUT);
@@ -489,7 +493,7 @@ public final class TAMECompilerMain
 					: jsOptions.startingPath;
 			
 			// Fill with default if no outfile specified.
-			if (ObjectUtils.isEmpty(options.fileOutPath))
+			if (ValueUtils.isStringEmpty(options.fileOutPath))
 			{
 				int extindex = jsOptions.startingPath.lastIndexOf('.');
 				if (extindex >= 0)
@@ -517,7 +521,7 @@ public final class TAMECompilerMain
 		else
 		{
 			// Fill with default if no outfile specified.
-			if (ObjectUtils.isEmpty(options.fileOutPath))
+			if (ValueUtils.isStringEmpty(options.fileOutPath))
 				options.fileOutPath = DEFAULT_OUTFILE;
 
 			// Write serialized file.
@@ -593,7 +597,7 @@ public final class TAMECompilerMain
 			
 			optimizing = true;
 			verboseOut = null;
-			defineList = new List<>();
+			defineList = new ArrayList<>();
 			inputCharset = StandardCharsets.UTF_8;
 		}
 		

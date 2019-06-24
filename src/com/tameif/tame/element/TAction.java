@@ -111,7 +111,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	 */
 	private void setIdentity(String identity)
 	{
-		if (ObjectUtils.isEmpty(identity))
+		if (ValueUtils.isStringEmpty(identity))
 			throw new IllegalArgumentException("Identity cannot be blank.");
 		this.identity = identity;
 	}

@@ -16,9 +16,7 @@
 	<property name="S" value="${path.separator}" />
 
 	<!-- Project Libs -->
-	<property name="common.lib" value="${dev.base}/Common/bin" />
-	<property name="common.io.lib" value="${dev.base}/CommonIO/bin" />
-	<property name="common.lang.lib" value="${dev.base}/CommonLang/bin" />
+	<property name="json.lib" value="${dev.base}/JSON/bin" />
 
 	<!-- Project Info -->
 	<property name="project.archive" value="tame" />
@@ -142,24 +140,16 @@
 	<target name="compile.all" depends="compile, compile.tests.only" description="Compiles everything.">
 	</target>
 
-	<target name="dependency.common">
-		<git-export repository="https://github.com/BlackRookSoftware/Common" dest="${dependencies.dir}/Common" />
-		<ant antfile="${dependencies.dir}/Common/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
-	</target>
-	<target name="dependency.commonio">
-		<git-export repository="https://github.com/BlackRookSoftware/CommonIO" dest="${dependencies.dir}/CommonIO" />
-		<ant antfile="${dependencies.dir}/CommonIO/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
-	</target>
-	<target name="dependency.commonlang">
-		<git-export repository="https://github.com/BlackRookSoftware/CommonLang" dest="${dependencies.dir}/CommonLang" />
-		<ant antfile="${dependencies.dir}/CommonLang/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
+	<target name="dependency.json">
+		<git-export repository="https://github.com/BlackRookSoftware/JSON" dest="${dependencies.dir}/JSON" />
+		<ant antfile="${dependencies.dir}/JSON/build.xml" useNativeBasedir="true" inheritAll="false" target="compile" />
 	</target>
 	<target name="dependency.properties">
 		<echo message="Writing to build.properties...." />
 		<echo message="dev.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
 	</target>
 
-	<target name="dependencies" depends="init.dependencies, dependency.common, dependency.commonio, dependency.commonlang, dependency.properties" description="Downloads and compiles the dependencies.">
+	<target name="dependencies" depends="init.dependencies, dependency.json, dependency.properties" description="Downloads and compiles the dependencies.">
 	</target>
 
 	<target name="javadoc" depends="init.docs" description="Builds the documentation.">
@@ -208,11 +198,7 @@
 			</fileset>
 		</jar>
 		<jar destfile="${jar.dir}/tame-temp-standalone.jar" update="true">
-			<fileset dir="${common.lib}" >
-			</fileset>
-			<fileset dir="${common.io.lib}" >
-			</fileset>
-			<fileset dir="${common.lang.lib}" >
+			<fileset dir="${json.lib}" >
 			</fileset>
 		</jar>
 	</target>

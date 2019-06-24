@@ -13,10 +13,10 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-import com.blackrook.commons.util.IOUtils;
 import com.tameif.tame.factory.TAMEJSExporter;
 import com.tameif.tame.factory.TAMEJSExporterOptions;
 import com.tameif.tame.factory.TAMEScriptReader;
+import com.tameif.tame.util.IOUtils;
 
 /**
  * A test JS exporter.

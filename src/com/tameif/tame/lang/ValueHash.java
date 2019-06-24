@@ -9,44 +9,35 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
+import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
+import com.tameif.tame.struct.Sizable;
 
 /**
  * Convenience class for Value lookup tables.
  * @author Matthew Tropiano
  */
-public class ValueHash extends CaseInsensitiveHashMap<Value> implements ReferenceSaveable
+public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, Value>>, Sizable
 {
+	private CaseInsensitiveHashMap<Value> valueMap; 
 	
 	/**
 	 * Creates a new ValueHash.
 	 */
 	public ValueHash()
 	{
-		super(4);
+		this.valueMap = new CaseInsensitiveHashMap<>(4);
 	}
 	
-	/**
-	 * Copies values from one value hash to this one.
-	 * @param hash the source hash to copy values from.
-	 */
-	public void copyFrom(ValueHash hash)
-	{
-		for (ObjectPair<String, Value> pair : hash)
-			put(pair.getKey(), Value.create(pair.getValue()));
-	}
-
 	/**
 	 * Creates this object from an input stream, expecting its byte representation. 
 	 * @param referenceMap the reference map to use for "seen" value references.
@@ -54,54 +45,112 @@ public class ValueHash extends CaseInsensitiveHashMap<Value> implements Referenc
 	 * @return the read object.
 	 * @throws IOException if a read error occurs.
 	 */
-	public static ValueHash create(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
+	public static ValueHash create(Map<Long, Value> referenceMap, InputStream in) throws IOException
 	{
 		ValueHash out = new ValueHash();
 		out.readReferentialBytes(referenceMap, in);
 		return out;
 	}
 
-	@Override
-	public void writeReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException
+	/**
+	 * Copies values from one value hash to this one.
+	 * @param hash the source hash to copy values from.
+	 */
+	public void copyFrom(ValueHash hash)
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeInt(size());
-		for (ObjectPair<String, Value> hp : this)
+		for (Map.Entry<String, Value> pair : hash)
+			put(pair.getKey(), Value.create(pair.getValue()));
+	}
+
+	/**
+	 * Clears this hash.
+	 */
+	public void clear() 
+	{
+		valueMap.clear();
+	}
+
+	/**
+	 * Gets a value on this hash.
+	 * @param variableName the variable name.
+	 * @return the corresponding value, or null.
+	 */
+	public Value get(String variableName)
+	{
+		return valueMap.get(variableName);
+	}
+
+	/**
+	 * Sets a value on this hash.
+	 * @param variableName the variable name.
+	 * @param value the value.
+	 */
+	public void put(String variableName, Value value) 
+	{
+		valueMap.put(variableName, value);
+	}
+
+	/**
+	 * 
+	 * @param variableName
+	 */
+	public void remove(String variableName)
+	{
+		valueMap.remove(variableName);
+	}
+
+	/**
+	 * 
+	 * @param variableName
+	 * @return
+	 */
+	public boolean containsKey(String variableName)
+	{
+		return valueMap.containsKey(variableName);
+	}
+
+	@Override
+	public Iterator<Entry<String, Value>> iterator()
+	{
+		return valueMap.iterator();
+	}
+
+	@Override
+	public void writeReferentialBytes(AtomicLong referenceCounter, Map<Object, Long> referenceSet, OutputStream out) throws IOException
+	{
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeInt(out, size());
+		for (Map.Entry<String, Value> hp : this)
 		{
-			sw.writeString(hp.getKey(), "UTF-8");
+			sw.writeString(out, hp.getKey(), "UTF-8");
 			hp.getValue().writeReferentialBytes(referenceCounter, referenceSet, out);
 		}
 	}
-	
+
 	@Override
-	public void readReferentialBytes(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
+	public void readReferentialBytes(Map<Long, Value> referenceMap, InputStream in) throws IOException
 	{
 		clear();
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		int x = sr.readInt();
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		int x = sr.readInt(in);
 		for (int i = 0; i < x; i++)
 		{
-			String name = sr.readString("UTF-8");
+			String name = sr.readString(in, "UTF-8");
 			Value value = Value.read(referenceMap, in);
 			put(name, value);
 		}
-		
 	}
 
 	@Override
-	public byte[] toReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException
+	public int size()
 	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeReferentialBytes(referenceCounter, referenceSet, bos);
-		return bos.toByteArray();
+		return valueMap.size();
 	}
 
 	@Override
-	public void fromReferentialBytes(AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException 
+	public boolean isEmpty() 
 	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readReferentialBytes(referenceMap, bis);
-		bis.close();
+		return size() == 0;
 	}
 
 }

@@ -9,14 +9,12 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
 
 /**
  * Entry point descriptor for function calls on TAME elements.
@@ -112,39 +110,23 @@ public class FunctionEntry implements Saveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeInt(arguments.length);
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeInt(out, arguments.length);
 		for (String arg : arguments)
-			sw.writeString(arg, "UTF-8");
+			sw.writeString(out, arg, "UTF-8");
 		block.writeBytes(out);
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		int argCount = sr.readInt();
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		int argCount = sr.readInt(in);
 		int i = 0;
 		arguments = new String[argCount];
 		while (argCount-- > 0)
-			arguments[i++] = sr.readString("UTF-8");
+			arguments[i++] = sr.readString(in, "UTF-8");
 		block = Block.create(in);
-	}
-
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
 	}
 
 }

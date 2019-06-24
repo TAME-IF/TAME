@@ -9,23 +9,21 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.list.List;
-import com.blackrook.commons.util.StringUtils;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.exception.ModuleStateException;
 import com.tameif.tame.exception.UnexpectedValueTypeException;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
+import com.tameif.tame.util.ValueUtils;
 
 /**
  * All values in the interpreter are of this type, which stores a type.
@@ -137,7 +135,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	public static Value createEmptyList()
 	{
 		Value out = new Value();
-		out.set(ValueType.LIST, new List<Value>());
+		out.set(ValueType.LIST, new ArrayList<Value>());
 		return out;
 	}
 
@@ -149,7 +147,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	public static Value createEmptyList(int capacity)
 	{
 		Value out = new Value();
-		out.set(ValueType.LIST, new List<Value>(capacity));
+		out.set(ValueType.LIST, new ArrayList<Value>(capacity));
 		return out;
 	}
 
@@ -318,7 +316,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	 * @return a new value.
 	 * @throws IOException if a value could not be read.
 	 */
-	public static Value read(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
+	public static Value read(Map<Long, Value> referenceMap, InputStream in) throws IOException
 	{
 		Value out = new Value();
 		out.readReferentialBytes(referenceMap, in);
@@ -444,47 +442,47 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	}
 
 	@Override
-	public void writeReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException
+	public void writeReferentialBytes(AtomicLong referenceCounter, Map<Object, Long> referenceSet, OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
 		
 		// look up in refmap. Add if not in the map.
 		if (isReferenceCopied())
 		{
 			if (referenceSet.containsKey(value))
 			{
-				sw.writeBoolean(true);
-				sw.writeVariableLengthLong(referenceSet.get(value));
+				sw.writeBoolean(out, true);
+				sw.writeVariableLengthLong(out, referenceSet.get(value));
 			}
 			else
 			{
 				long refid = referenceCounter.getAndIncrement();
 				referenceSet.put(value, refid);
-				sw.writeBoolean(false);
-				sw.writeVariableLengthLong(refid);
+				sw.writeBoolean(out, false);
+				sw.writeVariableLengthLong(out, refid);
 				writeValueData(referenceCounter, referenceSet, out);
 			}
 			
 		}
 		else
 		{
-			sw.writeBoolean(false);
-			sw.writeVariableLengthLong(referenceCounter.getAndIncrement());
+			sw.writeBoolean(out, false);
+			sw.writeVariableLengthLong(out, referenceCounter.getAndIncrement());
 			writeValueData(referenceCounter, referenceSet, out);
 		}
 		
 	}
 
 	@Override
-	public void readReferentialBytes(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
+	public void readReferentialBytes(Map<Long, Value> referenceMap, InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 		
-		boolean isRef = sr.readBoolean();
+		boolean isRef = sr.readBoolean(in);
 
 		if (isRef)
 		{
-			long refid = sr.readVariableLengthLong();
+			long refid = sr.readVariableLengthLong(in);
 			if (!referenceMap.containsKey(refid))
 				throw new ModuleStateException("State read error! Value reference id "+refid+" was not seen.");
 			
@@ -493,28 +491,12 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 		}
 		else
 		{
-			long refid = sr.readVariableLengthLong();
+			long refid = sr.readVariableLengthLong(in);
 			readValueData(referenceMap, in);
 			if (isReferenceCopied())
 				referenceMap.put(refid, this);
 		}
 		
-	}
-
-	@Override
-	public byte[] toReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException 
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeReferentialBytes(referenceCounter, referenceSet, bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromReferentialBytes(AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readReferentialBytes(referenceMap, bis);
-		bis.close();
 	}
 
 	@Override
@@ -529,45 +511,29 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 		readValueData(null, in);
 	}
 
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
-	}
-
 	// Writes the value data.
 	@SuppressWarnings("unchecked")
-	private void writeValueData(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException
+	private void writeValueData(AtomicLong referenceCounter, Map<Object, Long> referenceSet, OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeByte((byte)type.ordinal());
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeByte(out, (byte)type.ordinal());
 		
 		switch (type)
 		{
 			default:
 				throw new IOException("Unimplemented value type serialization.");
 			case BOOLEAN:
-				sw.writeBoolean((Boolean)value);
+				sw.writeBoolean(out, (Boolean)value);
 				break;
 			case INTEGER:
-				sw.writeLong((Long)value);
+				sw.writeLong(out, (Long)value);
 				break;
 			case FLOAT:
-				sw.writeDouble((Double)value);
+				sw.writeDouble(out, (Double)value);
 				break;
 			case LIST:
-				List<Value> list = (List<Value>)value;
-				sw.writeInt(list.size());
+				ArrayList<Value> list = (ArrayList<Value>)value;
+				sw.writeInt(out, list.size());
 				for (Value v : list)
 				{
 					if (referenceSet != null)
@@ -584,33 +550,33 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			case WORLD:
 			case ACTION:
 			case VARIABLE:
-				sw.writeString(value.toString(), "UTF-8");
+				sw.writeString(out, value.toString(), "UTF-8");
 				break;
 		}	
 	
 	}
 
 	// Reads the value data.
-	private void readValueData(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException
+	private void readValueData(Map<Long, Value> referenceMap, InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		type = ValueType.VALUES[sr.readByte()];
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		type = ValueType.VALUES[sr.readByte(in)];
 		
 		switch (type)
 		{
 			case BOOLEAN:
-				value = sr.readBoolean();
+				value = sr.readBoolean(in);
 				break;
 			case INTEGER:
-				value = sr.readLong();
+				value = sr.readLong(in);
 				break;
 			case FLOAT:
-				value = sr.readDouble();
+				value = sr.readDouble(in);
 				break;
 			case LIST:
 			{
-				int len = sr.readInt();
-				value = new List<Value>(len);
+				int len = sr.readInt(in);
+				value = new ArrayList<Value>(len);
 				while (len-- > 0)
 				{
 					listAdd(referenceMap != null ? read(referenceMap, in) : read(in));
@@ -625,7 +591,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			case WORLD:
 			case ACTION:
 			case VARIABLE:
-				value = sr.readString("UTF-8");
+				value = sr.readString(in, "UTF-8");
 				break;
 			default:
 				throw new ModuleException("Bad value type. Internal error!");
@@ -735,7 +701,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			StringBuilder sb = new StringBuilder();
 			sb.append("[");
 			@SuppressWarnings("unchecked")
-			List<Value> list = (List<Value>)value;
+			ArrayList<Value> list = (ArrayList<Value>)value;
 			Iterator<Value> it = list.iterator();
 			while (it.hasNext())
 			{
@@ -934,7 +900,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 		else if (isList())
 		{
 			@SuppressWarnings("unchecked")
-			List<Value> list = (List<Value>)value;
+			ArrayList<Value> list = (ArrayList<Value>)value;
 			return list.isEmpty();
 		}
 		else
@@ -953,7 +919,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 		if (isList())
 		{
 			@SuppressWarnings("unchecked")
-			List<Value> list = (List<Value>)value;
+			ArrayList<Value> list = (ArrayList<Value>)value;
 			return list.size();
 		}
 		else if (isString())
@@ -974,7 +940,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 		if (!isList())
 			return false;
 		@SuppressWarnings("unchecked")
-		List<Value> list = (List<Value>)value;
+		ArrayList<Value> list = (ArrayList<Value>)value;
 		list.add(create(v));
 		return true;
 	}
@@ -991,7 +957,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 		if (!isList())
 			return false;
 		@SuppressWarnings("unchecked")
-		List<Value> list = (List<Value>)value;
+		ArrayList<Value> list = (ArrayList<Value>)value;
 		if (i < 0)
 			return false;
 		list.add(i, create(v));
@@ -1010,11 +976,11 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			return false;
 		
 		@SuppressWarnings("unchecked")
-		List<Value> list = (List<Value>)value;
+		ArrayList<Value> list = (ArrayList<Value>)value;
 		if (i < 0 || i >= list.size())
 			return false;
 		
-		list.replace(i, create(v));
+		list.set(i, create(v));
 		return true;
 	}
 	
@@ -1029,11 +995,11 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			return create(false);
 		
 		@SuppressWarnings("unchecked")
-		List<Value> list = (List<Value>)value;
+		ArrayList<Value> list = (ArrayList<Value>)value;
 		if (i < 0 || i >= list.size())
 			return create(false);
 		
-		return create(list.getByIndex(i));
+		return create(list.get(i));
 	}
 
 	/**
@@ -1048,7 +1014,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			return false;
 		
 		@SuppressWarnings("unchecked")
-		List<Value> list = (List<Value>)value;
+		ArrayList<Value> list = (ArrayList<Value>)value;
 		return list.remove(v);
 	}
 
@@ -1063,11 +1029,11 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			return create(false);
 		
 		@SuppressWarnings("unchecked")
-		List<Value> list = (List<Value>)value;
+		ArrayList<Value> list = (ArrayList<Value>)value;
 		if (i < 0 || i >= list.size())
 			return create(false);
 		
-		return create(list.removeIndex(i));
+		return create(list.remove(i));
 	}
 
 	/**
@@ -1082,8 +1048,8 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 			return -1;
 		
 		@SuppressWarnings("unchecked")
-		List<Value> list = (List<Value>)value;
-		return list.getIndexOf(v);
+		ArrayList<Value> list = (ArrayList<Value>)value;
+		return list.indexOf(v);
 	}
 
 	/**
@@ -1100,7 +1066,7 @@ public class Value implements Comparable<Value>, Saveable, ReferenceSaveable
 	@Override
 	public String toString()
 	{
-		return type + "[" + StringUtils.withEscChars(String.valueOf(value)) + "]";
+		return type + "[" + ValueUtils.escapeString(String.valueOf(value)) + "]";
 	}
 	
 	/**

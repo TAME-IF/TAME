@@ -15,18 +15,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.hash.CaseInsensitiveHash;
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
-import com.blackrook.commons.hash.Hash;
-import com.blackrook.commons.hash.HashMap;
-import com.blackrook.commons.list.List;
-import com.blackrook.commons.util.EncodingUtils;
-import com.blackrook.commons.util.IOUtils;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.element.TAction;
 import com.tameif.tame.element.TContainer;
 import com.tameif.tame.element.TElement;
@@ -36,6 +29,12 @@ import com.tameif.tame.element.TRoom;
 import com.tameif.tame.element.TWorld;
 import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.lang.Saveable;
+import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
+import com.tameif.tame.util.EncodingUtils;
+import com.tameif.tame.util.IOUtils;
 
 /**
  * An instantiated module.
@@ -49,15 +48,15 @@ public class TAMEModule implements Saveable
 	/** The world. */
 	private TWorld world;
 	/** List of actions. */
-	private HashMap<String, TAction> actions;
+	private CaseInsensitiveHashMap<TAction> actions;
 	/** List of players. */
-	private HashMap<String, TPlayer> players;
+	private CaseInsensitiveHashMap<TPlayer> players;
 	/** List of rooms. */
-	private HashMap<String, TRoom> rooms;
+	private CaseInsensitiveHashMap<TRoom> rooms;
 	/** List of objects. */
-	private HashMap<String, TObject> objects;
+	private CaseInsensitiveHashMap<TObject> objects;
 	/** List of containers. */
-	private HashMap<String, TContainer> containers;
+	private CaseInsensitiveHashMap<TContainer> containers;
 
 	/** Maps action common names to action objects (not saved). */
 	private CaseInsensitiveHashMap<TAction> actionNameTable;
@@ -67,7 +66,7 @@ public class TAMEModule implements Saveable
 	
 	
 	/** Not saved, used for checking - known identities. */
-	private Hash<String> knownIdentities; 
+	private CaseInsensitiveHash knownIdentities; 
 	
 	/**
 	 * Creates a new module.
@@ -109,8 +108,8 @@ public class TAMEModule implements Saveable
 	 */
 	public static Header readModuleHeader(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		if (!(new String(sr.readBytes(4), "ASCII")).equals("TAME"))
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		if (!(new String(sr.readBytes(in, 4), "ASCII")).equals("TAME"))
 			throw new ModuleException("Not a TAME module.");
 			
 		Header out = new Header();
@@ -347,7 +346,7 @@ public class TAMEModule implements Saveable
 	/**
 	 * @return an iterable list of player pairs. 
 	 */
-	public Iterable<ObjectPair<String, TPlayer>> getPlayerList()
+	public Iterable<Map.Entry<String, TPlayer>> getPlayerList()
 	{
 		return players;
 	}
@@ -355,7 +354,7 @@ public class TAMEModule implements Saveable
 	/**
 	 * @return an iterable list of action pairs. 
 	 */
-	public Iterable<ObjectPair<String, TAction>> getActionList()
+	public Iterable<Map.Entry<String, TAction>> getActionList()
 	{
 		return actions;
 	}
@@ -363,7 +362,7 @@ public class TAMEModule implements Saveable
 	/**
 	 * @return an iterable list of room pairs. 
 	 */
-	public Iterable<ObjectPair<String, TRoom>> getRoomList()
+	public Iterable<Map.Entry<String, TRoom>> getRoomList()
 	{
 		return rooms;
 	}
@@ -371,7 +370,7 @@ public class TAMEModule implements Saveable
 	/**
 	 * @return an iterable list of object pairs. 
 	 */
-	public Iterable<ObjectPair<String, TObject>> getObjectList()
+	public Iterable<Map.Entry<String, TObject>> getObjectList()
 	{
 		return objects;
 	}
@@ -379,7 +378,7 @@ public class TAMEModule implements Saveable
 	/**
 	 * @return an iterable list of container pairs. 
 	 */
-	public Iterable<ObjectPair<String, TContainer>> getContainerList()
+	public Iterable<Map.Entry<String, TContainer>> getContainerList()
 	{
 		return containers;
 	}
@@ -409,7 +408,7 @@ public class TAMEModule implements Saveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
 
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(32768);
 		writeImmutableData(bos);
@@ -418,20 +417,20 @@ public class TAMEModule implements Saveable
 		byte[] data = bos.toByteArray();
 		byte[] digest = EncodingUtils.sha1(data);
 		
-		sw.writeBytes("TAME".getBytes("ASCII"));
+		sw.writeBytes(out, "TAME".getBytes("ASCII"));
 
 		header.writeBytes(out);
 		
 		// write version
-		sw.writeByte((byte)0x01);
+		sw.writeByte(out, (byte)0x01);
 		
-		sw.writeBytes(digest);
-		sw.writeByteArray(data);
+		sw.writeBytes(out, digest);
+		sw.writeByteArray(out, data);
 	}
 	
 	private void writeImmutableData(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
 		
 		HashMap<String, String> playerMap = new HashMap<>();
 		HashMap<String, String> roomMap = new HashMap<>();
@@ -439,36 +438,36 @@ public class TAMEModule implements Saveable
 		HashMap<String, String> containerMap = new HashMap<>();
 
 		world.writeBytes(out);
-		sw.writeInt(actions.size());
-		for (ObjectPair<String, TAction> pair : actions)
+		sw.writeInt(out, actions.size());
+		for (Map.Entry<String, TAction> pair : actions)
 			pair.getValue().writeBytes(out);
 		
-		sw.writeInt(players.size());
-		for (ObjectPair<String, TPlayer> pair : players)
+		sw.writeInt(out, players.size());
+		for (Map.Entry<String, TPlayer> pair : players)
 		{
 			TPlayer player = pair.getValue();
 			player.writeBytes(out);
 			if (player.getParent() != null)
 				playerMap.put(player.getIdentity(), player.getParent().getIdentity());
 		}
-		sw.writeInt(rooms.size());
-		for (ObjectPair<String, TRoom> pair : rooms)
+		sw.writeInt(out, rooms.size());
+		for (Map.Entry<String, TRoom> pair : rooms)
 		{
 			TRoom room = pair.getValue();
 			room.writeBytes(out);
 			if (room.getParent() != null)
 				roomMap.put(room.getIdentity(), room.getParent().getIdentity());
 		}
-		sw.writeInt(objects.size());
-		for (ObjectPair<String, TObject> pair : objects)
+		sw.writeInt(out, objects.size());
+		for (Map.Entry<String, TObject> pair : objects)
 		{
 			TObject object = pair.getValue();
 			object.writeBytes(out);
 			if (object.getParent() != null)
 				objectMap.put(object.getIdentity(), object.getParent().getIdentity());
 		}
-		sw.writeInt(containers.size());
-		for (ObjectPair<String, TContainer> pair : containers)
+		sw.writeInt(out, containers.size());
+		for (Map.Entry<String, TContainer> pair : containers)
 		{
 			TContainer container = pair.getValue();
 			container.writeBytes(out);
@@ -476,20 +475,21 @@ public class TAMEModule implements Saveable
 				containerMap.put(container.getIdentity(), container.getParent().getIdentity());
 		}
 		
-		writeStringMap(sw, playerMap);
-		writeStringMap(sw, roomMap);
-		writeStringMap(sw, objectMap);
-		writeStringMap(sw, containerMap);
+		writeStringMap(out, playerMap);
+		writeStringMap(out, roomMap);
+		writeStringMap(out, objectMap);
+		writeStringMap(out, containerMap);
 	}
 
 	// writes a string map.
-	private void writeStringMap(SuperWriter sw, HashMap<String, String> map) throws IOException
+	private void writeStringMap(OutputStream out, HashMap<String, String> map) throws IOException
 	{
-		sw.writeInt(map.size());
-		for (ObjectPair<String, String> pair : map)
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeInt(out, map.size());
+		for (Map.Entry<String, String> pair : map.entrySet())
 		{
-			sw.writeString(pair.getKey(), "UTF-8");
-			sw.writeString(pair.getValue(), "UTF-8");
+			sw.writeString(out, pair.getKey(), "UTF-8");
+			sw.writeString(out, pair.getValue(), "UTF-8");
 		}
 	}
 
@@ -498,13 +498,13 @@ public class TAMEModule implements Saveable
 	{
 		header = readModuleHeader(in);
 		
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 
-		if (sr.readByte() != 0x01)
+		if (sr.readByte(in) != 0x01)
 			throw new ModuleException("Module does not have a recognized version.");
 
-		byte[] readDigest = sr.readBytes(20);
-		byte[] data = sr.readByteArray();
+		byte[] readDigest = sr.readBytes(in, 20);
+		byte[] data = sr.readByteArray(in);
 				
 		byte[] digest = EncodingUtils.sha1(data);
 		if (!Arrays.equals(readDigest, digest))
@@ -518,7 +518,7 @@ public class TAMEModule implements Saveable
 
 	private void readImmutableData(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 		
 		actions.clear();
 		actionNameTable.clear();
@@ -532,64 +532,49 @@ public class TAMEModule implements Saveable
 		int size;
 		
 		world = TWorld.create(in);
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while(size-- > 0)
 			addAction(TAction.create(in));
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while(size-- > 0)
 			addPlayer(TPlayer.create(in));
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while(size-- > 0)
 			addRoom(TRoom.create(in));
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while(size-- > 0)
 			addObject(TObject.create(in));
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while(size-- > 0)
 			addContainer(TContainer.create(in));
 		
 		HashMap<String, String> map; 
 		
-		map = readStringMap(sr);
-		for (ObjectPair<String, String> pair : map)
+		map = readStringMap(in);
+		for (Map.Entry<String, String> pair : map.entrySet())
 			getPlayerByIdentity(pair.getKey()).setParent(getPlayerByIdentity(pair.getValue()));
-		map = readStringMap(sr);
-		for (ObjectPair<String, String> pair : map)
+		map = readStringMap(in);
+		for (Map.Entry<String, String> pair : map.entrySet())
 			getRoomByIdentity(pair.getKey()).setParent(getRoomByIdentity(pair.getValue()));
-		map = readStringMap(sr);
-		for (ObjectPair<String, String> pair : map)
+		map = readStringMap(in);
+		for (Map.Entry<String, String> pair : map.entrySet())
 			getObjectByIdentity(pair.getKey()).setParent(getObjectByIdentity(pair.getValue()));
-		map = readStringMap(sr);
-		for (ObjectPair<String, String> pair : map)
+		map = readStringMap(in);
+		for (Map.Entry<String, String> pair : map.entrySet())
 			getContainerByIdentity(pair.getKey()).setParent(getContainerByIdentity(pair.getValue()));
 	}
 	
 	// reads a string map.
-	private HashMap<String, String> readStringMap(SuperReader sr) throws IOException
+	private HashMap<String, String> readStringMap(InputStream in) throws IOException
 	{
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 		HashMap<String, String> out = new HashMap<>();
 		
-		int size = sr.readInt();
+		int size = sr.readInt(in);
 		while(size-- > 0)
-			out.put(sr.readString("UTF-8"), sr.readString("UTF-8"));
+			out.put(sr.readString(in, "UTF-8"), sr.readString(in, "UTF-8"));
 		
 		return out;
-	}
-
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
 	}
 
 	/**
@@ -633,16 +618,14 @@ public class TAMEModule implements Saveable
 		}
 		
 		/**
-		 * Gets all of this module's attributes.
+		 * Gets all of this module header's attributes.
 		 * @return an array of all of the attributes. Never returns null.
 		 */
 		public String[] getAllAttributes()
 		{
-			List<String> outList = new List<>();
-			Iterator<String> it = attributes.keyIterator();
-			while (it.hasNext())
-				outList.add(it.next());
-			
+			List<String> outList = new LinkedList<>();
+			for (Map.Entry<String, String> pair : attributes)
+				outList.add(pair.getKey());
 			String[] out = new String[outList.size()];
 			outList.toArray(out);
 			return out;
@@ -660,40 +643,23 @@ public class TAMEModule implements Saveable
 		@Override
 		public void writeBytes(OutputStream out) throws IOException
 		{
-			SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-			
-			sw.writeInt(attributes.size());
-			for (ObjectPair<String, String> pair : attributes)
+			SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+			sw.writeInt(out, attributes.size());
+			for (Map.Entry<String, String> pair : attributes)
 			{
-				sw.writeString(pair.getKey(), "UTF-8");
-				sw.writeString(pair.getValue(), "UTF-8");
+				sw.writeString(out, pair.getKey(), "UTF-8");
+				sw.writeString(out, pair.getValue(), "UTF-8");
 			}
 		}
 		
 		@Override
 		public void readBytes(InputStream in) throws IOException
 		{
-			SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+			SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 			attributes.clear();
-			int attribCount = sr.readInt();
+			int attribCount = sr.readInt(in);
 			while(attribCount-- > 0)
-				attributes.put(sr.readString("UTF-8"), sr.readString("UTF-8"));		
-		}
-	
-		@Override
-		public byte[] toBytes() throws IOException
-		{
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			writeBytes(bos);
-			return bos.toByteArray();
-		}
-	
-		@Override
-		public void fromBytes(byte[] data) throws IOException 
-		{
-			ByteArrayInputStream bis = new ByteArrayInputStream(data);
-			readBytes(bis);
-			bis.close();
+				attributes.put(sr.readString(in, "UTF-8"), sr.readString(in, "UTF-8"));		
 		}
 	
 	}

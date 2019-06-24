@@ -10,8 +10,9 @@
 package com.tameif.tame;
 
 import java.util.Formatter;
+import java.util.LinkedList;
+import java.util.Queue;
 
-import com.blackrook.commons.linkedlist.Queue;
 import com.tameif.tame.exception.RunawayRequestException;
 import com.tameif.tame.lang.Cue;
 import com.tameif.tame.lang.TraceType;
@@ -40,7 +41,7 @@ public class TAMEResponse implements TAMEConstants
 	 */
 	TAMEResponse()
 	{
-		this.responseCues = new Queue<Cue>();
+		this.responseCues = new LinkedList<>();
 		this.operationsExecuted = 0;
 		this.functionDepth = 0;
 		this.requestNanos = 0L;
@@ -66,7 +67,7 @@ public class TAMEResponse implements TAMEConstants
 	 */
 	public void addCue(String type, long content)
 	{
-		responseCues.enqueue(Cue.create(type, content));
+		responseCues.add(Cue.create(type, content));
 	}
 
 	/**
@@ -79,7 +80,7 @@ public class TAMEResponse implements TAMEConstants
 	 */
 	public void addCue(String type, double content)
 	{
-		responseCues.enqueue(Cue.create(type, content));
+		responseCues.add(Cue.create(type, content));
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class TAMEResponse implements TAMEConstants
 	 */
 	public void addCue(String type, boolean content)
 	{
-		responseCues.enqueue(Cue.create(type, content));
+		responseCues.add(Cue.create(type, content));
 	}
 
 	/**
@@ -105,7 +106,7 @@ public class TAMEResponse implements TAMEConstants
 	 */
 	public void addCue(String type, String content)
 	{
-		responseCues.enqueue(Cue.create(type, content));
+		responseCues.add(Cue.create(type, content));
 	}
 
 	/**
@@ -117,7 +118,7 @@ public class TAMEResponse implements TAMEConstants
 	 */
 	public void addCue(String type)
 	{
-		responseCues.enqueue(Cue.create(type));
+		responseCues.add(Cue.create(type));
 	}
 
 	/**

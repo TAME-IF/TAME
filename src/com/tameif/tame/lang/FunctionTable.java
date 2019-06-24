@@ -14,11 +14,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
-import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
+import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
 
 /**
  * The table of function name to function entry.
@@ -34,7 +34,7 @@ public class FunctionTable implements Saveable
 	 */
 	public FunctionTable()
 	{
-		this.functionMap = new CaseInsensitiveHashMap<>();
+		this.functionMap = new CaseInsensitiveHashMap<>(8);
 	}
 	
 	/**
@@ -73,7 +73,7 @@ public class FunctionTable implements Saveable
 	/**
 	 * @return an iterable structure for all entries in this table.
 	 */
-	public Iterable<ObjectPair<String, FunctionEntry>> getEntries()
+	public Iterable<Map.Entry<String, FunctionEntry>> getEntries()
 	{
 		return functionMap;
 	}
@@ -81,11 +81,11 @@ public class FunctionTable implements Saveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeInt(functionMap.size());
-		for (ObjectPair<String, FunctionEntry> entry : functionMap)
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeInt(out, functionMap.size());
+		for (Map.Entry<String, FunctionEntry> entry : functionMap)
 		{
-			sw.writeString(entry.getKey(), "UTF-8");
+			sw.writeString(out, entry.getKey(), "UTF-8");
 			entry.getValue().writeBytes(out);
 		}
 
@@ -94,14 +94,11 @@ public class FunctionTable implements Saveable
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 		functionMap.clear();
-		int size = sr.readInt();
+		int size = sr.readInt(in);
 		while (size-- > 0)
-		{
-			add(sr.readString("UTF-8"), FunctionEntry.create(in));
-		}
-		
+			add(sr.readString(in, "UTF-8"), FunctionEntry.create(in));
 	}
 
 	@Override

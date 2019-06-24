@@ -9,7 +9,8 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
-import com.blackrook.commons.linkedlist.Stack;
+import java.util.Deque;
+import java.util.LinkedList;
 
 /**
  * The formatting parser for formatted text.
@@ -23,7 +24,7 @@ public abstract class FormatParser
 	/** The current string builder during parse. */
 	private StringBuilder builder;
 	/** The current tag stack during parse. */
-	private Stack<String> tagStack;
+	private Deque<String> tagStack;
 	
 	/**
 	 * Creates a new text formatting parser.
@@ -31,7 +32,7 @@ public abstract class FormatParser
 	public FormatParser()
 	{
 		this.builder = new StringBuilder();
-		this.tagStack = new Stack<>();
+		this.tagStack = new LinkedList<>();
 	}
 	
 	/**
@@ -114,7 +115,7 @@ public abstract class FormatParser
 		
 		emitText();
 		while (!tagStack.isEmpty())
-			endTag(tagStack.pop());
+			endTag(tagStack.pollFirst());
 	}
 	
 	private void emitText()
@@ -138,7 +139,7 @@ public abstract class FormatParser
 		{
 			if (tagStack.isEmpty())
 				return;
-			endTag(tagStack.pop());
+			endTag(tagStack.pollFirst());
 		}
 		else
 		{

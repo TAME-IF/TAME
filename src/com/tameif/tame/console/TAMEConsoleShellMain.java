@@ -218,7 +218,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 					break;
 				case STATE_TRACE:
 					TraceType t;
-					if ((t = Reflect.getEnumInstance(arg.toUpperCase(), TraceType.class)) != null)
+					if ((t = ValueUtils.getEnumInstance(arg.toUpperCase(), TraceType.class)) != null)
 						traceTypes.put(t);
 					break;
 				case STATE_SCRIPT:
@@ -269,7 +269,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			System.exit(ERROR_NOINPUTFILE);
 			return;
 		}
-		else if (!ObjectUtils.isEmpty(path))
+		else if (!ValueUtils.isStringEmpty(path))
 		{
 			module = parseScript(path, charset, verbose, !nooptimize, defineList); 
 			if (module == null)
@@ -280,7 +280,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		}
 		else
 		{
-			if (ObjectUtils.isEmpty(binpath))
+			if (ValueUtils.isStringEmpty(binpath))
 			{
 				System.out.println("ERROR: No module file specified!");
 				System.exit(ERROR_NOINPUTFILE);
@@ -506,11 +506,11 @@ public class TAMEConsoleShellMain implements TAMEConstants
 	private static void inspect(Context context, String inspectString)
 	{
 		String[] split = inspectString.split("\\.", 2);
-		if (split.length < 1 || ObjectUtils.isEmpty(split[0]))
+		if (split.length < 1 || ValueUtils.isStringEmpty(split[0]))
 		{
 			context.out.println("?> Must specify a variable.");
 		}
-		else if (split.length < 2 || ObjectUtils.isEmpty(split[1]))
+		else if (split.length < 2 || ValueUtils.isStringEmpty(split[1]))
 		{
 			TElementContext<?> ec = null;
 			

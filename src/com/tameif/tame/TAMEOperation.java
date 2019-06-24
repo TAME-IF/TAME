@@ -14,7 +14,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import com.blackrook.commons.math.RMath;
 import com.tameif.tame.element.ObjectContainer;
 import com.tameif.tame.element.TAction;
 import com.tameif.tame.element.TContainer;
@@ -44,6 +43,7 @@ import com.tameif.tame.lang.Value;
 import com.tameif.tame.lang.ValueHash;
 import com.tameif.tame.lang.ValueType;
 import com.tameif.tame.util.DateUtils;
+import com.tameif.tame.util.MathUtils;
 import com.tameif.tame.util.PatternCache;
 
 /**
@@ -356,7 +356,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			if (blockLocal.containsKey(variableName))
 			{
 				response.trace(request, TraceType.VALUE, "CLEAR LOCAL %s", variableName);
-				blockLocal.removeUsingKey(variableName);
+				blockLocal.remove(variableName);
 			}
 			else
 			{
@@ -1817,8 +1817,8 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			int startIndex = (int)value2.asLong();
 			String source = value1.asString();
 			
-			startIndex = RMath.clampValue(startIndex, 0, source.length());
-			endIndex = RMath.clampValue(endIndex, 0, source.length());
+			startIndex = MathUtils.clampValue(startIndex, 0, source.length());
+			endIndex = MathUtils.clampValue(endIndex, 0, source.length());
 			if (endIndex <= startIndex)
 				request.pushValue(Value.create(""));
 			else
@@ -2992,7 +2992,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			double start = valueStart.asDouble();
 			double end = valueEnd.asDouble();
 			
-			request.pushValue(Value.create(RMath.clampValue(value, start, end)));
+			request.pushValue(Value.create(MathUtils.clampValue(value, start, end)));
 		}
 		
 		@Override

@@ -9,12 +9,13 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.blackrook.commons.AbstractMap;
 
 /**
  * Describes an object that can be saved/loaded but preserves value references.
@@ -29,7 +30,7 @@ public interface ReferenceSaveable
 	 * @param out the output stream to write to.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public void writeReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException;
+	public void writeReferentialBytes(AtomicLong referenceCounter, Map<Object, Long> referenceSet, OutputStream out) throws IOException;
 	
 	/**
 	 * Imports this object from bytes, looking up value references in a map.
@@ -37,7 +38,7 @@ public interface ReferenceSaveable
 	 * @param in the input stream to read from.
 	 * @throws IOException if a read problem occurs.
 	 */
-	public void readReferentialBytes(AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException;
+	public void readReferentialBytes(Map<Long, Value> referenceMap, InputStream in) throws IOException;
 	
 	/**
 	 * Gets this object's representation as bytes, preserving up value references from a map.
@@ -46,7 +47,12 @@ public interface ReferenceSaveable
 	 * @return the byte array of state bytes.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public byte[] toReferentialBytes(AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException;
+	default byte[] toReferentialBytes(AtomicLong referenceCounter, Map<Object, Long> referenceSet) throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeReferentialBytes(referenceCounter, referenceSet, bos);
+		return bos.toByteArray();
+	}
 	
 	/**
 	 * Reads this object's representation from a byte array, looking up value references in a map.
@@ -54,6 +60,11 @@ public interface ReferenceSaveable
 	 * @param data the data to read.
 	 * @throws IOException if a read problem occurs.
 	 */
-	public void fromReferentialBytes(AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException;
+	default void fromReferentialBytes(Map<Long, Value> referenceMap, byte[] data) throws IOException
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readReferentialBytes(referenceMap, bis);
+		bis.close();
+	}
 	
 }

@@ -14,8 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.blackrook.commons.util.IOUtils;
-import com.blackrook.commons.util.OSUtils;
+import com.tameif.tame.util.IOUtils;
 
 /** 
  * Default includer to use when none specified.
@@ -35,13 +34,16 @@ public class DefaultIncluder implements TAMEScriptIncluder
 {
 	private static final String CLASSPATH_PREFIX = "classpath:";
 	
+	/** Are we using Windows? */
+	private static boolean IS_WINDOWS = System.getProperty("os.name").contains("Windows");
+
 	// cannot be instantiated outside of this class.
 	public DefaultIncluder(){}
 	
 	@Override
 	public String getNextIncludeResourceName(String streamName, String path) throws IOException
 	{
-		if (OSUtils.isWindows() && streamName.contains("\\")) // check for Windows paths.
+		if (isWindows() && streamName.contains("\\")) // check for Windows paths.
 			streamName = streamName.replace('\\', '/');
 		
 		String streamParent = null;
@@ -66,9 +68,7 @@ public class DefaultIncluder implements TAMEScriptIncluder
 			{
 				return path;
 			}
-			
 		}
-		
 	}
 
 	@Override
@@ -79,5 +79,13 @@ public class DefaultIncluder implements TAMEScriptIncluder
 		else
 			return new FileInputStream(new File(path));
 	}
+	
+	/** @return true if we using Windows. */
+	public static boolean isWindows()
+	{
+		return IS_WINDOWS;
+	}
+	
+	
 }
 

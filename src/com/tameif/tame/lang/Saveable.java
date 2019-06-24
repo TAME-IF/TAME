@@ -9,6 +9,8 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,13 +40,23 @@ public interface Saveable
 	 * @return the byte array of state bytes.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public byte[] toBytes() throws IOException;
-	
+	default byte[] toBytes() throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeBytes(bos);
+		return bos.toByteArray();
+	}
+
 	/**
 	 * Reads this object's representation from a byte array.
 	 * @param data the data to read.
 	 * @throws IOException if a read problem occurs.
 	 */
-	public void fromBytes(byte[] data) throws IOException;
+	default void fromBytes(byte[] data) throws IOException
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readBytes(bis);
+		bis.close();
+	}
 	
 }

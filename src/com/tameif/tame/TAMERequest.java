@@ -9,9 +9,12 @@
  ******************************************************************************/
 package com.tameif.tame;
 
-import com.blackrook.commons.hash.Hash;
-import com.blackrook.commons.linkedlist.Queue;
-import com.blackrook.commons.linkedlist.Stack;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
+
 import com.tameif.tame.element.context.TElementContext;
 import com.tameif.tame.exception.ArithmeticStackStateException;
 import com.tameif.tame.lang.TraceType;
@@ -24,17 +27,20 @@ import com.tameif.tame.lang.Value;
  */
 public class TAMERequest
 {
-	private static final Hash<TraceType> NO_TRACE_TYPES = new Hash<TraceType>();
-	private static final Hash<TraceType> ALL_TRACE_TYPES = new Hash<TraceType>()
-	{{
-		for (TraceType t : TraceType.values())
-			put(t);
-	}};
+	private static final Set<TraceType> NO_TRACE_TYPES = new HashSet<>();
+	private static final Set<TraceType> ALL_TRACE_TYPES = new HashSet<TraceType>()
+	{
+		private static final long serialVersionUID = -7933024056207369672L;
+		{
+			for (TraceType t : TraceType.values())
+				add(t);
+		}
+	};
 	
 	/** The input message. */
 	private String inputMessage;
 	/** Is the trace enabled, and if so, for which types? */
-	private Hash<TraceType> traceTypes;
+	private Set<TraceType> traceTypes;
 
 	/** Belayed action queue. */
 	private Queue<TAMECommand> commandQueue;
@@ -42,9 +48,9 @@ public class TAMERequest
 	/** Module. */
 	private TAMEModuleContext moduleContext;
 	/** Arithmetic stack. */
-	private Stack<Value> valueStack;
+	private Deque<Value> valueStack;
 	/** Context stack. */
-	private Stack<TElementContext<?>> contextStack;
+	private Deque<TElementContext<?>> contextStack;
 	
 	/**
 	 * Creates a new request object.
@@ -54,11 +60,11 @@ public class TAMERequest
 		inputMessage = null;
 		traceTypes = null;
 		
-		commandQueue = new Queue<TAMECommand>();
+		commandQueue = new LinkedList<>();
 		
 		moduleContext = null;
-		valueStack = new Stack<Value>();
-		contextStack = new Stack<TElementContext<?>>();
+		valueStack = new LinkedList<Value>();
+		contextStack = new LinkedList<TElementContext<?>>();
 	}
 
 	/**
@@ -115,9 +121,9 @@ public class TAMERequest
 			out.traceTypes = NO_TRACE_TYPES;
 		else
 		{
-			out.traceTypes = new Hash<>();
+			out.traceTypes = new HashSet<>();
 			for (TraceType t : types)
-				out.traceTypes.put(t);
+				out.traceTypes.add(t);
 		}
 		return out;
 	}
@@ -148,7 +154,7 @@ public class TAMERequest
 	 */
 	public void addCommand(TAMECommand item)
 	{
-		commandQueue.enqueue(item);
+		commandQueue.add(item);
 	}
 
 	/**
@@ -175,7 +181,7 @@ public class TAMERequest
 	 */
 	TAMECommand nextCommand()
 	{
-		return commandQueue.dequeue();
+		return commandQueue.poll();
 	}
 
 	/**
@@ -193,7 +199,7 @@ public class TAMERequest
 	 */
 	TElementContext<?> popContext()
 	{
-		return contextStack.pop();
+		return contextStack.pollFirst();
 	}
 
 	/**
@@ -223,7 +229,7 @@ public class TAMERequest
 	{
 		if (valueStack.isEmpty())
 			throw new ArithmeticStackStateException("Attempt to pop an empty arithmetic stack.");
-		return valueStack.pop();
+		return valueStack.pollFirst();
 	}
 	
 	/**

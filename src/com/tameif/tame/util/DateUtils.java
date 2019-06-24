@@ -11,11 +11,9 @@ package com.tameif.tame.util;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.blackrook.commons.hash.HashMap;
-import com.blackrook.commons.math.RMath;
 
 /**
  * Utility class for date-related stuff.
@@ -56,6 +54,145 @@ public final class DateUtils
 		}
 		
 	};
+	
+	// E+|e+|y+|M+|d+|W+|u+|a+|A+|h+|H+|k+|K+|m+|s+|S+|z+|Z+|X+|'.*'
+	static HashMap<Character, FormatFunction> FORMAT_FUNCS = new HashMap<Character, FormatFunction>()
+	{	
+		private static final long serialVersionUID = 4313042438938002096L;
+		
+		// init funcs.
+		{
+			put('E', (locale, token, date, sb)->
+			{
+				int val = date.get(Calendar.ERA);
+				if (val == GregorianCalendar.BC)
+					sb.append(token.length() < 2 ? "B" : "BC");
+				else
+					sb.append(token.length() < 2 ? "A" : "AD");
+			});
+			put('e', (locale, token, date, sb)->
+			{
+				int val = date.get(Calendar.ERA);
+				if (val == GregorianCalendar.BC)
+					sb.append(token.length() < 2 ? "b" : "bc");
+				else
+					sb.append(token.length() < 2 ? "a" : "ad");
+			});
+			put('y', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.YEAR)));
+			});
+			put('M', (locale, token, date, sb)->
+			{
+				if (token.length() <= 2)
+					sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MONTH) + 1));
+				else
+				{
+					int month = date.get(Calendar.MONTH);
+					sb.append(locale.getMonthsOfYear()[MathUtils.clampValue(token.length() - 3, 0, 1)][month]);
+				}
+			});
+			put('d', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.DAY_OF_MONTH)));
+			});
+			put('W', (locale, token, date, sb)->
+			{
+				sb.append(locale.getDaysOfWeek()[MathUtils.clampValue(token.length() - 1, 0, 3)][date.get(Calendar.DAY_OF_WEEK) - 1]);
+			});
+			put('w', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.DAY_OF_WEEK) - 1));
+			});
+			put('a', (locale, token, date, sb)->
+			{
+				int val = date.get(Calendar.HOUR_OF_DAY);
+				if (val < 12)
+					sb.append(token.length() < 2 ? "a" : "am");
+				else
+					sb.append(token.length() < 2 ? "p" : "pm");
+			});
+			put('A', (locale, token, date, sb)->
+			{
+				int val = date.get(Calendar.HOUR_OF_DAY);
+				if (val < 12)
+					sb.append(token.length() < 2 ? "A" : "AM");
+				else
+					sb.append(token.length() < 2 ? "P" : "PM");
+			});
+			put('h', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY)));
+			});
+			put('H', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY) + 1));
+			});
+			put('k', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY) % 12));
+			});
+			put('K', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", (date.get(Calendar.HOUR_OF_DAY) % 12) + 1));
+			});
+			put('m', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MINUTE)));
+			});
+			put('s', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.SECOND)));
+			});
+			put('S', (locale, token, date, sb)->
+			{
+				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MILLISECOND)));
+			});
+			put('z', (locale, token, date, sb)->
+			{
+				int minuteOffset = date.get(Calendar.ZONE_OFFSET) / (60 * 1000);
+				int absMinuteOffset = Math.abs(minuteOffset);
+				sb.append(String.format("GMT%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+			});
+			put('Z', (locale, token, date, sb)->
+			{
+				int minuteOffset = date.get(Calendar.ZONE_OFFSET) / (60 * 1000);
+				int absMinuteOffset = Math.abs(minuteOffset);
+				sb.append(String.format("%c%02d%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+			});
+			put('X', (locale, token, date, sb)->
+			{
+				int minuteOffset = date.get(Calendar.ZONE_OFFSET) / (60 * 1000);
+				int absMinuteOffset = Math.abs(minuteOffset);
+				switch (token.length())
+				{
+					case 1:
+						sb.append(String.format("%c%d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60));
+						break;
+					case 2:
+						sb.append(String.format("%c%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60));
+						break;
+					case 3:
+						sb.append(String.format("%c%02d%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+						break;
+					case 4:
+						sb.append(String.format("%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+						break;
+					default:
+						sb.append(String.format("GMT%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
+						break;
+				}
+			});
+			put('\'', (locale, token, date, sb)->
+			{
+				if (token.length() - 2 == 0)
+					sb.append('\'');
+				else
+					sb.append(token.substring(1, token.length() - 1));
+			});
+		}
+	};
+
 	
 	/**
 	 * Formats a millisecond time into a formatted date string.
@@ -199,144 +336,10 @@ public final class DateUtils
 	 */
 	public static String formatTime(final DateLocale locale, final long time, final String formatString)
 	{
-		final Calendar calendar = new GregorianCalendar();
+		Calendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(time);
-		
 		Matcher matcher = DATE_FORMAT_PATTERN.matcher(formatString);
-		
-		// E+|e+|y+|M+|d+|W+|u+|a+|A+|h+|H+|k+|K+|m+|s+|S+|z+|Z+|X+|'.*'
-		HashMap<Character, FormatFunction> FORMAT_FUNCS = new HashMap<Character, FormatFunction>()
-		{{
-			put('E', (locale, token, date, sb)->
-			{
-				int val = date.get(Calendar.ERA);
-				if (val == GregorianCalendar.BC)
-					sb.append(token.length() < 2 ? "B" : "BC");
-				else
-					sb.append(token.length() < 2 ? "A" : "AD");
-			});
-			put('e', (locale, token, date, sb)->
-			{
-				int val = date.get(Calendar.ERA);
-				if (val == GregorianCalendar.BC)
-					sb.append(token.length() < 2 ? "b" : "bc");
-				else
-					sb.append(token.length() < 2 ? "a" : "ad");
-			});
-			put('y', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.YEAR)));
-			});
-			put('M', (locale, token, date, sb)->
-			{
-				if (token.length() <= 2)
-					sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MONTH) + 1));
-				else
-				{
-					int month = date.get(Calendar.MONTH);
-					sb.append(locale.getMonthsOfYear()[RMath.clampValue(token.length() - 3, 0, 1)][month]);
-				}
-			});
-			put('d', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.DAY_OF_MONTH)));
-			});
-			put('W', (locale, token, date, sb)->
-			{
-				sb.append(locale.getDaysOfWeek()[RMath.clampValue(token.length() - 1, 0, 3)][date.get(Calendar.DAY_OF_WEEK) - 1]);
-			});
-			put('w', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.DAY_OF_WEEK) - 1));
-			});
-			put('a', (locale, token, date, sb)->
-			{
-				int val = date.get(Calendar.HOUR_OF_DAY);
-				if (val < 12)
-					sb.append(token.length() < 2 ? "a" : "am");
-				else
-					sb.append(token.length() < 2 ? "p" : "pm");
-			});
-			put('A', (locale, token, date, sb)->
-			{
-				int val = date.get(Calendar.HOUR_OF_DAY);
-				if (val < 12)
-					sb.append(token.length() < 2 ? "A" : "AM");
-				else
-					sb.append(token.length() < 2 ? "P" : "PM");
-			});
-			put('h', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY)));
-			});
-			put('H', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY) + 1));
-			});
-			put('k', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.HOUR_OF_DAY) % 12));
-			});
-			put('K', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", (date.get(Calendar.HOUR_OF_DAY) % 12) + 1));
-			});
-			put('m', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MINUTE)));
-			});
-			put('s', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.SECOND)));
-			});
-			put('S', (locale, token, date, sb)->
-			{
-				sb.append(String.format("%0" + token.length() + "d", date.get(Calendar.MILLISECOND)));
-			});
-			put('z', (locale, token, date, sb)->
-			{
-				int minuteOffset = calendar.get(Calendar.ZONE_OFFSET) / (60 * 1000);
-				int absMinuteOffset = Math.abs(minuteOffset);
-				sb.append(String.format("GMT%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
-			});
-			put('Z', (locale, token, date, sb)->
-			{
-				int minuteOffset = calendar.get(Calendar.ZONE_OFFSET) / (60 * 1000);
-				int absMinuteOffset = Math.abs(minuteOffset);
-				sb.append(String.format("%c%02d%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
-			});
-			put('X', (locale, token, date, sb)->
-			{
-				int minuteOffset = calendar.get(Calendar.ZONE_OFFSET) / (60 * 1000);
-				int absMinuteOffset = Math.abs(minuteOffset);
-				switch (token.length())
-				{
-					case 1:
-						sb.append(String.format("%c%d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60));
-						break;
-					case 2:
-						sb.append(String.format("%c%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60));
-						break;
-					case 3:
-						sb.append(String.format("%c%02d%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
-						break;
-					case 4:
-						sb.append(String.format("%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
-						break;
-					default:
-						sb.append(String.format("GMT%c%02d:%02d", (minuteOffset < 0 ? '-' : '+'), absMinuteOffset / 60, absMinuteOffset % 60));
-						break;
-				}
-			});
-			put('\'', (locale, token, date, sb)->
-			{
-				if (token.length() - 2 == 0)
-					sb.append('\'');
-				else
-					sb.append(token.substring(1, token.length() - 1));
-			});
-		}};
-		
+				
 		int lastEnd = 0; 
 		StringBuilder sb = new StringBuilder();
 		while (matcher.find())

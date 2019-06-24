@@ -78,7 +78,7 @@ public abstract class TElement implements Saveable
 	 */
 	protected void setIdentity(String identity)
 	{
-		if (ObjectUtils.isEmpty(identity))
+		if (ValueUtils.isStringEmpty(identity))
 			throw new IllegalArgumentException("Identity cannot be blank.");
 		if (BAD_IDENTITIES.contains(identity))
 			throw new IllegalArgumentException("Identity cannot be \"player\" or \"room\" or \"world\".");
@@ -91,7 +91,7 @@ public abstract class TElement implements Saveable
 	 */
 	protected void setIdentityForced(String identity)
 	{
-		if (ObjectUtils.isEmpty(identity))
+		if (ValueUtils.isStringEmpty(identity))
 			throw new IllegalArgumentException("Identity cannot be blank.");
 		this.identity = identity;
 	}

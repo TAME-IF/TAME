@@ -14,11 +14,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.hash.HashMap;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
 
 /**
  * The table of block entry to executable block.
@@ -73,35 +73,31 @@ public class BlockTable implements Saveable
 	/**
 	 * @return an iterable structure for all entries in this table.
 	 */
-	public Iterable<ObjectPair<BlockEntry, Block>> getEntries()
+	public Iterable<Map.Entry<BlockEntry, Block>> getEntries()
 	{
-		return blockMap;
+		return blockMap.entrySet();
 	}
 
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeInt(blockMap.size());
-		for (ObjectPair<BlockEntry, Block> entry : blockMap)
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeInt(out, blockMap.size());
+		for (Map.Entry<BlockEntry, Block> entry : blockMap.entrySet())
 		{
 			entry.getKey().writeBytes(out);
 			entry.getValue().writeBytes(out);
 		}
-
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 		blockMap.clear();
-		int size = sr.readInt();
+		int size = sr.readInt(in);
 		while (size-- > 0)
-		{
 			add(BlockEntry.create(in), Block.create(in));
-		}
-		
 	}
 
 	@Override

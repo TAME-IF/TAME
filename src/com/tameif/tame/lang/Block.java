@@ -9,19 +9,18 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
-import com.blackrook.commons.linkedlist.Queue;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.TAMEInterrupt;
 import com.tameif.tame.TAMERequest;
 import com.tameif.tame.TAMEResponse;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
 
 /**
  * A set of operations in one block.
@@ -37,7 +36,7 @@ public class Block implements CallableType, Iterable<Operation>, Saveable
 	 */
 	public Block()
 	{
-		this.operationQueue = new Queue<Operation>();
+		this.operationQueue = new LinkedList<Operation>();
 	}
 
 	/**
@@ -106,8 +105,8 @@ public class Block implements CallableType, Iterable<Operation>, Saveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeInt(operationQueue.size());
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeInt(out, operationQueue.size());
 		for (Operation operation : this)
 			operation.writeBytes(out);
 	}
@@ -116,28 +115,10 @@ public class Block implements CallableType, Iterable<Operation>, Saveable
 	public void readBytes(InputStream in) throws IOException
 	{
 		operationQueue.clear();
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		int size = sr.readInt();
-		
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		int size = sr.readInt(in);
 		while (size-- > 0)
 			add(Operation.create(in));
-		
-	}
-
-	@Override
-	public byte[] toBytes() throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeBytes(bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromBytes(byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readBytes(bis);
-		bis.close();
 	}
 
 }

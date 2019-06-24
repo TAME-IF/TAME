@@ -3769,7 +3769,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		// Returns the operation associated with a name, if any.
 		private TAMEOperation getOperation(String name)
 		{
-			return Reflect.getEnumInstance(name.toUpperCase(), TAMEOperation.class);
+			return ValueUtils.getEnumInstance(name.toUpperCase(), TAMEOperation.class);
 		}
 		
 		// Return true if token type starts a statement.

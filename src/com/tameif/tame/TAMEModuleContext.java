@@ -19,12 +19,6 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.hash.Hash;
-import com.blackrook.commons.hash.HashMap;
-import com.blackrook.commons.util.ValueUtils;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.element.ObjectContainer;
 import com.tameif.tame.element.TAction;
 import com.tameif.tame.element.TContainer;

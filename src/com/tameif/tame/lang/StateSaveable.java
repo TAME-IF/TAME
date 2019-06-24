@@ -9,12 +9,14 @@
  ******************************************************************************/
 package com.tameif.tame.lang;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.blackrook.commons.AbstractMap;
 import com.tameif.tame.TAMEModule;
 
 /**
@@ -31,7 +33,7 @@ public interface StateSaveable
 	 * @param out the output stream to write to.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException;
+	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, Map<Object, Long> referenceSet, OutputStream out) throws IOException;
 	
 	/**
 	 * Imports this object's state from bytes.
@@ -40,7 +42,7 @@ public interface StateSaveable
 	 * @param in the input stream to read from.
 	 * @throws IOException if a read problem occurs.
 	 */
-	public void readStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException;
+	public void readStateBytes(TAMEModule module, Map<Long, Value> referenceMap, InputStream in) throws IOException;
 	
 	/**
 	 * Gets this object's state representation as bytes.
@@ -50,8 +52,13 @@ public interface StateSaveable
 	 * @return the byte array of state bytes.
 	 * @throws IOException if a write problem occurs.
 	 */
-	public byte[] toStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException;
-	
+	default byte[] toStateBytes(TAMEModule module, AtomicLong referenceCounter, Map<Object, Long> referenceSet) throws IOException
+	{
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		writeStateBytes(module, referenceCounter, referenceSet, bos);
+		return bos.toByteArray();
+	}
+
 	/**
 	 * Reads this object's state representation from a byte array.
 	 * @param module the source module for reference.
@@ -59,6 +66,11 @@ public interface StateSaveable
 	 * @param data the data to read.
 	 * @throws IOException if a read problem occurs.
 	 */
-	public void fromStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException;
-	
+	default void fromStateBytes(TAMEModule module, Map<Long, Value> referenceMap, byte[] data) throws IOException
+	{
+		ByteArrayInputStream bis = new ByteArrayInputStream(data);
+		readStateBytes(module, referenceMap, bis);
+		bis.close();
+	}
+
 }

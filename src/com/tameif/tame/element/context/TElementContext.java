@@ -15,9 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.blackrook.commons.AbstractMap;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.element.TElement;
 import com.tameif.tame.lang.StateSaveable;
@@ -93,7 +93,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	public void clearValue(String variableName)
 	{
 		if (variables.containsKey(variableName))
-			variables.removeUsingKey(variableName);
+			variables.remove(variableName);
 	}
 
 	@Override
@@ -103,31 +103,15 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	}
 	
 	@Override
-	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException 
+	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, Map<Object, Long> referenceSet, OutputStream out) throws IOException 
 	{
 		variables.writeReferentialBytes(referenceCounter, referenceSet, out);
 	}
 
 	@Override
-	public void readStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException 
+	public void readStateBytes(TAMEModule module, Map<Long, Value> referenceMap, InputStream in) throws IOException 
 	{
 		variables.readReferentialBytes(referenceMap, in);
 	}
 
-	@Override
-	public byte[] toStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet) throws IOException
-	{
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		writeStateBytes(module, referenceCounter, referenceSet, bos);
-		return bos.toByteArray();
-	}
-
-	@Override
-	public void fromStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, byte[] data) throws IOException 
-	{
-		ByteArrayInputStream bis = new ByteArrayInputStream(data);
-		readStateBytes(module, referenceMap, bis);
-		bis.close();
-	}
-	
 }
