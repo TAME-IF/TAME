@@ -42,8 +42,8 @@ import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
 import com.tameif.tame.lang.ValueHash;
 import com.tameif.tame.lang.ValueType;
+import com.tameif.tame.struct.MathUtils;
 import com.tameif.tame.util.DateUtils;
-import com.tameif.tame.util.MathUtils;
 import com.tameif.tame.util.PatternCache;
 
 /**

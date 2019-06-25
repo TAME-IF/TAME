@@ -14,12 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Map;
 
-import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.hash.CaseInsensitiveHash;
-import com.blackrook.commons.util.ObjectUtils;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.lang.Block;
 import com.tameif.tame.lang.BlockEntry;
@@ -28,6 +24,10 @@ import com.tameif.tame.lang.BlockTable;
 import com.tameif.tame.lang.FunctionEntry;
 import com.tameif.tame.lang.FunctionTable;
 import com.tameif.tame.lang.Saveable;
+import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
+import com.tameif.tame.struct.ValueUtils;
 
 /**
  * Common engine element object.
@@ -116,7 +116,7 @@ public abstract class TElement implements Saveable
 	/**
 	 * @return an iterable structure for all block entries in this table.
 	 */
-	public Iterable<ObjectPair<BlockEntry, Block>> getBlockEntries()
+	public Iterable<Map.Entry<BlockEntry, Block>> getBlockEntries()
 	{
 		return blockTable.getEntries();
 	}
@@ -156,7 +156,7 @@ public abstract class TElement implements Saveable
 	/**
 	 * @return an iterable structure for all function entries in this table.
 	 */
-	public Iterable<ObjectPair<String, FunctionEntry>> getFunctionEntries()
+	public Iterable<Map.Entry<String, FunctionEntry>> getFunctionEntries()
 	{
 		return functionTable.getEntries();
 	}
@@ -278,9 +278,9 @@ public abstract class TElement implements Saveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeString(identity, "UTF-8");
-		sw.writeBoolean(archetype);
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeString(out, identity, "UTF-8");
+		sw.writeBoolean(out, archetype);
 		blockTable.writeBytes(out);
 		functionTable.writeBytes(out);
 	}
@@ -288,9 +288,9 @@ public abstract class TElement implements Saveable
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		identity = sr.readString("UTF-8");
-		archetype = sr.readBoolean();
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		identity = sr.readString(in, "UTF-8");
+		archetype = sr.readBoolean(in);
 		blockTable = BlockTable.create(in);
 		functionTable = FunctionTable.create(in);
 	}

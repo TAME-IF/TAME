@@ -9,33 +9,13 @@
  ******************************************************************************/
 package com.tameif.tame.factory;
 
-import java.io.IOException;
-import java.io.InputStream;
+import com.tameif.tame.struct.PreprocessorLexer;
 
 /**
  * An interface that allows the user to resolve a resource by path when the
  * {@link TAMEScriptReader} parses it.
  * @author Matthew Tropiano
  */
-public interface TAMEScriptIncluder 
+public interface TAMEScriptIncluder extends PreprocessorLexer.Includer
 {
-	/**
-	 * Returns a path when the parser needs the next name of a resource.
-	 * By default, this attempts to resolve the new path of the next resource (based on parent information).
-	 * @param streamName the current name of the stream. This includer may use this to procure a relative path.
-	 * @param path the stream path.
-	 * @return an open {@link InputStream} for the requested resource, or null if not found.
-	 * @throws IOException if the included resource cannot be read or the stream cannot be opened.
-	 */
-	public String getNextIncludeResourceName(String streamName, String path) throws IOException;
-		
-	/**
-	 * Returns an open {@link InputStream} for a path when the parser needs a resource.
-	 * By default, this attempts to open a file at the provided path.
-	 * @param path the stream path.
-	 * @return an open {@link InputStream} for the requested resource, or null if not found.
-	 * @throws IOException if the included resource cannot be read or the stream cannot be opened.
-	 */
-	public InputStream getIncludeResource(String path) throws IOException;
-		
 }

@@ -31,10 +31,10 @@ import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.lang.Saveable;
 import com.tameif.tame.struct.CaseInsensitiveHash;
 import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.EncodingUtils;
+import com.tameif.tame.struct.IOUtils;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
-import com.tameif.tame.util.EncodingUtils;
-import com.tameif.tame.util.IOUtils;
 
 /**
  * An instantiated module.

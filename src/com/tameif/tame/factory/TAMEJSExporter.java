@@ -30,9 +30,9 @@ import com.tameif.tame.TAMELogic;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.TAMEModule.Header;
 import com.tameif.tame.exception.JSExportException;
-import com.tameif.tame.util.EncodingUtils;
-import com.tameif.tame.util.IOUtils;
-import com.tameif.tame.util.ValueUtils;
+import com.tameif.tame.struct.EncodingUtils;
+import com.tameif.tame.struct.IOUtils;
+import com.tameif.tame.struct.ValueUtils;
 
 /**
  * The JavaScript exporter for TAME.

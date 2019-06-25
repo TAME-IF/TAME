@@ -16,7 +16,7 @@ import java.io.PrintWriter;
 import com.tameif.tame.factory.TAMEJSExporter;
 import com.tameif.tame.factory.TAMEJSExporterOptions;
 import com.tameif.tame.factory.TAMEScriptReader;
-import com.tameif.tame.util.IOUtils;
+import com.tameif.tame.struct.IOUtils;
 
 /**
  * A test JS exporter.

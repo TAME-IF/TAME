@@ -15,11 +15,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.blackrook.commons.hash.CaseInsensitiveHash;
-import com.blackrook.commons.util.ObjectUtils;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.lang.Saveable;
+import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
+import com.tameif.tame.struct.ValueUtils;
 
 /**
  * This is a player-activated action.
@@ -299,21 +299,22 @@ public class TAction implements Comparable<TAction>, Saveable
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
-		sw.writeString(identity, "UTF-8");
-		sw.writeByte((byte)type.ordinal());
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeString(out, identity, "UTF-8");
+		sw.writeByte(out, (byte)type.ordinal());
 		
-		sw.writeBit(strict);
-		sw.writeBit(reversed);
-		sw.flushBits();
+		byte flags = 0x00;
+		flags |= strict ? 0x01 : 0x00;
+		flags |= reversed ? 0x02 : 0x00;
+		sw.writeByte(out, flags);
 		
-		sw.writeInt(names.size());
+		sw.writeInt(out, names.size());
 		for (String s : names)
-			sw.writeString(s.toLowerCase(), "UTF-8");
+			sw.writeString(out, s.toLowerCase(), "UTF-8");
 			
-		sw.writeInt(extraStrings.size());
+		sw.writeInt(out, extraStrings.size());
 		for (String s : extraStrings)
-			sw.writeString(s.toLowerCase(), "UTF-8");
+			sw.writeString(out, s.toLowerCase(), "UTF-8");
 	}
 	
 	@Override
@@ -321,23 +322,23 @@ public class TAction implements Comparable<TAction>, Saveable
 	{
 		names.clear();
 		extraStrings.clear();
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
-		setIdentity(sr.readString("UTF-8"));
-		type = Type.VALUES[(int)sr.readByte()];
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		setIdentity(sr.readString(in, "UTF-8"));
+		type = Type.VALUES[(int)sr.readByte(in)];
 		
-		byte flags = sr.readByte();
+		byte flags = sr.readByte(in);
 		strict = (flags & 0x01) != 0;
 		reversed = (flags & 0x02) != 0;
 		
 		int size;
 		
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while (size-- > 0)
-			names.put(sr.readString("UTF-8"));
+			names.put(sr.readString(in, "UTF-8"));
 		
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while (size-- > 0)
-			extraStrings.put(sr.readString("UTF-8"));
+			extraStrings.put(sr.readString(in, "UTF-8"));
 	}
 
 	@Override

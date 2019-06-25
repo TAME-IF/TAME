@@ -16,18 +16,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
-import com.blackrook.commons.Reflect;
-import com.blackrook.commons.hash.CaseInsensitiveHashMap;
-import com.blackrook.commons.hash.HashMap;
-import com.blackrook.commons.linkedlist.Queue;
-import com.blackrook.commons.linkedlist.Stack;
-import com.blackrook.commons.list.List;
-import com.blackrook.commons.util.IOUtils;
-import com.blackrook.lang.CommonLexer;
-import com.blackrook.lang.CommonLexerKernel;
-import com.blackrook.lang.Parser;
-import com.blackrook.lang.ParserException;
 import com.tameif.tame.TAMEOperation;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.TAMEModule;
@@ -47,6 +42,12 @@ import com.tameif.tame.lang.BlockEntryType;
 import com.tameif.tame.lang.Operation;
 import com.tameif.tame.lang.FunctionEntry;
 import com.tameif.tame.lang.Value;
+import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.IOUtils;
+import com.tameif.tame.struct.Lexer;
+import com.tameif.tame.struct.Lexer.Parser;
+import com.tameif.tame.struct.PreprocessorLexer;
+import com.tameif.tame.struct.ValueUtils;
 
 /**
  * A TAMEScript reading class that produces scripts. 
@@ -64,7 +65,7 @@ public final class TAMEScriptReader implements TAMEConstants
 	private static final DefaultReaderOptions DEFAULT_OPTIONS = new DefaultReaderOptions();
 	
 	/** The Lexer Kernel for the ArcheText Lexers. */
-	private static class TSKernel extends CommonLexerKernel
+	private static class TSKernel extends Lexer.Kernel
 	{
 		static final int TYPE_COMMENT = 		0;
 		static final int TYPE_FALSE = 			1;
@@ -148,7 +149,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_REVERSED = 		99;
 		static final int TYPE_QUEUE = 			100;
 
-		static final HashMap<String, BlockEntryType> BLOCKENTRYTYPE_MAP = new CaseInsensitiveHashMap<BlockEntryType>();
+		static final CaseInsensitiveHashMap<BlockEntryType> BLOCKENTRYTYPE_MAP = 
+				new CaseInsensitiveHashMap<BlockEntryType>(BlockEntryType.VALUES.length);
 		
 		private TSKernel()
 		{
@@ -250,45 +252,34 @@ public final class TAMEScriptReader implements TAMEConstants
 	/**
 	 * The lexer for a reader context.
 	 */
-	private static class TSLexer extends CommonLexer
+	private static class TSLexer extends PreprocessorLexer
 	{
 		private TAMEScriptIncluder includer;
 		
 		private TSLexer(Reader in, TAMEScriptIncluder includer)
 		{
 			super(KERNEL_INSTANCE, in);
-			this.includer = includer;
+			setIncluder(includer);
 		}
 	
 		private TSLexer(String in, TAMEScriptIncluder includer)
 		{
 			super(KERNEL_INSTANCE, in);
-			this.includer = includer;
+			setIncluder(includer);
 		}
 		
 		private TSLexer(String name, Reader in, TAMEScriptIncluder includer)
 		{
 			super(KERNEL_INSTANCE, name, in);
-			this.includer = includer;
+			setIncluder(includer);
 		}
 	
 		private TSLexer(String name, String in, TAMEScriptIncluder includer)
 		{
 			super(KERNEL_INSTANCE, name, in);
-			this.includer = includer;
+			setIncluder(includer);
 		}
 		
-		@Override
-		protected String getNextResourceName(String currentStreamName, String includePath) throws IOException 
-		{
-			return includer.getNextIncludeResourceName(currentStreamName, includePath);
-		}
-		
-		@Override
-		protected InputStream getResource(String path) throws IOException
-		{
-			return includer.getIncludeResource(path);
-		}
 	}
 
 	/**
@@ -306,11 +297,15 @@ public final class TAMEScriptReader implements TAMEConstants
 		/** Function block count. */
 		private int functionDepth;
 		
+		/** List of errors. */
+		private LinkedList<String> errors;
+		
 		private TSParser(TSLexer lexer, TAMEScriptReaderOptions options)
 		{
 			super(lexer);
+			this.errors = new LinkedList<>();
 			for (String def : options.getDefines())
-				lexer.addDefineMacro(def);
+				lexer.addDefine(def, "");
 			this.options = options;
 			this.currentModule = null;
 			this.controlDepth = 0;
@@ -366,6 +361,18 @@ public final class TAMEScriptReader implements TAMEConstants
 			return currentModule;
 		}
 
+		private void addErrorMessage(String message)
+		{
+			errors.add(getTokenInfoLine(message));
+		}
+		
+		private String[] getErrorMessages()
+		{
+			String[] out = new String[errors.size()];
+			errors.toArray(out);
+			return out;
+		}
+		
 		/**
 		 * Parses a module element.
 		 */
@@ -1243,7 +1250,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		// Parses the block entry arguments into a BlockEntry.
 		private BlockEntry parseBlockEntryArguments(BlockEntryType type)
 		{
-			Queue<Value> parsedValues = new Queue<>();
+			Queue<Value> parsedValues = new LinkedList<>();
 			ArgumentType[] argTypes = type.getArgumentTypes();
 			for (int i = 0; i < argTypes.length; i++) 
 			{
@@ -1261,7 +1268,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1273,7 +1280,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1285,7 +1292,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1297,7 +1304,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1309,7 +1316,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1321,7 +1328,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1333,7 +1340,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1345,7 +1352,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1357,7 +1364,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1369,7 +1376,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1381,7 +1388,7 @@ public final class TAMEScriptReader implements TAMEConstants
 							return null;
 						}
 						
-						parsedValues.enqueue(tokenToValue());
+						parsedValues.add(tokenToValue());
 						nextToken();
 						break;
 					}
@@ -1404,7 +1411,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		// Parses a function's argument list, returns the list of arguments, null if bad.
 		private String[] parseFunctionArgumentList(String functionName, FunctionEntry overriddenEntry)
 		{
-			List<String> argList = new List<>(4);
+			List<String> argList = new ArrayList<>(4);
 			
 			if (!matchType(TSKernel.TYPE_LPAREN))
 			{
@@ -3118,7 +3125,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		private boolean parseExpression(TElement currentElement, Block block)
 		{
 			// make stacks.
-			Stack<ArithmeticOperator> expressionOperators = new Stack<>();
+			Deque<ArithmeticOperator> expressionOperators = new LinkedList<>();
 			int[] expressionValueCounter = new int[1];
 			
 			// was the last read token a value?
@@ -3564,7 +3571,7 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		// reduces until there's nothing left to reduce.
-		private boolean reduceRest(Block block, Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter) 
+		private boolean reduceRest(Block block, Deque<ArithmeticOperator> expressionOperators, int[] expressionValueCounter) 
 		{
 			// end of expression - reduce.
 			while (!expressionOperators.isEmpty())
@@ -3576,26 +3583,26 @@ public final class TAMEScriptReader implements TAMEConstants
 		}
 
 		// Operator reduce.
-		private boolean operatorReduce(Block block, Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter, ArithmeticOperator operator) 
+		private boolean operatorReduce(Block block, Deque<ArithmeticOperator> expressionOperators, int[] expressionValueCounter, ArithmeticOperator operator) 
 		{
-			ArithmeticOperator top = expressionOperators.peek();
+			ArithmeticOperator top = expressionOperators.peekFirst();
 			while (top != null && (top.getPrecedence() > operator.getPrecedence() || (top.getPrecedence() == operator.getPrecedence() && !operator.isRightAssociative())))
 			{
 				if (!expressionReduce(block, expressionOperators, expressionValueCounter))
 					return false;
-				top = expressionOperators.peek();
+				top = expressionOperators.peekFirst();
 			}
 			
 			return true;
 		}
 
 		// Expression reduce.
-		private boolean expressionReduce(Block block, Stack<ArithmeticOperator> expressionOperators, int[] expressionValueCounter)
+		private boolean expressionReduce(Block block, Deque<ArithmeticOperator> expressionOperators, int[] expressionValueCounter)
 		{
 			if (expressionOperators.isEmpty())
 				throw new TAMEScriptParseException("Internal error - operator stack must have one operator in it.");
 
-			ArithmeticOperator operator = expressionOperators.pop();
+			ArithmeticOperator operator = expressionOperators.pollFirst();
 			
 			if (operator.isBinary())
 				expressionValueCounter[0] -= 2;
@@ -3879,7 +3886,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				return block;
 			
 			boolean optimizeDone = false;
-			Stack<Operation> optimizeStack = new Stack<>();
+			Deque<Operation> optimizeStack = new LinkedList<>();
 			
 			for (Operation operation : block)
 			{
@@ -3890,8 +3897,8 @@ public final class TAMEScriptReader implements TAMEConstants
 					// binary operator
 					if (operator.isBinary())
 					{
-						Operation c2 = optimizeStack.pop();
-						Operation c1 = optimizeStack.pop();
+						Operation c2 = optimizeStack.pollFirst();
+						Operation c1 = optimizeStack.pollFirst();
 
 						if (c1.getOperation() == TAMEOperation.PUSHVALUE && c2.getOperation() == TAMEOperation.PUSHVALUE)
 						{
@@ -3925,7 +3932,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					// unary operator
 					else
 					{
-						Operation c1 = optimizeStack.pop();
+						Operation c1 = optimizeStack.pollFirst();
 						
 						if (c1.getOperation() == TAMEOperation.PUSHVALUE)
 						{
@@ -3965,11 +3972,11 @@ public final class TAMEScriptReader implements TAMEConstants
 				return block;
 			
 			Block outBlock = new Block();
-			Stack<Operation> reverseStack = new Stack<>();
+			Deque<Operation> reverseStack = new LinkedList<>();
 			while (!optimizeStack.isEmpty())
-				reverseStack.push(optimizeStack.pop());
+				reverseStack.push(optimizeStack.pollFirst());
 			while (!reverseStack.isEmpty())
-				outBlock.add(reverseStack.pop());
+				outBlock.add(reverseStack.pollFirst());
 			
 			return outBlock;
 		}

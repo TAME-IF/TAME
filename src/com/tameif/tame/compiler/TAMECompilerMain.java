@@ -26,8 +26,8 @@ import com.tameif.tame.factory.TAMEJSExporterOptions;
 import com.tameif.tame.factory.TAMEScriptParseException;
 import com.tameif.tame.factory.TAMEScriptReader;
 import com.tameif.tame.factory.TAMEScriptReaderOptions;
-import com.tameif.tame.util.IOUtils;
-import com.tameif.tame.util.ValueUtils;
+import com.tameif.tame.struct.IOUtils;
+import com.tameif.tame.struct.ValueUtils;
 
 /**
  * The compiler main entry point.

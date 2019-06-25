@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.tameif.tame.struct.MathUtils;
+
 /**
  * Utility class for date-related stuff.
  * @author Matthew Tropiano

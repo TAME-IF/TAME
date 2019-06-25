@@ -41,7 +41,7 @@ import com.tameif.tame.lang.FunctionEntry;
 import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
 import com.tameif.tame.lang.ValueHash;
-import com.tameif.tame.util.IOUtils;
+import com.tameif.tame.struct.IOUtils;
 
 /**
  * Rules class.

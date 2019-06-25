@@ -49,12 +49,6 @@ and JS. All other branches should be considered "unstable."
 
 ### Compiling with Ant
 
-To download the dependencies for this project (if you didn't set that up yourself already), type:
-
-	ant dependencies
-
-A `build.properties` file will be created/appended to with the *dev.base* property set.
-	
 To compile this project, type:
 
 	ant compile

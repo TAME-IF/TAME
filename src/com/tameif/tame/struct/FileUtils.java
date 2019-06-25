@@ -1,4 +1,4 @@
-package com.tameif.tame.util;
+package com.tameif.tame.struct;
 
 import java.io.File;
 

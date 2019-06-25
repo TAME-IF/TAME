@@ -13,11 +13,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import com.blackrook.commons.hash.CaseInsensitiveHash;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.lang.BlockEntryType;
+import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
 
 /**
  * Objects are common elements that players interact with, examine, talk to, eat, take - 
@@ -163,43 +163,42 @@ public class TObject extends TElement
 	@Override
 	public void writeBytes(OutputStream out) throws IOException
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
 		super.writeBytes(out);
 		
-		sw.writeInt(names.size());
+		sw.writeInt(out, names.size());
 		for (String name : names)
-			sw.writeString(name.toLowerCase(), "UTF-8");
-		sw.writeInt(determiners.size());
+			sw.writeString(out, name.toLowerCase(), "UTF-8");
+		sw.writeInt(out, determiners.size());
 		for (String determiner : determiners)
-			sw.writeString(determiner.toLowerCase(), "UTF-8");
-		sw.writeInt(tags.size());
+			sw.writeString(out, determiner.toLowerCase(), "UTF-8");
+		sw.writeInt(out, tags.size());
 		for (String tag : tags)
-			sw.writeString(tag.toLowerCase(), "UTF-8");
+			sw.writeString(out, tag.toLowerCase(), "UTF-8");
 	}
 	
 	@Override
 	public void readBytes(InputStream in) throws IOException
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 		super.readBytes(in);
 		
 		int size;
 		
 		names.clear();
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while (size-- > 0)
-			names.put(sr.readString("UTF-8"));
+			names.put(sr.readString(in, "UTF-8"));
 
 		determiners.clear();
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while (size-- > 0)
-			determiners.put(sr.readString("UTF-8"));
+			determiners.put(sr.readString(in, "UTF-8"));
 
 		tags.clear();
-		size = sr.readInt();
+		size = sr.readInt(in);
 		while (size-- > 0)
-			tags.put(sr.readString("UTF-8"));
-
+			tags.put(sr.readString(in, "UTF-8"));
 	}
 
 }

@@ -9,23 +9,18 @@
  ******************************************************************************/
 package com.tameif.tame.element.context;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.blackrook.commons.AbstractMap;
-import com.blackrook.commons.ObjectPair;
-import com.blackrook.commons.hash.CaseInsensitiveHash;
-import com.blackrook.commons.hash.HashMap;
-import com.blackrook.commons.hash.HashedQueueMap;
-import com.blackrook.commons.linkedlist.Queue;
-import com.blackrook.commons.linkedlist.Stack;
-import com.blackrook.commons.list.List;
-import com.blackrook.io.SuperReader;
-import com.blackrook.io.SuperWriter;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.TAMEModule;
 import com.tameif.tame.element.ObjectContainer;
@@ -36,6 +31,10 @@ import com.tameif.tame.element.TRoom;
 import com.tameif.tame.exception.ModuleStateException;
 import com.tameif.tame.lang.StateSaveable;
 import com.tameif.tame.lang.Value;
+import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.HashDequeMap;
+import com.tameif.tame.struct.SerialReader;
+import com.tameif.tame.struct.SerialWriter;
 
 /**
  * An ownership map for all objects.
@@ -46,19 +45,19 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	/** Current player. */
 	private TPlayer currentPlayer;
 	/** Room stack. */
-	protected HashMap<TPlayer, Stack<TRoom>> playerToRoomStack;
+	protected Map<TPlayer, Deque<TRoom>> playerToRoomStack;
 	
 	// This must be a queue - order added should be reflected in retrieval and presentation.
 	/** Ownership map - objects owned by elements. */
-	protected HashedQueueMap<ObjectContainer, TObject> objectsOwnedByElements;
+	protected HashDequeMap<ObjectContainer, TObject> objectsOwnedByElements;
 
 	/** Map of object to its current names. */
-	protected HashMap<TObject, CaseInsensitiveHash> objectCurrentNames;
+	protected Map<TObject, CaseInsensitiveHash> objectCurrentNames;
 	/** Map of object to its current tags. */
-	protected HashMap<TObject, CaseInsensitiveHash> objectCurrentTags;
+	protected Map<TObject, CaseInsensitiveHash> objectCurrentTags;
 
 	/** Reverse lookup object - not saved. */
-	protected HashMap<TObject, ObjectContainer> objectsToElement;
+	protected Map<TObject, ObjectContainer> objectsToElement;
 
 	/**
 	 * Creates a new ownership.
@@ -66,8 +65,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	public TOwnershipMap()
 	{
 		currentPlayer = null;
-		playerToRoomStack = new HashMap<TPlayer, Stack<TRoom>>(3);
-		objectsOwnedByElements =  new HashedQueueMap<ObjectContainer, TObject>(20);
+		playerToRoomStack = new HashMap<TPlayer, Deque<TRoom>>(3);
+		objectsOwnedByElements =  new HashDequeMap<ObjectContainer, TObject>(20);
 		objectCurrentNames = new HashMap<TObject, CaseInsensitiveHash>();
 		objectCurrentTags = new HashMap<TObject, CaseInsensitiveHash>();
 		objectsToElement = new HashMap<TObject, ObjectContainer>(20);
@@ -92,7 +91,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public void removeObject(TObject object)
 	{
-		ObjectContainer element = objectsToElement.removeUsingKey(object);
+		ObjectContainer element = objectsToElement.remove(object);
 		if (element == null)
 			return;
 		
@@ -105,7 +104,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public void removePlayer(TPlayer player)
 	{
-		playerToRoomStack.removeUsingKey(player);
+		playerToRoomStack.remove(player);
 	}
 
 	/**
@@ -118,7 +117,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	{
 		removeObject(object);
 		objectsToElement.put(object, element);
-		objectsOwnedByElements.enqueue(element, object);
+		objectsOwnedByElements.add(element, object);
 	}
 	
 	/**
@@ -129,10 +128,10 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	public void addPlayerToRoom(TPlayer player, TRoom room)
 	{
 		removePlayer(player);
-		Stack<TRoom> stack = playerToRoomStack.get(player);
+		Deque<TRoom> stack = playerToRoomStack.get(player);
 		if (stack == null)
 		{
-			stack = new Stack<TRoom>();
+			stack = new LinkedList<TRoom>();
 			playerToRoomStack.put(player, stack);
 		}
 		stack.clear();
@@ -146,10 +145,10 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public void pushRoomOntoPlayer(TPlayer player, TRoom room)
 	{
-		Stack<TRoom> stack = playerToRoomStack.get(player);
+		Deque<TRoom> stack = playerToRoomStack.get(player);
 		if (stack == null)
 		{
-			stack = new Stack<TRoom>();
+			stack = new LinkedList<TRoom>();
 			playerToRoomStack.put(player, stack);
 		}
 		stack.push(room);
@@ -163,13 +162,13 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public TRoom popRoomFromPlayer(TPlayer player)
 	{
-		Stack<TRoom> stack = playerToRoomStack.get(player);
+		Deque<TRoom> stack = playerToRoomStack.get(player);
 		if (stack == null)
 			return null;
 		
-		TRoom out = stack.pop();
+		TRoom out = stack.pollFirst();
 		if (stack.size() == 0)
-			playerToRoomStack.removeUsingKey(player);
+			playerToRoomStack.remove(player);
 		return out;
 	}
 	
@@ -234,8 +233,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 */
 	public TRoom getCurrentRoom(TPlayer player)
 	{
-		Stack<TRoom> stack = playerToRoomStack.get(player);
-		return stack != null ? stack.peek() : null;
+		Deque<TRoom> stack = playerToRoomStack.get(player);
+		return stack != null ? stack.peekFirst() : null;
 	}
 
 	/**
@@ -354,7 +353,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 	private List<TObject> getObjectsInQueue(Queue<TObject> hash)
 	{
-		List<TObject> out = new List<TObject>(hash != null ? hash.size() : 1);
+		List<TObject> out = new ArrayList<TObject>(hash != null ? hash.size() : 1);
 		if (hash != null) for (TObject object : hash)
 			out.add(object);
 		return out; 
@@ -365,7 +364,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		return hash != null ? hash.size() : 0; 
 	}
 	
-	private void addStringToObjectMap(HashMap<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	private void addStringToObjectMap(Map<TObject, CaseInsensitiveHash> table, TObject object, String str)
 	{
 		CaseInsensitiveHash hash = null;
 		if ((hash = table.get(object)) == null)
@@ -373,7 +372,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		hash.put(str);
 	}
 	
-	private void removeStringFromObjectMap(HashMap<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	private void removeStringFromObjectMap(Map<TObject, CaseInsensitiveHash> table, TObject object, String str)
 	{
 		CaseInsensitiveHash hash = null;
 		if ((hash = table.get(object)) == null)
@@ -383,10 +382,10 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 
 		// clean up entry if no strings.
 		if (hash.isEmpty())
-			table.removeUsingKey(object);
+			table.remove(object);
 	}
 	
-	private boolean checkStringInObjectMap(HashMap<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	private boolean checkStringInObjectMap(Map<TObject, CaseInsensitiveHash> table, TObject object, String str)
 	{
 		CaseInsensitiveHash hash = null;
 		if ((hash = table.get(object)) == null)
@@ -396,82 +395,84 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	@Override
-	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, AbstractMap<Object, Long> referenceSet, OutputStream out) throws IOException 
+	public void writeStateBytes(TAMEModule module, AtomicLong referenceCounter, Map<Object, Long> referenceSet, OutputStream out) throws IOException 
 	{
-		SuperWriter sw = new SuperWriter(out, SuperWriter.LITTLE_ENDIAN);
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
 
-		writeQueueMap(sw, objectsOwnedByElements);
+		writeQueueMap(out, objectsOwnedByElements);
 		
-		sw.writeBoolean(currentPlayer != null);
+		sw.writeBoolean(out, currentPlayer != null);
 		if (currentPlayer != null)
-			sw.writeString(currentPlayer.getIdentity(), "UTF-8");
+			sw.writeString(out, currentPlayer.getIdentity(), "UTF-8");
 
-		sw.writeInt(playerToRoomStack.size());
-		for (ObjectPair<TPlayer, Stack<TRoom>> playerPair : playerToRoomStack)
+		sw.writeInt(out, playerToRoomStack.size());
+		for (Map.Entry<TPlayer, Deque<TRoom>> playerPair : playerToRoomStack.entrySet())
 		{
 			TPlayer player = playerPair.getKey();
-			Stack<TRoom> roomList = playerPair.getValue();
+			Deque<TRoom> roomList = playerPair.getValue();
 			
-			sw.writeString(player.getIdentity(), "UTF-8");
-			sw.writeInt(roomList.size());
+			sw.writeString(out, player.getIdentity(), "UTF-8");
+			sw.writeInt(out, roomList.size());
 			for (TRoom room : roomList)
-				sw.writeString(room.getIdentity(), "UTF-8");
+				sw.writeString(out, room.getIdentity(), "UTF-8");
 		}
 		
-		writeStringMap(sw, objectCurrentNames);
-		writeStringMap(sw, objectCurrentTags);
+		writeStringMap(out, objectCurrentNames);
+		writeStringMap(out, objectCurrentTags);
 	}
 
 	// Writes a map.
-	private void writeQueueMap(SuperWriter sw, HashedQueueMap<? extends ObjectContainer, TObject> map) throws IOException 
+	private void writeQueueMap(OutputStream out, HashDequeMap<? extends ObjectContainer, TObject> map) throws IOException 
 	{
-		sw.writeInt(map.size());
-		for (ObjectPair<? extends ObjectContainer, Queue<TObject>> elementPair : map)
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeInt(out, map.size());
+		for (Map.Entry<? extends ObjectContainer, Deque<TObject>> elementPair : map.entrySet())
 		{
 			ObjectContainer element = elementPair.getKey();
 			Queue<TObject> objectList = elementPair.getValue();
 			
-			sw.writeString(((TElement)element).getIdentity(), "UTF-8");
-			sw.writeInt(objectList.size());
+			sw.writeString(out, ((TElement)element).getIdentity(), "UTF-8");
+			sw.writeInt(out, objectList.size());
 			for (TObject object : objectList)
-				sw.writeString(object.getIdentity(), "UTF-8");
+				sw.writeString(out, object.getIdentity(), "UTF-8");
 		}
 	}
 	
 	// Writes a string map.
-	private void writeStringMap(SuperWriter sw, HashMap<TObject, CaseInsensitiveHash> map) throws IOException 
+	private void writeStringMap(OutputStream out, Map<TObject, CaseInsensitiveHash> map) throws IOException 
 	{
-		sw.writeInt(map.size());
-		for (ObjectPair<TObject, CaseInsensitiveHash> elementPair : map)
+		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
+		sw.writeInt(out, map.size());
+		for (Map.Entry<TObject, CaseInsensitiveHash> elementPair : map.entrySet())
 		{
 			TObject object = elementPair.getKey();
 			CaseInsensitiveHash stringList = elementPair.getValue();
 			
-			sw.writeString(object.getIdentity(), "UTF-8");
-			sw.writeInt(stringList.size());
+			sw.writeString(out, object.getIdentity(), "UTF-8");
+			sw.writeInt(out, stringList.size());
 			for (String str : stringList)
-				sw.writeString(str, "UTF-8");
+				sw.writeString(out, str, "UTF-8");
 		}
 	}
 	
 	@Override
-	public void readStateBytes(TAMEModule module, AbstractMap<Long, Value> referenceMap, InputStream in) throws IOException 
+	public void readStateBytes(TAMEModule module, Map<Long, Value> referenceMap, InputStream in) throws IOException 
 	{
-		SuperReader sr = new SuperReader(in, SuperReader.LITTLE_ENDIAN);
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 		reset();
 		
-		int elementsize = sr.readInt();
+		int elementsize = sr.readInt(in);
 		while (elementsize-- > 0)
 		{
-			String identity = sr.readString("UTF-8");
+			String identity = sr.readString(in, "UTF-8");
 			TElement element = module.getElementByIdentity(identity);
 			if (element == null)
 				throw new ModuleStateException("Element %s cannot be found!", identity);
 			
-			int size = sr.readInt();
+			int size = sr.readInt(in);
 			while (size-- > 0)
 			{
-				String id = sr.readString("UTF-8");
+				String id = sr.readString(in, "UTF-8");
 				TObject object = module.getObjectByIdentity(id);
 				if (object == null)
 					throw new ModuleStateException("Object %s cannot be found!", id);
@@ -480,9 +481,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		}
 		
 		// has current player.
-		if (sr.readBoolean())
+		if (sr.readBoolean(in))
 		{
-			String identity = sr.readString("UTF-8");
+			String identity = sr.readString(in, "UTF-8");
 			currentPlayer = module.getPlayerByIdentity(identity);
 			if (currentPlayer == null)
 				throw new ModuleStateException("Expected player '%s' in module context!", identity);
@@ -490,24 +491,22 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		else
 			currentPlayer = null;
 
-		int ptrssize = sr.readInt();
+		int ptrssize = sr.readInt(in);
 		while (ptrssize-- > 0)
 		{
-			String playerIdentity = sr.readString("UTF-8");
+			String playerIdentity = sr.readString(in, "UTF-8");
 			TPlayer player = module.getPlayerByIdentity(playerIdentity);
 			if (player == null)
 				throw new ModuleStateException("Player %s cannot be found!", playerIdentity);
 			
-			int size = sr.readInt();
-			Stack<String> stack = new Stack<String>();
+			int size = sr.readInt(in);
+			Deque<String> stack = new LinkedList<>();
 			while (size-- > 0)
-			{
-				stack.push(sr.readString("UTF-8"));
-			}
+				stack.push(sr.readString(in, "UTF-8"));
 			
 			while (!stack.isEmpty())
 			{
-				String id = stack.pop();
+				String id = stack.pollFirst();
 				TRoom room = module.getRoomByIdentity(id);
 				if (room == null)
 					throw new ModuleStateException("Object %s cannot be found!", id);
@@ -516,27 +515,28 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 			
 		}
 
-		objectCurrentNames = readStringMap(module, sr);
-		objectCurrentTags = readStringMap(module, sr);
+		objectCurrentNames = readStringMap(module, in);
+		objectCurrentTags = readStringMap(module, in);
 	}
 
 	// Reads a string map.
-	private HashMap<TObject, CaseInsensitiveHash> readStringMap(TAMEModule module, SuperReader sr) throws IOException 
+	private HashMap<TObject, CaseInsensitiveHash> readStringMap(TAMEModule module, InputStream in) throws IOException 
 	{
-		int objsize = sr.readInt();
+		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
+		int objsize = sr.readInt(in);
 		HashMap<TObject, CaseInsensitiveHash> out = objsize <= 0 
 				? new HashMap<TObject, CaseInsensitiveHash>() 
 				: new HashMap<TObject, CaseInsensitiveHash>(objsize);
 		while (objsize-- > 0)
 		{
-			String id = sr.readString("UTF-8");
+			String id = sr.readString(in, "UTF-8");
 			TObject object = module.getObjectByIdentity(id);
 			if (object == null)
 				throw new ModuleStateException("Object %s cannot be found!", id);
 			
-			int size = sr.readInt();
+			int size = sr.readInt(in);
 			while (size-- > 0)
-				addStringToObjectMap(out, object, sr.readString("UTF-8"));
+				addStringToObjectMap(out, object, sr.readString(in, "UTF-8"));
 		}
 		
 		return out;

@@ -9,6 +9,6 @@
  *     Matt Tropiano - initial API and implementation
  *******************************************************************************/
 /**
- * Contains additional helpful structures.
+ * Contains additional helpful structures (subject to change, not for outside use).
  */
 package com.tameif.tame.struct;

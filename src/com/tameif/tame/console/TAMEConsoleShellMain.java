@@ -15,17 +15,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import com.blackrook.commons.Reflect;
-import com.blackrook.commons.hash.Hash;
-import com.blackrook.commons.list.List;
-import com.blackrook.commons.util.IOUtils;
-import com.blackrook.commons.util.OSUtils;
-import com.blackrook.commons.util.ObjectUtils;
-import com.blackrook.commons.util.StringUtils;
-import com.blackrook.commons.util.ThreadUtils;
-import com.blackrook.commons.util.ValueUtils;
 import com.tameif.tame.TAMEConstants;
 import com.tameif.tame.TAMELogic;
 import com.tameif.tame.TAMEModule;
@@ -41,6 +36,9 @@ import com.tameif.tame.factory.TAMEScriptReader;
 import com.tameif.tame.lang.Cue;
 import com.tameif.tame.lang.FormatParser;
 import com.tameif.tame.lang.TraceType;
+import com.tameif.tame.struct.IOUtils;
+import com.tameif.tame.struct.StringUtils;
+import com.tameif.tame.struct.ValueUtils;
 
 /**
  * A console client implementation.
@@ -48,7 +46,9 @@ import com.tameif.tame.lang.TraceType;
  */
 public class TAMEConsoleShellMain implements TAMEConstants 
 {
-	
+	/** Are we using Windows? */
+	private static boolean IS_WINDOWS = System.getProperty("os.name").contains("Windows");
+
 	private static void printVersion(PrintStream out)
 	{
 		out.println("TAME Console Shell v" + TAMELogic.getVersion() + " by Matt Tropiano");
@@ -155,8 +155,8 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		String path = null;
 		String binpath = null;
 		String loadpath = null;
-		List<String> defineList = new List<>();
-		Hash<TraceType> traceTypes = null;
+		List<String> defineList = new ArrayList<>();
+		Set<TraceType> traceTypes = null;
 		Charset charset = Charset.defaultCharset();
 
 		int state = STATE_INIT;
@@ -196,7 +196,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			}
 			else if (arg.equalsIgnoreCase("--trace"))
 			{
-				traceTypes = new Hash<>();
+				traceTypes = new HashSet<>();
 				state = STATE_TRACE;
 			}
 			else if (arg.equalsIgnoreCase("-s") || arg.equalsIgnoreCase("--script"))
@@ -219,7 +219,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 				case STATE_TRACE:
 					TraceType t;
 					if ((t = ValueUtils.getEnumInstance(arg.toUpperCase(), TraceType.class)) != null)
-						traceTypes.put(t);
+						traceTypes.add(t);
 					break;
 				case STATE_SCRIPT:
 					path = arg;
@@ -477,7 +477,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 			{
 				if (cue.getType().equals(CUE_FATAL) || cue.getType().equals(CUE_QUIT))
 					context.quit = true;
-				context.out.println("[" + cue.getType() + "] " + StringUtils.withEscChars(cue.getContent()));
+				context.out.println("[" + cue.getType() + "] " + ValueUtils.escapeString(cue.getContent()));
 			}
 		}
 		else
@@ -495,7 +495,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 
 			if (currentHandler.textBuffer.length() > 0)
 			{
-				if (OSUtils.isWindows())
+				if (IS_WINDOWS)
 					StringUtils.printWrapped(context.out, currentHandler.textBuffer.toString(), 80); // windows terminal
 				else
 					context.out.println(currentHandler.textBuffer.toString());
@@ -637,7 +637,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		{
 			if (!cue.getType().equals(CUE_TEXT) && !cue.getType().equals(CUE_TEXTF) && textBuffer.length() > 0)
 			{
-				if (OSUtils.isWindows())
+				if (IS_WINDOWS)
 					lastColumn = StringUtils.printWrapped(context.out, textBuffer.toString(), lastColumn, 80); // windows terminal
 				else
 					context.out.print(textBuffer.toString());
@@ -653,7 +653,11 @@ public class TAMEConsoleShellMain implements TAMEConstants
 					context.quit = true;
 					return false;
 				case CUE_WAIT:
-					ThreadUtils.sleep(ValueUtils.parseLong(cue.getContent()));
+					try {
+						Thread.sleep(ValueUtils.parseLong(cue.getContent()));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 					return true;
 				case CUE_TEXT:
 					textBuffer.append(cue.getContent());

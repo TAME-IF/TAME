@@ -14,7 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.tameif.tame.util.IOUtils;
+import com.tameif.tame.struct.IOUtils;
 
 /** 
  * Default includer to use when none specified.
@@ -41,9 +41,9 @@ public class DefaultIncluder implements TAMEScriptIncluder
 	public DefaultIncluder(){}
 	
 	@Override
-	public String getNextIncludeResourceName(String streamName, String path) throws IOException
+	public String getIncludeResourcePath(String streamName, String path) throws IOException
 	{
-		if (isWindows() && streamName.contains("\\")) // check for Windows paths.
+		if (IS_WINDOWS && streamName.contains("\\")) // check for Windows paths.
 			streamName = streamName.replace('\\', '/');
 		
 		String streamParent = null;
@@ -79,13 +79,6 @@ public class DefaultIncluder implements TAMEScriptIncluder
 		else
 			return new FileInputStream(new File(path));
 	}
-	
-	/** @return true if we using Windows. */
-	public static boolean isWindows()
-	{
-		return IS_WINDOWS;
-	}
-	
 	
 }
 

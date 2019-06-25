@@ -23,7 +23,7 @@ import com.tameif.tame.exception.ModuleStateException;
 import com.tameif.tame.exception.UnexpectedValueTypeException;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
-import com.tameif.tame.util.ValueUtils;
+import com.tameif.tame.struct.ValueUtils;
 
 /**
  * All values in the interpreter are of this type, which stores a type.
