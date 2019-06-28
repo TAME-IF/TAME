@@ -15,14 +15,11 @@
 	<property name="dev.base" value=".." />
 	<property name="S" value="${path.separator}" />
 
-	<!-- Project Libs -->
-	<property name="json.lib" value="${dev.base}/JSON/bin" />
-
 	<!-- Project Info -->
 	<property name="project.archive" value="tame" />
 	<property name="project.java.modules" value="java.base" />
 	<property name="project.javadoc.title" value="TAME" />
-	<property name="project.classpath" value="${common.lib}${S}${common.io.lib}${S}${common.lang.lib}" />
+	<property name="project.classpath" value="" />
 	<property name="project.compiler.bootclasspath" value="" />
 	<property name="project.javadoc.packages" value="
 		com.tameif.tame,
@@ -41,14 +38,17 @@
 	<import file="build-dependencies.xml" />
 
 	<!-- Folders and File Names -->
-	<property name="src.test.dir" value="testsrc" />
 	<property name="package.base.dir" value="com/tameif/tame" />
-	<property name="resource.dir" value="resources" />
-	<property name="tamedocs.dir" value="${build.dir}/tamedocs" />
+
 	<property name="jre.dir" value="${build.dir}/jre" />
-	<property name="jre.scripts.dir" value="${jre.dir}/scripts" />
 	<property name="scripts.dir" value="${build.dir}/scripts" />
 	<property name="js.dir" value="${build.dir}/js" />
+	<property name="tamedocs.dir" value="${build.dir}/tamedocs" />
+
+	<property name="src.js.dir" value="src/main/js" />
+	<property name="src.test.dir" value="src/test/java" />
+	<property name="resource.dir" value="src/main/resources" />
+	<property name="jre.scripts.dir" value="${jre.dir}/scripts" />
 
 	<property name="zip.js.node.filename" value="${project.archive}-nodejs-${build.version}.zip" />
 	<property name="zip.js.node.lib.filename" value="${project.archive}-nodejsmod-${build.version}.zip" />
@@ -67,8 +67,8 @@
 	<property name="js.browser.min.filename" value="tame-${build.version}.min.js" />
 	<property name="js.browser.min.map.filename" value="tame-${build.version}.min.js.map" />
 
-	<property name="jar.tame.filename" value="${project.archive}-${build.version}.jar" />
-	<property name="jar.tame.one.filename" value="${project.archive}-standalone-${build.version}.jar" />
+	<property name="jar.tame.filename" value="${jar.filename}" />
+	<property name="jar.tame.one.filename" value="${project.archive}-one-${build.version.number}.jar" />
 
 	<!-- Replace Tokens -->
 
@@ -82,20 +82,20 @@
 
 	<target name="compile.scripts.windows" if="${os.isWindows}">
 		<copy file="${resource.dir}/shell/compile/windows/tame.cmd" tofile="tame.cmd" />
-		<replace file="tame.cmd" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<replace file="tame.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
 		<copy file="${resource.dir}/shell/compile/windows/tamec.cmd" tofile="tamec.cmd" />
-		<replace file="tamec.cmd" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<replace file="tamec.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
 		<copy file="${resource.dir}/shell/compile/windows/tamep.cmd" tofile="tamep.cmd" />
-		<replace file="tamep.cmd" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<replace file="tamep.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
 	</target>
 
 	<target name="compile.scripts.bash" if="${os.bash}">
 		<copy file="${resource.dir}/shell/compile/bash/tame" tofile="tame.sh" />
-		<replace file="tame.sh" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<replace file="tame.sh" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
 		<copy file="${resource.dir}/shell/compile/bash/tamec" tofile="tamec.sh" />
-		<replace file="tamec.sh" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<replace file="tamec.sh" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
 		<copy file="${resource.dir}/shell/compile/bash/tamep" tofile="tamep.sh" />
-		<replace file="tamep.sh" token="${replace.key.compile.classpath}" value="${project.classpath}${S}${bin.dir}" />
+		<replace file="tamep.sh" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
 		<chmod file="tame.sh" perm="ugo+rx"/>
 		<chmod file="tamec.sh" perm="ugo+rx"/>
 		<chmod file="tamep.sh" perm="ugo+rx"/>
@@ -115,7 +115,7 @@
 		/>
 		<mkdir dir="${bin.dir}/tamejs" />
 		<copy todir="${bin.dir}/tamejs">
-			<fileset dir="${resource.dir}/tamejs" />
+			<fileset dir="${src.js.dir}/tamejs" />
 		</copy>
 		<copy todir="${bin.dir}/tameprojects">
 			<fileset dir="${resource.dir}/tameprojects" />
@@ -163,7 +163,7 @@
     </target>
 
 	<!-- Generates the version resource. -->
-	<target name="jar.tame" depends="compile, init.jar" description="Jars up TAME classes. Nothing executable.">
+	<target name="jar.tame" depends="compile, init.jar, javadoc" description="Jars up TAME classes. Nothing executable.">
 		<delete file="${jar.dir}/${jar.tame.filename}" casesensitive="false" />
 		<jar destfile="${jar.dir}/${jar.tame.filename}">
 			<fileset dir="${bin.dir}" >
@@ -173,6 +173,18 @@
 			    <exclude name="**/test/" />
 			</fileset>
 		</jar>
+		<delete file="${jar.dir}/${jar.sources.filename}" casesensitive="false" />
+		<jar destfile="${jar.dir}/${jar.sources.filename}">
+			<fileset dir="${src.dir}" >
+			    <exclude name="**/project/" />
+			    <exclude name="**/console/" />
+			    <exclude name="**/compiler/" />
+			</fileset>
+		</jar>
+		<delete file="${jar.dir}/${jar.javadoc.filename}" casesensitive="false" />
+		<jar destfile="${jar.dir}/${jar.javadoc.filename}">
+			<fileset dir="${build.dir}/docs" />
+		</jar>
 	</target>
 
 	<target name="jar.tame.one" depends="compile, init.jar" description="Jars up all classes needed to run the compiler and console in one standalone JAR.">
@@ -180,10 +192,6 @@
 		<jar destfile="${jar.dir}/tame-temp-standalone.jar">
 			<fileset dir="${bin.dir}" >
 			    <exclude name="**/test/" />
-			</fileset>
-		</jar>
-		<jar destfile="${jar.dir}/tame-temp-standalone.jar" update="true">
-			<fileset dir="${json.lib}" >
 			</fileset>
 		</jar>
 	</target>
@@ -433,10 +441,12 @@
 		</zip>
 	</target>
 
-	<target name="zip.jar.tame" depends="init.zip, jar" description="Makes and zips the core TAME JAR.">
+	<target name="zip.jar.tame" depends="init.zip, jar" description="Makes and zips the core TAME JAR (plus sources and Javadoc).">
 		<delete file="${zip.dir}/${zip.jar.filename}" />
 		<zip destfile="${zip.dir}/${zip.jar.filename}" compress="true" level="9">
 			<zipfileset file="${jar.dir}/${jar.tame.filename}" prefix="jar/" />
+			<zipfileset file="${jar.dir}/${jar.sources.filename}" prefix="jar/" />
+			<zipfileset file="${jar.dir}/${jar.javadoc.filename}" prefix="jar/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>

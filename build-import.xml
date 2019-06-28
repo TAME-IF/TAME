@@ -21,8 +21,7 @@
 	<property name="build.version.number" value="${build.date}" />
 	<property name="build.version" value="${build.version.number}-${build.version.appendix}" />
 
-	<property name="src.dir" value="src" />
-	<property name="examples.dir" value="examples" />
+	<property name="src.dir" value="src/main/java" />
 	<property name="bin.dir" value="bin" />
 	<property name="dist.dir" value="dist" />
 
@@ -32,9 +31,9 @@
 	<property name="docs.dir" value="${build.dir}/docs" />
 	<property name="zip.dir" value="${dist.dir}" />
 
-	<property name="jar.filename" value="${project.archive}-${build.version}.jar" />
-	<property name="jar.sources.filename" value="${project.archive}-${build.version}-sources.jar" />
-	<property name="jar.javadoc.filename" value="${project.archive}-${build.version}-javadoc.jar" />
+	<property name="jar.filename" value="${project.archive}-${build.version.number}.jar" />
+	<property name="jar.sources.filename" value="${project.archive}-${build.version.number}-sources.jar" />
+	<property name="jar.javadoc.filename" value="${project.archive}-${build.version.number}-javadoc.jar" />
 
 	<property name="zip.filename" value="${project.archive}-bin-${build.version}.zip" />
 	<property name="zip.sources.filename" value="${project.archive}-src-${build.version}.zip" />

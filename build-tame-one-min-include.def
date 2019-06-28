@@ -1,12 +1,3 @@
 com/tameif/tame/**
 tamejs/**
 tameprojects/**
-com/blackrook/json/JSONObject.class
-com/blackrook/json/JSONObject$*.class
-com/blackrook/json/JSONConversionException.class
-com/blackrook/json/JSONConverter.class
-com/blackrook/json/JSONDefaultConverter.class
-com/blackrook/json/JSONWriter.class
-com/blackrook/json/JSONWriter$*.class
-com/blackrook/json/annotation/JSONIgnore.class
-com/blackrook/json/annotation/JSONType.class
