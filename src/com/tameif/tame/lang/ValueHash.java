@@ -13,11 +13,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.CaseInsensitiveStringMap;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
 import com.tameif.tame.struct.Sizable;
@@ -28,14 +29,14 @@ import com.tameif.tame.struct.Sizable;
  */
 public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, Value>>, Sizable
 {
-	private CaseInsensitiveHashMap<Value> valueMap; 
+	private CaseInsensitiveStringMap<Value> valueMap; 
 	
 	/**
 	 * Creates a new ValueHash.
 	 */
 	public ValueHash()
 	{
-		this.valueMap = new CaseInsensitiveHashMap<>(4);
+		this.valueMap = new CaseInsensitiveStringMap<>(4);
 	}
 	
 	/**
@@ -107,6 +108,15 @@ public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, 
 	public boolean containsKey(String variableName)
 	{
 		return valueMap.containsKey(variableName);
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public List<String> names()
+	{
+		return valueMap.keys();
 	}
 
 	@Override

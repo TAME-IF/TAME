@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 
-import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.CaseInsensitiveStringMap;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
 
@@ -27,14 +27,14 @@ import com.tameif.tame.struct.SerialWriter;
 public class FunctionTable implements Saveable
 {
 	/** Map itself. */
-	private CaseInsensitiveHashMap<FunctionEntry> functionMap;
+	private CaseInsensitiveStringMap<FunctionEntry> functionMap;
 	
 	/**
 	 * Creates an empty function table.
 	 */
 	public FunctionTable()
 	{
-		this.functionMap = new CaseInsensitiveHashMap<>(8);
+		this.functionMap = new CaseInsensitiveStringMap<>(8);
 	}
 	
 	/**

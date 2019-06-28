@@ -488,9 +488,15 @@ public final class TAMEJSExporter
 	private static void generateResourceHeader(Writer writer, TAMEModule module) throws IOException
 	{
 		writer.append('{');
+		int i = 0;
 		for (Map.Entry<String, String> entry : module.getHeader().getAttributeMap())
 		{
-			// TODO: Finish this.
+			if (i > 0)
+				writer.append(',');
+			writer.append('"').append(entry.getKey()).append('"');
+			writer.append(':');
+			writer.append('"').append(escapeJSONString(entry.getValue())).append('"');
+			i++;
 		}
 		writer.append('}');
 	}
@@ -505,5 +511,54 @@ public final class TAMEJSExporter
 		String title = module.getHeader().getAttribute(TAMEConstants.HEADER_TITLE);
 		writer.append(title != null ? title : "TAME Module");
 	}
-		
+	
+	/**
+	 * Escapes a string so it is suitable for JSON.
+	 * @param s the input string.
+	 * @return the resultant string.
+	 */
+	private static String escapeJSONString(String s)
+	{
+    	StringBuilder out = new StringBuilder();
+    	for (int i = 0; i < s.length(); i++)
+    	{
+    		char c = s.charAt(i);
+    		switch (c)
+    		{
+				case '\0':
+					out.append("\\0");
+					break;
+    			case '\b':
+    				out.append("\\b");
+    				break;
+    			case '\t':
+    				out.append("\\t");
+    				break;
+    			case '\n':
+    				out.append("\\n");
+    				break;
+    			case '\f':
+    				out.append("\\f");
+    				break;
+    			case '\r':
+    				out.append("\\r");
+    				break;
+    			case '\\':
+    				out.append("\\\\");
+    				break;
+    			case '"':
+    				out.append("\\\"");    					
+    				break;
+    			default:
+    				if (c < 0x0020 || c >= 0x7f)
+    					out.append("\\u" + String.format("%04x", c));
+    				else
+    					out.append(c);
+    				break;
+    		}
+    	}
+    	
+    	return out.toString();
+	}
+	
 }

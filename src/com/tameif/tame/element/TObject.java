@@ -15,7 +15,7 @@ import java.io.OutputStream;
 
 import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.lang.BlockEntryType;
-import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.CaseInsensitiveStringSet;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
 
@@ -28,18 +28,18 @@ import com.tameif.tame.struct.SerialWriter;
 public class TObject extends TElement
 {
 	/** Element's names. */
-	protected CaseInsensitiveHash names;
+	protected CaseInsensitiveStringSet names;
 	/** Element's determiners (name token affixes). */
-	protected CaseInsensitiveHash determiners;
+	protected CaseInsensitiveStringSet determiners;
 	/** Element's names. */
-	protected CaseInsensitiveHash tags;
+	protected CaseInsensitiveStringSet tags;
 
 	private TObject()
 	{
 		super();
-		this.names = new CaseInsensitiveHash(3);
-		this.determiners = new CaseInsensitiveHash(2);
-		this.tags = new CaseInsensitiveHash(2);
+		this.names = new CaseInsensitiveStringSet(3);
+		this.determiners = new CaseInsensitiveStringSet(2);
+		this.tags = new CaseInsensitiveStringSet(2);
 	}
 	
 	/**

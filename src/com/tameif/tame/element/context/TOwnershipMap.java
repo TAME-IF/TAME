@@ -31,7 +31,7 @@ import com.tameif.tame.element.TRoom;
 import com.tameif.tame.exception.ModuleStateException;
 import com.tameif.tame.lang.StateSaveable;
 import com.tameif.tame.lang.Value;
-import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.CaseInsensitiveStringSet;
 import com.tameif.tame.struct.HashDequeMap;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
@@ -52,9 +52,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	protected HashDequeMap<ObjectContainer, TObject> objectsOwnedByElements;
 
 	/** Map of object to its current names. */
-	protected Map<TObject, CaseInsensitiveHash> objectCurrentNames;
+	protected Map<TObject, CaseInsensitiveStringSet> objectCurrentNames;
 	/** Map of object to its current tags. */
-	protected Map<TObject, CaseInsensitiveHash> objectCurrentTags;
+	protected Map<TObject, CaseInsensitiveStringSet> objectCurrentTags;
 
 	/** Reverse lookup object - not saved. */
 	protected Map<TObject, ObjectContainer> objectsToElement;
@@ -67,8 +67,8 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		currentPlayer = null;
 		playerToRoomStack = new HashMap<TPlayer, Deque<TRoom>>(3);
 		objectsOwnedByElements =  new HashDequeMap<ObjectContainer, TObject>(20);
-		objectCurrentNames = new HashMap<TObject, CaseInsensitiveHash>();
-		objectCurrentTags = new HashMap<TObject, CaseInsensitiveHash>();
+		objectCurrentNames = new HashMap<TObject, CaseInsensitiveStringSet>();
+		objectCurrentTags = new HashMap<TObject, CaseInsensitiveStringSet>();
 		objectsToElement = new HashMap<TObject, ObjectContainer>(20);
 	}
 	
@@ -364,17 +364,17 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 		return hash != null ? hash.size() : 0; 
 	}
 	
-	private void addStringToObjectMap(Map<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	private void addStringToObjectMap(Map<TObject, CaseInsensitiveStringSet> table, TObject object, String str)
 	{
-		CaseInsensitiveHash hash = null;
+		CaseInsensitiveStringSet hash = null;
 		if ((hash = table.get(object)) == null)
-			table.put(object, hash = new CaseInsensitiveHash());
+			table.put(object, hash = new CaseInsensitiveStringSet());
 		hash.put(str);
 	}
 	
-	private void removeStringFromObjectMap(Map<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	private void removeStringFromObjectMap(Map<TObject, CaseInsensitiveStringSet> table, TObject object, String str)
 	{
-		CaseInsensitiveHash hash = null;
+		CaseInsensitiveStringSet hash = null;
 		if ((hash = table.get(object)) == null)
 			return;
 
@@ -385,9 +385,9 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 			table.remove(object);
 	}
 	
-	private boolean checkStringInObjectMap(Map<TObject, CaseInsensitiveHash> table, TObject object, String str)
+	private boolean checkStringInObjectMap(Map<TObject, CaseInsensitiveStringSet> table, TObject object, String str)
 	{
-		CaseInsensitiveHash hash = null;
+		CaseInsensitiveStringSet hash = null;
 		if ((hash = table.get(object)) == null)
 			return false;
 
@@ -439,14 +439,14 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 	
 	// Writes a string map.
-	private void writeStringMap(OutputStream out, Map<TObject, CaseInsensitiveHash> map) throws IOException 
+	private void writeStringMap(OutputStream out, Map<TObject, CaseInsensitiveStringSet> map) throws IOException 
 	{
 		SerialWriter sw = new SerialWriter(SerialWriter.LITTLE_ENDIAN);
 		sw.writeInt(out, map.size());
-		for (Map.Entry<TObject, CaseInsensitiveHash> elementPair : map.entrySet())
+		for (Map.Entry<TObject, CaseInsensitiveStringSet> elementPair : map.entrySet())
 		{
 			TObject object = elementPair.getKey();
-			CaseInsensitiveHash stringList = elementPair.getValue();
+			CaseInsensitiveStringSet stringList = elementPair.getValue();
 			
 			sw.writeString(out, object.getIdentity(), "UTF-8");
 			sw.writeInt(out, stringList.size());
@@ -520,13 +520,13 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	}
 
 	// Reads a string map.
-	private HashMap<TObject, CaseInsensitiveHash> readStringMap(TAMEModule module, InputStream in) throws IOException 
+	private HashMap<TObject, CaseInsensitiveStringSet> readStringMap(TAMEModule module, InputStream in) throws IOException 
 	{
 		SerialReader sr = new SerialReader(SerialReader.LITTLE_ENDIAN);
 		int objsize = sr.readInt(in);
-		HashMap<TObject, CaseInsensitiveHash> out = objsize <= 0 
-				? new HashMap<TObject, CaseInsensitiveHash>() 
-				: new HashMap<TObject, CaseInsensitiveHash>(objsize);
+		HashMap<TObject, CaseInsensitiveStringSet> out = objsize <= 0 
+				? new HashMap<TObject, CaseInsensitiveStringSet>() 
+				: new HashMap<TObject, CaseInsensitiveStringSet>(objsize);
 		while (objsize-- > 0)
 		{
 			String id = sr.readString(in, "UTF-8");

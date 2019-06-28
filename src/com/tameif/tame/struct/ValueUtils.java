@@ -177,7 +177,7 @@ public final class ValueUtils
 					break;
 				default:
 					if (c < 0x0020 || c >= 0x7f)
-						out.append("\\u"+String.format("%04x", c));
+						out.append("\\u"+String.format("%04x", (int)c));
 					else
 						out.append(c);
 					break;

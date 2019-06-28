@@ -24,7 +24,7 @@ import com.tameif.tame.lang.BlockTable;
 import com.tameif.tame.lang.FunctionEntry;
 import com.tameif.tame.lang.FunctionTable;
 import com.tameif.tame.lang.Saveable;
-import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.CaseInsensitiveStringSet;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
 import com.tameif.tame.struct.ValueUtils;
@@ -35,7 +35,7 @@ import com.tameif.tame.struct.ValueUtils;
  */
 public abstract class TElement implements Saveable
 {	
-	private static final CaseInsensitiveHash BAD_IDENTITIES = new CaseInsensitiveHash()
+	private static final CaseInsensitiveStringSet BAD_IDENTITIES = new CaseInsensitiveStringSet()
 	{{
 		put("player");
 		put("room");

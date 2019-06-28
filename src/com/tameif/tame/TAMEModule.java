@@ -29,8 +29,8 @@ import com.tameif.tame.element.TRoom;
 import com.tameif.tame.element.TWorld;
 import com.tameif.tame.exception.ModuleException;
 import com.tameif.tame.lang.Saveable;
-import com.tameif.tame.struct.CaseInsensitiveHash;
-import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.CaseInsensitiveStringSet;
+import com.tameif.tame.struct.CaseInsensitiveStringMap;
 import com.tameif.tame.struct.EncodingUtils;
 import com.tameif.tame.struct.IOUtils;
 import com.tameif.tame.struct.SerialReader;
@@ -48,25 +48,25 @@ public class TAMEModule implements Saveable
 	/** The world. */
 	private TWorld world;
 	/** List of actions. */
-	private CaseInsensitiveHashMap<TAction> actions;
+	private CaseInsensitiveStringMap<TAction> actions;
 	/** List of players. */
-	private CaseInsensitiveHashMap<TPlayer> players;
+	private CaseInsensitiveStringMap<TPlayer> players;
 	/** List of rooms. */
-	private CaseInsensitiveHashMap<TRoom> rooms;
+	private CaseInsensitiveStringMap<TRoom> rooms;
 	/** List of objects. */
-	private CaseInsensitiveHashMap<TObject> objects;
+	private CaseInsensitiveStringMap<TObject> objects;
 	/** List of containers. */
-	private CaseInsensitiveHashMap<TContainer> containers;
+	private CaseInsensitiveStringMap<TContainer> containers;
 
 	/** Maps action common names to action objects (not saved). */
-	private CaseInsensitiveHashMap<TAction> actionNameTable;
+	private CaseInsensitiveStringMap<TAction> actionNameTable;
 
 	/** Data digest (generated if read by script). */
 	private byte[] digest;
 	
 	
 	/** Not saved, used for checking - known identities. */
-	private CaseInsensitiveHash knownIdentities; 
+	private CaseInsensitiveStringSet knownIdentities; 
 	
 	/**
 	 * Creates a new module.
@@ -76,15 +76,15 @@ public class TAMEModule implements Saveable
 		this.header = new Header();
 		
 		this.world = null;
-		this.actions = new CaseInsensitiveHashMap<TAction>(20);
-		this.players = new CaseInsensitiveHashMap<TPlayer>(2);
-		this.rooms = new CaseInsensitiveHashMap<TRoom>(10);
-		this.objects = new CaseInsensitiveHashMap<TObject>(20);
-		this.containers = new CaseInsensitiveHashMap<TContainer>(5);
-		this.actionNameTable = new CaseInsensitiveHashMap<TAction>(15);
+		this.actions = new CaseInsensitiveStringMap<TAction>(20);
+		this.players = new CaseInsensitiveStringMap<TPlayer>(2);
+		this.rooms = new CaseInsensitiveStringMap<TRoom>(10);
+		this.objects = new CaseInsensitiveStringMap<TObject>(20);
+		this.containers = new CaseInsensitiveStringMap<TContainer>(5);
+		this.actionNameTable = new CaseInsensitiveStringMap<TAction>(15);
 		this.digest = null;
 		
-		this.knownIdentities = new CaseInsensitiveHash(200);
+		this.knownIdentities = new CaseInsensitiveStringSet(200);
 	}
 
 	/**
@@ -584,14 +584,14 @@ public class TAMEModule implements Saveable
 	public static class Header implements Saveable
 	{
 		/** Module attributes. */
-		private CaseInsensitiveHashMap<String> attributes;
+		private CaseInsensitiveStringMap<String> attributes;
 		
 		/**
 		 * Creates a new module header.
 		 */
 		public Header()
 		{
-			this.attributes = new CaseInsensitiveHashMap<String>(4);
+			this.attributes = new CaseInsensitiveStringMap<String>(4);
 		}
 	
 		/**
@@ -635,7 +635,7 @@ public class TAMEModule implements Saveable
 		 * Gets the attribute map for the header.
 		 * @return a reference to the map.
 		 */
-		public CaseInsensitiveHashMap<String> getAttributeMap()
+		public CaseInsensitiveStringMap<String> getAttributeMap()
 		{
 			return attributes;
 		}

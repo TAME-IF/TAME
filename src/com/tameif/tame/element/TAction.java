@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.tameif.tame.lang.Saveable;
-import com.tameif.tame.struct.CaseInsensitiveHash;
+import com.tameif.tame.struct.CaseInsensitiveStringSet;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
 import com.tameif.tame.struct.ValueUtils;
@@ -57,7 +57,7 @@ public class TAction implements Comparable<TAction>, Saveable
 	private Type type;
 	
 	/** What is the group of names of this action? */
-	private CaseInsensitiveHash names;
+	private CaseInsensitiveStringSet names;
 	
 	/** Does the action employ stricter use? */
 	private boolean strict;
@@ -72,13 +72,13 @@ public class TAction implements Comparable<TAction>, Saveable
 	 * <li>For <b>OPEN</b>, these are the local variables that hold the input data (usually just one).</li>
 	 * </ul>
 	 */
-	private CaseInsensitiveHash extraStrings;
+	private CaseInsensitiveStringSet extraStrings;
 	
 	// Empty constructor.
 	private TAction()
 	{
-		this.names = new CaseInsensitiveHash();
-		this.extraStrings = new CaseInsensitiveHash();
+		this.names = new CaseInsensitiveStringSet();
+		this.extraStrings = new CaseInsensitiveStringSet();
 		this.type = Type.GENERAL;
 		this.strict = false;
 		this.reversed = false;

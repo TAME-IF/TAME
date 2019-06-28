@@ -9,8 +9,6 @@
  ******************************************************************************/
 package com.tameif.tame.element.context;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -83,7 +81,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	 */
 	public Iterator<String> values()
 	{
-		return variables.keyIterator();
+		return variables.names().iterator();
 	}
 	
 	/**

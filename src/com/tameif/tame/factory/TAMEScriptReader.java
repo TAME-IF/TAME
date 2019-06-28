@@ -18,7 +18,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -42,7 +41,7 @@ import com.tameif.tame.lang.BlockEntryType;
 import com.tameif.tame.lang.Operation;
 import com.tameif.tame.lang.FunctionEntry;
 import com.tameif.tame.lang.Value;
-import com.tameif.tame.struct.CaseInsensitiveHashMap;
+import com.tameif.tame.struct.CaseInsensitiveStringMap;
 import com.tameif.tame.struct.IOUtils;
 import com.tameif.tame.struct.Lexer;
 import com.tameif.tame.struct.Lexer.Parser;
@@ -149,8 +148,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_REVERSED = 		99;
 		static final int TYPE_QUEUE = 			100;
 
-		static final CaseInsensitiveHashMap<BlockEntryType> BLOCKENTRYTYPE_MAP = 
-				new CaseInsensitiveHashMap<BlockEntryType>(BlockEntryType.VALUES.length);
+		static final CaseInsensitiveStringMap<BlockEntryType> BLOCKENTRYTYPE_MAP = 
+				new CaseInsensitiveStringMap<BlockEntryType>(BlockEntryType.VALUES.length);
 		
 		private TSKernel()
 		{
@@ -254,8 +253,6 @@ public final class TAMEScriptReader implements TAMEConstants
 	 */
 	private static class TSLexer extends PreprocessorLexer
 	{
-		private TAMEScriptIncluder includer;
-		
 		private TSLexer(Reader in, TAMEScriptIncluder includer)
 		{
 			super(KERNEL_INSTANCE, in);
@@ -279,7 +276,6 @@ public final class TAMEScriptReader implements TAMEConstants
 			super(KERNEL_INSTANCE, name, in);
 			setIncluder(includer);
 		}
-		
 	}
 
 	/**
@@ -325,12 +321,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			// keep parsing entries.
 			boolean noError = true;
 			
-			try {
-				while (currentToken() != null && (noError = parseModuleElement())) ;
-			} catch (ParserException e) {
-				addErrorMessage(e.getMessage());
-				noError = false;
-			}
+			while (currentToken() != null && (noError = parseModuleElement())) ;
 			
 			if (!noError) // awkward, I know.
 			{
