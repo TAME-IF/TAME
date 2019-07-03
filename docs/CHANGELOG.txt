@@ -3,6 +3,17 @@
     (C) 2019 Matt Tropiano
 ==============================================================================
 
+0.9BETA19
+.........
+
+	- Added: Raw Strings.
+	- Added: RegExReplace() function.
+	- Fixed: Some operations gave incorrect error messages in the Java implementation.
+	- Fixed: BadParameterException's class name was fixed. D'oh!
+	- Fixed: Some build shell scripts referred to an incorrect template path.
+	- Changed: StrFormat() now uses '{}' instead of '[]' for replace tokens.
+
+
 0.9BETA18
 .........
 

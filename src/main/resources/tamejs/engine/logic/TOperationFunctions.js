@@ -1312,11 +1312,11 @@ var TOperationFunctions =
 				{
 					case STATE_START:
 					{
-						if (c === '[')
+						if (c === '{')
 						{
 							state = STATE_INDEX;
 							index = 0;
-							err = '[';
+							err = '{';
 						}
 						else
 							sb += c;
@@ -1325,7 +1325,7 @@ var TOperationFunctions =
 					
 					case STATE_INDEX:
 					{
-						if (c === ']')
+						if (c === '}')
 						{
 							state = STATE_START;
 							sb += TValue.asString(TValue.listGet(list, index));

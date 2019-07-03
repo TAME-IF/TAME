@@ -2,7 +2,7 @@ world
 {
 	start()
 	{
-		local a = "junk [3] [123]:[-3][0][2][1]asdfsadf[4]";
+		local a = "junk {3} {123}:{-3}{0}{2}{1}asdfsadf{4}";
 		local b = ["apple", "pear", "orange", "grape", "peach"];
 		textln(a);
 		textln(b);

@@ -1984,12 +1984,12 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 				{
 					case STATE_START:
 					{
-						if (c == '[')
+						if (c == '{')
 						{
 							state = STATE_INDEX;
 							index = 0;
 							err.delete(0,  err.length());
-							err.append('[');
+							err.append('{');
 						}
 						else
 							sb.append(c);
@@ -1998,7 +1998,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 
 					case STATE_INDEX:
 					{
-						if (c == ']')
+						if (c == '}')
 						{
 							state = STATE_START;
 							sb.append(list.listGet(index).asString());
