@@ -16,31 +16,31 @@ import com.tameif.tame.TAMEFatalException;
  * implicitly handled.
  * @author Matthew Tropiano
  */
-public class BadParameterExeception extends TAMEFatalException
+public class BadParameterException extends TAMEFatalException
 {
 	private static final long serialVersionUID = 3977795940884710775L;
 
-	public BadParameterExeception()
+	public BadParameterException()
 	{
 		super();
 	}
 
-	public BadParameterExeception(String message, Throwable cause)
+	public BadParameterException(String message, Throwable cause)
 	{
 		super(message, cause);
 	}
 
-	public BadParameterExeception(String message) 
+	public BadParameterException(String message) 
 	{
 		super(message);
 	}
 
-	public BadParameterExeception(String message, Object ... args) 
+	public BadParameterException(String message, Object ... args) 
 	{
 		super(String.format(message, args));
 	}
 
-	public BadParameterExeception(Throwable cause)
+	public BadParameterException(Throwable cause)
 	{
 		super(cause);
 	}

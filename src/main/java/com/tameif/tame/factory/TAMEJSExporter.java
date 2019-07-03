@@ -391,7 +391,7 @@ public final class TAMEJSExporter
 	 */
 	private static void generateResourceVersion(Writer writer, TAMEModule module) throws IOException
 	{
-		writer.append("this.version = " + ValueUtils.escapeString(TAMELogic.getVersion()) + ";");
+		writer.append("this.version = \"" + ValueUtils.escapeString(TAMELogic.getVersion()) + "\";");
 	}
 	
 	/**

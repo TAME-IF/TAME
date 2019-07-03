@@ -25,7 +25,7 @@ import com.tameif.tame.element.TWorld;
 import com.tameif.tame.element.TAction.Type;
 import com.tameif.tame.element.context.TElementContext;
 import com.tameif.tame.element.context.TOwnershipMap;
-import com.tameif.tame.exception.BadParameterExeception;
+import com.tameif.tame.exception.BadParameterException;
 import com.tameif.tame.exception.ModuleExecutionException;
 import com.tameif.tame.exception.UnexpectedValueTypeException;
 import com.tameif.tame.interrupt.BreakInterrupt;
@@ -2085,7 +2085,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			try {
 				pattern = PatternCache.get(valPattern.asString()); 
 			} catch (PatternSyntaxException e) {
-				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
 			}
 			
 			request.pushValue(Value.create(pattern.matcher(valInput.asString()).find()));
@@ -2122,7 +2122,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			try {
 				pattern = PatternCache.get(valPattern.asString()); 
 			} catch (PatternSyntaxException e) {
-				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
 			}
 			
 			Matcher matcher = pattern.matcher(valInput.asString());
@@ -2163,7 +2163,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			try {
 				pattern = PatternCache.get(valPattern.asString()); 
 			} catch (PatternSyntaxException e) {
-				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
 			}
 			
 			Matcher matcher = pattern.matcher(valInput.asString());
@@ -2204,7 +2204,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			try {
 				pattern = PatternCache.get(valPattern.asString()); 
 			} catch (PatternSyntaxException e) {
-				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
 			}
 			
 			Matcher matcher = pattern.matcher(valInput.asString());
@@ -2245,7 +2245,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			try {
 				pattern = PatternCache.get(valPattern.asString()); 
 			} catch (PatternSyntaxException e) {
-				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
 			}
 			
 			Matcher matcher = pattern.matcher(valInput.asString());
@@ -2286,7 +2286,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			try {
 				pattern = PatternCache.get(valPattern.asString()); 
 			} catch (PatternSyntaxException e) {
-				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
 			}
 			
 			Matcher matcher = pattern.matcher(valInput.asString());
@@ -2327,7 +2327,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			try {
 				pattern = PatternCache.get(valPattern.asString()); 
 			} catch (PatternSyntaxException e) {
-				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
 			}
 			
 			request.pushValue(Value.create(pattern.matcher(valInput.asString()).matches()));
@@ -2364,7 +2364,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			try {
 				pattern = PatternCache.get(valPattern.asString()); 
 			} catch (PatternSyntaxException e) {
-				throw new BadParameterExeception("RegEx could not be compiled:\n" + e.getMessage());
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
 			}
 			
 			Value out = Value.createEmptyList(4);
