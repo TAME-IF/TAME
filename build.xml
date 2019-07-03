@@ -45,9 +45,11 @@
 	<property name="js.dir" value="${build.dir}/js" />
 	<property name="tamedocs.dir" value="${build.dir}/tamedocs" />
 
-	<property name="src.js.dir" value="src/main/js" />
 	<property name="src.test.dir" value="src/test/java" />
 	<property name="resource.dir" value="src/main/resources" />
+	<property name="shell.dir" value="shell" />
+	<property name="templates.dir" value="templates" />
+	
 	<property name="jre.scripts.dir" value="${jre.dir}/scripts" />
 
 	<property name="zip.js.node.filename" value="${project.archive}-nodejs-${build.version}.zip" />
@@ -81,21 +83,21 @@
 	</target>
 
 	<target name="compile.scripts.windows" if="${os.isWindows}">
-		<copy file="${resource.dir}/shell/compile/windows/tame.cmd" tofile="tame.cmd" />
-		<replace file="tame.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
-		<copy file="${resource.dir}/shell/compile/windows/tamec.cmd" tofile="tamec.cmd" />
-		<replace file="tamec.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
-		<copy file="${resource.dir}/shell/compile/windows/tamep.cmd" tofile="tamep.cmd" />
-		<replace file="tamep.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
+		<copy file="${shell.dir}/compile/windows/tame.cmd" tofile="tame.cmd" />
+		<replace file="tame.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}" />
+		<copy file="${shell.dir}/compile/windows/tamec.cmd" tofile="tamec.cmd" />
+		<replace file="tamec.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}" />
+		<copy file="${shell.dir}/compile/windows/tamep.cmd" tofile="tamep.cmd" />
+		<replace file="tamep.cmd" token="${replace.key.compile.classpath}" value="${bin.dir}" />
 	</target>
 
 	<target name="compile.scripts.bash" if="${os.bash}">
-		<copy file="${resource.dir}/shell/compile/bash/tame" tofile="tame.sh" />
-		<replace file="tame.sh" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
-		<copy file="${resource.dir}/shell/compile/bash/tamec" tofile="tamec.sh" />
-		<replace file="tamec.sh" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
-		<copy file="${resource.dir}/shell/compile/bash/tamep" tofile="tamep.sh" />
-		<replace file="tamep.sh" token="${replace.key.compile.classpath}" value="${bin.dir}${S}${src.js.dir}" />
+		<copy file="${shell.dir}/compile/bash/tame" tofile="tame.sh" />
+		<replace file="tame.sh" token="${replace.key.compile.classpath}" value="${bin.dir}" />
+		<copy file="${shell.dir}/compile/bash/tamec" tofile="tamec.sh" />
+		<replace file="tamec.sh" token="${replace.key.compile.classpath}" value="${bin.dir}" />
+		<copy file="${shell.dir}/compile/bash/tamep" tofile="tamep.sh" />
+		<replace file="tamep.sh" token="${replace.key.compile.classpath}" value="${bin.dir}" />
 		<chmod file="tame.sh" perm="ugo+rx"/>
 		<chmod file="tamec.sh" perm="ugo+rx"/>
 		<chmod file="tamep.sh" perm="ugo+rx"/>
@@ -115,7 +117,7 @@
 		/>
 		<mkdir dir="${bin.dir}/tamejs" />
 		<copy todir="${bin.dir}/tamejs">
-			<fileset dir="${src.js.dir}/tamejs" />
+			<fileset dir="${resource.dir}/tamejs" />
 		</copy>
 		<copy todir="${bin.dir}/tameprojects">
 			<fileset dir="${resource.dir}/tameprojects" />
@@ -215,20 +217,20 @@
 	</target>
 
 	<target name="jar.scripts.windows">
-		<copy file="${resource.dir}/shell/jar/windows/tame.cmd" tofile="${scripts.dir}/tame.cmd" />
+		<copy file="${shell.dir}/jar/windows/tame.cmd" tofile="${scripts.dir}/tame.cmd" />
 		<replace file="${scripts.dir}/tame.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
-		<copy file="${resource.dir}/shell/jar/windows/tamec.cmd" tofile="${scripts.dir}/tamec.cmd" />
+		<copy file="${shell.dir}/jar/windows/tamec.cmd" tofile="${scripts.dir}/tamec.cmd" />
 		<replace file="${scripts.dir}/tamec.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
-		<copy file="${resource.dir}/shell/jar/windows/tamep.cmd" tofile="${scripts.dir}/tamep.cmd" />
+		<copy file="${shell.dir}/jar/windows/tamep.cmd" tofile="${scripts.dir}/tamep.cmd" />
 		<replace file="${scripts.dir}/tamep.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 	</target>
 
 	<target name="jar.scripts.bash">
-		<copy file="${resource.dir}/shell/jar/bash/tame" tofile="${scripts.dir}/tame" />
+		<copy file="${shell.dir}/jar/bash/tame" tofile="${scripts.dir}/tame" />
 		<replace file="${scripts.dir}/tame" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
-		<copy file="${resource.dir}/shell/jar/bash/tamec" tofile="${scripts.dir}/tamec" />
+		<copy file="${shell.dir}/jar/bash/tamec" tofile="${scripts.dir}/tamec" />
 		<replace file="${scripts.dir}/tamec" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
-		<copy file="${resource.dir}/shell/jar/bash/tamep" tofile="${scripts.dir}/tamep" />
+		<copy file="${shell.dir}/jar/bash/tamep" tofile="${scripts.dir}/tamep" />
 		<replace file="${scripts.dir}/tamep" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<chmod file="${scripts.dir}/tame" perm="ugo+rx"/>
 		<chmod file="${scripts.dir}/tamec" perm="ugo+rx"/>
@@ -387,20 +389,20 @@
 	</target>
 
 	<target name="jre.scripts.windows">
-		<copy file="${resource.dir}/shell/jre/windows/tame.cmd" tofile="${jre.scripts.dir}/windows/tame.cmd" />
+		<copy file="${shell.dir}/jre/windows/tame.cmd" tofile="${jre.scripts.dir}/windows/tame.cmd" />
 		<replace file="${jre.scripts.dir}/windows/tame.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
-		<copy file="${resource.dir}/shell/jre/windows/tamec.cmd" tofile="${jre.scripts.dir}/windows/tamec.cmd" />
+		<copy file="${shell.dir}/jre/windows/tamec.cmd" tofile="${jre.scripts.dir}/windows/tamec.cmd" />
 		<replace file="${jre.scripts.dir}/windows/tamec.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
-		<copy file="${resource.dir}/shell/jre/windows/tamep.cmd" tofile="${jre.scripts.dir}/windows/tamep.cmd" />
+		<copy file="${shell.dir}/jre/windows/tamep.cmd" tofile="${jre.scripts.dir}/windows/tamep.cmd" />
 		<replace file="${jre.scripts.dir}/windows/tamep.cmd" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 	</target>
 
 	<target name="jre.scripts.bash">
-		<copy file="${resource.dir}/shell/jre/bash/tame" tofile="${jre.scripts.dir}/bash/tame" />
+		<copy file="${shell.dir}/jre/bash/tame" tofile="${jre.scripts.dir}/bash/tame" />
 		<replace file="${jre.scripts.dir}/bash/tame" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
-		<copy file="${resource.dir}/shell/jre/bash/tamec" tofile="${jre.scripts.dir}/bash/tamec" />
+		<copy file="${shell.dir}/jre/bash/tamec" tofile="${jre.scripts.dir}/bash/tamec" />
 		<replace file="${jre.scripts.dir}/bash/tamec" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
-		<copy file="${resource.dir}/shell/jre/bash/tamep" tofile="${jre.scripts.dir}/bash/tamep" />
+		<copy file="${shell.dir}/jre/bash/tamep" tofile="${jre.scripts.dir}/bash/tamep" />
 		<replace file="${jre.scripts.dir}/bash/tamep" token="${replace.key.jar.one.tame.filename}" value="${jar.tame.one.filename}" />
 		<chmod file="${jre.scripts.dir}/bash/tame" perm="ugo+rx"/>
 		<chmod file="${jre.scripts.dir}/bash/tamec" perm="ugo+rx"/>
@@ -456,7 +458,7 @@
 		<zip destfile="${zip.dir}/${zip.jar.one.filename}" compress="true" level="9">
 			<zipfileset dir="${scripts.dir}" filemode="755" prefix="bin/" />
 			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
-			<zipfileset dir="${resource.dir}/templates" prefix="templates/" />
+			<zipfileset dir="${templates.dir}" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -467,7 +469,7 @@
 			<zipfileset dir="${jre.win32.dir}" prefix="jre/"/>
 			<zipfileset dir="${jre.scripts.dir}/windows" prefix="bin/" />
 			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
-			<zipfileset dir="${resource.dir}/templates" prefix="templates/" />
+			<zipfileset dir="${templates.dir}" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -478,7 +480,7 @@
 			<zipfileset dir="${jre.win64.dir}" prefix="jre/"/>
 			<zipfileset dir="${jre.scripts.dir}/windows" prefix="bin/" />
 			<zipfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
-			<zipfileset dir="${resource.dir}/templates" prefix="templates/" />
+			<zipfileset dir="${templates.dir}" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</zip>
 	</target>
@@ -494,7 +496,7 @@
 			</tarfileset>
 			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
 			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/"/>
-			<tarfileset dir="${resource.dir}/templates" prefix="templates/" />
+			<tarfileset dir="${templates.dir}" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</tar>
 	</target>
@@ -510,7 +512,7 @@
 			</tarfileset>
 			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/" />
 			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
-			<tarfileset dir="${resource.dir}/templates" prefix="templates/" />
+			<tarfileset dir="${templates.dir}" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</tar>
 	</target>
@@ -526,7 +528,7 @@
 			</tarfileset>
 			<tarfileset dir="${jre.scripts.dir}/bash" filemode="755" prefix="bin/" />
 			<tarfileset file="${jar.dir}/${jar.tame.one.filename}" prefix="jar/" />
-			<tarfileset dir="${resource.dir}/templates" prefix="templates/" />
+			<tarfileset dir="${templates.dir}" prefix="templates/" />
 			<fileset refid="fileset.documents" />
 		</tar>
 	</target>
@@ -540,8 +542,10 @@
 	<target name="zip.src" depends="init.zip" description="Archives the source code.">
 		<delete file="${zip.dir}/${zip.sources.filename}" />
 		<zip destfile="${zip.dir}/${zip.sources.filename}" compress="true" level="9">
-			<zipfileset dir="${src.dir}" prefix="src"/>
-			<zipfileset dir="${resource.dir}" prefix="resources"/>
+			<zipfileset dir="${src.dir}" prefix="src/main/java"/>
+			<zipfileset dir="${resource.dir}" prefix="src/main/resources"/>
+			<zipfileset dir="${shell.dir}" prefix="shell"/>
+			<zipfileset dir="${templates.dir}" prefix="templates"/>
 			<fileset refid="fileset.documents" />
 			<fileset refid="fileset.buildfiles" />
 		</zip>

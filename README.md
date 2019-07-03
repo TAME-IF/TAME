@@ -71,9 +71,8 @@ your build environment.
 ##### Used In Build
 
 ```
-	src/main/java/*
-	src/main/js/*
-	src/main/resources/*
+	src/main/java
+	src/main/resources
 ```
 
 ##### Used for Testing
