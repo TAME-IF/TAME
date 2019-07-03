@@ -40,7 +40,7 @@ import com.tameif.tame.lang.BlockEntryType;
 import com.tameif.tame.lang.FunctionEntry;
 import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
-import com.tameif.tame.lang.ValueHash;
+import com.tameif.tame.lang.ValueSet;
 import com.tameif.tame.struct.IOUtils;
 
 /**
@@ -476,7 +476,7 @@ public final class TAMELogic implements TAMEConstants
 	 */
 	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block) throws TAMEInterrupt
 	{
-		ValueHash blockLocal = new ValueHash();
+		ValueSet blockLocal = new ValueSet();
 		callBlock(request, response, context, block, false, blockLocal);
 	}
 	
@@ -491,7 +491,7 @@ public final class TAMELogic implements TAMEConstants
 	 * @param blockLocal the local value hash to use on invoke.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, boolean functionBlock, ValueHash blockLocal) throws TAMEInterrupt
+	public static void callBlock(TAMERequest request, TAMEResponse response, TElementContext<?> context, Block block, boolean functionBlock, ValueSet blockLocal) throws TAMEInterrupt
 	{
 		response.trace(request, TraceType.CONTEXT, "PUSH %s", context);
 		request.pushContext(context);
@@ -559,7 +559,7 @@ public final class TAMELogic implements TAMEConstants
 			response.trace(request, TraceType.ENTRY, "CALL %s.%s", element.getIdentity(), blockEntry.toFriendlyString());
 			
 			Value target = Value.create(openTarget);
-			ValueHash blockLocal = new ValueHash();
+			ValueSet blockLocal = new ValueSet();
 
 			// just get the first local.
 			for (String variableName : locals)
@@ -594,7 +594,7 @@ public final class TAMELogic implements TAMEConstants
 			throw new ModuleException("No such function ("+functionName+") in lineage of element " + element);
 
 		response.trace(request, TraceType.FUNCTION, "CALL %s", functionName);
-		ValueHash blockLocal = new ValueHash();
+		ValueSet blockLocal = new ValueSet();
 		String[] args = entry.getArguments();
 		for (int i = args.length - 1; i >= 0; i--)
 		{

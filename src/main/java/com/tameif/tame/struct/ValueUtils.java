@@ -140,8 +140,8 @@ public final class ValueUtils
 
 	/**
 	 * Escape string.
-	 * @param s
-	 * @return
+	 * @param s the input string.
+	 * @return the string with escape characters in it.
 	 */
 	public static String escapeString(String s)
 	{

@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 /**
  * Case-insensitive set map of string to value.
  * @author Matthew Tropiano
+ * @param <V> the value type.
  */
 public class CaseInsensitiveStringMap<V> implements Iterable<Map.Entry<String, V>>, Sizable
 {

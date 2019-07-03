@@ -1599,6 +1599,42 @@ var TOperationFunctions =
 		}
 	},
 		
+	/* REGEXREPLACE */
+	{
+		"name": 'REGEXREPLACE', 
+		"doOperation": function(request, response, blockLocal, operation)
+		{
+			let valInput = request.popValue();
+			let valReplacer = request.popValue();
+			let valPattern = request.popValue();
+			
+			if (!TValue.isLiteral(valPattern))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXSPLIT call.");
+			if (!TValue.isLiteral(valReplacer))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXSPLIT call.");
+			if (!TValue.isLiteral(valInput))
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXSPLIT call.");
+
+			let pattern = null;
+			try {
+				pattern = new RegExp(TValue.asString(valPattern), "g");
+			} catch (err) {
+				throw TAMEError.BadParameter("RegEx could not be compiled:\n" + err.message);
+			}
+			
+			let sb = new TStringBuilder();
+			let tokens = TValue.asString(valInput).split(pattern);
+			let replacer = TValue.asString(valReplacer);
+			for (let i = 0; i < tokens.length; i++)
+			{
+				sb.append(tokens[i]);
+				if (i < tokens.length - 1)
+					sb.append(replacer);
+			}
+			request.pushValue(TValue.createString(sb.toString()));
+		}
+	},
+		
 	/* LISTNEW */
 	{
 		"name": 'LISTNEW', 

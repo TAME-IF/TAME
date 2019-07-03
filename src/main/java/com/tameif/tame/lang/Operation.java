@@ -135,7 +135,7 @@ public class Operation implements CallableType, Saveable
 	}
 
 	@Override
-	public void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal) throws TAMEInterrupt
+	public void execute(TAMERequest request, TAMEResponse response, ValueSet blockLocal) throws TAMEInterrupt
 	{
 		operation.execute(request, response, blockLocal, this);
 	}

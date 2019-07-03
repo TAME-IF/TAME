@@ -40,7 +40,7 @@ import com.tameif.tame.lang.Operation;
 import com.tameif.tame.lang.OperationType;
 import com.tameif.tame.lang.TraceType;
 import com.tameif.tame.lang.Value;
-import com.tameif.tame.lang.ValueHash;
+import com.tameif.tame.lang.ValueSet;
 import com.tameif.tame.lang.ValueType;
 import com.tameif.tame.struct.MathUtils;
 import com.tameif.tame.util.DateUtils;
@@ -62,7 +62,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	NOOP (/*Return: */ null)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) 
 		{
 			// Do nothing.
 		}
@@ -82,7 +82,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	POP (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation)
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation)
 		{
 			request.popValue();
 		}
@@ -97,7 +97,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	POPVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) 
 		{
 			Value varvalue = operation.getOperand0();
 			Value value = request.popValue();
@@ -130,7 +130,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	POPLOCALVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) 
 		{
 			Value varvalue = operation.getOperand0();
 			Value value = request.popValue();
@@ -156,7 +156,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	POPELEMENTVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			Value varElement = operation.getOperand0();
 			Value variable = operation.getOperand1();
@@ -186,7 +186,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	POPLISTVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			Value value = request.popValue();
 			Value index = request.popValue();
@@ -216,7 +216,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PUSHVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) 
 		{
 			Value value = operation.getOperand0();
 			
@@ -247,7 +247,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PUSHELEMENTVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			Value varElement = operation.getOperand0();
 			Value variable = operation.getOperand1();
@@ -274,7 +274,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PUSHLISTVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) 
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) 
 		{
 			Value index = request.popValue();
 			Value listValue = request.popValue();
@@ -300,7 +300,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PUSHNEWLIST (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			request.pushValue(Value.createEmptyList());
 		}
@@ -315,7 +315,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PUSHINITLIST (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			Value length = request.popValue();
 
@@ -345,7 +345,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CLEARVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			Value variable = operation.getOperand0();
 
@@ -376,7 +376,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CLEARELEMENTVALUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			Value varElement = operation.getOperand0();
 			Value variable = operation.getOperand1();
@@ -401,7 +401,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PUSHTHIS (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws ErrorInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws ErrorInterrupt
 		{
 			TElement element = request.peekContext().getElement();
 			Class<?> elementClass = element.getClass();
@@ -430,7 +430,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ARITHMETICFUNC (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation)
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation)
 		{
 			Value functionValue = operation.getOperand0();
 			
@@ -451,7 +451,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	IF (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			// block should contain arithmetic operations and a last push.
 			Block conditional = operation.getConditionalBlock();
@@ -495,7 +495,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	WHILE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			while (callConditional(request, response, blockLocal, operation))
 			{
@@ -512,7 +512,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			}
 		}
 		
-		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, TraceType.CONTROL, "WHILE Conditional");
 
@@ -544,7 +544,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	FOR (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Block init = operation.getInitBlock();
 			if (init == null)
@@ -575,7 +575,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			}
 		}
 
-		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		private boolean callConditional(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, TraceType.CONTROL, "FOR Contitional");
 			
@@ -605,7 +605,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	BREAK (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, TraceType.CONTROL, "THROW BREAK");
 			throw new BreakInterrupt();
@@ -620,7 +620,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CONTINUE (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, TraceType.CONTROL, "THROW CONTINUE");
 			throw new ContinueInterrupt();
@@ -635,7 +635,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	QUIT (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.addCue(CUE_QUIT);
 			response.trace(request, TraceType.CONTROL, "THROW QUIT");
@@ -651,7 +651,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	FINISH (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, TraceType.CONTROL, "THROW FINISH");
 			throw new FinishInterrupt();
@@ -666,7 +666,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	END (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.trace(request, TraceType.CONTROL, "THROW END");
 			throw new EndInterrupt();
@@ -681,7 +681,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	FUNCTIONRETURN (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value retVal = request.popValue();
 			response.trace(request, TraceType.FUNCTION, "RETURN "+retVal.toString());
@@ -702,7 +702,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CALLFUNCTION (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varFunctionName = operation.getOperand0();
 
@@ -725,7 +725,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CALLELEMENTFUNCTION (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varElement = operation.getOperand0();
 			Value varFunctionName = operation.getOperand1();
@@ -748,7 +748,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	QUEUEACTION (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varAction = request.popValue();
 			
@@ -784,7 +784,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	QUEUEACTIONSTRING (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varTarget = request.popValue();
 			Value varAction = request.popValue();
@@ -824,7 +824,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	QUEUEACTIONOBJECT (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varAction = request.popValue();
@@ -865,7 +865,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	QUEUEACTIONFOROBJECTSIN (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObjectContainer = request.popValue();
 			Value varAction = request.popValue();
@@ -912,7 +912,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	QUEUEACTIONFORTAGGEDOBJECTSIN (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varTag = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -965,7 +965,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	QUEUEACTIONOBJECT2 (true)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject2 = request.popValue();
 			Value varObject = request.popValue();
@@ -1011,7 +1011,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ADDCUE (/*Return: */ null, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value cue = request.popValue();
@@ -1040,7 +1040,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	TEXT (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1066,7 +1066,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	TEXTLN (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1092,7 +1092,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	TEXTF (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1118,7 +1118,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	TEXTFLN (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1144,7 +1144,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PAUSE (/*Return: */ null)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			response.addCue(CUE_PAUSE);
 		}
@@ -1165,7 +1165,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	WAIT (/*Return: */ null, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1191,7 +1191,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ASBOOLEAN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1217,7 +1217,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ASINT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1243,7 +1243,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ASFLOAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1269,7 +1269,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ASSTRING (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1295,7 +1295,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ASLIST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1328,7 +1328,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LENGTH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1354,7 +1354,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	EMPTY (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1381,7 +1381,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRCONCAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1412,7 +1412,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRREPLACE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1461,7 +1461,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRREPLACELAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1510,7 +1510,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRREPLACEALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1547,7 +1547,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1580,7 +1580,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRLASTINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1613,7 +1613,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1646,7 +1646,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1687,7 +1687,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRJOIN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value joiner = request.popValue();
 			Value list = request.popValue();
@@ -1733,7 +1733,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRSTARTSWITH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1766,7 +1766,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRENDSWITH (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1800,7 +1800,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	SUBSTRING (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value3 = request.popValue();
 			Value value2 = request.popValue();
@@ -1841,7 +1841,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRLOWER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1867,7 +1867,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRUPPER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1894,7 +1894,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRCHAR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value2 = request.popValue();
 			Value value1 = request.popValue();
@@ -1929,7 +1929,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRTRIM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -1957,7 +1957,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	STRFORMAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value list = request.popValue();
 			Value str = request.popValue();
@@ -2037,7 +2037,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ISREGEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valPattern = request.popValue();
 			
@@ -2071,7 +2071,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	REGEXCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valInput = request.popValue();
 			Value valPattern = request.popValue();
@@ -2101,14 +2101,14 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Tests if a string contains a pattern matched by a RegEx.
-	 * First POP is the RegEx String.
-	 * Second POP is the string to search.
+	 * First POP is the string to search.
+	 * Second POP is the RegEx String.
 	 * Returns integer.
 	 */
 	REGEXFIND (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valInput = request.popValue();
 			Value valPattern = request.popValue();
@@ -2142,14 +2142,14 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Tests if a string contains the last pattern matched by a RegEx.
-	 * First POP is the RegEx String.
-	 * Second POP is the string to search.
+	 * First POP is the string to search.
+	 * Second POP is the RegEx String.
 	 * Returns integer.
 	 */
 	REGEXFINDLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valInput = request.popValue();
 			Value valPattern = request.popValue();
@@ -2183,14 +2183,14 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Gets the first matching substring in a string that matches a RegEx.
-	 * First POP is the RegEx String.
-	 * Second POP is the string to search.
+	 * First POP is the string to search.
+	 * Second POP is the RegEx String.
 	 * Returns string or boolean.
 	 */
 	REGEXGET (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valInput = request.popValue();
 			Value valPattern = request.popValue();
@@ -2224,14 +2224,14 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Gets the last matching substring in a string that matches a RegEx.
-	 * First POP is the RegEx String.
-	 * Second POP is the string to search.
+	 * First POP is the string to search.
+	 * Second POP is the RegEx String.
 	 * Returns string or boolean.
 	 */
 	REGEXGETLAST (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valInput = request.popValue();
 			Value valPattern = request.popValue();
@@ -2265,22 +2265,22 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Gets all matching substrings in a string that matches a RegEx.
-	 * First POP is the RegEx String.
-	 * Second POP is the string to search.
+	 * First POP is the string to search.
+	 * Second POP is the RegEx String.
 	 * Returns list.
 	 */
 	REGEXGETALL (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valInput = request.popValue();
 			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETALL call.");
 			if (!valInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETALL call.");
 
 			Pattern pattern;
 			try {
@@ -2306,22 +2306,22 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Gets if a whole string matches a RegEx.
-	 * First POP is the RegEx String.
-	 * Second POP is the string to search.
+	 * First POP is the string to search.
+	 * Second POP is the RegEx String.
 	 * Returns boolean.
 	 */
 	REGEXMATCHES (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valInput = request.popValue();
 			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXMATCHES call.");
 			if (!valInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXMATCHES call.");
 
 			Pattern pattern;
 			try {
@@ -2343,22 +2343,22 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	
 	/**
 	 * Splits a string into many via a RegEx.
-	 * First POP is the RegEx String.
-	 * Second POP is the string to search.
+	 * First POP is the string to split.
+	 * Second POP is the RegEx String.
 	 * Returns list.
 	 */
 	REGEXSPLIT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valInput = request.popValue();
 			Value valPattern = request.popValue();
 			
 			if (!valPattern.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXSPLIT call.");
 			if (!valInput.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in REGEXGETLAST call.");
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXSPLIT call.");
 
 			Pattern pattern;
 			try {
@@ -2382,6 +2382,56 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
+	 * Replaces each occurrence of a RegEx match with a string expression.
+	 * First POP is the string to search.
+	 * Second POP is the replacement.
+	 * Third POP is the RegEx String.
+	 * Returns list.
+	 */
+	REGEXREPLACE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
+	{
+		@Override
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
+		{
+			Value valInput = request.popValue();
+			Value valReplacer = request.popValue();
+			Value valPattern = request.popValue();
+			
+			if (!valPattern.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXREPLACE call.");
+			if (!valReplacer.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXREPLACE call.");
+			if (!valInput.isLiteral())
+				throw new UnexpectedValueTypeException("Expected literal type in REGEXREPLACE call.");
+
+			Pattern pattern;
+			try {
+				pattern = PatternCache.get(valPattern.asString()); 
+			} catch (PatternSyntaxException e) {
+				throw new BadParameterException("RegEx could not be compiled:\n" + e.getMessage());
+			}
+
+			StringBuilder sb = new StringBuilder();
+			String[] split = pattern.split(valInput.asString());
+			String replacer = valReplacer.asString();
+			for (int i = 0; i < split.length; i++)
+			{
+				sb.append(split[i]);
+				if (i < split.length - 1)
+					sb.append(replacer);
+			}
+			request.pushValue(Value.create(sb.toString()));
+		}
+		
+		@Override
+		public String getGrouping()
+		{
+			return "RegEx Operations";
+		}
+		
+	},
+	
+	/**
 	 * Makes a new list with a specific length.
 	 * POP is the initial capacity. 
 	 * Returns a list. 
@@ -2389,7 +2439,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LISTNEW (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value size = request.popValue();
 			
@@ -2423,7 +2473,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LISTADD (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value list = request.popValue();
@@ -2454,7 +2504,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LISTADDAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value index = request.popValue();
 			Value value = request.popValue();
@@ -2487,7 +2537,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LISTREMOVE (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value list = request.popValue();
@@ -2517,7 +2567,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LISTREMOVEAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value index = request.popValue();
 			Value list = request.popValue();
@@ -2547,7 +2597,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LISTCONCAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value appendix = request.popValue();
 			Value list = request.popValue();
@@ -2597,7 +2647,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LISTINDEX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value list = request.popValue();
@@ -2627,7 +2677,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	LISTCONTAINS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			Value list = request.popValue();
@@ -2656,7 +2706,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	FLOOR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -2682,7 +2732,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CEILING (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -2708,7 +2758,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ROUND (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value value = request.popValue();
 			
@@ -2734,7 +2784,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	FIX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value place = request.popValue();
 			Value number = request.popValue();
@@ -2767,7 +2817,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	SQRT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -2793,7 +2843,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PI (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(Math.PI));
 		}
@@ -2814,7 +2864,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	E (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(Math.E));
 		}
@@ -2835,7 +2885,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	SIN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -2861,7 +2911,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	COS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -2887,7 +2937,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	TAN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value number = request.popValue();
 			
@@ -2914,7 +2964,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	MIN (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value second = request.popValue();
 			Value first = request.popValue();
@@ -2944,7 +2994,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	MAX (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value second = request.popValue();
 			Value first = request.popValue();
@@ -2975,7 +3025,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CLAMP (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueEnd = request.popValue();
 			Value valueStart = request.popValue();
@@ -3012,7 +3062,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	IRANDOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueInput = request.popValue();
 			
@@ -3047,7 +3097,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	FRANDOM (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Random random = request.getModuleContext().getRandom();
 			request.pushValue(Value.create(random.nextDouble()));
@@ -3070,7 +3120,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	GRANDOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueStdDev = request.popValue();
 			Value valueMean = request.popValue();
@@ -3111,7 +3161,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	TIME (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			request.pushValue(Value.create(System.currentTimeMillis()));
 		}
@@ -3134,7 +3184,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	TIMEFORMAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value valueSecond = request.popValue();
 			Value valueFirst = request.popValue();
@@ -3167,7 +3217,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	OBJECTHASNAME (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
@@ -3199,7 +3249,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	OBJECTHASTAG (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
@@ -3231,7 +3281,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ADDOBJECTNAME (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
@@ -3263,7 +3313,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ADDOBJECTTAG (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
@@ -3295,7 +3345,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ADDOBJECTTAGTOALLIN (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3334,7 +3384,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	REMOVEOBJECTNAME (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value nameValue = request.popValue();
 			Value varObject = request.popValue();
@@ -3366,7 +3416,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	REMOVEOBJECTTAG (/*Return: */ null, /*Args: */ ArgumentType.OBJECT, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObject = request.popValue();
@@ -3398,7 +3448,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	REMOVEOBJECTTAGFROMALLIN (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3437,7 +3487,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	GIVEOBJECT (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3470,7 +3520,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	REMOVEOBJECT (/*Return: */ null, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			
@@ -3500,7 +3550,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	MOVEOBJECTSWITHTAG (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value tagValue = request.popValue();
 			Value varObjectContainerDest = request.popValue();
@@ -3543,7 +3593,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	OBJECTCOUNT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT_CONTAINER)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObjectContainer = request.popValue();
 
@@ -3572,7 +3622,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	HASOBJECT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3604,7 +3654,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	OBJECTHASNOOWNER (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			
@@ -3633,7 +3683,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PLAYERISINROOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3666,7 +3716,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PLAYERCANACCESSOBJECT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.OBJECT)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObject = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3700,7 +3750,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	BROWSE (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varObjectContainer = request.popValue();
 			
@@ -3729,7 +3779,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	BROWSETAGGED (/*Return: */ null, /*Args: */ ArgumentType.OBJECT_CONTAINER, ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varTag = request.popValue();
 			Value varObjectContainer = request.popValue();
@@ -3762,7 +3812,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	ELEMENTHASANCESTOR (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT_ANY, ArgumentType.ELEMENT_ANY)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varParent = request.popValue();
 			Value varElement = request.popValue();
@@ -3806,7 +3856,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	SETPLAYER (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -3833,7 +3883,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	SETROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3866,7 +3916,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	PUSHROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3900,7 +3950,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	POPROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 
@@ -3934,7 +3984,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	SWAPROOM (/*Return: */ null, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -3977,7 +4027,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CURRENTPLAYERIS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -4007,7 +4057,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	NOCURRENTPLAYER (/*Return: */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TPlayer player = moduleContext.getOwnershipMap().getCurrentPlayer();
@@ -4030,7 +4080,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	CURRENTROOMIS (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varRoom = request.popValue();
 			Value varPlayer = request.popValue();
@@ -4064,7 +4114,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	NOCURRENTROOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varPlayer = request.popValue();
 			
@@ -4093,7 +4143,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	IDENTITY (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.ELEMENT)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value varElement = request.popValue();
 
@@ -4120,7 +4170,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	HEADER (/*Return: */ ArgumentType.VALUE, /* Args */ ArgumentType.VALUE)
 	{
 		@Override
-		protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 		{
 			Value headerName = request.popValue();
 
@@ -4194,7 +4244,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * @param operation the operation origin.
 	 * @throws TAMEInterrupt if an interrupt occurs. 
 	 */
-	protected void doOperation(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+	protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 	{
 		throw new RuntimeException("UNIMPLEMENTED OPERATION");
 	}
@@ -4216,7 +4266,7 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	 * @param operation the operation object.
 	 * @throws TAMEInterrupt if an interrupt occurs. 
 	 */
-	public final void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation operation) throws TAMEInterrupt
+	public final void execute(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
 	{
 		doOperation(request, response, blockLocal, operation);
 		response.incrementAndCheckOperationsExecuted(request.getModuleContext().getOperationRunawayMax());

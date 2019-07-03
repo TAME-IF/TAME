@@ -25,16 +25,17 @@ import com.tameif.tame.struct.Sizable;
 
 /**
  * Convenience class for Value lookup tables.
+ * All variable names are case-insensitive!
  * @author Matthew Tropiano
  */
-public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, Value>>, Sizable
+public class ValueSet implements ReferenceSaveable, Iterable<Map.Entry<String, Value>>, Sizable
 {
 	private CaseInsensitiveStringMap<Value> valueMap; 
 	
 	/**
 	 * Creates a new ValueHash.
 	 */
-	public ValueHash()
+	public ValueSet()
 	{
 		this.valueMap = new CaseInsensitiveStringMap<>(4);
 	}
@@ -46,9 +47,9 @@ public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, 
 	 * @return the read object.
 	 * @throws IOException if a read error occurs.
 	 */
-	public static ValueHash create(Map<Long, Value> referenceMap, InputStream in) throws IOException
+	public static ValueSet create(Map<Long, Value> referenceMap, InputStream in) throws IOException
 	{
-		ValueHash out = new ValueHash();
+		ValueSet out = new ValueSet();
 		out.readReferentialBytes(referenceMap, in);
 		return out;
 	}
@@ -57,7 +58,7 @@ public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, 
 	 * Copies values from one value hash to this one.
 	 * @param hash the source hash to copy values from.
 	 */
-	public void copyFrom(ValueHash hash)
+	public void copyFrom(ValueSet hash)
 	{
 		for (Map.Entry<String, Value> pair : hash)
 			put(pair.getKey(), Value.create(pair.getValue()));
@@ -92,8 +93,8 @@ public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, 
 	}
 
 	/**
-	 * 
-	 * @param variableName
+	 * Clears a variable from the hash.
+	 * @param variableName the name of the variable. 
 	 */
 	public void remove(String variableName)
 	{
@@ -101,9 +102,9 @@ public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, 
 	}
 
 	/**
-	 * 
-	 * @param variableName
-	 * @return
+	 * Checks if a variable is defined on this hash.
+	 * @param variableName the name of the variable. 
+	 * @return if the variable exists or not.
 	 */
 	public boolean containsKey(String variableName)
 	{
@@ -111,8 +112,7 @@ public class ValueHash implements ReferenceSaveable, Iterable<Map.Entry<String, 
 	}
 
 	/**
-	 * 
-	 * @return
+	 * @return a list of all values.
 	 */
 	public List<String> names()
 	{

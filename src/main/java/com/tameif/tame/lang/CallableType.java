@@ -26,6 +26,6 @@ public interface CallableType
 	 * @param blockLocal the block local variable bank.
 	 * @throws TAMEInterrupt if an interrupt occurs.
 	 */
-	public void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal) throws TAMEInterrupt;
+	public void execute(TAMERequest request, TAMEResponse response, ValueSet blockLocal) throws TAMEInterrupt;
 	
 }

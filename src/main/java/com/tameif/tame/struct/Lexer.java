@@ -1047,6 +1047,7 @@ public class Lexer
 					}
 					else if (isStringEnd(c))
 					{
+						setState(Kernel.TYPE_STRING);
 						breakloop = true;
 					}
 					else
@@ -2048,6 +2049,16 @@ public class Lexer
 			stringDelimTable.put(delimiterStart, delimiterEnd);
 		}
 	
+		/**
+		 * Adds a raw string delimiter to this lexer along with its ending character.
+		 * @param delimiterStart	the starting delimiter.
+		 * @param delimiterEnd		the ending delimiter.
+		 */
+		public void addRawStringDelimiter(char delimiterStart, char delimiterEnd)
+		{
+			rawStringDelimTable.put(delimiterStart, delimiterEnd);
+		}
+
 		/**
 		 * Adds a comment-starting delimiter to this lexer.
 		 * @param delimiter		the delimiter lexeme.

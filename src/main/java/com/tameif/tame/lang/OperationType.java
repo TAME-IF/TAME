@@ -29,7 +29,7 @@ public interface OperationType
 	 * @param statement the calling statement (get blocks from this).
 	 * @throws TAMEInterrupt if a TAMEInterrupt occurs.
 	 */
-	public void execute(TAMERequest request, TAMEResponse response, ValueHash blockLocal, Operation statement) throws TAMEInterrupt;
+	public void execute(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation statement) throws TAMEInterrupt;
 	
 	/**
 	 * Is this an internal operation type?

@@ -20,16 +20,17 @@ import com.tameif.tame.TAMEModule;
 import com.tameif.tame.element.TElement;
 import com.tameif.tame.lang.StateSaveable;
 import com.tameif.tame.lang.Value;
-import com.tameif.tame.lang.ValueHash;
+import com.tameif.tame.lang.ValueSet;
 
 /**
  * Holds contextual information for a {@link TElement}.
  * @author Matthew Tropiano
+ * @param <T> a TElement type.
  */
 public abstract class TElementContext<T extends TElement> implements StateSaveable
 {
 	/** Variable bank. */
-	protected ValueHash variables;
+	protected ValueSet variables;
 
 	/** Reference to source element. */
 	protected T element;
@@ -41,7 +42,7 @@ public abstract class TElementContext<T extends TElement> implements StateSaveab
 	protected TElementContext(T element)
 	{
 		this.element = element;
-		this.variables = new ValueHash();
+		this.variables = new ValueSet();
 	}
 
 	/**
