@@ -1609,11 +1609,11 @@ var TOperationFunctions =
 			let valPattern = request.popValue();
 			
 			if (!TValue.isLiteral(valPattern))
-				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXSPLIT call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXREPLACE call.");
 			if (!TValue.isLiteral(valReplacer))
-				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXSPLIT call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXREPLACE call.");
 			if (!TValue.isLiteral(valInput))
-				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXSPLIT call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in REGEXREPLACE call.");
 
 			let pattern = null;
 			try {
