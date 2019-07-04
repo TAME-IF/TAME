@@ -8,6 +8,7 @@
 
 	- Added: Raw Strings.
 	- Added: RegExReplace() function.
+	- Added: Passages!
 	- Fixed: Some operations gave incorrect error messages in the Java implementation.
 	- Fixed: BadParameterException's class name was fixed. D'oh!
 	- Fixed: Some build shell scripts referred to an incorrect template path.

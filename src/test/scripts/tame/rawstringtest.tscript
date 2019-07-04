@@ -2,7 +2,7 @@ world
 {
 	start()
 	{
-		textln(strformat(strtrim(regexreplace("\\s+", " ", `
+		textfln(strformat(strtrim(regexreplace("\\s+", " ", `
 			Four score and seven years ago, our
 			forefathers brought upon this continent
 			a new nation conceived in liberty and

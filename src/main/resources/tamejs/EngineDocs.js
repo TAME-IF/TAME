@@ -184,5 +184,23 @@
  * @return (Object) 
  * 		the queried identifiers as keys with debug strings as values.
  * 
- *  
+ *****************************************************************************
+ * TAME.parseFormatted(content, startFormatTag, endFormatTag, formatText)
+ *****************************************************************************
+ * Assists in parsing a cue with formatted text (TEXTF cue), or one known to have formatted text.
+ * The target functions passed in are provided an accumulator array to push generated text into. 
+ * On return, this function returns the accumulator's contents joined into a string.
+ * 
+ * @param sequence (string) 
+ * 		the character sequence to parse.
+ * @param tagStartFunc fn(tagName, accum) 
+ * 		the function called on tag start. arguments: tagName (string), accumulator (Array)  
+ * @param tagEndFunc fn(tagName, accum) 
+ * 		the function called on tag end. arguments: tagName (string), accumulator (Array)
+ * @param textFunc fn(text, accum)
+ * 		the function called on tag contents. arguments: text (string), accumulator (Array)
+ * 
+ * @return (string) 
+ * 		the full accumulated result.  
+ *
  *****************************************************************************/

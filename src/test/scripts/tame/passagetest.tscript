@@ -1,0 +1,12 @@
+world
+{
+	start()
+	{
+		... `Four score and seven years ago, our
+		forefathers brought upon this continent
+		a new nation conceived in liberty and
+		dedicated to the proposition that all
+		men are created equal. {2} {1} {0}`, [1,2,3];
+		quit;
+	}
+}

@@ -115,6 +115,8 @@ public final class TAMEScriptReader implements TAMEConstants
 		static final int TYPE_DOUBLEAMPERSAND = 59;
 		static final int TYPE_DOUBLEPIPE = 		60;
 		static final int TYPE_QUESTIONMARK = 	61;
+		static final int TYPE_PASSAGE =			62;
+		static final int TYPE_PASSAGE_MAYBE =	63;
 
 		static final int TYPE_MODULE = 			70;
 		static final int TYPE_WORLD = 			71;
@@ -209,6 +211,8 @@ public final class TAMEScriptReader implements TAMEConstants
 			addDelimiter("===", TYPE_EQUAL3);
 			addDelimiter("!=", TYPE_NOTEQUAL);
 			addDelimiter("!==", TYPE_NOTEQUALEQUAL);
+			addDelimiter("..", TYPE_PASSAGE_MAYBE);
+			addDelimiter("...", TYPE_PASSAGE);
 			
 			addCaseInsensitiveKeyword("module", TYPE_MODULE);
 			addCaseInsensitiveKeyword("world", TYPE_WORLD);
@@ -2726,19 +2730,17 @@ public final class TAMEScriptReader implements TAMEConstants
 		 */
 		private boolean parseExecutableStatement(TElement currentElement, Block block) 
 		{
-			if (currentType(TSKernel.TYPE_QUIT))
+			if (matchType(TSKernel.TYPE_QUIT))
 			{
-				nextToken();
 				block.add(Operation.create(TAMEOperation.QUIT));
 				return true;
 			}
-			else if (currentType(TSKernel.TYPE_FINISH))
+			else if (matchType(TSKernel.TYPE_FINISH))
 			{
-				nextToken();
 				block.add(Operation.create(TAMEOperation.FINISH));
 				return true;
 			}
-			else if (currentType(TSKernel.TYPE_END))
+			else if (matchType(TSKernel.TYPE_END))
 			{
 				if (functionDepth != 0)
 				{
@@ -2746,11 +2748,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				nextToken();
 				block.add(Operation.create(TAMEOperation.END));
 				return true;
 			}
-			else if (currentType(TSKernel.TYPE_RETURN))
+			else if (matchType(TSKernel.TYPE_RETURN))
 			{
 
 				if (functionDepth == 0)
@@ -2759,7 +2760,6 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				nextToken();
 				if (!parseExpression(currentElement, block))
 					return false;
 				
@@ -2767,7 +2767,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				return true;
 			}
-			else if (currentType(TSKernel.TYPE_CONTINUE))
+			else if (matchType(TSKernel.TYPE_CONTINUE))
 			{
 				if (controlDepth == 0)
 				{
@@ -2775,11 +2775,10 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				nextToken();
 				block.add(Operation.create(TAMEOperation.CONTINUE));
 				return true;
 			}
-			else if (currentType(TSKernel.TYPE_BREAK))
+			else if (matchType(TSKernel.TYPE_BREAK))
 			{
 				if (controlDepth == 0)
 				{
@@ -2787,8 +2786,29 @@ public final class TAMEScriptReader implements TAMEConstants
 					return false;
 				}
 				
-				nextToken();
 				block.add(Operation.create(TAMEOperation.BREAK));
+				return true;
+			}
+			else if (matchType(TSKernel.TYPE_PASSAGE))
+			{
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create("\\n\\s*")));
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create(" ")));
+
+				if (!parseExpression(currentElement, block))
+					return false;
+				
+				block.add(Operation.create(TAMEOperation.REGEXREPLACE));
+				block.add(Operation.create(TAMEOperation.STRTRIM));
+				
+				if (matchType(TSKernel.TYPE_COMMA))
+				{
+					if (!parseExpression(currentElement, block))
+						return false;
+					
+					block.add(Operation.create(TAMEOperation.STRFORMAT));
+				}
+
+				block.add(Operation.create(TAMEOperation.TEXTFLN));
 				return true;
 			}
 			else if (!parseStatement(currentElement, block))
@@ -3796,6 +3816,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				case TSKernel.TYPE_CONTINUE:
 				case TSKernel.TYPE_RETURN:
 				case TSKernel.TYPE_QUEUE:
+				case TSKernel.TYPE_PASSAGE:
 					return true;
 				default:
 					return false;

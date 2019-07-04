@@ -95,6 +95,11 @@ let TAME = (function(_TAMEENVCTX)
 		return TLogic.inspect(context, elementIdentity, variable);
 	};
 	
+	this.parseFormatted = function(content, startFormatTag, endFormatTag, formatText)
+	{
+		return Util.parseFormatted(content, startFormatTag, endFormatTag, formatText);
+	};
+	
 	return this;
 	
 })(this);

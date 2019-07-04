@@ -157,10 +157,7 @@ public class Lexer
 	 */
 	public Token nextToken() throws IOException
 	{
-		String streamName = readerStack.getCurrentStreamName();
-		int lineNumber = readerStack.getCurrentLineNumber();
-		int charIndex = readerStack.getCurrentLineCharacterIndex();
-		
+		int charIndex = 0;
 		boolean breakloop = false;
 		while (!breakloop)
 		{
@@ -186,6 +183,7 @@ public class Lexer
 						if (kernel.willEmitStreamBreak())
 						{
 							setState(Kernel.TYPE_END_OF_STREAM);
+							charIndex = readerStack.getCurrentLineCharacterIndex();
 							breakloop = true;
 						}
 						close(readerStack.pop());
@@ -195,6 +193,7 @@ public class Lexer
 						if (kernel.willEmitNewlines())
 						{
 							setState(Kernel.TYPE_DELIM_NEWLINE);
+							charIndex = readerStack.getCurrentLineCharacterIndex();
 							breakloop = true;
 						}
 					}
@@ -203,6 +202,7 @@ public class Lexer
 						if (kernel.willEmitSpaces())
 						{
 							setState(Kernel.TYPE_DELIM_SPACE);
+							charIndex = readerStack.getCurrentLineCharacterIndex();
 							breakloop = true;
 						}
 					}
@@ -211,6 +211,7 @@ public class Lexer
 						if (kernel.willEmitTabs())
 						{
 							setState(Kernel.TYPE_DELIM_TAB);
+							charIndex = readerStack.getCurrentLineCharacterIndex();
 							breakloop = true;
 						}
 					}
@@ -220,42 +221,50 @@ public class Lexer
 					else if (isPoint(c) && isDelimiterStart(c))
 					{
 						setState(Kernel.TYPE_POINT);
+						charIndex = readerStack.getCurrentLineCharacterIndex();
 						saveChar(c);
 					}
 					else if (isPoint(c) && !isDelimiterStart(c))
 					{
 						setState(Kernel.TYPE_FLOAT);
+						charIndex = readerStack.getCurrentLineCharacterIndex();
 						saveChar(c);
 					}
 					else if (isStringStart(c))
 					{
 						setState(Kernel.TYPE_STRING);
+						charIndex = readerStack.getCurrentLineCharacterIndex();
 						setStringStartAndEnd(c);
 					}
 					else if (isRawStringStart(c))
 					{
 						setState(Kernel.TYPE_RAWSTRING);
+						charIndex = readerStack.getCurrentLineCharacterIndex();
 						setMultilineStringStartAndEnd(c);
 					}
 					else if (isDelimiterStart(c))
 					{
 						setState(Kernel.TYPE_DELIMITER);
+						charIndex = readerStack.getCurrentLineCharacterIndex();
 						saveChar(c);
 					}
 					else if (c == '0')
 					{
 						setState(Kernel.TYPE_HEX_INTEGER0);
+						charIndex = readerStack.getCurrentLineCharacterIndex();
 						saveChar(c);
 					}
 					else if (isDigit(c))
 					{
 						setState(Kernel.TYPE_NUMBER);
+						charIndex = readerStack.getCurrentLineCharacterIndex();
 						saveChar(c);
 					}
 					// anything else starts an identifier.
 					else
 					{
 						setState(Kernel.TYPE_IDENTIFIER);
+						charIndex = readerStack.getCurrentLineCharacterIndex();
 						saveChar(c);
 					}
 					break; // end Kernel.TYPE_START_OF_LEXER
@@ -1198,6 +1207,8 @@ public class Lexer
 		Token out = null;
 		if (getState() != Kernel.TYPE_END_OF_LEXER)
 		{
+			String streamName = readerStack.getCurrentStreamName();
+			int lineNumber = readerStack.getCurrentLineNumber();
 			out = new Token(streamName, type, lexeme, lineNumber, charIndex);
 			modifyType(out);
 			setState(Kernel.TYPE_UNKNOWN);
@@ -1329,26 +1340,6 @@ public class Lexer
 	protected void setState(int state)
 	{
 		this.state = state;
-	}
-	
-	/**
-	 * @return if we are in a delimiter break.
-	 */
-	protected boolean isOnDelimBreak()
-	{
-		if (getCurrentStream() != null)
-			return getCurrentStream().isOnDelimBreak();
-		else
-			return false;
-	}
-	
-	/**
-	 * Clears if we are in a delimiter break.
-	 */
-	protected void clearDelimBreak()
-	{
-		if (getCurrentStream() != null)
-			getCurrentStream().clearDelimBreak();
 	}
 	
 	/**
@@ -1792,6 +1783,11 @@ public class Lexer
 			/** Saved character for delimiter test. */
 			private int delimBreakChar;
 
+			/** If true, we are in a newline break. */
+			private boolean holdBreak;
+			/** Saved character for hold break. */
+			private int holdBreakChar;
+
 			/**
 			 * Creates a new stream.
 			 * @param name the stream name.
@@ -1805,21 +1801,10 @@ public class Lexer
 				this.charIndex = 0;
 			}
 			
-			private boolean isOnDelimBreak()
-			{
-				return delimBreak;
-			}
-			
 			private void setDelimBreak(int breakChar)
 			{
 				delimBreakChar = breakChar;
 				delimBreak = true;
-			}
-
-			private void clearDelimBreak()
-			{
-				delimBreakChar = -1;
-				delimBreak = false;
 			}
 
 			private String getStreamName()
@@ -1837,24 +1822,53 @@ public class Lexer
 				return charIndex;
 			}
 			
+			private boolean isNewlineChar(int c)
+			{
+				return c == '\r' || c == '\n';
+			}
+			
 			/**
 			 * Reads the next char from the stream.
+			 * Eats all manner of newline combos into '\n'.
 			 * @return the line read.
 			 * @throws IOException if a line cannot be read.
 			 */
 			private int readChar() throws IOException
 			{
 				int c;
-				if (delimBreak)
+				if (holdBreak)
+				{
+					c = holdBreakChar;
+					holdBreakChar = -1;
+					holdBreak = false;
+					return c;
+				}
+				else if (delimBreak)
 				{
 					c = delimBreakChar;
-					clearDelimBreak();
+					delimBreakChar = -1;
+					delimBreak = false;
 					return c;
 				}
 				else
+				{
 					c = reader.read();
+					boolean newline = false;
+					while (isNewlineChar(c))
+					{
+						newline = true;
+						c = reader.read();
+						if (!isNewlineChar(c))
+						{
+							holdBreakChar = c;
+							holdBreak = true;
+						}
+					}
+					if (newline)
+						c = (int)NEWLINE;
+				}
 				
-				if (c == (int)'\n')
+				if (c == (int)NEWLINE)
 				{
 					line++;
 					charIndex = 0;
@@ -1909,7 +1923,7 @@ public class Lexer
 		/** Reserved token type: Raw String (never returned). */
 		public static final int TYPE_RAWSTRING = 				-16;
 		/** Reserved token type: Delimiter (never returned). */
-		public static final int TYPE_DELIMITER = 				-18;
+		public static final int TYPE_DELIMITER = 				-17;
 		/** Reserved token type: Point state (never returned). */
 		public static final int TYPE_POINT = 					-19;
 		/** Reserved token type: Floating point state (never returned). */
