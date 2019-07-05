@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,6 +43,7 @@ import com.tameif.tame.exception.ModuleStateException;
 import com.tameif.tame.interrupt.ErrorInterrupt;
 import com.tameif.tame.lang.Saveable;
 import com.tameif.tame.lang.Value;
+import com.tameif.tame.struct.CaseInsensitiveStringMap;
 import com.tameif.tame.struct.SerialReader;
 import com.tameif.tame.struct.SerialWriter;
 import com.tameif.tame.struct.ValueUtils;
@@ -64,13 +66,13 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	/** World context. */
 	private TWorldContext worldContext;
 	/** List of players. */
-	private HashMap<String, TPlayerContext> playerContextHash;
+	private CaseInsensitiveStringMap<TPlayerContext> playerContextHash;
 	/** List of rooms. */
-	private HashMap<String, TRoomContext> roomContextHash;
+	private CaseInsensitiveStringMap<TRoomContext> roomContextHash;
 	/** List of objects. */
-	private HashMap<String, TObjectContext> objectContextHash;
+	private CaseInsensitiveStringMap<TObjectContext> objectContextHash;
 	/** List of containers. */
-	private HashMap<String, TContainerContext> containerContextHash;
+	private CaseInsensitiveStringMap<TContainerContext> containerContextHash;
 	
 	/** Ownership map for players. */
 	private TOwnershipMap ownershipMap;
@@ -89,10 +91,10 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		this.module = module;
 		this.random = new Random();
 		
-		this.playerContextHash = new HashMap<String, TPlayerContext>(3);
-		this.roomContextHash = new HashMap<String, TRoomContext>(20);
-		this.objectContextHash = new HashMap<String, TObjectContext>(40);
-		this.containerContextHash = new HashMap<String, TContainerContext>(10);
+		this.playerContextHash = new CaseInsensitiveStringMap<>(3);
+		this.roomContextHash = new CaseInsensitiveStringMap<>(20);
+		this.objectContextHash = new CaseInsensitiveStringMap<>(40);
+		this.containerContextHash = new CaseInsensitiveStringMap<>(10);
 
 		// Build contexts.
 		
@@ -112,7 +114,7 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		
 		this.ownershipMap = new TOwnershipMap();
 
-		for (Map.Entry<String, TObjectContext> element : objectContextHash.entrySet())
+		for (Map.Entry<String, TObjectContext> element : objectContextHash)
 		{
 			TObjectContext context = element.getValue();
 			TObject object = context.getElement();
@@ -164,39 +166,39 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 	}
 	
 	/**
-	 * Get the player context list.
+	 * Get the player contexts.
 	 * @return the context map.
 	 */
-	public Iterator<TPlayerContext> getPlayerContextIterator()
+	public Collection<TPlayerContext> getPlayerContexts()
 	{
-		return playerContextHash.values().iterator();
+		return playerContextHash.values();
 	}
 
 	/**
-	 * Get the room context list.
+	 * Get the room contexts.
 	 * @return the context map.
 	 */
-	public Iterator<TRoomContext> getRoomContextIterator()
+	public Collection<TRoomContext> getRoomContexts()
 	{
-		return roomContextHash.values().iterator();
+		return roomContextHash.values();
 	}
 
 	/**
-	 * Get the object context list.
+	 * Get the object contexts.
 	 * @return the context map.
 	 */
-	public Iterator<TObjectContext> getObjectContextIterator()
+	public Collection<TObjectContext> getObjectContexts()
 	{
-		return objectContextHash.values().iterator();
+		return objectContextHash.values();
 	}
 
 	/**
-	 * Get the container context list.
+	 * Get the container contexts.
 	 * @return the context map.
 	 */
-	public Iterator<TContainerContext> getContainerContextIterator()
+	public Collection<TContainerContext> getContainerContexts()
 	{
-		return containerContextHash.values().iterator();
+		return containerContextHash.values();
 	}
 
 	/**
@@ -701,28 +703,28 @@ public class TAMEModuleContext implements TAMEConstants, Saveable
 		worldContext.writeStateBytes(module, refCounter, refSet, out);
 		
 		sw.writeInt(out, playerContextHash.size());
-		for (Map.Entry<String, TPlayerContext> entry : playerContextHash.entrySet())
+		for (Map.Entry<String, TPlayerContext> entry : playerContextHash)
 		{
 			sw.writeString(out, entry.getKey(), "UTF-8");
 			entry.getValue().writeStateBytes(module, refCounter, refSet, out);
 		}
 
 		sw.writeInt(out, roomContextHash.size());
-		for (Map.Entry<String, TRoomContext> entry : roomContextHash.entrySet())
+		for (Map.Entry<String, TRoomContext> entry : roomContextHash)
 		{
 			sw.writeString(out, entry.getKey(), "UTF-8");
 			entry.getValue().writeStateBytes(module, refCounter, refSet, out);
 		}
 		
 		sw.writeInt(out, objectContextHash.size());
-		for (Map.Entry<String, TObjectContext> entry : objectContextHash.entrySet())
+		for (Map.Entry<String, TObjectContext> entry : objectContextHash)
 		{
 			sw.writeString(out, entry.getKey(), "UTF-8");
 			entry.getValue().writeStateBytes(module, refCounter, refSet, out);
 		}
 
 		sw.writeInt(out, containerContextHash.size());
-		for (Map.Entry<String, TContainerContext> entry : containerContextHash.entrySet())
+		for (Map.Entry<String, TContainerContext> entry : containerContextHash)
 		{
 			sw.writeString(out, entry.getKey(), "UTF-8");
 			entry.getValue().writeStateBytes(module, refCounter, refSet, out);

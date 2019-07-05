@@ -489,6 +489,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 				{
 					context.out.print("(Continue) ");
 					IOUtils.getLine();
+					context.out.println();
 					context.paused = false;
 				}
 			}

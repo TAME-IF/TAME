@@ -11,7 +11,7 @@ package com.tameif.tame;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
+import java.util.Collection;
 
 import com.tameif.tame.element.ObjectContainer;
 import com.tameif.tame.element.TAction;
@@ -824,10 +824,10 @@ public final class TAMELogic implements TAMEConstants
 	{
 		TAMEModuleContext moduleContext = request.getModuleContext();
 		try {
-			callInitOnContexts(request, response, moduleContext.getContainerContextIterator());
-			callInitOnContexts(request, response, moduleContext.getObjectContextIterator());
-			callInitOnContexts(request, response, moduleContext.getRoomContextIterator());
-			callInitOnContexts(request, response, moduleContext.getPlayerContextIterator());
+			callInitOnContexts(request, response, moduleContext.getContainerContexts());
+			callInitOnContexts(request, response, moduleContext.getObjectContexts());
+			callInitOnContexts(request, response, moduleContext.getRoomContexts());
+			callInitOnContexts(request, response, moduleContext.getPlayerContexts());
 			callElementBlock(request, response, moduleContext.getWorldContext(), BlockEntry.create(BlockEntryType.INIT));
 			callElementBlock(request, response, moduleContext.getWorldContext(), BlockEntry.create(BlockEntryType.START));
 		} catch (FinishInterrupt interrupt) {
@@ -1292,13 +1292,10 @@ public final class TAMELogic implements TAMEConstants
 	}
 
 	// Call init on iterable contexts.
-	private static void callInitOnContexts(TAMERequest request, TAMEResponse response, Iterator<? extends TElementContext<?>> contexts) throws TAMEInterrupt 
+	private static void callInitOnContexts(TAMERequest request, TAMEResponse response, Collection<? extends TElementContext<?>> contexts) throws TAMEInterrupt 
 	{
-		while (contexts.hasNext())
-		{
-			TElementContext<?> context = contexts.next();
+		for (TElementContext<?> context : contexts)
 			callElementBlock(request, response, context, BlockEntry.create(BlockEntryType.INIT));
-		}
 	}
 
 	/**

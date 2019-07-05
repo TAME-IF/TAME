@@ -2799,7 +2799,7 @@ public final class TAMEScriptReader implements TAMEConstants
 				
 				block.add(Operation.create(TAMEOperation.REGEXREPLACE));
 				block.add(Operation.create(TAMEOperation.STRTRIM));
-				
+
 				if (matchType(TSKernel.TYPE_COMMA))
 				{
 					if (!parseExpression(currentElement, block))

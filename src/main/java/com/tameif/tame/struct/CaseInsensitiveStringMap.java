@@ -1,6 +1,7 @@
 package com.tameif.tame.struct;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -56,6 +57,14 @@ public class CaseInsensitiveStringMap<V> implements Iterable<Map.Entry<String, V
 	public Iterator<Entry<String, V>> iterator()
 	{
 		return map.entrySet().iterator();
+	}
+
+	/**
+	 * @return all values in this map.
+z	 */
+	public Collection<V> values()
+	{
+		return map.values();
 	}
 
 	@Override

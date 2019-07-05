@@ -1853,6 +1853,9 @@ public class Lexer
 					boolean newline = false;
 					while (isNewlineChar(c))
 					{
+						if (c == (int)'\n')
+							line++;
+
 						newline = true;
 						c = reader.read();
 						if (!isNewlineChar(c))
@@ -1864,7 +1867,6 @@ public class Lexer
 				
 				if (c == (int)NEWLINE)
 				{
-					line++;
 					charIndex = 0;
 				}
 				return c;
