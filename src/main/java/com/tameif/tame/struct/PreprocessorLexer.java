@@ -551,10 +551,10 @@ public class PreprocessorLexer extends Lexer
 			state = STATE_START;
 		}
 		
-		char getChar(String line)
+		int getChar(String line)
 		{
 			if (index >= line.length())
-				return (char)65535;
+				return -1;
 			return line.charAt(index++);
 		}
 		
@@ -567,9 +567,10 @@ public class PreprocessorLexer extends Lexer
 		{
 			reset();
 			boolean breakloop = false;
-			while (!breakloop)
+			int x;
+			while (!breakloop && (x = getChar(line)) > -1)
 			{
-				char c = getChar(line);
+				char c = (char)x;
 				switch (state)
 				{
 					case DirectiveParser.STATE_START:
@@ -644,7 +645,11 @@ public class PreprocessorLexer extends Lexer
 								StringBuilder sb = new StringBuilder();
 								for (int i = 0; i < 4; i++)
 								{
-									c = getChar(line);
+									x = getChar(line);
+									if (x < 0)
+										break;
+									
+									c = (char)x;
 									if (!isHexDigit(c))
 									{
 										tokenBuilder.append("\\u").append(sb);
@@ -666,8 +671,12 @@ public class PreprocessorLexer extends Lexer
 								StringBuilder sb = new StringBuilder();
 								for (int i = 0; i < 2; i++)
 								{
-									c = getChar(line);
-									if (!isHexDigit(c))
+									x = getChar(line);
+									if (x < 0)
+										break;
+									
+									c = (char)x;
+									if (!isHexDigit((char)c))
 									{
 										tokenBuilder.append("\\x").append(sb);
 										tokenBuilder.delete(0, tokenBuilder.length());
