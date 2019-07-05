@@ -379,7 +379,10 @@ public class PreprocessorLexer extends Lexer
 					else if (c == END_OF_STREAM)
 						breakloop = true;
 					else if (c == '\n')
+					{
+						lineBeginning = true;
 						breakloop = true;
+					}
 					else if (c == '\\')
 						state = STATE_ESCAPE;
 					else
