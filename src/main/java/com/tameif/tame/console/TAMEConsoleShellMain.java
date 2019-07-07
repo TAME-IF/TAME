@@ -636,7 +636,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 		@Override
 		public boolean handleCue(Cue cue) 
 		{
-			if (!cue.getType().equals(CUE_TEXT) && !cue.getType().equals(CUE_TEXTF) && textBuffer.length() > 0)
+			if (!cue.getType().equalsIgnoreCase(CUE_TEXT) && !cue.getType().equalsIgnoreCase(CUE_TEXTF) && textBuffer.length() > 0)
 			{
 				if (IS_WINDOWS)
 					lastColumn = StringUtils.printWrapped(context.out, textBuffer.toString(), lastColumn, 80); // windows terminal
@@ -645,7 +645,7 @@ public class TAMEConsoleShellMain implements TAMEConstants
 				textBuffer.delete(0, textBuffer.length());
 			}
 			
-			switch (cue.getType())
+			switch (cue.getType().toLowerCase())
 			{
 				default:
 				case CUE_TRACE:

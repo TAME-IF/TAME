@@ -18,10 +18,10 @@ world
  
    onAction(a_quit)		quit;
    onAction(a_text)		textln("This is some text.");
-   onAction(a_textf)	textln("[style]This is some formatted text.[/]");
+   onAction(a_textf)	textfln("[style]This is some formatted text.[/]");
    onAction(a_pause)	{textln("One"); pause(); textln("Two");}
    onAction(a_wait)		{textln("One"); wait(1000); textln("Two");}
-   onAction(a_error)	addCue("ERROR","Some error happened!");
+   onAction(a_error)	addCue("error","Some error happened!");
    onAction(a_fatal)	addCue("FATAL","OH LORDY YOU DONE SCREWED UP, NOW!");
    
 }
