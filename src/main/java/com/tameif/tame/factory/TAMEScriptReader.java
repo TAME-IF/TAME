@@ -2791,7 +2791,7 @@ public final class TAMEScriptReader implements TAMEConstants
 			}
 			else if (matchType(TSKernel.TYPE_PASSAGE))
 			{
-				block.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create("\\n\\s*")));
+				block.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create("\\s*\\n\\s*")));
 				block.add(Operation.create(TAMEOperation.PUSHVALUE, Value.create(" ")));
 
 				if (!parseExpression(currentElement, block))
