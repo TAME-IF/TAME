@@ -2805,7 +2805,7 @@ public final class TAMEScriptReader implements TAMEConstants
 					if (!parseExpression(currentElement, block))
 						return false;
 					
-					block.add(Operation.create(TAMEOperation.STRFORMAT));
+					block.add(Operation.create(TAMEOperation.STRPARAM));
 				}
 
 				block.add(Operation.create(TAMEOperation.TEXTFLN));

@@ -1948,13 +1948,13 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	},
 	
 	/**
-	 * Replaces parts of a string with "[X]" with objects in a list. X is a list index.
+	 * Replaces parts of a string with "{X}" with objects in a list. X is a list index.
 	 * The second parameter is treated as a one-entry list if it isn't a list.
 	 * First POP is the list.
 	 * Second POP is the string. 
 	 * Returns string. 
 	 */
-	STRFORMAT (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
+	STRPARAM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.VALUE, ArgumentType.VALUE)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
@@ -1963,9 +1963,9 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			Value str = request.popValue();
 			
 			if (!list.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRFORMAT call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRPARAM call.");
 			if (!str.isLiteral())
-				throw new UnexpectedValueTypeException("Expected literal type in STRFORMAT call.");
+				throw new UnexpectedValueTypeException("Expected literal type in STRPARAM call.");
 
 			if (!list.isList())
 				list = Value.createList(list);

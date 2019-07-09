@@ -6,8 +6,8 @@ world
 		local b = ["apple", "pear", "orange", "grape", "peach"];
 		textln(a);
 		textln(b);
-		textln(strformat(a, b));
-		textln(strformat(a, "stuff"));
+		textln(strparam(a, b));
+		textln(strparam(a, "stuff"));
 		quit;
 	}
 }
