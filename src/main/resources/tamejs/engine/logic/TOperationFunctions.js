@@ -1274,18 +1274,18 @@ var TOperationFunctions =
 		}
 	},
 
-	/* STRFORMAT */
+	/* STRPARAM */
 	{
-		"name": 'STRFORMAT', 
+		"name": 'STRPARAM', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let list = request.popValue();
 			let str = request.popValue();
 
 			if (!TValue.isLiteral(list))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRFORMAT call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRPARAM call.");
 			if (!TValue.isLiteral(str))
-				throw TAMEError.UnexpectedValueType("Expected literal type in STRFORMAT call.");
+				throw TAMEError.UnexpectedValueType("Expected literal type in STRPARAM call.");
 
 			if (!TValue.isList(list))
 			{
