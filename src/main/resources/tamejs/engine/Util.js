@@ -295,7 +295,12 @@ Util.formatDate = function(date, formatstring)
 		},
 		"K": function(locale, token, date)
 		{
-			return _PAD((date.getHours() % 12) + 1, token.length);
+			let hours = date.getHours();
+			if (hours == 0)
+				hours = 12;
+			else if (hours > 12)
+				hours -= 12
+			return _PAD(hours, token.length);
 		},
 		"m": function(locale, token, date)
 		{

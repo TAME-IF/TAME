@@ -136,7 +136,12 @@ public final class DateUtils
 			});
 			put('K', (locale, token, date, sb)->
 			{
-				sb.append(String.format("%0" + token.length() + "d", (date.get(Calendar.HOUR_OF_DAY) % 12) + 1));
+				int hours = date.get(Calendar.HOUR_OF_DAY);
+				if (hours == 0)
+					hours = 12;
+				else if (hours > 12)
+					hours -= 12;
+				sb.append(String.format("%0" + token.length() + "d", hours));
 			});
 			put('m', (locale, token, date, sb)->
 			{

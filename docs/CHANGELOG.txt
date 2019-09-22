@@ -3,6 +3,11 @@
     (C) 2019 Matt Tropiano
 ==============================================================================
 
+0.9BETA20
+.........
+
+	- Fixed: TimeFormat()'s "K" character did not give correct values for hours.
+
 0.9BETA19
 .........
 
