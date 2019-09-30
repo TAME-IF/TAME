@@ -303,7 +303,7 @@ TModuleContext.prototype.popRoomFromPlayer = function(playerIdentity)
  * @return true if the room is in the player's stack, false if not, or the player is in no room.
  * @throws TAMEError if no such element context.
  */
-TModuleContext.prototype.checkPlayerIsInRoom = function(playerIdentity, roomIdentity) 
+TModuleContext.prototype.checkPlayerHasRoomInStack = function(playerIdentity, roomIdentity) 
 {
 	let contextState = this.state;
 

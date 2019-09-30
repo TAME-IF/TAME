@@ -201,7 +201,7 @@ public class TOwnershipMap implements StateSaveable, TAMEConstants
 	 * @param room the room to use.
 	 * @return true if so, false if not.
 	 */
-	public boolean checkPlayerIsInRoom(TPlayer player, TRoom room)
+	public boolean checkPlayerHasRoomInStack(TPlayer player, TRoom room)
 	{
 		if (playerToRoomStack.containsKey(player))
 			return playerToRoomStack.get(player).contains(room);

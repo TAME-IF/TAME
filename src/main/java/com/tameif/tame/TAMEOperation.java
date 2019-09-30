@@ -3675,12 +3675,12 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 	}, 
 	
 	/**
-	 * Checks if a player in in a room. Returns true if current room or in the room stack.
+	 * Checks if a player has a room in its room stack. Returns true if current room or in the room stack.
 	 * First POP is the room.
 	 * Second POP is the player.
 	 * Returns boolean.
 	 */
-	PLAYERISINROOM (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
+	PLAYERHASROOMINSTACK (/*Return: */ ArgumentType.VALUE, /*Args: */ ArgumentType.PLAYER, ArgumentType.ROOM)
 	{
 		@Override
 		protected void doOperation(TAMERequest request, TAMEResponse response, ValueSet blockLocal, Operation operation) throws TAMEInterrupt
@@ -3689,14 +3689,14 @@ public enum TAMEOperation implements OperationType, TAMEConstants
 			Value varPlayer = request.popValue();
 			
 			if (varRoom.getType() != ValueType.ROOM)
-				throw new UnexpectedValueTypeException("Expected room type in PLAYERISINROOM call.");
+				throw new UnexpectedValueTypeException("Expected room type in PLAYERHASROOMINSTACK call.");
 			if (varPlayer.getType() != ValueType.PLAYER)
-				throw new UnexpectedValueTypeException("Expected player type in PLAYERISINROOM call.");
+				throw new UnexpectedValueTypeException("Expected player type in PLAYERHASROOMINSTACK call.");
 			
 			TAMEModuleContext moduleContext = request.getModuleContext();
 			TPlayer player = moduleContext.resolvePlayer(varPlayer.asString());
 			TRoom room = moduleContext.resolveRoom(varRoom.asString());
-			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkPlayerIsInRoom(player, room)));
+			request.pushValue(Value.create(request.getModuleContext().getOwnershipMap().checkPlayerHasRoomInStack(player, room)));
 		}
 		
 		@Override

@@ -2338,24 +2338,24 @@ var TOperationFunctions =
 		}
 	},
 
-	/* PLAYERISINROOM */
+	/* PLAYERHASROOMINSTACK */
 	{
-		"name": 'PLAYERISINROOM', 
+		"name": 'PLAYERHASROOMINSTACK', 
 		"doOperation": function(request, response, blockLocal, operation)
 		{
 			let varRoom = request.popValue();
 			let varPlayer = request.popValue();
 			
 			if (!TValue.isRoom(varRoom))
-				throw TAMEError.UnexpectedValueType("Expected room type in PLAYERISINROOM call.");
+				throw TAMEError.UnexpectedValueType("Expected room type in PLAYERHASROOMINSTACK call.");
 			if (!TValue.isPlayer(varPlayer))
-				throw TAMEError.UnexpectedValueType("Expected player type in PLAYERISINROOM call.");
+				throw TAMEError.UnexpectedValueType("Expected player type in PLAYERHASROOMINSTACK call.");
 
 			let context = request.moduleContext;
 			let room = context.resolveElement(TValue.asString(varRoom));
 			let player = context.resolveElement(TValue.asString(varPlayer));
 
-			request.pushValue(TValue.createBoolean(context.checkPlayerIsInRoom(player.identity, room.identity)));
+			request.pushValue(TValue.createBoolean(context.checkPlayerHasRoomInStack(player.identity, room.identity)));
 		}
 	},
 
