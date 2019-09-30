@@ -9,6 +9,7 @@
 	- Fixed: TimeFormat() formatted bad values for hour formatting.
 	- Changed: PlayerIsInRoom() was way too confusing. It is now: PlayerHasRoomInStack().
 
+
 0.9BETA19
 .........
 
