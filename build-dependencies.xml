@@ -1,14 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-    Copyright (c) 2015-2019 Matt Tropiano
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Lesser Public License v2.1
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
-   
-    Contributors:
-        Matt Tropiano - initial API and implementation
- -->
 <!DOCTYPE project>
 <project name="dependencies">
 
@@ -44,6 +34,22 @@
 		</sequential>
 	</macrodef>
 	
+	<macrodef name="git-pull">
+		<attribute name="dest" />
+		<sequential>
+			<git command="pull" dir="@{dest}" />
+		</sequential>
+	</macrodef>
+
+	<macrodef name="git-clone-pull">
+		<attribute name="repository" />
+		<attribute name="dest" />
+		<sequential>
+			<git-clone repository="@{repository}" dest="@{dest}" />
+			<git-pull dest="@{dest}" />
+		</sequential>
+	</macrodef>
+
 	<macrodef name="git-clone-shallow">
 		<attribute name="repository" />
 		<attribute name="dest" />
@@ -58,13 +64,6 @@
 		</sequential>
 	</macrodef>
 
-	<macrodef name="git-pull">
-		<attribute name="dest" />
-		<sequential>
-			<git command="pull" dir="@{dest}" />
-		</sequential>
-	</macrodef>
-
 	<macrodef name="git-export">
 		<attribute name="repository" />
 		<attribute name="dest" />
@@ -74,25 +73,89 @@
 		</sequential>
 	</macrodef>
 
-	<macrodef name="git-clone-pull">
+	<!-- GitHub Download Macros -->
+
+	<macrodef name="github-dl">
 		<attribute name="repository" />
-		<attribute name="dest" />
+		<attribute name="tag" />
+		<attribute name="file" />
+		<attribute name="dest" default="${dependencies.dir}" />
 		<sequential>
-			<git-clone repository="@{repository}" dest="@{dest}" />
-			<git-pull dest="@{dest}" />
+			<echo message="Fetching https://github.com/@{repository}/releases/download/@{tag}/@{file}..." />
+			<get retries="3" src="https://github.com/@{repository}/releases/download/@{tag}/@{file}" dest="@{dest}"/>
+		</sequential>
+	</macrodef>
+
+	<!-- Maven Download Macros -->
+
+	<property name="maven.base.url" value="https://repo1.maven.org/maven2" />
+
+	<macrodef name="maven-jar-dl" description="Download a Maven Jar. Does not pull associated dependencies.">
+		<attribute name="base-url" default="${maven.base.url}" description="The base artifact Repository URL." />
+		<attribute name="group-path" description="The artifact group with slashes instead of dots." />
+		<attribute name="artifact" description="The artifact name." />
+		<attribute name="version" description="The artifact version (with appendices like -RELEASE, if any)." />
+		<attribute name="extension" default="" description="What to add after the version in the file." />
+		<attribute name="dest" default="${dependencies.dir}" description="The target download directory." />
+		<sequential>
+			<local name="download.jar.file.url" />
+			<property name="download.jar.file.url" value="@{base-url}/@{group-path}/@{artifact}/@{version}/@{artifact}-@{version}@{extension}.jar" />
+			<echo message="Fetching ${download.jar.file.url}..." />
+			<get retries="3" src="${download.jar.file.url}" dest="@{dest}"/>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="maven-jar-sources-dl" description="Download a Maven -sources Jar.">
+		<attribute name="base-url" default="${maven.base.url}" description="The base artifact Repository URL." />
+		<attribute name="group-path" description="The artifact group with slashes instead of dots." />
+		<attribute name="artifact" description="The artifact name." />
+		<attribute name="version" description="The artifact version (with appendices like -RELEASE, if any)." />
+		<attribute name="dest" default="${dependencies.dir}" description="The target download directory." />
+		<sequential>
+			<maven-jar-dl 
+				dest="@{dest}" 
+				base-url="@{base-url}" 
+				group-path="@{group-path}" 
+				artifact="@{artifact}" 
+				version="@{version}" 
+				extension="-sources" 
+			/>
+		</sequential>
+	</macrodef>
+
+	<macrodef name="maven-jar-javadoc-dl" description="Download a Maven -javadoc Jar.">
+		<attribute name="base-url" default="${maven.base.url}" description="The base artifact Repository URL." />
+		<attribute name="group-path" description="The artifact group with slashes instead of dots." />
+		<attribute name="artifact" description="The artifact name." />
+		<attribute name="version" description="The artifact version (with appendices like -RELEASE, if any)." />
+		<attribute name="dest" default="${dependencies.dir}" description="The target download directory." />
+		<sequential>
+			<maven-jar-dl 
+				dest="@{dest}" 
+				base-url="@{base-url}" 
+				group-path="@{group-path}" 
+				artifact="@{artifact}" 
+				version="@{version}" 
+				extension="-javadoc" 
+			/>
 		</sequential>
 	</macrodef>
 
 	<!-- Targets -->
 
-	<target name="clean.dependencies" description="Cleans up the dependencies.">
+	<target name="clean.dependencies">
 		<delete quiet="true" includeemptydirs="true">
 			<fileset dir="${dependencies.dir}" includes="**/*" defaultexcludes="false" />
 		</delete>
 	</target>
 	
-	<target name="init.dependencies" depends="clean.dependencies" description="Initializes the dependencies folders.">
+	<target name="init.dependencies" depends="clean.dependencies">
 		<mkdir dir="${dependencies.dir}" />
 	</target>
 
+	<target name="dependency.properties">
+		<echo message="Writing to build.properties...." />
+		<echo message="dev.base=${dependencies.dir}&#10;" file="build.properties" append="true" />
+	</target>
+	
 </project>
