@@ -1,7 +1,14 @@
 ==============================================================================
     TAME Changelog
-    (C) 2019 Matt Tropiano
+    (C) 2019-2025 Matt Tropiano
 ==============================================================================
+
+0.9BETA21
+.........
+
+	- Fixed: Updated Preprocessor - some directives were not ignored on false 
+	  code blocks when they should have been.
+
 
 0.9BETA20
 .........

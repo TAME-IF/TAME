@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Black Rook Software
- * 
+ * Copyright (c) 2019-2025 Black Rook Software
  * This program and the accompanying materials are made available under 
  * the terms of the MIT License, which accompanies this distribution.
  ******************************************************************************/
@@ -13,6 +12,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -59,7 +59,6 @@ public class PreprocessorLexer extends Lexer
 	/** 
 	 * Default includer to use when none specified.
 	 * This includer can either pull from the classpath, URIs, or files.
-	 * <p>
 	 * <ul>
 	 * <li>Paths that start with {@code classpath:} are parsed as resource paths in the current classpath.</li>
 	 * <li>
@@ -95,8 +94,14 @@ public class PreprocessorLexer extends Lexer
 			if ((lidx = streamName.lastIndexOf('/')) >= 0)
 				streamParent = streamName.substring(0, lidx + 1);
 
-			if (path.startsWith(CLASSPATH_PREFIX) || (streamParent != null && streamParent.startsWith(CLASSPATH_PREFIX)))
+			if (path.startsWith(CLASSPATH_PREFIX))
+			{
+				return path;
+			}
+			else if (streamParent != null && streamParent.startsWith(CLASSPATH_PREFIX))
+			{
 				return (streamParent != null ? streamParent : "") + path;
+			}
 			else
 			{
 				File f = null;
@@ -163,6 +168,17 @@ public class PreprocessorLexer extends Lexer
 		 */
 		InputStream getIncludeResource(String path) throws IOException;
 	
+		/**
+		 * Gets the charset encoding to use when a path is fetched successfully with {@link #getIncludeResource(String)}.
+		 * By default, this returns {@link Charset#defaultCharset()} for all paths.
+		 * @param path the input path (passed to {@link #getIncludeResource(String)} originally).
+		 * @return the encoding to use when reading from a resource.
+		 */
+		default Charset getEncodingForIncludedResource(String path)
+		{
+			return Charset.defaultCharset();
+		}
+		
 	}
 
 	/** Is this at the beginning of a line? */
@@ -265,12 +281,12 @@ public class PreprocessorLexer extends Lexer
 			return null;
 		
 		String macro = token.getLexeme().toLowerCase();
-	    if (macroMap.containsKey(macro))
-	    {
-	    	pushStream(getCurrentStreamName() + ":" + macro, new StringReader(macroMap.get(macro).get()));
-	        return nextToken();
-	    }
-	    return token;
+		if (macroMap.containsKey(macro))
+		{
+			pushStream(getCurrentStreamName() + ":" + macro, new StringReader(macroMap.get(macro).get()));
+			return nextToken();
+		}
+		return token;
 	}
 	
 	protected String getInfoLine(String streamName, int lineNumber, String token, String message)
@@ -315,7 +331,6 @@ public class PreprocessorLexer extends Lexer
 			{
 				lineBeginning = false;
 				preprocess();
-				return readChar();
 			}
 			else if (lineBeginning && Character.isWhitespace(c))
 			{
@@ -397,10 +412,15 @@ public class PreprocessorLexer extends Lexer
 					else if (c == END_OF_STREAM)
 						breakloop = true;
 					else if (c == '\n')
-						state = STATE_READ;
-					else if (Character.isWhitespace(c))
 					{
-						// eat character.
+						sb.append('\n');
+						state = STATE_READ;
+					}
+					else
+					{
+						sb.append('\\');
+						sb.append(c);
+						state = STATE_READ;
 					}
 				}
 				break;
@@ -458,6 +478,9 @@ public class PreprocessorLexer extends Lexer
 		// #Include
 		else if (directiveName.equalsIgnoreCase(DIRECTIVE_INCLUDE))
 		{
+			if (!ifStack.isEmpty() && !ifStack.peek())
+				return;
+			
 			String path = parser.scanNext(directiveLine);
 			
 			String includePath;
@@ -469,8 +492,8 @@ public class PreprocessorLexer extends Lexer
 				includeIn = includer.getIncludeResource(includePath);
 				if (includeIn == null)
 					errors.add(getInfoLine(streamName, lineNumber, null, "Could not resolve path: \"" + includePath + "\""));
-
-				pushStream(includePath, new InputStreamReader(includeIn));
+				else
+					pushStream(includePath, new InputStreamReader(includeIn, includer.getEncodingForIncludedResource(includePath)));
 				
 			} catch (IOException e) {
 				errors.add(getInfoLine(streamName, lineNumber, null, "Could not resolve path. "+ e.getMessage()));
@@ -479,6 +502,9 @@ public class PreprocessorLexer extends Lexer
 		// #Define
 		else if (directiveName.equalsIgnoreCase(DIRECTIVE_DEFINE))
 		{
+			if (!ifStack.isEmpty() && !ifStack.peek())
+				return;
+			
 			String defineToken = parser.scanNext(directiveLine);
 			
 			if (defineToken == null)
@@ -493,6 +519,9 @@ public class PreprocessorLexer extends Lexer
 		// #Undefine
 		else if (directiveName.equalsIgnoreCase(DIRECTIVE_UNDEFINE))
 		{
+			if (!ifStack.isEmpty() && !ifStack.peek())
+				return;
+			
 			String defineToken = parser.scanNext(directiveLine);
 			
 			if (defineToken == null)
@@ -505,6 +534,9 @@ public class PreprocessorLexer extends Lexer
 		// #IfDef
 		else if (directiveName.equalsIgnoreCase(DIRECTIVE_IFDEF))
 		{
+			if (!ifStack.isEmpty() && !ifStack.peek())
+				return;
+			
 			String defineToken = parser.scanNext(directiveLine);
 			
 			if (defineToken == null)
@@ -517,6 +549,9 @@ public class PreprocessorLexer extends Lexer
 		// #IfNDef
 		else if (directiveName.equalsIgnoreCase(DIRECTIVE_IFNDEF))
 		{
+			if (!ifStack.isEmpty() && !ifStack.peek())
+				return;
+			
 			String defineToken = parser.scanNext(directiveLine);
 			
 			if (defineToken == null)
