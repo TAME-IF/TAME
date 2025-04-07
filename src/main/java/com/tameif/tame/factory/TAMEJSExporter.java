@@ -421,7 +421,7 @@ public final class TAMEJSExporter
 		else
 			writer.append(" * TAME v"+TAMELogic.getVersion()+" with Embedded Module\n");
 		writer.append(" * (C) 2016-").append(HEADER_COPYRIGHT_YEAR).append(" Matthew Tropiano\n");
-		writer.append(" * All rights reserved. This program and the accompanying materials\n");
+		writer.append(" * This program and the accompanying materials\n");
 		writer.append(" * are made available under the terms of the GNU Lesser Public License v2.1\n");
 		writer.append(" * which accompanies this distribution, and is available at\n");
 		writer.append(" * http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html\n");
