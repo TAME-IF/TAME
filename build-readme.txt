@@ -1,7 +1,7 @@
 ==============================================================================
 Building this Project
 TAME
-(C) Matt Tropiano, All rights reserved.
+(C) Matt Tropiano.
 http://github.com/MTrop/TAME
 ==============================================================================
 
