@@ -66,7 +66,6 @@ public final class TAMEScriptReader implements TAMEConstants
 	/** The Lexer Kernel for the ArcheText Lexers. */
 	private static class TSKernel extends Lexer.Kernel
 	{
-		static final int TYPE_COMMENT = 		0;
 		static final int TYPE_FALSE = 			1;
 		static final int TYPE_TRUE = 			2;
 		static final int TYPE_INFINITY = 		3;
@@ -159,9 +158,8 @@ public final class TAMEScriptReader implements TAMEConstants
 			addRawStringDelimiter('`', '`');
 			setDecimalSeparator('.');
 			
-			addCommentStartDelimiter("/*", TYPE_COMMENT);
-			addCommentLineDelimiter("//", TYPE_COMMENT);
-			addCommentEndDelimiter("*/", TYPE_COMMENT);
+			addCommentDelimiter("/*", "*/");
+			addCommentLineDelimiter("//");
 
 			addCaseInsensitiveKeyword("true", TYPE_TRUE);
 			addCaseInsensitiveKeyword("false", TYPE_FALSE);

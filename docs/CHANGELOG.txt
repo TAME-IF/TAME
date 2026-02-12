@@ -1,7 +1,14 @@
 ==============================================================================
     TAME Changelog
-    (C) 2019-2025 Matt Tropiano
+    (C) 2019-2026 Matt Tropiano
 ==============================================================================
+
+0.9BETA22
+.........
+
+	- Fixed: Updated Preprocessor - Directive inside comment blocks will now
+	  not be processed.
+
 
 0.9BETA21
 .........
